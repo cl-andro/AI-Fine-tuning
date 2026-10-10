@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My bash script fails with 'permission denied' when running.\nAssistant: The script might not be executable. Check with ls -l.\nUser: It shows -rw-r--r--.",
+    "output": "Make it executable: chmod +x script.sh, then run it with ./script.sh"
+  },
+  {
+    "instruction": "User: My cron job doesn't run even though the schedule looks right.\nAssistant: Cron uses a minimal environment. Check the full path and log output.\nUser: I use python script.py in the crontab.",
+    "output": "Use absolute paths for both the interpreter and the script, and redirect output to a log file for debugging."
+  },
+  {
+    "instruction": "User: My shell variable isn't available inside a subshell/script.\nAssistant: Variables aren't exported by default. Use export.\nUser: MY_VAR=hello then bash child.sh",
+    "output": "Export the variable with export MY_VAR=hello, or prefix the child command: MY_VAR=hello bash child.sh"
+  },
+  {
+    "instruction": "User: My find command is slow on a large directory.\nAssistant: Narrow with -maxdepth and prune irrelevant directories.\nUser: I search from / for *.log",
+    "output": "Limit the search root and add -maxdepth to avoid traversing huge unrelated trees."
+  },
+  {
+    "instruction": "User: My sed command isn't editing the file in place properly.\nAssistant: On macOS, sed -i requires a backup extension argument. On Linux it doesn't.\nUser: I use sed -i 's/a/b/' file.txt",
+    "output": "On macOS use sed -i '' 's/a/b/' file.txt; on GNU/Linux, sed -i 's/a/b/' file.txt works directly."
+  },
+  {
+    "instruction": "User: My grep returns nothing but the string is definitely in the file.\nAssistant: Check for case sensitivity or binary detection. Try grep -i and -a.\nUser: grep 'error' app.log",
+    "output": "Add -i for case-insensitive matching and -a to treat binary content as text: grep -ia 'error' app.log"
+  },
+  {
+    "instruction": "User: My awk command splits fields wrong.\nAssistant: The default FS is whitespace. Are you dealing with CSV or custom delimiters?\nUser: It's CSV with commas.",
+    "output": "Set the field separator with -F,: awk -F, '{print $1}' file.csv"
+  },
+  {
+    "instruction": "User: My disk usage shows 100% but I deleted files.\nAssistant: Deleted files held open by processes still consume space. Check with lsof.\nUser: lsof shows a process holding the deleted file.",
+    "output": "Restart the process holding the deleted file, or truncate it via /proc/<pid>/fd/<n> to reclaim the space."
+  },
+  {
+    "instruction": "User: My ssh key isn't being accepted by the server.\nAssistant: Check permissions (~/.ssh must be 700, keys 600) and that the public key is in authorized_keys.\nUser: Permissions look correct.",
+    "output": "Run ssh -v for verbose debugging, and verify the public key line is in the correct user's ~/.ssh/authorized_keys with a newline at the end."
+  },
+  {
+    "instruction": "User: My tee command output isn't showing on stdout.\nAssistant: tee writes to file and stdout, but if you pipe with 2>&1 it may merge differently.\nUser: I use command 2>&1 | tee log.txt",
+    "output": "If stdout appears empty, the underlying command may only write to stderr — ensure 2>&1 is used before the pipe to tee."
+  },
+  {
+    "instruction": "User: My script doesn't stop on error and keeps going after a failure.\nAssistant: Are you using set -e?\nUser: No, I never added shell options.",
+    "output": "Add set -euo pipefail at the top of the script so it aborts on command errors, unset variables, and failures inside pipelines."
+  },
+  {
+    "instruction": "User: for f in *.txt does nothing when no .txt files exist.\nAssistant: By default the glob stays literal and the loop runs once with the pattern.\nUser: It tries to process a file literally named *.txt.",
+    "output": "Enable nullglob (shopt -s nullglob) so an unmatched *.txt pattern expands to an empty list instead of the literal string."
+  },
+  {
+    "instruction": "User: My script loses variable values inside a pipe segment.\nAssistant: Each part of a pipe runs in a subshell.\nUser: I set a variable after the pipe and it's empty.",
+    "output": "Avoid the piped subshell by using process substitution (cmd <(...)) or restructuring so the variable assignment runs in the current shell."
+  },
+  {
+    "instruction": "User: find command runs for hours on the whole filesystem.\nAssistant: Are you searching from / with no pruning?\nUser: Yes, find / -name '*.log'",
+    "output": "Limit the search root and add -path pruning for /proc /sys /dev plus a -maxdepth so find doesn't traverse irrelevant trees."
+  },
+  {
+    "instruction": "User: My cron job output never reaches my inbox.\nAssistant: Cron only mails stdout of the job; is MAILTO set?\nUser: No MAILTO configured and output goes nowhere.",
+    "output": "Set MAILTO in the crontab (or redirect the job's stdout explicitly) so cron has somewhere to deliver the output."
+  },
+  {
+    "instruction": "User: sed -i doesn't work on my Mac but works on Linux.\nAssistant: BSD sed requires a backup-extension argument for -i.\nUser: I run sed -i 's/a/b/' file.txt on macOS.",
+    "output": "On macOS/BSD use sed -i '' 's/a/b/' file.txt, since BSD sed requires an explicit (possibly empty) backup suffix after -i."
+  },
+  {
+    "instruction": "User: xargs stops processing after the first missing file.\nAssistant: By default xargs stops if the command exits non-zero (GNU: -e is default).\nUser: Yes, one bad file halts everything.",
+    "output": "Handle failures per item (e.g. wrap the command, or use xargs -n1 with error tolerance) so one missing file doesn't abort the entire batch."
+  },
+  {
+    "instruction": "User: My shell script can't find commands that work interactively.\nAssistant: Non-interactive shells use a minimal PATH.\nUser: It works in my terminal but not from cron.",
+    "output": "Set PATH explicitly (or use absolute binary paths) at the top of the script, since cron and other non-interactive shells don't load your interactive PATH."
+  },
+  {
+    "instruction": "User: du and df disagree about free space.\nAssistant: Deleted-but-open files still hold space until the process releases them.\nUser: df says full but I deleted lots of files.",
+    "output": "Locate processes still holding deleted files (lsof +L1) and restart them or truncate the open file descriptors to reclaim the space."
+  },
+  {
+    "instruction": "User: Trap doesn't fire when I press Ctrl+C in my script.\nAssistant: Are you trapping INT on the right signal and is the child ignoring it?\nUser: I trap EXIT but not INT.",
+    "output": "Add an explicit trap for INT/TERM (in addition to EXIT) that runs cleanup and exits, so SIGINT from Ctrl+C is actually handled."
+  }
+]

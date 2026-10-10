@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: I committed to the wrong branch in Git.\nAssistant: You can move the commit. Which branch did you commit on, and where should it go?\nUser: Committed on main, should be on feature-x.",
+    "output": "Checkout feature-x, git cherry-pick <commit>, then checkout main and git reset --hard HEAD~1 to remove it from main."
+  },
+  {
+    "instruction": "User: I pushed secrets to a Git repo by accident.\nAssistant: Rotate the secrets immediately, then remove them from history with filter-repo or BFG.\nUser: The file is .env with API keys.",
+    "output": "Rotate the keys first, then use git filter-repo --path .env --invert-paths, force-push, and add .env to .gitignore."
+  },
+  {
+    "instruction": "User: My Git merge has conflicts I can't resolve.\nAssistant: Open the conflicted files and look for <<<<<<< markers. Which files?\nUser: Two Python files with overlapping edits.",
+    "output": "Edit the files to resolve the <<<<<<< ======= >>>>>>> sections, then git add <files> and git commit."
+  },
+  {
+    "instruction": "User: I want to undo my last commit but keep the changes.\nAssistant: Use git reset --soft HEAD~1 to move HEAD back but keep changes staged.\nUser: That worked, now how do I commit them properly?",
+    "output": "git reset --soft HEAD~1 keeps the changes staged; then commit again with a new message."
+  },
+  {
+    "instruction": "User: My Git branch is behind and I want to catch up with main.\nAssistant: You can rebase or merge. Rebase for linear history, merge to preserve it.\nUser: I prefer rebase. What's the command?",
+    "output": "Run git fetch origin, then git rebase origin/main on your feature branch."
+  },
+  {
+    "instruction": "User: Git says 'detached HEAD' state. How do I fix it?\nAssistant: You're not on a branch. Create one: git switch -c new-branch-name\nUser: I just want to go back to main.",
+    "output": "Run git switch main to return to the main branch (or git checkout main)."
+  },
+  {
+    "instruction": "User: My Git stash disappeared.\nAssistant: Stashes are local. Check git stash list. Did you pop or drop them?\nUser: git stash list shows nothing.",
+    "output": "Check git stash list first. If already popped/dropped, try git fsck --unreachable or reflog, but they may be lost — stash with a message in the future."
+  },
+  {
+    "instruction": "User: I want to change my last commit message.\nAssistant: If not pushed yet: git commit --amend -m \"New message\"\nUser: It's already pushed.",
+    "output": "If pushed, amend locally then git push --force-with-lease — but coordinate with anyone working on that branch."
+  },
+  {
+    "instruction": "User: My Git pull keeps creating merge commits I don't want.\nAssistant: Use git pull --rebase instead of plain git pull.\nUser: How do I make that the default?",
+    "output": "Run git pull --rebase, or set the default with git config --global pull.rebase true"
+  },
+  {
+    "instruction": "User: I accidentally deleted a Git branch. Can I recover it?\nAssistant: Yes, if you have the commit hash. Check git reflog.\nUser: git reflog shows the commits.",
+    "output": "Find the last commit hash in git reflog, then git branch <name> <hash> to recreate the branch."
+  },
+  {
+    "instruction": "User: I committed to main by accident and already pushed.\nAssistant: Do you need to keep the changes, or discard them?\nUser: Keep them but move them onto a feature branch.",
+    "output": "Create a new branch at the current HEAD (git branch feature && git switch feature), then reset main back with git switch main && git reset --hard HEAD~1."
+  },
+  {
+    "instruction": "User: git pull keeps creating merge commits on my feature branch.\nAssistant: Is pull configured to merge rather than rebase?\nUser: Yes, every pull makes a merge commit.",
+    "output": "Run git pull --rebase (or set git config --global pull.rebase true) so incoming commits are replayed instead of merged."
+  },
+  {
+    "instruction": "User: My .env file is in history even though I added it to .gitignore now.\nAssistant: gitignore only prevents untracked files from being added — it doesn't erase history.\nUser: Right, I need it gone from all commits.",
+    "output": "Rotate the exposed credentials, then rewrite history with git filter-repo --path .env --invert-paths, force-push, and keep .env in .gitignore."
+  },
+  {
+    "instruction": "User: HEAD is detached and my commits might be lost.\nAssistant: You're not on a branch. Find the commits in the reflog.\nUser: git status says 'HEAD detached at abc123'.",
+    "output": "Run git switch -c <branch-name> at the current commit so the detached commits get attached to a branch and stop being at risk of collection."
+  },
+  {
+    "instruction": "User: Cherry-pick failed with a conflict and it's stuck in progress.\nAssistant: You need to resolve and continue, or abort.\nUser: There are conflict markers in two files.",
+    "output": "Resolve the conflicts, stage the files with git add, then run git cherry-pick --continue (or git cherry-pick --abort to cancel entirely)."
+  },
+  {
+    "instruction": "User: I amended a commit and now git push is rejected.\nAssistant: Amending rewrites history, so the remote has diverged.\nUser: It says non-fast-forward.",
+    "output": "If the branch is only yours, push with git push --force-with-lease (safer than -f); coordinate with collaborators before rewriting shared history."
+  },
+  {
+    "instruction": "User: My stash list is empty but I'm sure I stashed changes.\nAssistant: Did you already pop or drop it?\nUser: I might have popped it in another terminal.",
+    "output": "Search for the lost stash with git fsck --unreachable and git stash list, since a popped/dropped stash can linger as an unreachable commit for a while."
+  },
+  {
+    "instruction": "User: git status shows files I didn't change.\nAssistant: Are they build outputs or dependencies?\nUser: Yes, node_modules and dist/ are listed.",
+    "output": "Add the directories to .gitignore (and git rm -r --cached them if already tracked) so generated artifacts no longer show up as changes."
+  },
+  {
+    "instruction": "User: Two branches show the same commits but different logs.\nAssistant: Are you comparing with the wrong upstream or a stale remote ref?\nUser: origin/main looks older than my local main.",
+    "output": "Run git fetch origin first so remote-tracking branches are updated before you compare local and remote history."
+  },
+  {
+    "instruction": "User: Merge conflict markers are still in my file after committing.\nAssistant: Did you resolve markers but forget to stage the file?\nUser: I edited the file, then committed without git add.",
+    "output": "Stage the resolved file with git add before committing, otherwise the unresolved conflict state is what gets recorded in the commit."
+  }
+]

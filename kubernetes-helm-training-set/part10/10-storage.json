@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Write a PersistentVolume with 10Gi storage, accessMode ReadWriteOnce, hostPath /data.",
+    "output": "apiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: local-pv\nspec:\n  capacity:\n    storage: 10Gi\n  accessModes:\n  - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Retain\n  storageClassName: local-storage\n  hostPath:\n    path: /data"
+  },
+  {
+    "instruction": "Write a PersistentVolumeClaim requesting 5Gi with ReadWriteOnce.",
+    "output": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: my-pvc\nspec:\n  accessModes:\n  - ReadWriteOnce\n  resources:\n    requests:\n      storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StorageClass with provisioner kubernetes.io/aws-ebs and gp2 type.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: gp2\nprovisioner: kubernetes.io/aws-ebs\nparameters:\n  type: gp2\nreclaimPolicy: Delete\nallowVolumeExpansion: true"
+  },
+  {
+    "instruction": "Write a PVC with ReadWriteMany access mode for shared storage.",
+    "output": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: shared-pvc\nspec:\n  accessModes:\n  - ReadWriteMany\n  resources:\n    requests:\n      storage: 20Gi\n  storageClassName: nfs"
+  },
+  {
+    "instruction": "Write a StorageClass with WaitForFirstConsumer volumeBindingMode.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: fast\nprovisioner: pd-ssd\nvolumeBindingMode: WaitForFirstConsumer\nreclaimPolicy: Delete"
+  },
+  {
+    "instruction": "Write a PV with NFS server and path configuration.",
+    "output": "apiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: nfs-pv\nspec:\n  capacity:\n    storage: 50Gi\n  accessModes:\n  - ReadWriteMany\n  nfs:\n    server: nfs-server.default.svc.cluster.local\n    path: /exported/path\n  persistentVolumeReclaimPolicy: Retain"
+  },
+  {
+    "instruction": "Write a PVC requesting a specific StorageClass 'fast' with 100Gi.",
+    "output": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: fast-pvc\nspec:\n  storageClassName: fast\n  accessModes:\n  - ReadWriteOnce\n  resources:\n    requests:\n      storage: 100Gi"
+  },
+  {
+    "instruction": "Write a StorageClass for GCE Persistent Disk pd-ssd.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: ssd\nprovisioner: kubernetes.io/gce-pd\nparameters:\n  type: pd-ssd\n  replication-type: none\nreclaimPolicy: Delete"
+  },
+  {
+    "instruction": "Write a StatefulSet volumeClaimTemplate requesting 10Gi storage.",
+    "output": "volumeClaimTemplates:\n- metadata:\n    name: data\n  spec:\n    accessModes: [\"ReadWriteOnce\"]\n    storageClassName: \"fast\"\n    resources:\n      requests:\n        storage: 10Gi"
+  },
+  {
+    "instruction": "Write a Pod using a PVC at mount path /data.",
+    "output": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: pod-with-pvc\nspec:\n  containers:\n  - name: app\n    image: busybox:1.36\n    command: [\"/bin/sh\", \"-c\", \"sleep 3600\"]\n    volumeMounts:\n    - name: data\n      mountPath: /data\n  volumes:\n  - name: data\n    persistentVolumeClaim:\n      claimName: my-pvc"
+  },
+  {
+    "instruction": "Write an emptyDir volume shared between two containers.",
+    "output": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: shared-emptydir\nspec:\n  containers:\n  - name: writer\n    image: busybox:1.36\n    command: [\"/bin/sh\", \"-c\", \"echo hello > /shared/file.txt && sleep 60\"]\n    volumeMounts:\n    - name: shared\n      mountPath: /shared\n  - name: reader\n    image: busybox:1.36\n    command: [\"/bin/sh\", \"-c\", \"cat /shared/file.txt && sleep 60\"]\n    volumeMounts:\n    - name: shared\n      mountPath: /shared\n  volumes:\n  - name: shared\n    emptyDir: {}"
+  },
+  {
+    "instruction": "Write a StorageClass with parameters for encryption on AWS EBS.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: encrypted\nprovisioner: ebs.csi.aws.com\nparameters:\n  type: gp3\n  encrypted: \"true\"\nreclaimPolicy: Delete\nvolumeBindingMode: WaitForFirstConsumer"
+  },
+  {
+    "instruction": "Write a PV with local storage on node and nodeAffinity.",
+    "output": "apiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: local-pv\nspec:\n  capacity:\n    storage: 100Gi\n  accessModes:\n  - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Retain\n  storageClassName: local-storage\n  local:\n    path: /mnt/disks/ssd1\n  nodeAffinity:\n    required:\n      nodeSelectorTerms:\n      - matchExpressions:\n        - key: kubernetes.io/hostname\n          operator: In\n          values:\n          - node-1"
+  },
+  {
+    "instruction": "Write a PVC with selector matching a specific PV label.",
+    "output": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: selective-pvc\nspec:\n  accessModes:\n  - ReadWriteOnce\n  resources:\n    requests:\n      storage: 10Gi\n  selector:\n    matchLabels:\n      type: local\n      environment: dev"
+  },
+  {
+    "instruction": "Write a StatefulSet mounting a PVC for each replica of a Kafka broker.",
+    "output": "volumeClaimTemplates:\n- metadata:\n    name: kafka-data\n  spec:\n    accessModes: [\"ReadWriteOnce\"]\n    resources:\n      requests:\n        storage: 20Gi"
+  },
+  {
+    "instruction": "Write an ephemeral emptyDir with sizeLimit.",
+    "output": "volumes:\n- name: scratch\n  emptyDir:\n    sizeLimit: 1Gi"
+  },
+  {
+    "instruction": "Write a StorageClass for Azure Disk with Premium_LRS SKU.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: premium\nprovisioner: disk.csi.azure.com\nparameters:\n  skuName: Premium_LRS\nreclaimPolicy: Delete\nallowVolumeExpansion: true"
+  },
+  {
+    "instruction": "Write a Pod with two PVC mounts for data and logs.",
+    "output": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: multi-pvc\nspec:\n  containers:\n  - name: app\n    image: app:latest\n    volumeMounts:\n    - name: data\n      mountPath: /data\n    - name: logs\n      mountPath: /logs\n  volumes:\n  - name: data\n    persistentVolumeClaim:\n      claimName: data-pvc\n  - name: logs\n    persistentVolumeClaim:\n      claimName: logs-pvc"
+  },
+  {
+    "instruction": "Write a PVC requesting 1Gi with ReadOnlyMany access mode.",
+    "output": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: rom-pvc\nspec:\n  accessModes:\n  - ReadOnlyMany\n  resources:\n    requests:\n      storage: 1Gi"
+  },
+  {
+    "instruction": "Write a StorageClass with volumeBindingMode Immediate and WaitForFirstConsumer comparison note in description.",
+    "output": "apiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: immediate-sc\nprovisioner: rancher.io/local-path\nvolumeBindingMode: Immediate\nreclaimPolicy: Delete"
+  },
+  {
+    "instruction": "Write a Deployment with an initContainer that copies content from an emptyDir to the app volume.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: init-copy\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: init-copy\n  template:\n    metadata:\n      labels:\n        app: init-copy\n    spec:\n      initContainers:\n      - name: init\n        image: busybox:1.36\n        command: [\"/bin/sh\", \"-c\", \"cp /app-src/* /app-dest/\"]\n        volumeMounts:\n        - name: app-src\n          mountPath: /app-src\n        - name: app-dest\n          mountPath: /app-dest\n      containers:\n      - name: app\n        image: app:latest\n        volumeMounts:\n        - name: app-dest\n          mountPath: /app\n      volumes:\n      - name: app-src\n        configMap:\n          name: app-files\n      - name: app-dest\n        emptyDir: {}"
+  }
+]

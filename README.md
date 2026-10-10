@@ -21,6 +21,14 @@ training sets they consume.
 | [`sql-training-set/`](./sql-training-set) | Custom SQL training set (Alpaca-style instruction → SQL), split into 10 parts. |
 | [`terminal-training-set/`](./terminal-training-set) | Terminal / Linux-ops training set with reasoning traces (systemd, nginx, Docker, AWS CLI, security, etc.), 21 parts + batch files. |
 | [`terminal-training-set-nothinking/`](./terminal-training-set-nothinking) | Same terminal corpus without thinking traces (direct answers only). |
+| [`python-debugging-training-set/`](./python-debugging-training-set) | Python debugging / error-fixing set (Alpaca-style), 12 parts · 243 entries. |
+| [`function-calling-training-set/`](./function-calling-training-set) | Tool / function-calling examples for chat models, 12 parts · 240 entries. |
+| [`dockerfile-generation-training-set/`](./dockerfile-generation-training-set) | Dockerfile generation from natural-language specs, 12 parts · 243 entries. |
+| [`regex-training-set/`](./regex-training-set) | Regular-expression writing (match, extract, validate), 12 parts · 239 entries. |
+| [`kubernetes-helm-training-set/`](./kubernetes-helm-training-set) | Kubernetes manifests + Helm chart authoring, 12 parts · 264 entries. |
+| [`multi-turn-debugging-training-set/`](./multi-turn-debugging-training-set) | Multi-turn debugging conversations (transcript → fix), 12 parts · 240 entries. |
+| [`bash-scripting-training-set/`](./bash-scripting-training-set) | Bash scripting (quoting, traps, awk/sed, cron, real scripts), 12 parts · 240 entries. |
+| [`pandas-data-wrangling-training-set/`](./pandas-data-wrangling-training-set) | pandas data wrangling (IO, cleaning, groupby, merge, reshape), 12 parts · 240 entries. |
 
 ## Quick start
 

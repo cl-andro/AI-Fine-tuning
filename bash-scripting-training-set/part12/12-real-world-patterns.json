@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Bash script that takes a source directory and a destination and copies only files modified in the last 24 hours.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nsrc=$1 dst=$2\nmkdir -p \"$dst\"\nfind \"$src\" -type f -mtime -1 -exec cp -p {} \"$dst\" \\;"
+  },
+  {
+    "instruction": "Write a script that rotates a log file: compress the old one and start a fresh file.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nlog=$1\n[ -f \"$log\" ] || exit 0\ngzip -f \"$log\"\ntouch \"$log\""
+  },
+  {
+    "instruction": "Write a Bash function that converts all .md files in a directory to .html using pandoc.",
+    "output": "md2html() {\n  local f\n  for f in \"$1\"/*.md; do\n    [ -e \"$f\" ] || continue\n    pandoc \"$f\" -o \"${f%.md}.html\"\n  done\n}"
+  },
+  {
+    "instruction": "Write a script that monitors a log file and prints an alert when the word FATAL appears more than 5 times in a minute.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\ntail -F -n0 \"$1\" | while IFS= read -r line; do\n  if [[ $line == *FATAL* ]]; then\n    printf '[%s] ALERT: %s\\n' \"$(date '+%T')\" \"$line\"\n  fi\ndone"
+  },
+  {
+    "instruction": "Write a script that batch-renames files by lowercasing their names.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nfor f in *; do\n  [ -e \"$f\" ] || continue\n  lower=${f,,}\n  [[ $f == \"$lower\" ]] || mv -- \"$f\" \"$lower\"\ndone"
+  },
+  {
+    "instruction": "Write a script that generates a report of file counts grouped by extension.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nfind . -type f | awk -F. 'NF>1 {print tolower($NF)} NF==1 {print \"(none)\"}' | sort | uniq -c | sort -nr"
+  },
+  {
+    "instruction": "Write a Bash script that polls two services and reports which one is down.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nfor url in http://a/health http://b/health; do\n  if curl -fsS -m 3 -o /dev/null \"$url\"; then\n    printf 'up   %s\\n' \"$url\"\n  else\n    printf 'down %s\\n' \"$url\"\n  fi\ndone"
+  },
+  {
+    "instruction": "Write a script that extracts tar archives of every type found in a directory.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nfor f in *.tar.gz *.tgz *.tar.bz2 *.tar.xz; do\n  [ -e \"$f\" ] || continue\n  case $f in\n    *.tar.gz|*.tgz) tar -xzf \"$f\";;\n    *.tar.bz2)      tar -xjf \"$f\";;\n    *.tar.xz)       tar -xJf \"$f\";;\n  esac\ndone"
+  },
+  {
+    "instruction": "Write a script that merges multiple CSV files sharing a header into one output file.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nout=$1; shift\nhead -n1 -- \"$1\" > \"$out\"\nfor f in \"$@\"; do\n  tail -n +2 -- \"$f\" >> \"$out\"\ndone"
+  },
+  {
+    "instruction": "Write a script that builds a Docker image and tags it with the current git short hash.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nhash=$(git rev-parse --short HEAD)\ndocker build -t \"myapp:${hash}\" ."
+  },
+  {
+    "instruction": "Write a Bash script that validates every JSON file in a directory and reports the failures.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nstatus=0\nfor f in *.json; do\n  [ -e \"$f\" ] || continue\n  if ! python3 -m json.tool \"$f\" >/dev/null; then\n    printf 'invalid: %s\\n' \"$f\" >&2\n    status=1\n  fi\ndone\nexit \"$status\""
+  },
+  {
+    "instruction": "Write a script that tails a log and writes WARN/ERROR lines to separate files.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\ntail -F -n0 \"$1\" | while IFS= read -r line; do\n  case $line in\n    *ERROR*) printf '%s\\n' \"$line\" >> errors.log;;\n    *WARN*)  printf '%s\\n' \"$line\" >> warnings.log;;\n  esac\ndone"
+  },
+  {
+    "instruction": "Write a script that backups a PostgreSQL database using pg_dump with a timestamped filename.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nts=$(date +%Y%m%d-%H%M%S)\npg_dump -Fc -f \"db-${ts}.dump\" \"$DB_NAME\""
+  },
+  {
+    "instruction": "Write a script that sums file sizes in a directory and prints a human-readable total.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\ndu -shc -- *./* 2>/dev/null | tail -1"
+  },
+  {
+    "instruction": "Write a Bash script that prompts for confirmation before deleting files (read -p).",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'Delete %s? [y/N] ' \"$1\"\nread -r ans\n[[ ${ans,,} == y ]] && rm -rf -- \"$1\" || echo aborted"
+  },
+  {
+    "instruction": "Write a script that converts temperatures in a column of a text file from F to C.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nawk '{printf \"%.1f\\n\", ($1 - 32) * 5 / 9}' temps.txt"
+  },
+  {
+    "instruction": "Write a script that creates N empty files with a numeric suffix, given a base name and count.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nbase=$1 n=$2\nfor ((i=1; i<=n; i++)); do\n  : > \"${base}-$(printf '%03d' \"$i\").dat\"\ndone"
+  },
+  {
+    "instruction": "Write a script that finds duplicate files by checksum and lists them.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nfind . -type f -exec sha256sum {} + | sort | awk '{h=$1; $1=\"\"; if (h==prev) {print prevf; print $0} prev=h; prevf=$0}'"
+  },
+  {
+    "instruction": "Write a script that deploys by rsyncing a build dir to a remote host and restarting a service.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nrsync -az --delete ./dist/ user@host:/var/www/app/\nssh user@host 'sudo systemctl restart app'"
+  },
+  {
+    "instruction": "Write a script that reads a list of URLs from a file and reports the HTTP status of each.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nwhile IFS= read -r url; do\n  code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 \"$url\")\n  printf '%s %s\\n' \"$code\" \"$url\"\ndone < urls.txt"
+  }
+]

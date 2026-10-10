@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My pandas merge produces way more rows than expected.\nAssistant: That's a many-to-many merge. Check for duplicate keys in both DataFrames.\nUser: Both have repeated user_id values.",
+    "output": "Dedupe the join keys first with drop_duplicates, or use validate='one_to_one'/'one_to_many' in merge to catch the issue."
+  },
+  {
+    "instruction": "User: pandas SettingWithCopyWarning appears when I assign a column.\nAssistant: You're modifying a slice. Use .copy() when creating the subset.\nUser: I do df2 = df[df.col > 5]; df2['new'] = 1",
+    "output": "Use df2 = df[df.col > 5].copy() so you're working on an explicit copy, not a view."
+  },
+  {
+    "instruction": "User: My groupby sum includes NaN rows incorrectly.\nAssistant: By default, groupby skips NaN. Check if you need dropna=False or want to fill them first.\nUser: I want to count NaN as zero.",
+    "output": "Fill NaN values first: df['col'] = df['col'].fillna(0), then run your groupby aggregation."
+  },
+  {
+    "instruction": "User: My CSV loads with wrong dtypes — numbers come as strings.\nAssistant: Pass dtype or converters to pd.read_csv, or convert after.\nUser: How do I convert a column?",
+    "output": "Use pd.to_numeric(df['col'], errors='coerce') to convert, coercing bad values to NaN."
+  },
+  {
+    "instruction": "User: My datetime column won't sort chronologically.\nAssistant: It's probably still a string. Convert with pd.to_datetime.\nUser: Yes, it's loaded from CSV as object/string.",
+    "output": "Convert with df['date'] = pd.to_datetime(df['date']) before sorting."
+  },
+  {
+    "instruction": "User: My pivot_table gives unexpected aggregate results.\nAssistant: Check the aggfunc parameter. Default is 'mean' — did you want 'sum' or 'count'?\nUser: I wanted a count of entries.",
+    "output": "Pass aggfunc='count' (or the aggregate you want) to pivot_table explicitly."
+  },
+  {
+    "instruction": "User: My DataFrame concat produces duplicate indices.\nAssistant: Pass ignore_index=True to pd.concat.\nUser: How?",
+    "output": "Use pd.concat([df1, df2], ignore_index=True) to renumber the index cleanly."
+  },
+  {
+    "instruction": "User: My loc/iloc assignment doesn't stick.\nAssistant: Make sure you're not mixing loc (labels) and iloc (positions), and use chained assignment carefully.\nUser: I do df[cols][mask] = value",
+    "output": "Use single .loc: df.loc[mask, cols] = value — chained indexing may silently fail."
+  },
+  {
+    "instruction": "User: My apply function is very slow on a large DataFrame.\nAssistant: apply is row-wise and slow. Vectorize the operation if possible.\nUser: I apply a lambda to uppercase a column.",
+    "output": "Use vectorized string methods like df['col'].str.upper() instead of apply with a lambda."
+  },
+  {
+    "instruction": "User: My DataFrame has duplicate column names after a merge.\nAssistant: Use suffixes in merge, or rename columns after.\nUser: How do I rename?",
+    "output": "Specify suffixes in merge (e.g., suffixes=('', '_right')) or rename the conflicting columns after merging."
+  },
+  {
+    "instruction": "User: Setting values on df['col'][mask] warns about a chained assignment.\nAssistant: Are you indexing twice: df['col'] then [mask]?\nUser: Yes: df['a'][df['b'] > 5] = 0",
+    "output": "Switch to a single loc call: df.loc[df['b'] > 5, 'a'] = 0, which avoids chained indexing and the SettingWithCopyWarning."
+  },
+  {
+    "instruction": "User: My groupby result has NaN in groups that clearly have data.\nAssistant: Are the group keys themselves NaN?\nUser: Yes, some rows have missing region values.",
+    "output": "Call groupby(..., dropna=False) so rows with missing group keys are retained instead of being silently dropped."
+  },
+  {
+    "instruction": "User: concat of two frames gives duplicated index labels and lookups return multiple rows.\nAssistant: Did you pass ignore_index=True?\nUser: No, both frames still have their original 0..n indexes.",
+    "output": "Use pd.concat([df1, df2], ignore_index=True) so the result gets a fresh sequential index instead of duplicated labels."
+  },
+  {
+    "instruction": "User: My pivot_table fills missing combinations with NaN and downstream math fails.\nAssistant: Did you specify a fill_value?\nUser: No, I just called pivot_table(index=..., columns=..., values=...).",
+    "output": "Pass fill_value=0 to pivot_table so unobserved combinations are zero-filled rather than NaN."
+  },
+  {
+    "instruction": "User: df.mean() returns NaN for every column except a couple.\nAssistant: Do other columns contain NaN or non-numeric values?\nUser: Yes, one column has strings and some columns have missing values.",
+    "output": "Restrict aggregation to numeric columns with numeric_only=True, and coerce or drop non-numeric data before computing the mean."
+  },
+  {
+    "instruction": "User: My date column sorts as strings, putting 10 before 2.\nAssistant: Is the column still of dtype object?\nUser: Yes, it was read from CSV as text.",
+    "output": "Convert with df['date'] = pd.to_datetime(df['date']) so the column is datetime64 and sorts chronologically."
+  },
+  {
+    "instruction": "User: merge() produced 1M rows from two 10K-row frames.\nAssistant: Are the join keys non-unique on both sides?\nUser: Yes, both have repeated customer IDs.",
+    "output": "Dedupe the join keys first, or pass validate='one_to_one'/'one_to_many' to merge so unintended fan-out is caught immediately."
+  },
+  {
+    "instruction": "User: df.drop(columns=['a']) says labels not found, but I see column 'a'.\nAssistant: Check for leading/trailing whitespace in the column name.\nUser: It does look like ' a' with a space.",
+    "output": "Strip whitespace from the columns first with df.columns = df.columns.str.strip(), then drop the now-exact name."
+  },
+  {
+    "instruction": "User: Replacing a value worked on some rows but not others.\nAssistant: Are the values different types — e.g. int 5 vs string '5'?\nUser: Yes, some are numeric and some are strings from the CSV.",
+    "output": "Normalize the column to a single dtype first (e.g. pd.to_numeric(..., errors='coerce')) so replace matches every occurrence."
+  },
+  {
+    "instruction": "User: df[df.a > 5] gives a view and my edits leak into the original.\nAssistant: Boolean indexing can return a view depending on the path taken.\nUser: I then set values on the filtered frame and the source changed.",
+    "output": "Create an explicit copy with .copy() after filtering so subsequent assignments never write through to the original DataFrame."
+  }
+]

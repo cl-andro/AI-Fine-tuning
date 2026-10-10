@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Bash function named greet that takes one argument and prints 'Hello, <name>'.",
+    "output": "greet() {\n  printf 'Hello, %s\\n' \"$1\"\n}\ngreet World"
+  },
+  {
+    "instruction": "How do you return an integer status from a Bash function? Show an example.",
+    "output": "Use return with a value in 0..255:\nis_even() { [ $(( $1 % 2 )) -eq 0 ]; }\nis_even 4 && echo even"
+  },
+  {
+    "instruction": "Show how to get a function's output into a variable without a subshell.",
+    "output": "Use a command substitution (a subshell is unavoidable for capture) or a global:\nresult=$(myfunc)\n# or\nmyfunc; result=$OUT"
+  },
+  {
+    "instruction": "Write a function that prints an error message to stderr and returns 1.",
+    "output": "fail() {\n  printf 'error: %s\\n' \"$1\" >&2\n  return 1\n}"
+  },
+  {
+    "instruction": "Explain local variables in Bash functions and why they matter.",
+    "output": "local declares a function-scoped variable so it doesn't leak into or clobber the caller's global of the same name."
+  },
+  {
+    "instruction": "Write a function that accepts a variable number of arguments and prints them one per line.",
+    "output": "print_all() {\n  local a\n  for a in \"$@\"; do\n    printf '%s\\n' \"$a\"\n  done\n}"
+  },
+  {
+    "instruction": "Show how to call a Bash function stored in a variable (indirect dispatch).",
+    "output": "fn_name=myfunc\n\"$fn_name\" arg1    # direct call via variable\n\"${!var}\"          # indirect expansion of the value"
+  },
+  {
+    "instruction": "What is the difference between 'return' and 'exit' inside a function?",
+    "output": "return exits only the function and sets its status; exit terminates the whole script with that status."
+  },
+  {
+    "instruction": "Write a function that validates it received exactly one argument and returns 2 otherwise.",
+    "output": "require_one() {\n  if [ \"$#\" -ne 1 ]; then\n    printf 'expected 1 argument, got %d\\n' \"$#\" >&2\n    return 2\n  fi\n}"
+  },
+  {
+    "instruction": "How do you give a Bash function named arguments (like flags)? Show parsing with a while/case loop.",
+    "output": "while [ \"$#\" -gt 0 ]; do\n  case \"$1\" in\n    -v) verbose=1; shift;;\n    -o) out=$2; shift 2;;\n    --) shift; break;;\n    *) echo \"unknown: $1\" >&2; exit 1;;\n  esac\ndone"
+  },
+  {
+    "instruction": "Write a function that sources another script only once (guard against double sourcing).",
+    "output": "if [ -z \"${_MYLIB_LOADED:-}\" ]; then\n  # shellcheck source=mylib.sh\n  . \"$(dirname \"$0\")/mylib.sh\"\n  _MYLIB_LOADED=1\nfi"
+  },
+  {
+    "instruction": "Show how to define a function using the keyword function in Bash.",
+    "output": "function greet {\n  echo \"Hello $1\"\n}\ngreet World"
+  },
+  {
+    "instruction": "Explain why 'local' cannot be used at the top level of a script.",
+    "output": "local is only valid inside a function; using it at top level produces an error since there is no function scope."
+  },
+  {
+    "instruction": "Write a function that runs a command and retries it up to 3 times.",
+    "output": "retry() {\n  local n=1\n  until \"$@\"; do\n    if [ \"$n\" -ge 3 ]; then return 1; fi\n    sleep \"$n\"\n    n=$((n + 1))\n  done\n}"
+  },
+  {
+    "instruction": "How do you make a Bash function's variable assignments not affect the caller?",
+    "output": "Either declare them local inside the function, or run the function in a subshell: ( myfunc )"
+  },
+  {
+    "instruction": "Write a function that logs with a timestamp to stderr.",
+    "output": "log() {\n  printf '[%s] %s\\n' \"$(date '+%F %T')\" \"$*\" >&2\n}"
+  },
+  {
+    "instruction": "Show how to iterate named parameters using getopts for flags -a and -b.",
+    "output": "while getopts 'ab:' opt; do\n  case \"$opt\" in\n    a) flag_a=1;;\n    b) bval=$OPTARG;;\n    *) exit 1;;\n  esac\ndone\nshift $((OPTIND - 1))"
+  },
+  {
+    "instruction": "Write a Bash function that accepts a flag -q to suppress output.",
+    "output": "run() {\n  local quiet=0\n  while [ \"$#\" -gt 0 ]; do\n    case \"$1\" in\n      -q) quiet=1; shift;;\n      *) break;;\n    esac\n  done\n  [ \"$quiet\" -eq 1 ] || echo \"running: $*\"\n  \"$@\"\n}"
+  },
+  {
+    "instruction": "What does 'set -e' do to a function's failing command and how do you handle it?",
+    "output": "With errexit, a failing command inside a function propagates and can exit the script; guard it with if ! func; then ... fi or a local status capture."
+  },
+  {
+    "instruction": "Write a main() pattern for a Bash script with if [[ \"${BASH_SOURCE[0]}\" == \"$0\" ]]; then main \"$@\"; fi.",
+    "output": "main() {\n  echo \"args: $*\"\n}\nif [[ \"${BASH_SOURCE[0]}\" == \"$0\" ]]; then\n  main \"$@\"\nfi"
+  }
+]

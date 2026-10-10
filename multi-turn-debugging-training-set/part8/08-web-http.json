@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My API returns 401 Unauthorized even with a valid token.\nAssistant: Check the Authorization header format. Is it 'Bearer <token>'?\nUser: I send 'Token <token>' instead of 'Bearer'.",
+    "output": "Use the format Authorization: Bearer <token> in the header."
+  },
+  {
+    "instruction": "User: My CORS request is blocked in the browser.\nAssistant: The server must include Access-Control-Allow-Origin. Check the response headers.\nUser: No CORS headers in the response.",
+    "output": "Enable CORS on the server (e.g., Flask-CORS, or the appropriate middleware) so it returns Access-Control-Allow-Origin headers."
+  },
+  {
+    "instruction": "User: My webhook isn't receiving POST requests.\nAssistant: Check that the endpoint accepts POST and isn't behind a method filter.\nUser: It only has a GET route.",
+    "output": "Add a POST route handler for the webhook endpoint on the server."
+  },
+  {
+    "instruction": "User: My API is slow on list endpoints.\nAssistant: Add pagination and database indexes. How are you querying?\nUser: SELECT * FROM items LIMIT 100 OFFSET 10000",
+    "output": "Switch from OFFSET to keyset (cursor) pagination using the last seen ID for efficient deep pagination."
+  },
+  {
+    "instruction": "User: My session cookie isn't persisting after login.\nAssistant: Check cookie attributes: Secure, SameSite, Expires/Max-Age, and path.\nUser: Set-Cookie shows no Expires and SameSite=Strict.",
+    "output": "Set an Expires or Max-Age on the cookie, and consider SameSite=Lax if Strict is causing issues across navigations."
+  },
+  {
+    "instruction": "User: My HTTP client gets connection reset errors intermittently.\nAssistant: Could be timeouts or server limits. Check both client and server timeout settings.\nUser: The server has a 30s timeout, client has none.",
+    "output": "Set a client timeout slightly longer than the server's, and add retry with backoff for transient connection resets."
+  },
+  {
+    "instruction": "User: My JSON response has escaped HTML entities.\nAssistant: Flask/Django sometimes escape JSON. Use the app's JSON response helper directly.\nUser: I return json.dumps(data) as a string.",
+    "output": "Use the framework's JSON response helper (e.g., return jsonify(data)) instead of returning a raw JSON string."
+  },
+  {
+    "instruction": "User: My file upload endpoint returns 413 Payload Too Large.\nAssistant: Increase the max request size limit on the server (and reverse proxy).\nUser: Using Flask with nginx in front.",
+    "output": "Raise client_max_body_size in nginx and MAX_CONTENT_LENGTH in the Flask config."
+  },
+  {
+    "instruction": "User: My API rate limiter blocks legitimate users too aggressively.\nAssistant: Check the limit value and window. Maybe raise it or implement per-user vs per-IP.\nUser: It's 10 req/min per IP.",
+    "output": "Increase the rate limit and switch from per-IP to per-user (API token) limiting for authenticated clients."
+  },
+  {
+    "instruction": "User: My HTTPS site has mixed content warnings.\nAssistant: Some resources load over HTTP while the page is HTTPS. Find them in devtools.\nUser: Images use http:// URLs.",
+    "output": "Update all resource URLs to https:// (or use protocol-relative //host/path) so nothing loads over insecure HTTP."
+  },
+  {
+    "instruction": "User: My POST endpoint says 411 Length Required.\nAssistant: Is the client sending a Content-Length header?\nUser: I'm sending JSON but with an empty body sometimes.",
+    "output": "Send an explicit Content-Length header (or always include a non-empty JSON body) so the server doesn't reject the request with 411."
+  },
+  {
+    "instruction": "User: Flask returns 400 on file upload above 1MB.\nAssistant: Flask caps request size by default.\nUser: Yes, larger files fail.",
+    "output": "Set MAX_CONTENT_LENGTH in the Flask config to a value above your largest upload so larger bodies aren't rejected."
+  },
+  {
+    "instruction": "User: My API returns 502 behind nginx intermittently.\nAssistant: Is the upstream timing out on slow requests?\nUser: Some endpoints take a few seconds under load.",
+    "output": "Increase proxy_read_timeout (and related proxy timeouts) in nginx and confirm the upstream app has enough workers to serve slow requests."
+  },
+  {
+    "instruction": "User: CORS works in dev but fails in production.\nAssistant: Is the production origin listed in the allowed origins?\nUser: I only allowed http://localhost:3000.",
+    "output": "Add the exact production origin to the CORS allowlist instead of relying on the localhost entry, keeping credentials unsupported if you'd otherwise need *."
+  },
+  {
+    "instruction": "User: My WebSocket disconnects after exactly 60 seconds.\nAssistant: That smells like a proxy idle timeout.\nUser: I'm behind nginx.",
+    "output": "Configure the nginx location with proxy_http_version 1.1, Upgrade/Connection headers, and a longer proxy_read_timeout so idle WebSockets aren't cut at 60s."
+  },
+  {
+    "instruction": "User: Session cookie works but gets dropped on the next request.\nAssistant: Check the cookie's Secure, SameSite, and path attributes.\nUser: SameSite=Strict and the site links from an email.",
+    "output": "Change SameSite to Lax so the cookie is sent on top-level navigations (e.g. from email links) while still providing most CSRF protection."
+  },
+  {
+    "instruction": "User: JSON response shows escaped unicode instead of characters.\nAssistant: Is the response Content-Type actually application/json?\nUser: It's text/plain and I parse manually.",
+    "output": "Return the response with Content-Type: application/json and use the framework's JSON serializer so non-ASCII characters aren't escaped."
+  },
+  {
+    "instruction": "User: HTTP 310 too many redirects loop between www and non-www.\nAssistant: Both hosts are probably redirecting to the other.\nUser: Yes, each redirects to the other one.",
+    "output": "Choose a single canonical host and make only the non-canonical one redirect, so the two rules stop bouncing requests back and forth."
+  },
+  {
+    "instruction": "User: PATCH returns 405 even though the route exists.\nAssistant: Is the method explicitly allowed on that route?\nUser: I registered GET and POST only.",
+    "output": "Register a PATCH handler for that route (or use PUT with a full representation) since the route currently only allows GET and POST."
+  },
+  {
+    "instruction": "User: Large API responses are slow to arrive although the query is fast.\nAssistant: Are you sending everything in one payload with no pagination?\nUser: Yes, 50k rows in one JSON array.",
+    "output": "Add pagination (prefer keyset/cursor over OFFSET) or stream the response so clients aren't blocked waiting on one enormous payload."
+  }
+]

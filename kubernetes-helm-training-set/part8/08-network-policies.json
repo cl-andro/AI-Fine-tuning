@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a NetworkPolicy that allows ingress only from pods with label access=frontend to app=api.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: api-allow-frontend\nspec:\n  podSelector:\n    matchLabels:\n      app: api\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          access: frontend\n  ports:\n  - protocol: TCP\n    port: 8080"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that denies all ingress to pods with app=db.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: db-deny-all\nspec:\n  podSelector:\n    matchLabels:\n      app: db\n  policyTypes:\n  - Ingress"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that allows egress only to DNS (port 53).",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: dns-only-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: restricted\n  policyTypes:\n  - Egress\n  egress:\n  - ports:\n    - protocol: UDP\n      port: 53\n    - protocol: TCP\n      port: 53"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress from the same namespace only.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: same-namespace-only\nspec:\n  podSelector:\n    matchLabels:\n      app: internal\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - podSelector: {}"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing egress to a specific CIDR 10.0.0.0/8.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-internal-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - ipBlock:\n        cidr: 10.0.0.0/8"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that isolates all pods in the namespace (default deny both).",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: default-deny-all\nspec:\n  podSelector: {}\n  policyTypes:\n  - Ingress\n  - Egress"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress on port 443 from any source.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-443\nspec:\n  podSelector:\n    matchLabels:\n      app: secure\n  policyTypes:\n  - Ingress\n  ingress:\n  - ports:\n    - protocol: TCP\n      port: 443"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing egress to a namespace labeled env=prod.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-prod-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - namespaceSelector:\n        matchLabels:\n          env: prod"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that allows both ingress from frontend and egress to db.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: api-policy\nspec:\n  podSelector:\n    matchLabels:\n      app: api\n  policyTypes:\n  - Ingress\n  - Egress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: frontend\n  egress:\n  - to:\n    - podSelector:\n        matchLabels:\n          app: db"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress from specific IP 192.168.1.100.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-specific-ip\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - ipBlock:\n        cidr: 192.168.1.100/32"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that allows all egress but restricts ingress to monitoring namespace.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: monitor-only-ingress\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Ingress\n  - Egress\n  ingress:\n  - from:\n    - namespaceSelector:\n        matchLabels:\n          name: monitoring\n  egress: [{}]"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing TCP and UDP on port 53 for DNS.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: dns-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Egress\n  egress:\n  - ports:\n    - protocol: UDP\n      port: 53\n    - protocol: TCP\n      port: 53\n    to:\n    - namespaceSelector:\n        matchLabels:\n          kubernetes.io/metadata.name: kube-system"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that blocks all egress except to port 443.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: https-only-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Egress\n  egress:\n  - ports:\n    - protocol: TCP\n      port: 443\n    - protocol: TCP\n      port: 53\n    - protocol: UDP\n      port: 53"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress from two different pod selectors.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: multi-source\nspec:\n  podSelector:\n    matchLabels:\n      app: api\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: frontend\n    - podSelector:\n        matchLabels:\n          app: mobile-gateway"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that selects no pods (placeholder to demonstrate empty selector behavior note).",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: no-op\nspec:\n  podSelector:\n    matchLabels:\n      app: nonexistent\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: anything"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing egress to a FQDN is not supported directly; write one to a CIDR for an external API 203.0.113.0/24.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-external-api\nspec:\n  podSelector:\n    matchLabels:\n      app: app\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - ipBlock:\n        cidr: 203.0.113.0/24"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress on port 8080 from namespace labeled team=backend.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: backend-team-access\nspec:\n  podSelector:\n    matchLabels:\n      app: internal-api\n  policyTypes:\n  - Ingress\n  ingress:\n  - from:\n    - namespaceSelector:\n        matchLabels:\n          team: backend"
+  },
+  {
+    "instruction": "Write a NetworkPolicy that denies all egress to the internet (0.0.0.0/0 exception internal).",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: no-internet-egress\nspec:\n  podSelector:\n    matchLabels:\n      app: isolated\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - ipBlock:\n        cidr: 10.0.0.0/8\n  - ports:\n    - protocol: UDP\n      port: 53\n    - protocol: TCP\n      port: 53"
+  },
+  {
+    "instruction": "Write a NetworkPolicy allowing ingress to a set of ports 80,443,8080.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: multi-port\nspec:\n  podSelector:\n    matchLabels:\n      app: web\n  policyTypes:\n  - Ingress\n  ingress:\n  - ports:\n    - protocol: TCP\n      port: 80\n    - protocol: TCP\n      port: 443\n    - protocol: TCP\n      port: 8080"
+  },
+  {
+    "instruction": "Write a NetworkPolicy for a client pod allowing only egress to the api pod on 8080.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: client-to-api-only\nspec:\n  podSelector:\n    matchLabels:\n      app: client\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - podSelector:\n        matchLabels:\n          app: api\n    ports:\n    - protocol: TCP\n      port: 8080"
+  }
+]

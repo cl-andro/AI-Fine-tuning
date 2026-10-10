@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a ServiceAccount for a pod named 'app-sa' in default namespace.",
+    "output": "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: app-sa\n  namespace: default"
+  },
+  {
+    "instruction": "Write a Role allowing get, list, watch on pods in namespace default.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: default\n  name: pod-reader\nrules:\n- apiGroups: [\"\"]\n  resources: [\"pods\"]\n  verbs: [\"get\", \"list\", \"watch\"]"
+  },
+  {
+    "instruction": "Write a RoleBinding binding Role pod-reader to ServiceAccount app-sa.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: read-pods\n  namespace: default\nsubjects:\n- kind: ServiceAccount\n  name: app-sa\n  namespace: default\nroleRef:\n  kind: Role\n  name: pod-reader\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a ClusterRole allowing list nodes cluster-wide.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: node-lister\nrules:\n- apiGroups: [\"\"]\n  resources: [\"nodes\"]\n  verbs: [\"list\", \"get\"]"
+  },
+  {
+    "instruction": "Write a ClusterRoleBinding binding ClusterRole node-lister to ServiceAccount app-sa.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding\nmetadata:\n  name: list-nodes\nsubjects:\n- kind: ServiceAccount\n  name: app-sa\n  namespace: default\nroleRef:\n  kind: ClusterRole\n  name: node-lister\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a Role allowing create and delete jobs in namespace batch.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: batch\n  name: job-manager\nrules:\n- apiGroups: [\"batch\"]\n  resources: [\"jobs\"]\n  verbs: [\"create\", \"delete\", \"list\", \"get\"]"
+  },
+  {
+    "instruction": "Write a ServiceAccount with automountServiceAccountToken set to false.",
+    "output": "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: no-token-sa\nautomountServiceAccountToken: false"
+  },
+  {
+    "instruction": "Write a ClusterRole with wildcard verbs for a super-admin note (with warning).",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: super-admin\nrules:\n- apiGroups: [\"*\"]\n  resources: [\"*\"]\n  verbs: [\"*\"]"
+  },
+  {
+    "instruction": "Write a Role allowing only read access to configmaps.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: default\n  name: cm-reader\nrules:\n- apiGroups: [\"\"]\n  resources: [\"configmaps\"]\n  verbs: [\"get\", \"list\", \"watch\"]"
+  },
+  {
+    "instruction": "Write a RoleBinding to group 'dev-team' with edit role.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: dev-edit\n  namespace: default\nsubjects:\n- kind: Group\n  name: dev-team\n  apiGroup: rbac.authorization.k8s.io\nroleRef:\n  kind: ClusterRole\n  name: edit\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a ClusterRoleBinding for group 'admins' to cluster-admin role.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding\nmetadata:\n  name: admins-cluster-admin\nsubjects:\n- kind: Group\n  name: admins\n  apiGroup: rbac.authorization.k8s.io\nroleRef:\n  kind: ClusterRole\n  name: cluster-admin\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a Role allowing patch on deployments in namespace prod.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: prod\n  name: deploy-patcher\nrules:\n- apiGroups: [\"apps\"]\n  resources: [\"deployments\"]\n  verbs: [\"patch\", \"update\"]"
+  },
+  {
+    "instruction": "Write a ServiceAccount used by a CI/CD pipeline with namespace-scoped permissions.",
+    "output": "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: cicd-sa\n  namespace: cicd\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: cicd\n  name: cicd-role\nrules:\n- apiGroups: [\"apps\"]\n  resources: [\"deployments\"]\n  verbs: [\"get\", \"list\", \"create\", \"update\", \"patch\"]\n- apiGroups: [\"\"]\n  resources: [\"pods\", \"services\"]\n  verbs: [\"get\", \"list\"]\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: cicd-binding\n  namespace: cicd\nsubjects:\n- kind: ServiceAccount\n  name: cicd-sa\n  namespace: cicd\nroleRef:\n  kind: Role\n  name: cicd-role\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a Role allowing read access to secrets only.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: default\n  name: secret-reader\nrules:\n- apiGroups: [\"\"]\n  resources: [\"secrets\"]\n  verbs: [\"get\", \"list\"]"
+  },
+  {
+    "instruction": "Write a ClusterRole for a metrics server to access nodes and pods.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: metrics-server\nrules:\n- apiGroups: [\"\"]\n  resources: [\"nodes\", \"nodes/metrics\", \"pods\"]\n  verbs: [\"get\", \"list\", \"watch\"]"
+  },
+  {
+    "instruction": "Write a RoleBinding binding a user 'jane' to view role in namespace default.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: jane-view\n  namespace: default\nsubjects:\n- kind: User\n  name: jane\n  apiGroup: rbac.authorization.k8s.io\nroleRef:\n  kind: ClusterRole\n  name: view\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a Role with resourceNames restriction for a specific configmap.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: default\n  name: specific-cm-editor\nrules:\n- apiGroups: [\"\"]\n  resources: [\"configmaps\"]\n  resourceNames: [\"app-config\"]\n  verbs: [\"get\", \"update\", \"patch\"]"
+  },
+  {
+    "instruction": "Write a ClusterRole allowing list and watch on namespaces.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: ns-lister\nrules:\n- apiGroups: [\"\"]\n  resources: [\"namespaces\"]\n  verbs: [\"list\", \"watch\"]"
+  },
+  {
+    "instruction": "Write a ServiceAccount for a monitoring agent with cluster-level read access.",
+    "output": "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: monitoring-sa\n  namespace: monitoring\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: monitoring-read\nrules:\n- apiGroups: [\"\"]\n  resources: [\"pods\", \"nodes\", \"services\", \"endpoints\"]\n  verbs: [\"get\", \"list\", \"watch\"]\n- apiGroups: [\"apps\"]\n  resources: [\"deployments\", \"statefulsets\", \"daemonsets\"]\n  verbs: [\"get\", \"list\", \"watch\"]\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding\nmetadata:\n  name: monitoring-binding\nsubjects:\n- kind: ServiceAccount\n  name: monitoring-sa\n  namespace: monitoring\nroleRef:\n  kind: ClusterRole\n  name: monitoring-read\n  apiGroup: rbac.authorization.k8s.io"
+  },
+  {
+    "instruction": "Write a Role allowing create events in namespace default.",
+    "output": "apiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata:\n  namespace: default\n  name: event-creator\nrules:\n- apiGroups: [\"\"]\n  resources: [\"events\"]\n  verbs: [\"create\", \"patch\"]"
+  }
+]

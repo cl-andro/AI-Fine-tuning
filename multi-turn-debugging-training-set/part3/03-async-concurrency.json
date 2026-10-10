@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My async function doesn't wait — it prints results out of order.\nAssistant: Are you awaiting the coroutine, or just calling it?\nUser: I call fetch(url) without await.",
+    "output": "Add await before the coroutine call: result = await fetch(url)."
+  },
+  {
+    "instruction": "User: My asyncio.gather runs tasks sequentially, not in parallel.\nAssistant: Are you awaiting each task one by one in a loop?\nUser: Yes: for t in tasks: await t",
+    "output": "Use await asyncio.gather(*tasks) to run all tasks concurrently instead of awaiting them one at a time."
+  },
+  {
+    "instruction": "User: My threaded counter is always wrong — race condition.\nAssistant: Multiple threads increment the same variable without a lock. Use threading.Lock.\nUser: How do I use the lock?",
+    "output": "Use a threading.Lock and wrap the shared counter update in: with lock: counter += 1"
+  },
+  {
+    "instruction": "User: My async web scraper times out on some requests.\nAssistant: Add a timeout with asyncio.wait_for. What's the current code?\nUser: Just await session.get(url)",
+    "output": "Use await asyncio.wait_for(coro, timeout=10) and handle asyncio.TimeoutError gracefully."
+  },
+  {
+    "instruction": "User: My Celery worker processes only one task at a time despite concurrency setting.\nAssistant: Check the --concurrency flag or celery config. Is it set to 1?\nUser: I didn't set it, just ran celery -A app worker",
+    "output": "Pass --concurrency=N when starting the worker, e.g., celery -A app worker --concurrency=4"
+  },
+  {
+    "instruction": "User: My async queue consumer never exits even after producer finishes.\nAssistant: You need a sentinel value (like None) to signal the consumer to stop.\nUser: Producer puts items then just returns.",
+    "output": "Put a sentinel (e.g., None) after the last item, and break out of the consumer loop when the sentinel is received."
+  },
+  {
+    "instruction": "User: My ThreadPoolExecutor futures return None.\nAssistant: Are you calling future.result() to get the return value?\nUser: I just do ex.submit(fn) and ignore the return.",
+    "output": "Store the future and call .result() on it: future = ex.submit(fn); result = future.result()"
+  },
+  {
+    "instruction": "User: My multiprocessing Pool.map hangs.\nAssistant: Are you missing the if __name__ == \"__main__\": guard? That's required on some platforms.\nUser: No guard, the script runs top-level code.",
+    "output": "Wrap the pool usage and main logic in if __name__ == \"__main__\": to prevent recursive process spawning."
+  },
+  {
+    "instruction": "User: My async tasks all start but only one completes.\nAssistant: Check if one task is blocking the event loop with a synchronous sleep or I/O.\nUser: I use time.sleep(2) inside an async function.",
+    "output": "Replace time.sleep(2) with await asyncio.sleep(2) so it yields control back to the event loop."
+  },
+  {
+    "instruction": "User: My deadlock happens when two threads lock each other's resources.\nAssistant: Always acquire locks in the same order across threads. Which order do thread A and B lock?\nUser: A locks X then Y; B locks Y then X.",
+    "output": "Acquire locks in a consistent global order (both threads lock X first, then Y) to prevent circular wait."
+  },
+  {
+    "instruction": "User: My async function returns a coroutine object instead of the value.\nAssistant: Are you awaiting the call?\nUser: I assign result = fetch_data() inside another async function.",
+    "output": "Await the call: result = await fetch_data(), otherwise you just get the coroutine object rather than its return value."
+  },
+  {
+    "instruction": "User: asyncio.run() raises RuntimeError: this event loop is closed.\nAssistant: Are you calling asyncio.run() more than once, or from inside a running loop?\nUser: I call it inside a Jupyter notebook cell repeatedly.",
+    "output": "In a notebook, await the coroutine directly instead of calling asyncio.run(), since a loop is already running in the cell context."
+  },
+  {
+    "instruction": "User: My background task dies silently and I never see the exception.\nAssistant: Are you creating the task and never keeping a reference to it?\nUser: Yes, I just call asyncio.create_task(fn()) and move on.",
+    "output": "Keep a reference to the task (assign it to a variable or a set) so it isn't garbage-collected before it completes."
+  },
+  {
+    "instruction": "User: Two tasks writing to a shared list produce interleaved garbage.\nAssistant: Are you using a plain list across tasks without a lock?\nUser: Yes, and I also mutate it in a tight loop.",
+    "output": "Guard the read-modify-write with an asyncio.Lock so the list can't be observed in a partially updated state."
+  },
+  {
+    "instruction": "User: My timeout doesn't cancel the underlying HTTP request.\nAssistant: Are you using wait_for with a shield, or catching and continuing?\nUser: I wrap it in try/except asyncio.TimeoutError and pass.",
+    "output": "Remove asyncio.shield() around the call so wait_for can actually cancel the inner task when the timeout fires."
+  },
+  {
+    "instruction": "User: Event loop blocks and nothing else runs while my CPU-heavy function executes.\nAssistant: Is the heavy work a normal synchronous function inside async code?\nUser: Yes, parse_huge_csv(file) runs in my async handler.",
+    "output": "Offload the blocking function with await loop.run_in_executor(None, parse_huge_csv, file) so the event loop stays responsive."
+  },
+  {
+    "instruction": "User: gather() raises on the first error and I lose the other results.\nAssistant: Are you using gather without return_exceptions=True?\nUser: Yes: await gather(t1, t2, t3)",
+    "output": "Call await asyncio.gather(t1, t2, t3, return_exceptions=True) so individual failures are returned as values rather than aborting the whole gather."
+  },
+  {
+    "instruction": "User: My queue consumer exits before processing all items.\nAssistant: Are you using get_nowait() in a loop that stops on Empty?\nUser: Yes, and producers are still adding items.",
+    "output": "Use await queue.get() and put a sentinel (e.g. None) after the last item so the consumer blocks until work arrives and stops only at the sentinel."
+  },
+  {
+    "instruction": "User: Deadlock: two coroutines wait on each other's locks.\nAssistant: In what order do the coroutines acquire the locks?\nUser: A takes lock1 then lock2; B takes lock2 then lock1.",
+    "output": "Make both coroutines acquire the locks in the same global order (lock1, then lock2) to eliminate circular wait."
+  },
+  {
+    "instruction": "User: my_task.cancel() doesn't seem to stop the coroutine.\nAssistant: Does the coroutine await anything that can be interrupted?\nUser: It's a while True: compute() loop with no awaits inside.",
+    "output": "Insert an await point (e.g. await asyncio.sleep(0)) inside the loop, since cancellation is only delivered when the coroutine reaches an await."
+  }
+]

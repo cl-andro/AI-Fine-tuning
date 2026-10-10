@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a pipeline that prints the 5 most frequent words in a file.",
+    "output": "tr -cs '[:alnum:]' '\\n' < file.txt | sort | uniq -c | sort -nr | head -5"
+  },
+  {
+    "instruction": "Explain what happens to a variable assignment made in a piped segment.",
+    "output": "Each pipeline segment runs in its own subshell, so the assignment is lost when that segment ends; use process substitution or restructure to keep it in the current shell."
+  },
+  {
+    "instruction": "Show how to count lines of output from a command using a pipe.",
+    "output": "command | wc -l"
+  },
+  {
+    "instruction": "What is process substitution <(...) and give an example comparing two command outputs.",
+    "output": "diff <(sort a.txt) <(sort b.txt) — it runs each command and exposes its output as a /dev/fd path instead of a named pipe file."
+  },
+  {
+    "instruction": "Write a command that lists all .log files in the current directory containing the string ERROR.",
+    "output": "grep -l ERROR -- *.log"
+  },
+  {
+    "instruction": "Explain the purpose of the tee command with an example.",
+    "output": "tee writes a stream to stdout and to one or more files simultaneously: cmd | tee log.txt | while read line; do process \"$line\"; done"
+  },
+  {
+    "instruction": "Write a pipeline that extracts the second column of a space-delimited file.",
+    "output": "awk '{print $2}' file.txt"
+  },
+  {
+    "instruction": "What does pipefail change about a pipeline's exit status?",
+    "output": "Without it, the status is that of the last command; with set -o pipefail, the pipeline fails if any segment fails."
+  },
+  {
+    "instruction": "Show how to run two commands in parallel and merge their output.",
+    "output": "{ cmd1 & cmd2 & wait; } | sort"
+  },
+  {
+    "instruction": "Explain the difference between |& and 2>&1 | in Bash.",
+    "output": "|& is shorthand for 2>&1 | (Bash 4); both merge stderr into stdout before piping to the next stage."
+  },
+  {
+    "instruction": "Write a script that pipes a list of filenames into xargs and deletes them.",
+    "output": "printf '%s\\n' file1 file2 | xargs -d '\\n' rm -f"
+  },
+  {
+    "instruction": "How do you capture both the output and the exit code of a command in Bash?",
+    "output": "out=$(cmd); status=$?  — capture output in command substitution, then read $? immediately."
+  },
+  {
+    "instruction": "Show a pipeline that joins two files on the first column.",
+    "output": "join -t $'\\t' -1 1 -2 1 a.tsv b.tsv"
+  },
+  {
+    "instruction": "Write a command that streams a log file and filters for lines added since the last run.",
+    "output": "tail -F -n0 app.log | grep --line-buffered 'WARN'"
+  },
+  {
+    "instruction": "Explain why 'cmd | while read' cannot update a counter in the outer scope.",
+    "output": "The while loop runs in a subshell created by the pipeline, so increments to the outer variable are discarded; use process substitution: while read x; do ...; done < <(cmd)"
+  },
+  {
+    "instruction": "Show how to redirect a command's output into an array in Bash.",
+    "output": "mapfile -t lines < <(command)"
+  },
+  {
+    "instruction": "Write a pipeline that shows the top 3 CPU-consuming processes.",
+    "output": "ps -eo pid,comm,%cpu --sort=-%cpu | head -4"
+  },
+  {
+    "instruction": "What is the /dev/stdin trick and give an example.",
+    "output": "It aliases standard input: grep pattern /dev/stdin < data.txt, useful when a tool needs a filename but data arrives on stdin."
+  },
+  {
+    "instruction": "Show how to use xargs to run a command only when input is non-empty.",
+    "output": "find . -name '*.tmp' -print0 | xargs -0 -r rm -f"
+  },
+  {
+    "instruction": "Write a pipeline that converts a CSV's comma-separated values to tab-separated.",
+    "output": "tr ',' '\\t' < data.csv"
+  }
+]

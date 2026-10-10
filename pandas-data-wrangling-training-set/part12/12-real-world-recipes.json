@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Given an orders DataFrame, compute revenue per customer and return the top 10.",
+    "output": "result = (df.groupby('customer_id')['amount'].sum()\n            .sort_values(ascending=False)\n            .head(10)\n            .reset_index(name='revenue'))"
+  },
+  {
+    "instruction": "Find customers who made no orders in the last 90 days.",
+    "output": "import pandas as pd\ncutoff = pd.Timestamp.now() - pd.Timedelta(days=90)\nactive = df[df['date'] >= cutoff]['customer_id'].unique()\nresult = customers[~customers['id'].isin(active)]"
+  },
+  {
+    "instruction": "Pivot daily sales into a weekly summary per product.",
+    "output": "df['week'] = df['date'].dt.to_period('W')\nresult = df.pivot_table(index='product', columns='week', values='sales', aggfunc='sum', fill_value=0)"
+  },
+  {
+    "instruction": "Detect duplicate transactions with the same amount within 1 minute.",
+    "output": "df = df.sort_values('timestamp')\ngrp = df.groupby(df['amount'])\nmask = grp['timestamp'].diff().dt.total_seconds().abs() < 60\ndupes = df[mask]"
+  },
+  {
+    "instruction": "Calculate a 7-day rolling retention-style metric per user.",
+    "output": "df = df.sort_values(['user_id', 'date'])\ndf['active_7'] = df.groupby('user_id')['value'].transform(lambda s: s.rolling(7, min_periods=1).mean())"
+  },
+  {
+    "instruction": "Normalize multiple measurement columns so each sums to 1 per row.",
+    "output": "cols = ['a', 'b', 'c']\ndf[cols] = df[cols].div(df[cols].sum(axis=1), axis=0)"
+  },
+  {
+    "instruction": "Collapse a log DataFrame to the first and last event per session.",
+    "output": "result = df.groupby('session_id').agg(first=('ts', 'min'), last=('ts', 'max'))\nresult['duration_s'] = (result['last'] - result['first']).dt.total_seconds()"
+  },
+  {
+    "instruction": "Convert a messy 'amount' column with currency symbols into floats.",
+    "output": "df['amount'] = (df['amount'].astype(str)\n                 .str.replace(r'[^0-9.\\-]', '', regex=True)\n                 .pipe(pd.to_numeric, errors='coerce'))"
+  },
+  {
+    "instruction": "Flag rows where a value deviates more than 3 standard deviations from its group mean.",
+    "output": "g = df.groupby('city')['value']\nmu, sd = g.transform('mean'), g.transform('std')\noutliers = df[(df['value'] - mu).abs() > 3 * sd]"
+  },
+  {
+    "instruction": "Build a cohort table of first-purchase month vs. activity month.",
+    "output": "df['cohort'] = df.groupby('user_id')['date'].transform('min').dt.to_period('M')\ndf['period'] = df['date'].dt.to_period('M')\nresult = df.groupby(['cohort', 'period'])['user_id'].nunique().unstack(fill_value=0)"
+  },
+  {
+    "instruction": "Fill gaps in a daily time series by reindexing on a complete date range.",
+    "output": "idx = pd.date_range(df['date'].min(), df['date'].max(), freq='D')\nresult = df.set_index('date').reindex(idx).rename_axis('date').fillna(0)"
+  },
+  {
+    "instruction": "Compute a running balance ordered by transaction time.",
+    "output": "df = df.sort_values('ts')\ndf['balance'] = df['amount'].cumsum()"
+  },
+  {
+    "instruction": "Combine several monthly CSVs into one DataFrame with a source column.",
+    "output": "import glob, pandas as pd\nframes = [pd.read_csv(f).assign(source=f) for f in glob.glob('monthly/*.csv')]\ncombined = pd.concat(frames, ignore_index=True)"
+  },
+  {
+    "instruction": "Rank products by sales within each category.",
+    "output": "df['rank'] = df.groupby('category')['sales'].rank(ascending=False, method='dense')"
+  },
+  {
+    "instruction": "Resample hourly events to 15-minute bins and count them.",
+    "output": "result = df.set_index('ts').resample('15min').size().rename('events')"
+  },
+  {
+    "instruction": "Split a DataFrame into train and test sets by date cutoff.",
+    "output": "cut = df['date'].quantile(0.8)\ntrain = df[df['date'] <= cut]\ntest = df[df['date'] > cut]"
+  },
+  {
+    "instruction": "Identify the top 3 values per group using a dense rank filter.",
+    "output": "df['r'] = df.groupby('city')['score'].rank(ascending=False, method='dense')\nresult = df[df['r'] <= 3]"
+  },
+  {
+    "instruction": "Balance a dataset by downsampling each class to the smallest class size.",
+    "output": "min_n = df['label'].value_counts().min()\nresult = df.groupby('label', group_keys=False).sample(n=min_n, random_state=42)"
+  },
+  {
+    "instruction": "Compute the share of each city's sales that comes from its best product.",
+    "output": "top = df.groupby(['city', 'product'])['sales'].sum().reset_index()\ntop['r'] = top.groupby('city')['sales'].rank(ascending=False)\nbest = top[top['r'] == 1].set_index('city')['sales']\ntotal = df.groupby('city')['sales'].sum()\nshare = best / total"
+  },
+  {
+    "instruction": "Produce a tidy summary with count, mean, std and 95% CI per segment.",
+    "output": "import numpy as np\ng = df.groupby('segment')['value']\nsummary = g.agg(['count', 'mean', 'std'])\nsummary['ci95'] = 1.96 * summary['std'] / np.sqrt(summary['count'])\nsummary = summary.reset_index()"
+  }
+]

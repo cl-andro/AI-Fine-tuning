@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write the standard robust Bash script header that enables strict mode.",
+    "output": "#!/usr/bin/env bash\nset -euo pipefail\nIFS=$'\\n\\t'"
+  },
+  {
+    "instruction": "Explain what each of set -e, set -u and set -o pipefail does.",
+    "output": "-e exits on a failing command; -u errors on unset variable expansion; pipefail makes a pipeline fail if any stage fails."
+  },
+  {
+    "instruction": "Show how to trap EXIT for cleanup in a Bash script.",
+    "output": "cleanup() { rm -f \"$tmp\"; }\ntrap cleanup EXIT"
+  },
+  {
+    "instruction": "Write a trap handler that reports the failing line on ERR.",
+    "output": "trap 'printf \"failed at line %s\\n\" \"$LINENO\" >&2' ERR"
+  },
+  {
+    "instruction": "How do you prevent set -e from exiting on an expected failure?",
+    "output": "Guard it: if ! cmd; then ...; fi — condition contexts disable errexit for that command; or use cmd || true."
+  },
+  {
+    "instruction": "Write a script that validates its first argument is an existing readable file, exiting with a clear message.",
+    "output": "if [ ! -f \"$1\" ]; then\n  printf 'not a file: %s\\n' \"$1\" >&2\n  exit 1\nfi\nif [ ! -r \"$1\" ]; then\n  printf 'not readable: %s\\n' \"$1\" >&2\n  exit 1\nfi"
+  },
+  {
+    "instruction": "Explain how to debug a Bash script with set -x.",
+    "output": "set -x (or bash -x script.sh) prints each command with expansions before execution, showing exactly what ran."
+  },
+  {
+    "instruction": "Show how to enable xtrace only for a portion of a script.",
+    "output": "set -x\nrisky_command\nset +x"
+  },
+  {
+    "instruction": "Write a helper that checks a command's status and exits with context on failure.",
+    "output": "run() {\n  \"$@\" || { printf 'command failed: %s\\n' \"$*\" >&2; exit 1; }\n}"
+  },
+  {
+    "instruction": "What does trap ... SIGINT do and why might you want it?",
+    "output": "It intercepts Ctrl+C so you can clean up temp files or stop child processes before the script exits: trap 'cleanup; exit 130' INT"
+  },
+  {
+    "instruction": "Explain the difference between $? and $LINENO.",
+    "output": "$? holds the exit status of the last command; $LINENO holds the current source line number, useful in error messages."
+  },
+  {
+    "instruction": "Write a script that fails fast if a required command is missing.",
+    "output": "for cmd in curl jq git; do\n  command -v \"$cmd\" >/dev/null 2>&1 || {\n    printf 'missing required command: %s\\n' \"$cmd\" >&2\n    exit 127\n  }\ndone"
+  },
+  {
+    "instruction": "Show how to capture the output and status of a failing command without triggering set -e.",
+    "output": "if out=$(cmd); then\n  printf 'ok: %s\\n' \"$out\"\nelse\n  printf 'failed with %d\\n' \"$?\" >&2\nfi"
+  },
+  {
+    "instruction": "What is the difference between exit codes 0, 1 and 2 by convention?",
+    "output": "0 means success; 1 is a generic runtime failure; 2 conventionally indicates incorrect usage/arguments (as used by grep and diff)."
+  },
+  {
+    "instruction": "Write a trap that removes a temporary directory on INT and EXIT.",
+    "output": "tmpdir=$(mktemp -d)\ntrap 'rm -rf \"$tmpdir\"' INT EXIT"
+  },
+  {
+    "instruction": "Explain why set -u can break scripts that use ${1:-} style defaults and how to write safe access.",
+    "output": "Referencing $1 when unset errors under -u; use ${1:-default} so the expansion is defined even when the positional parameter is missing."
+  },
+  {
+    "instruction": "Show how to make a script continue after a failed command inside a loop under errexit.",
+    "output": "for f in *; do\n  process \"$f\" || printf 'skipped %s\\n' \"$f\" >&2\ndone"
+  },
+  {
+    "instruction": "Write a function that logs a message only when a DEBUG variable is set.",
+    "output": "debug() {\n  [ \"${DEBUG:-0}\" = 1 ] || return 0\n  printf 'debug: %s\\n' \"$*\" >&2\n}"
+  },
+  {
+    "instruction": "How do you find which line of a Bash script caused a 'command not found' error?",
+    "output": "Run with bash -x or add trap 'echo error at $LINENO' ERR; the traceback shows the line number where the failure occurred."
+  },
+  {
+    "instruction": "Write a script that prints usage text when called with -h or no arguments.",
+    "output": "usage() {\n  printf 'usage: %s [-h] <file>\\n' \"$(basename \"$0\")\" >&2\n}\nif [ \"$#\" -eq 0 ] || [ \"${1:-}\" = -h ]; then\n  usage\n  exit 2\nfi"
+  }
+]

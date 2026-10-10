@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My SQL query returns duplicate rows after a JOIN.\nAssistant: Use DISTINCT or fix the join condition to avoid a cartesian product on non-key columns.\nUser: I join on user_id but also get multiple orders per user.",
+    "output": "Use SELECT DISTINCT if you need unique rows, or GROUP BY / aggregate to collapse the multiple matches."
+  },
+  {
+    "instruction": "User: My SQL INSERT fails with 'column count doesn't match value count'.\nAssistant: The number of columns in your INSERT doesn't match the VALUES list.\nUser: INSERT INTO t (a,b) VALUES (1,2,3)",
+    "output": "Align the column list and VALUES: add the missing column name or remove the extra value."
+  },
+  {
+    "instruction": "User: My SQL UPDATE affected more rows than expected.\nAssistant: Your WHERE clause is too broad or missing.\nUser: UPDATE users SET active=1",
+    "output": "Add a specific WHERE clause to limit which rows are updated."
+  },
+  {
+    "instruction": "User: My SQL subquery returns multiple rows and the comparison fails.\nAssistant: Use IN instead of = for multi-row subqueries, or add LIMIT 1.\nUser: WHERE x = (SELECT y FROM t)",
+    "output": "Use IN for multi-row results: WHERE x IN (SELECT y FROM t), or use an aggregate like MAX() in the subquery."
+  },
+  {
+    "instruction": "User: My SQL GROUP BY query errors with 'must appear in the GROUP BY clause'.\nAssistant: Every non-aggregated column in SELECT must be in GROUP BY.\nUser: SELECT name, SUM(score) FROM t GROUP BY id",
+    "output": "Include all non-aggregated SELECT columns in the GROUP BY clause, or wrap them in aggregates."
+  },
+  {
+    "instruction": "User: My SQL NULL comparison doesn't work with =.\nAssistant: NULL never equals anything. Use IS NULL / IS NOT NULL.\nUser: WHERE col = NULL",
+    "output": "Use IS NULL / IS NOT NULL instead of = NULL, since NULL comparisons with = always evaluate to NULL (falsy)."
+  },
+  {
+    "instruction": "User: My SQL LIKE query with % wildcard returns too many rows.\nAssistant: A leading % disables index usage and matches broadly. Anchor with a prefix if possible.\nUser: LIKE '%error%'",
+    "output": "Add more specific characters to the pattern, or use full-text search (FULLTEXT index) for substring matching at scale."
+  },
+  {
+    "instruction": "User: My SQL transaction seems to not roll back on error.\nAssistant: Are you committing after the error, or is autocommit on?\nUser: I run BEGIN, then statements, then COMMIT even if an error occurred.",
+    "output": "On error, issue ROLLBACK instead of COMMIT, and verify your client isn't in autocommit mode."
+  },
+  {
+    "instruction": "User: My SQL index isn't being used in the query plan.\nAssistant: Functions on the indexed column or implicit type casts can prevent index use.\nUser: WHERE YEAR(date_col) = 2025",
+    "output": "Rewrite the condition to apply to the column directly (e.g., a date range) instead of wrapping the column in a function."
+  },
+  {
+    "instruction": "User: My SQL DELETE without WHERE deleted everything.\nAssistant: That's a classic mistake. Always write WHERE first, or use SELECT to preview.\nUser: How do I recover?",
+    "output": "Restore from backup or binlog if available. For the future, run a SELECT with the same WHERE first to preview, or use transactions: BEGIN; DELETE ...; check; COMMIT/ROLLBACK."
+  },
+  {
+    "instruction": "User: My UPDATE changed 5000 rows when I expected 1.\nAssistant: Did you include a WHERE clause?\nUser: I forgot it entirely.",
+    "output": "Add a precise WHERE clause (and run the same condition in a SELECT first to preview affected rows) before issuing the UPDATE."
+  },
+  {
+    "instruction": "User: COUNT(*) is much larger than COUNT(DISTINCT id).\nAssistant: Your join is multiplying rows because the join key isn't unique.\nUser: I'm joining orders to order_items.",
+    "output": "Aggregate to the desired grain (or use COUNT(DISTINCT ...)) before joining, since a one-to-many join fans out rows and inflates COUNT(*)."
+  },
+  {
+    "instruction": "User: WHERE created_at > '2024-01-01' returns nothing although rows exist.\nAssistant: Is created_at stored as text in a non-standard format?\nUser: It's a VARCHAR with format DD/MM/YYYY.",
+    "output": "Cast the column to a date (or alter its type) so the comparison is chronological instead of lexicographic on a DD/MM/YYYY string."
+  },
+  {
+    "instruction": "User: My subquery returns multiple rows and the query errors out.\nAssistant: Are you using = with a subquery that can return more than one row?\nUser: Yes: WHERE id = (SELECT user_id FROM logs ... )",
+    "output": "Change = to IN, or wrap the subquery with an aggregate such as MAX() so it yields a single value."
+  },
+  {
+    "instruction": "User: NULLs sort to the top of my result set.\nAssistant: Are you ordering by that column without specifying null placement?\nUser: Yes, ORDER BY name.",
+    "output": "Specify NULLS LAST (or sort on an IS NULL discriminator) so NULL values are pushed to the end of the ordering."
+  },
+  {
+    "instruction": "User: INSERT ... ON CONFLICT does nothing on duplicate keys.\nAssistant: Which database are you using, and do you have a unique constraint?\nUser: PostgreSQL, but the target column has no unique index.",
+    "output": "Create a unique index on the conflicting columns — ON CONFLICT can only fire when an actual uniqueness constraint exists to violate."
+  },
+  {
+    "instruction": "User: My LIKE '%term%' scan takes 30 seconds on a large table.\nAssistant: A leading wildcard can't use a normal B-tree index.\nUser: Yes, I'm searching descriptions for a keyword.",
+    "output": "Create a pg_trgm GIN index and use the ~ operator (or switch to full-text search) so the leading-wildcard match can use an index."
+  },
+  {
+    "instruction": "User: Deadlock error when two transactions run concurrently.\nAssistant: Are they touching the same rows in different orders?\nUser: One updates accounts then orders; the other does orders then accounts.",
+    "output": "Have both transactions acquire locks on the same tables in the same order so they can't form a circular wait."
+  },
+  {
+    "instruction": "User: My transaction didn't roll back after the error.\nAssistant: Is your client in autocommit mode?\nUser: I think so — I never called BEGIN.",
+    "output": "Disable autocommit or issue BEGIN explicitly, then ROLLBACK on failure so the failed statements are actually undone."
+  },
+  {
+    "instruction": "User: GROUP BY query says column must appear in the GROUP BY clause.\nAssistant: You selected a non-aggregated column that isn't in the grouping.\nUser: I select user_id, name, COUNT(*) grouped only by user_id.",
+    "output": "Add the column to GROUP BY, or wrap it in an aggregate (MAX/MIN) so every selected expression is functionally dependent on the grouping."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write an Ingress routing example.com to service web on port 80.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: web-ingress\nspec:\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with TLS termination using secret 'example-tls'.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: web-ingress\nspec:\n  tls:\n  - hosts:\n    - example.com\n    secretName: example-tls\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with path-based routing: /api to api service, / to frontend.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: app-ingress\nspec:\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /api\n        pathType: Prefix\n        backend:\n          service:\n            name: api\n            port:\n              number: 8080\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: frontend\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress for multiple hosts: app1.example.com and app2.example.com.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: multi-host\nspec:\n  rules:\n  - host: app1.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: app1\n            port:\n              number: 80\n  - host: app2.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: app2\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with exact path matching for /health.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: health-ingress\nspec:\n  rules:\n  - http:\n      paths:\n      - path: /health\n        pathType: Exact\n        backend:\n          service:\n            name: health\n            port:\n              number: 8080"
+  },
+  {
+    "instruction": "Write an Ingress with nginx annotations for rewrite target.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: rewrite-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/rewrite-target: /$2\nspec:\n  rules:\n  - http:\n      paths:\n      - path: /app(/|$)(.*)\n        pathType: ImplementationSpecific\n        backend:\n          service:\n            name: app\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress for gRPC backend with grpc annotation.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: grpc-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/backend-protocol: \"GRPC\"\nspec:\n  rules:\n  - host: grpc.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: grpc-svc\n            port:\n              number: 50051"
+  },
+  {
+    "instruction": "Write an Ingress with multiple TLS secrets for different hosts.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: multi-tls\nspec:\n  tls:\n  - hosts:\n    - app1.example.com\n    secretName: app1-tls\n  - hosts:\n    - app2.example.com\n    secretName: app2-tls\n  rules:\n  - host: app1.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: app1\n            port:\n              number: 80\n  - host: app2.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: app2\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with rate limiting annotations.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: rate-limited\n  annotations:\n    nginx.ingress.kubernetes.io/limit-rps: \"10\"\n    nginx.ingress.kubernetes.io/limit-burst-multiplier: \"5\"\nspec:\n  rules:\n  - http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress class specification using ingressClassName: nginx.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: class-ingress\nspec:\n  ingressClassName: nginx\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with basic auth annotation.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: basic-auth-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/auth-type: basic\n    nginx.ingress.kubernetes.io/auth-secret: basic-auth-secret\nspec:\n  rules:\n  - host: secure.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress for a websocket app with timeout annotations.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: ws-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/proxy-read-timeout: \"3600\"\n    nginx.ingress.kubernetes.io/proxy-send-timeout: \"3600\"\nspec:\n  rules:\n  - host: ws.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: ws-app\n            port:\n              number: 8080"
+  },
+  {
+    "instruction": "Write an Ingress with CORS annotations.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: cors-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/enable-cors: \"true\"\n    nginx.ingress.kubernetes.io/cors-allow-origin: \"https://example.com\"\n    nginx.ingress.kubernetes.io/cors-allow-methods: \"GET, POST, OPTIONS\"\nspec:\n  rules:\n  - host: api.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: api\n            port:\n              number: 8080"
+  },
+  {
+    "instruction": "Write an Ingress with ssl-redirect enabled.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: ssl-redirect\n  annotations:\n    nginx.ingress.kubernetes.io/ssl-redirect: \"true\"\nspec:\n  tls:\n  - hosts:\n    - example.com\n    secretName: example-tls\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with a default backend when no rules match.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: default-backend\nspec:\n  defaultBackend:\n    service:\n      name: default-backend\n      port:\n        number: 80\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress with proxy-body-size annotation for large uploads.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: upload-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/proxy-body-size: \"50m\"\nspec:\n  rules:\n  - host: upload.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: upload\n            port:\n              number: 8080"
+  },
+  {
+    "instruction": "Write an Ingress for a GraphQL playground on port 4000.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: graphql-ingress\nspec:\n  rules:\n  - host: graphql.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: graphql\n            port:\n              number: 4000"
+  },
+  {
+    "instruction": "Write an Ingress with whitelist CIDR annotation.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: whitelisted\n  annotations:\n    nginx.ingress.kubernetes.io/whitelist-source-range: \"10.0.0.0/8,192.168.0.0/16\"\nspec:\n  rules:\n  - host: internal.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: internal\n            port:\n              number: 80"
+  },
+  {
+    "instruction": "Write an Ingress for an admin panel on a separate subdomain.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: admin-ingress\nspec:\n  tls:\n  - hosts:\n    - admin.example.com\n    secretName: admin-tls\n  rules:\n  - host: admin.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: admin\n            port:\n              number: 8080"
+  },
+  {
+    "instruction": "Write an Ingress with canary annotation for 10% traffic split to canary service.",
+    "output": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: canary-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/canary: \"true\"\n    nginx.ingress.kubernetes.io/canary-weight: \"10\"\nspec:\n  rules:\n  - host: example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: web-canary\n            port:\n              number: 80"
+  }
+]

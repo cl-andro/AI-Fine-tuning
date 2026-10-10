@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Write a StatefulSet for a 3-node PostgreSQL cluster with serviceName 'pg' and PVC template.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: postgres\nspec:\n  serviceName: pg\n  replicas: 3\n  selector:\n    matchLabels:\n      app: postgres\n  template:\n    metadata:\n      labels:\n        app: postgres\n    spec:\n      containers:\n      - name: postgres\n        image: postgres:16\n        ports:\n        - containerPort: 5432\n        volumeMounts:\n        - name: data\n          mountPath: /var/lib/postgresql/data\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a 3-node ZooKeeper cluster.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: zookeeper\nspec:\n  serviceName: zk\n  replicas: 3\n  selector:\n    matchLabels:\n      app: zookeeper\n  template:\n    metadata:\n      labels:\n        app: zookeeper\n    spec:\n      containers:\n      - name: zookeeper\n        image: zookeeper:3.9\n        ports:\n        - containerPort: 2181\n        - containerPort: 2888\n        - containerPort: 3888\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for Kafka with 3 replicas.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: kafka\nspec:\n  serviceName: kafka\n  replicas: 3\n  selector:\n    matchLabels:\n      app: kafka\n  template:\n    metadata:\n      labels:\n        app: kafka\n    spec:\n      containers:\n      - name: kafka\n        image: bitnami/kafka:3.7\n        ports:\n        - containerPort: 9092\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for Elasticsearch with 3 nodes and 5Gi storage.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: elasticsearch\nspec:\n  serviceName: es\n  replicas: 3\n  selector:\n    matchLabels:\n      app: elasticsearch\n  template:\n    metadata:\n      labels:\n        app: elasticsearch\n    spec:\n      containers:\n      - name: elasticsearch\n        image: elasticsearch:8.14.0\n        ports:\n        - containerPort: 9200\n        - containerPort: 9300\n        env:\n        - name: discovery.type\n          value: single-node\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a single-node Redis with AOF persistence.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: redis\nspec:\n  serviceName: redis\n  replicas: 1\n  selector:\n    matchLabels:\n      app: redis\n  template:\n    metadata:\n      labels:\n        app: redis\n    spec:\n      containers:\n      - name: redis\n        image: redis:7-alpine\n        command: [\"redis-server\", \"--appendonly\", \"yes\"]\n        ports:\n        - containerPort: 6379\n        volumeMounts:\n        - name: data\n          mountPath: /data\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 1Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for MySQL with 1 replica and 20Gi storage.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: mysql\nspec:\n  serviceName: mysql\n  replicas: 1\n  selector:\n    matchLabels:\n      app: mysql\n  template:\n    metadata:\n      labels:\n        app: mysql\n    spec:\n      containers:\n      - name: mysql\n        image: mysql:8.0\n        ports:\n        - containerPort: 3306\n        env:\n        - name: MYSQL_ROOT_PASSWORD\n          valueFrom:\n            secretKeyRef:\n              name: mysql-secret\n              key: root-password\n        volumeMounts:\n        - name: data\n          mountPath: /var/lib/mysql\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 20Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for MongoDB replica set with 3 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: mongodb\nspec:\n  serviceName: mongo\n  replicas: 3\n  selector:\n    matchLabels:\n      app: mongodb\n  template:\n    metadata:\n      labels:\n        app: mongodb\n    spec:\n      containers:\n      - name: mongodb\n        image: mongo:7\n        ports:\n        - containerPort: 27017\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a Cassandra cluster with 3 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: cassandra\nspec:\n  serviceName: cassandra\n  replicas: 3\n  selector:\n    matchLabels:\n      app: cassandra\n  template:\n    metadata:\n      labels:\n        app: cassandra\n    spec:\n      containers:\n      - name: cassandra\n        image: cassandra:4.1\n        ports:\n        - containerPort: 7000\n        - containerPort: 7001\n        - containerPort: 7199\n        - containerPort: 9042\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet with podManagementPolicy: Parallel for faster startup.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: app\nspec:\n  serviceName: app\n  podManagementPolicy: Parallel\n  replicas: 3\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for etcd with 3 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: etcd\nspec:\n  serviceName: etcd\n  replicas: 3\n  selector:\n    matchLabels:\n      app: etcd\n  template:\n    metadata:\n      labels:\n        app: etcd\n    spec:\n      containers:\n      - name: etcd\n        image: quay.io/coreos/etcd:v3.5\n        ports:\n        - containerPort: 2379\n        - containerPort: 2380\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for MinIO distributed object storage with 4 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: minio\nspec:\n  serviceName: minio\n  replicas: 4\n  selector:\n    matchLabels:\n      app: minio\n  template:\n    metadata:\n      labels:\n        app: minio\n    spec:\n      containers:\n      - name: minio\n        image: minio/minio:latest\n        command: [\"minio\", \"server\", \"http://minio-{0...3}.minio.default.svc.cluster.local/data\"]\n        ports:\n        - containerPort: 9000\n        - containerPort: 9001\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet with updateStrategy RollingUpdate partition 0.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: app\nspec:\n  serviceName: app\n  replicas: 3\n  updateStrategy:\n    type: RollingUpdate\n    rollingUpdate:\n      partition: 0\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 1Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a RabbitMQ cluster with 3 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: rabbitmq\nspec:\n  serviceName: rabbitmq\n  replicas: 3\n  selector:\n    matchLabels:\n      app: rabbitmq\n  template:\n    metadata:\n      labels:\n        app: rabbitmq\n    spec:\n      containers:\n      - name: rabbitmq\n        image: rabbitmq:3-management\n        ports:\n        - containerPort: 5672\n        - containerPort: 15672\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a single-node CouchDB instance.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: couchdb\nspec:\n  serviceName: couchdb\n  replicas: 1\n  selector:\n    matchLabels:\n      app: couchdb\n  template:\n    metadata:\n      labels:\n        app: couchdb\n    spec:\n      containers:\n      - name: couchdb\n        image: couchdb:3\n        ports:\n        - containerPort: 5984\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for InfluxDB time-series database.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: influxdb\nspec:\n  serviceName: influxdb\n  replicas: 1\n  selector:\n    matchLabels:\n      app: influxdb\n  template:\n    metadata:\n      labels:\n        app: influxdb\n    spec:\n      containers:\n      - name: influxdb\n        image: influxdb:2.7\n        ports:\n        - containerPort: 8086\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for Neo4j graph database with 1 node.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: neo4j\nspec:\n  serviceName: neo4j\n  replicas: 1\n  selector:\n    matchLabels:\n      app: neo4j\n  template:\n    metadata:\n      labels:\n        app: neo4j\n    spec:\n      containers:\n      - name: neo4j\n        image: neo4j:5\n        ports:\n        - containerPort: 7474\n        - containerPort: 7687\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet with an initContainer that sets sysctl vm.max_map_count for Elasticsearch.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: elasticsearch\nspec:\n  serviceName: es\n  replicas: 1\n  selector:\n    matchLabels:\n      app: elasticsearch\n  template:\n    metadata:\n      labels:\n        app: elasticsearch\n    spec:\n      initContainers:\n      - name: sysctl\n        image: busybox:1.36\n        command: ['sysctl', '-w', 'vm.max_map_count=262144']\n        securityContext:\n          privileged: true\n      containers:\n      - name: elasticsearch\n        image: elasticsearch:8.14.0\n        ports:\n        - containerPort: 9200\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a single-node Memcached.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: memcached\nspec:\n  serviceName: memcached\n  replicas: 1\n  selector:\n    matchLabels:\n      app: memcached\n  template:\n    metadata:\n      labels:\n        app: memcached\n    spec:\n      containers:\n      - name: memcached\n        image: memcached:1.6-alpine\n        ports:\n        - containerPort: 11211"
+  },
+  {
+    "instruction": "Write a StatefulSet for NATS messaging with 3 nodes.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: nats\nspec:\n  serviceName: nats\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nats\n  template:\n    metadata:\n      labels:\n        app: nats\n    spec:\n      containers:\n      - name: nats\n        image: nats:2.10\n        ports:\n        - containerPort: 4222\n        - containerPort: 6222\n        - containerPort: 8222\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 1Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for ClickHouse analytical database.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: clickhouse\nspec:\n  serviceName: clickhouse\n  replicas: 1\n  selector:\n    matchLabels:\n      app: clickhouse\n  template:\n    metadata:\n      labels:\n        app: clickhouse\n    spec:\n      containers:\n      - name: clickhouse\n        image: clickhouse/clickhouse-server:24.3\n        ports:\n        - containerPort: 8123\n        - containerPort: 9000\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 20Gi"
+  },
+  {
+    "instruction": "Write a StatefulSet for a single-node Vault secrets server.",
+    "output": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: vault\nspec:\n  serviceName: vault\n  replicas: 1\n  selector:\n    matchLabels:\n      app: vault\n  template:\n    metadata:\n      labels:\n        app: vault\n    spec:\n      containers:\n      - name: vault\n        image: vault:1.16\n        ports:\n        - containerPort: 8200\n        securityContext:\n          capabilities:\n            add: [\"IPC_LOCK\"]\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 5Gi"
+  }
+]

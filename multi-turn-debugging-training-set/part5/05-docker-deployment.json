@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My Docker container exits immediately after starting.\nAssistant: The main process is probably finishing or crashing. Check logs with docker logs.\nUser: Logs show the app starts then exits with code 0.",
+    "output": "Make sure the CMD/ENTRYPOINT runs a long-lived foreground process (e.g., python app.py with app.run()), not a command that finishes."
+  },
+  {
+    "instruction": "User: My Docker build fails on pip install with a permission error.\nAssistant: You might be installing to a system directory without permission, or missing user setup.\nUser: It fails on pip install -r requirements.txt",
+    "output": "Install dependencies as root during the build stage, then switch to a non-root user with USER for the runtime."
+  },
+  {
+    "instruction": "User: My container can't connect to a service on the host.\nAssistant: From inside a container, 'localhost' is the container itself. Use host.docker.internal (Mac/Win) or the host IP / extra_hosts.\nUser: I use localhost:5432 for Postgres on host.",
+    "output": "Replace localhost with host.docker.internal, run both services in the same compose network, or add --add-host=host.docker.internal:host-gateway."
+  },
+  {
+    "instruction": "User: My Docker image is 2GB — how do I shrink it?\nAssistant: Use a slimmer base (alpine/slim), multi-stage builds, and .dockerignore.\nUser: I use python:3.12 (full).",
+    "output": "Use python:3.12-slim (or alpine), add a .dockerignore, and consider multi-stage builds to keep only runtime artifacts."
+  },
+  {
+    "instruction": "User: My docker-compose services can't resolve each other's names.\nAssistant: They need to be on the same network. Are they in the same compose file / network?\nUser: Yes, same file, but I use container_name and try to ping by service name.",
+    "output": "Use the service name (e.g., db) as the hostname, not container_name, or add network aliases to the service."
+  },
+  {
+    "instruction": "User: My container runs out of memory and gets OOMKilled.\nAssistant: Add memory limits and optimize the app. What's the limit?\nUser: No limit set, but it dies at ~1GB on the host.",
+    "output": "Set memory limits in docker-compose and investigate the app for leaks. Consider adding swap for burst headroom."
+  },
+  {
+    "instruction": "User: My .env file isn't being read by docker-compose.\nAssistant: Ensure the file is in the same directory as docker-compose.yml and uses variable substitution syntax.\nUser: I have .env with KEY=value and use ${KEY} in the yml.",
+    "output": "Confirm .env is next to docker-compose.yml, has KEY=value with no spaces, and that you're using ${KEY} in the YAML."
+  },
+  {
+    "instruction": "User: My healthcheck always reports unhealthy even though the app works.\nAssistant: The healthcheck command might be wrong. What does it run?\nUser: curl -f http://localhost:8080/health",
+    "output": "Use wget -q --spider http://localhost:8080/health or ensure curl is installed in the image."
+  },
+  {
+    "instruction": "User: My volume-mounted code doesn't update in the container during dev.\nAssistant: For compiled languages or node_modules, you may need anonymous volumes or rebuild.\nUser: Python Flask app, mounted with -v .:/app",
+    "output": "Enable Flask debug mode (FLASK_DEBUG=1) with use_reloader=True, and double-check the volume mount path."
+  },
+  {
+    "instruction": "User: My multi-stage Docker build still includes dev dependencies in the final image.\nAssistant: The final stage is probably copying too much, or you're not separating prod/dev installs.\nUser: I COPY . . in the final stage.",
+    "output": "In the final stage, copy only built artifacts from the builder (COPY --from=builder ...), not the full source tree."
+  },
+  {
+    "instruction": "User: My container exits immediately with code 0.\nAssistant: What does the entrypoint run?\nUser: It runs a shell command that finishes, like echo 'starting'.",
+    "output": "Make PID 1 a long-lived foreground process (e.g. python app.py) rather than a command that completes and lets the container exit."
+  },
+  {
+    "instruction": "User: docker build fails on apt-get with 'unable to locate package'.\nAssistant: Did you run apt-get update before install?\nUser: No, my Dockerfile goes straight to apt-get install.",
+    "output": "Run apt-get update in the same RUN layer before apt-get install so the package index is fresh when resolving packages."
+  },
+  {
+    "instruction": "User: My image is 2GB and I only need a small runtime.\nAssistant: Are build tools and caches being copied into the final stage?\nUser: Yes, single stage, everything from gcc to source is in it.",
+    "output": "Switch to a multi-stage build and COPY --from=builder only the compiled/runtime artifacts, leaving toolchains and caches behind."
+  },
+  {
+    "instruction": "User: Container can't reach localhost:5432 of the host.\nAssistant: Inside a container, localhost is the container itself.\nUser: I'm connecting to postgres at localhost.",
+    "output": "Connect to host.docker.internal (or add --add-host=host.docker.internal:host-gateway on Linux) instead of localhost, since localhost refers to the container."
+  },
+  {
+    "instruction": "User: Volume mount shows empty directory in the container.\nAssistant: Are the host and container paths correct and is the source non-empty?\nUser: The host dir has files, but the container sees nothing.",
+    "output": "Verify absolute paths and add the SELinux relabel suffix (:z) to the -v flag if applicable, since a mislabeled or relative path mounts an empty location."
+  },
+  {
+    "instruction": "User: docker-compose gives 'version is obsolete' warning.\nAssistant: The top-level version key is deprecated in Compose v2.\nUser: I copied it from an old tutorial.",
+    "output": "Delete the obsolete top-level version: key from the Compose file — modern Docker Compose v2 infers the spec version automatically."
+  },
+  {
+    "instruction": "User: Container runs as root and my security scan fails.\nAssistant: Are you setting USER in the Dockerfile?\nUser: No, never added it.",
+    "output": "Add a non-root USER directive in the final stage (after COPY and chown) so the process doesn't run as uid 0."
+  },
+  {
+    "instruction": "User: Build cache seems busted every time even when nothing changed.\nAssistant: Are you copying the whole source tree before installing dependencies?\nUser: Yes, COPY . . is the first instruction.",
+    "output": "Reorder layers: copy only requirements/package manifests first, install dependencies, then COPY the source so unchanged dependency layers stay cached."
+  },
+  {
+    "instruction": "User: My container has 1GB+ of build artifacts even though I deleted them in a later RUN.\nAssistant: Each RUN creates a new layer; deletions don't shrink earlier layers.\nUser: I do RUN make && rm -rf build/",
+    "output": "Perform the build and the cleanup within a single RUN instruction (or use BuildKit cache mounts) so the removed files never occupy a separate layer."
+  },
+  {
+    "instruction": "User: docker ps shows my app healthy but the port isn't reachable.\nAssistant: Is the container listening on 127.0.0.1 inside the container?\nUser: Yes, the app binds to 127.0.0.1:8000.",
+    "output": "Bind the app to 0.0.0.0 instead of 127.0.0.1, because inside a container loopback isn't reachable from the published port mapping."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Helm Chart.yaml for an app named myapp version 1.0.0 appVersion 1.16.0.",
+    "output": "apiVersion: v2\nname: myapp\ndescription: A Helm chart for my application\ntype: application\nversion: 1.0.0\nappVersion: \"1.16.0\""
+  },
+  {
+    "instruction": "Write a Helm values.yaml with replicaCount 3, image repository nginx tag 1.25, service port 80.",
+    "output": "replicaCount: 3\n\nimage:\n  repository: nginx\n  tag: \"1.25\"\n  pullPolicy: IfNotPresent\n\nservice:\n  type: ClusterIP\n  port: 80\n\nresources:\n  requests:\n    cpu: 100m\n    memory: 128Mi\n  limits:\n    cpu: 500m\n    memory: 256Mi"
+  },
+  {
+    "instruction": "Write a Helm deployment.yaml template using {{ .Values.image.repository }}:{{ .Values.image.tag }}.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ include \"myapp.fullname\" . }}\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\nspec:\n  replicas: {{ .Values.replicaCount }}\n  selector:\n    matchLabels:\n      {{- include \"myapp.selectorLabels\" . | nindent 6 }}\n  template:\n    metadata:\n      labels:\n        {{- include \"myapp.selectorLabels\" . | nindent 8 }}\n    spec:\n      containers:\n      - name: {{ .Chart.Name }}\n        image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"\n        ports:\n        - containerPort: {{ .Values.service.port }}"
+  },
+  {
+    "instruction": "Write a Helm _helpers.tpl with named templates for fullname, labels, and selectorLabels.",
+    "output": "{{- define \"myapp.name\" -}}\n{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix \"-\" }}\n{{- end }}\n\n{{- define \"myapp.fullname\" -}}\n{{- if .Values.fullnameOverride }}\n{{- .Values.fullnameOverride | trunc 63 | trimSuffix \"-\" }}\n{{- else }}\n{{- $name := default .Chart.Name .Values.nameOverride }}\n{{- if contains $name .Release.Name }}\n{{- .Release.Name | trunc 63 | trimSuffix \"-\" }}\n{{- else }}\n{{- printf \"%s-%s\" .Release.Name $name | trunc 63 | trimSuffix \"-\" }}\n{{- end }}\n{{- end }}\n{{- end }}\n\n{{- define \"myapp.labels\" -}}\nhelm.sh/chart: {{ include \"myapp.chart\" . }}\n{{ include \"myapp.selectorLabels\" . }}\n{{- if .Chart.AppVersion }}\napp.kubernetes.io/version: {{ .Chart.AppVersion | quote }}\n{{- end }}\napp.kubernetes.io/managed-by: {{ .Release.Service }}\n{{- end }}\n\n{{- define \"myapp.selectorLabels\" -}}\napp.kubernetes.io/name: {{ include \"myapp.name\" . }}\napp.kubernetes.io/instance: {{ .Release.Name }}\n{{- end }}"
+  },
+  {
+    "instruction": "Write a Helm service.yaml template.",
+    "output": "apiVersion: v1\nkind: Service\nmetadata:\n  name: {{ include \"myapp.fullname\" . }}\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\nspec:\n  type: {{ .Values.service.type }}\n  ports:\n  - port: {{ .Values.service.port }}\n    targetPort: http\n    protocol: TCP\n    name: http\n  selector:\n    {{- include \"myapp.selectorLabels\" . | nindent 4 }}"
+  },
+  {
+    "instruction": "Write a Helm configmap.yaml template with a data section from values.",
+    "output": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: {{ include \"myapp.fullname\" . }}-config\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\ndata:\n  APP_ENV: {{ .Values.app.env | quote }}\n  APP_DEBUG: {{ .Values.app.debug | quote }}"
+  },
+  {
+    "instruction": "Write a Helm secret.yaml template using b64enc for a password from values.",
+    "output": "apiVersion: v1\nkind: Secret\nmetadata:\n  name: {{ include \"myapp.fullname\" . }}-secret\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\ntype: Opaque\ndata:\n  password: {{ .Values.app.password | b64enc | quote }}"
+  },
+  {
+    "instruction": "Write a Helm values.yaml with ingress enabled, host example.com, and TLS.",
+    "output": "ingress:\n  enabled: true\n  className: nginx\n  annotations: {}\n  hosts:\n    - host: example.com\n      paths:\n        - path: /\n          pathType: Prefix\n  tls:\n    - secretName: example-tls\n      hosts:\n        - example.com"
+  },
+  {
+    "instruction": "Write a Helm deployment.yaml with an initContainer from values.",
+    "output": "initContainers:\n{{- toYaml .Values.initContainers | nindent 8 }}"
+  },
+  {
+    "instruction": "Write a Helm NOTES.txt that prints the access URL after install.",
+    "output": "1. Get the application URL by running these commands:\n{{- if contains \"NodePort\" .Values.service.type }}\n  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath=\"{.spec.ports[0].nodePort}\" services {{ include \"myapp.fullname\" . }})\n  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath=\"{.items[0].status.addresses[0].address}\")\n  echo http://$NODE_IP:$NODE_PORT\n{{- else if contains \"LoadBalancer\" .Values.service.type }}\n  kubectl get svc --namespace {{ .Release.Namespace }} {{ include \"myapp.fullname\" . }}\n{{- else }}\n  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l \"app.kubernetes.io/name={{ include \"myapp.name\" . }},app.kubernetes.io/instance={{ .Release.Name }}\" -o jsonpath=\"{.items[0].metadata.name}\")\n  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:80\n  echo \"Visit http://127.0.0.1:8080\"\n{{- end }}"
+  },
+  {
+    "instruction": "Write a Helm HPA template scaling based on CPU utilization.",
+    "output": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: {{ include \"myapp.fullname\" . }}\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: {{ include \"myapp.fullname\" . }}\n  minReplicas: {{ .Values.autoscaling.minReplicas }}\n  maxReplicas: {{ .Values.autoscaling.maxReplicas }}\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}"
+  },
+  {
+    "instruction": "Write a Helm Chart.yaml with dependencies on redis and postgresql bitnami charts.",
+    "output": "apiVersion: v2\nname: myapp\ndescription: A Helm chart with dependencies\ntype: application\nversion: 1.0.0\nappVersion: \"1.0.0\"\ndependencies:\n- name: redis\n  version: \"18.6.1\"\n  repository: \"https://charts.bitnami.com/bitnami\"\n- name: postgresql\n  version: \"13.2.24\"\n  repository: \"https://charts.bitnami.com/bitnami\""
+  },
+  {
+    "instruction": "Write a Helm deployment.yaml with affinity rules from values.",
+    "output": "affinity:\n{{- toYaml .Values.affinity | nindent 8 }}"
+  },
+  {
+    "instruction": "Write a Helm values.yaml with resource limits and nodeSelector.",
+    "output": "resources:\n  limits:\n    cpu: \"1\"\n    memory: \"1Gi\"\n  requests:\n    cpu: \"250m\"\n    memory: \"256Mi\"\n\nnodeSelector:\n  kubernetes.io/os: linux\n\ntolerations: []\n\naffinity: {}"
+  },
+  {
+    "instruction": "Write a Helm test-connection.yaml template that curls the service.",
+    "output": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: \"{{ include \"myapp.fullname\" . }}-test-connection\"\n  labels:\n    {{- include \"myapp.labels\" . | nindent 4 }}\n  annotations:\n    \"helm.sh/hook\": test\nspec:\n  containers:\n  - name: wget\n    image: busybox:1.36\n    command: ['wget']\n    args: ['{{ include \"myapp.fullname\" . }}:{{ .Values.service.port }}']\n  restartPolicy: Never"
+  },
+  {
+    "instruction": "Write a Helm values.yaml with autoscaling configuration.",
+    "output": "autoscaling:\n  enabled: true\n  minReplicas: 2\n  maxReplicas: 10\n  targetCPUUtilizationPercentage: 75\n  targetMemoryUtilizationPercentage: 80"
+  },
+  {
+    "instruction": "Write a Helm deployment.yaml with a strategy block for rolling updates.",
+    "output": "strategy:\n  type: RollingUpdate\n  rollingUpdate:\n    maxSurge: {{ .Values.strategy.maxSurge | default 1 }}\n    maxUnavailable: {{ .Values.strategy.maxUnavailable | default 0 }}"
+  },
+  {
+    "instruction": "Write a Helm _helpers.tpl template for imagePullSecrets.",
+    "output": "{{- define \"myapp.imagePullSecrets\" -}}\n{{- with .Values.imagePullSecrets }}\nimagePullSecrets:\n  {{- toYaml . | nindent 2 }}\n{{- end }}\n{{- end }}"
+  },
+  {
+    "instruction": "Write a Helm values.yaml with podAnnotations and podSecurityContext.",
+    "output": "podAnnotations: {}\n\npodSecurityContext:\n  runAsNonRoot: true\n  runAsUser: 1000\n  fsGroup: 2000\n\nsecurityContext:\n  allowPrivilegeEscalation: false\n  readOnlyRootFilesystem: true\n  capabilities:\n    drop:\n    - ALL"
+  },
+  {
+    "instruction": "Write a Helm command to install a chart with custom values and a release name.",
+    "output": "helm install myrelease ./mychart --set replicaCount=3 --set image.tag=v2.0 --namespace mynamespace"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Kubernetes Deployment YAML for a web app called 'web' using image nginx:1.25 with 3 replicas and container port 80.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n      - name: web\n        image: nginx:1.25\n        ports:\n        - containerPort: 80"
+  },
+  {
+    "instruction": "Write a Kubernetes Deployment for an API server 'api' using image myrepo/api:v1 with 2 replicas, port 8080, and resource requests of 100m CPU and 128Mi memory.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: api\n  template:\n    metadata:\n      labels:\n        app: api\n    spec:\n      containers:\n      - name: api\n        image: myrepo/api:v1\n        ports:\n        - containerPort: 8080\n        resources:\n          requests:\n            cpu: 100m\n            memory: 128Mi"
+  },
+  {
+    "instruction": "Write a Deployment with rolling update strategy: maxSurge 1, maxUnavailable 0 for zero-downtime deploys of app 'frontend'.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: frontend\nspec:\n  replicas: 3\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxSurge: 1\n      maxUnavailable: 0\n  selector:\n    matchLabels:\n      app: frontend\n  template:\n    metadata:\n      labels:\n        app: frontend\n    spec:\n      containers:\n      - name: frontend\n        image: frontend:latest\n        ports:\n        - containerPort: 3000"
+  },
+  {
+    "instruction": "Write a Deployment with an environment variable DB_HOST set to 'mydb.default.svc.cluster.local'.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: myapp:latest\n        env:\n        - name: DB_HOST\n          value: \"mydb.default.svc.cluster.local\""
+  },
+  {
+    "instruction": "Write a Deployment that pulls image from a private registry with imagePullSecrets 'regcred'.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      imagePullSecrets:\n      - name: regcred\n      containers:\n      - name: app\n        image: private.example.com/app:v1\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with a liveness probe checking HTTP GET /healthz on port 8080 every 10 seconds.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080\n        livenessProbe:\n          httpGet:\n            path: /healthz\n            port: 8080\n          initialDelaySeconds: 10\n          periodSeconds: 10"
+  },
+  {
+    "instruction": "Write a Deployment with both liveness and readiness probes for a Spring Boot app on port 8080 path /actuator/health.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: spring-app\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: spring-app\n  template:\n    metadata:\n      labels:\n        app: spring-app\n    spec:\n      containers:\n      - name: spring-app\n        image: spring-app:latest\n        ports:\n        - containerPort: 8080\n        livenessProbe:\n          httpGet:\n            path: /actuator/health/liveness\n            port: 8080\n          initialDelaySeconds: 30\n          periodSeconds: 10\n        readinessProbe:\n          httpGet:\n            path: /actuator/health/readiness\n            port: 8080\n          initialDelaySeconds: 10\n          periodSeconds: 5"
+  },
+  {
+    "instruction": "Write a Deployment with resource limits: CPU 500m, memory 256Mi, and requests CPU 200m, memory 128Mi.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        resources:\n          requests:\n            cpu: 200m\n            memory: 128Mi\n          limits:\n            cpu: 500m\n            memory: 256Mi"
+  },
+  {
+    "instruction": "Write a Deployment with nodeSelector to schedule pods only on nodes with label disktype=ssd.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      nodeSelector:\n        disktype: ssd\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with a persistent volume claim mount at /data for a database app.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: db\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: db\n  template:\n    metadata:\n      labels:\n        app: db\n    spec:\n      containers:\n      - name: db\n        image: postgres:16\n        ports:\n        - containerPort: 5432\n        volumeMounts:\n        - name: data\n          mountPath: /var/lib/postgresql/data\n      volumes:\n      - name: data\n        persistentVolumeClaim:\n          claimName: db-pvc"
+  },
+  {
+    "instruction": "Write a Deployment with an init container that waits for a database to be ready before the main app starts.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      initContainers:\n      - name: wait-for-db\n        image: busybox:1.36\n        command: ['sh', '-c', 'until nc -z mydb 5432; do echo waiting for db; sleep 2; done']\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with topologySpreadConstraints to spread pods across zones.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      topologySpreadConstraints:\n      - maxSkew: 1\n        topologyKey: topology.kubernetes.io/zone\n        whenUnsatisfiable: DoNotSchedule\n        labelSelector:\n          matchLabels:\n            app: app\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with a startup probe allowing up to 30 failures before restarting a slow-starting app.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: slow-app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: slow-app\n  template:\n    metadata:\n      labels:\n        app: slow-app\n    spec:\n      containers:\n      - name: slow-app\n        image: slow-app:latest\n        ports:\n        - containerPort: 8080\n        startupProbe:\n          httpGet:\n            path: /health\n            port: 8080\n          failureThreshold: 30\n          periodSeconds: 10"
+  },
+  {
+    "instruction": "Write a Deployment with a securityContext running as non-root with readOnlyRootFilesystem.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      securityContext:\n        runAsUser: 1000\n        runAsGroup: 3000\n        fsGroup: 2000\n      containers:\n      - name: app\n        image: app:latest\n        securityContext:\n          readOnlyRootFilesystem: true\n          allowPrivilegeEscalation: false\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment that uses a ConfigMap to inject environment variables.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        envFrom:\n        - configMapRef:\n            name: app-config\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with podAntiAffinity to avoid scheduling multiple replicas on the same node.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      affinity:\n        podAntiAffinity:\n          preferredDuringSchedulingIgnoredDuringExecution:\n          - weight: 100\n            podAffinityTerm:\n              labelSelector:\n                matchExpressions:\n                - key: app\n                  operator: In\n                  values:\n                  - app\n              topologyKey: kubernetes.io/hostname\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a Deployment with an HPA-like resource note and rolling update, image myapp:2.0, 5 replicas.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: myapp\nspec:\n  replicas: 5\n  selector:\n    matchLabels:\n      app: myapp\n  template:\n    metadata:\n      labels:\n        app: myapp\n    spec:\n      containers:\n      - name: myapp\n        image: myapp:2.0\n        ports:\n        - containerPort: 8080\n        resources:\n          requests:\n            cpu: 100m\n            memory: 128Mi"
+  },
+  {
+    "instruction": "Write a Deployment with multiple containers (sidecar pattern): main app + log shipper.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app-with-logging\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app-with-logging\n  template:\n    metadata:\n      labels:\n        app: app-with-logging\n    spec:\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080\n      - name: log-shipper\n        image: fluent/fluentd:v1.16\n        volumeMounts:\n        - name: varlog\n          mountPath: /var/log\n      volumes:\n      - name: varlog\n        emptyDir: {}"
+  },
+  {
+    "instruction": "Write a Deployment with terminationGracePeriodSeconds 60 and a preStop hook sleeping 10 seconds for graceful shutdown.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      terminationGracePeriodSeconds: 60\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080\n        lifecycle:\n          preStop:\n            exec:\n              command: [\"/bin/sh\", \"-c\", \"sleep 10\"]"
+  },
+  {
+    "instruction": "Write a Deployment with an image tag that uses a variable placeholder (use latest as placeholder).",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: app\n        image: myrepo/app:latest\n        ports:\n        - containerPort: 8080\n        env:\n        - name: APP_ENV\n          value: \"production\""
+  }
+]

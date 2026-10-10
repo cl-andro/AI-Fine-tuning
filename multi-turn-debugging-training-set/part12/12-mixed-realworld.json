@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My CI pipeline fails on tests that pass locally.\nAssistant: Environment differences — check Python/Node version, env vars, and installed packages.\nUser: Works locally on Python 3.11, CI uses 3.9.",
+    "output": "Align the Python version between local and CI (update the CI config to 3.11, or make the code compatible with 3.9)."
+  },
+  {
+    "instruction": "User: My app uses too much memory after running for days.\nAssistant: Likely a leak. Profile with tracemalloc or memory_profiler.\nUser: It's a Flask app with SQLAlchemy.",
+    "output": "Look for unbounded in-memory caches, leaked SQLAlchemy sessions, or accumulating query results — profile with tracemalloc to pinpoint."
+  },
+  {
+    "instruction": "User: My log files grow forever and fill the disk.\nAssistant: Set up log rotation with logrotate.\nUser: How do I configure logrotate?",
+    "output": "Configure logrotate (e.g., /etc/logrotate.d/myapp) with daily rotation, retention count, and compression."
+  },
+  {
+    "instruction": "User: My SSL certificate expired and the site is down.\nAssistant: Renew with certbot and reload the web server.\nUser: Using Let's Encrypt with nginx.",
+    "output": "Run sudo certbot renew and reload nginx. Set up auto-renewal with a cron job or systemd timer."
+  },
+  {
+    "instruction": "User: My backup job silently fails sometimes.\nAssistant: Add error handling and alerting to the backup script.\nUser: It's a bash script using mysqldump.",
+    "output": "Add set -euo pipefail, check mysqldump's exit code, and send an alert (email or webhook) when the backup fails."
+  },
+  {
+    "instruction": "User: My production deploy took down the site for 30 seconds.\nAssistant: Use zero-downtime strategies: rolling update, blue-green, or canary.\nUser: I stop the old container then start the new one.",
+    "output": "Use a rolling update with maxUnavailable=0, or blue-green: start the new version, wait for health checks, then switch traffic and stop the old one."
+  },
+  {
+    "instruction": "User: My API returns inconsistent data between requests.\nAssistant: Could be race conditions, caching, or eventual consistency in the DB.\nUser: Reads go to a replica that lags behind the primary.",
+    "output": "Read from the primary for consistency-critical queries, or implement read-your-writes consistency with session pinning."
+  },
+  {
+    "instruction": "User: My third-party API integration breaks without notice.\nAssistant: Add monitoring, retries, and circuit breakers around the integration.\nUser: It's a payment API.",
+    "output": "Add retries with exponential backoff, a circuit breaker, monitoring/alerting on error rates, and verify webhook signatures for security."
+  },
+  {
+    "instruction": "User: My disk keeps filling up with Docker images.\nAssistant: Prune dangling images and old volumes regularly.\nUser: What's the safe cleanup command?",
+    "output": "Run docker system prune (add -a --volumes for aggressive cleanup) on a schedule, or use docker builder prune for just build cache."
+  },
+  {
+    "instruction": "User: My monitoring alerts fire too often (alert fatigue).\nAssistant: Tune thresholds, add severity levels, and use multi-condition alerts.\nUser: CPU alert fires at 80% for 1 minute.",
+    "output": "Tune thresholds and require sustained breaches (e.g., 5 minutes) before alerting, and route by severity to reduce noise."
+  },
+  {
+    "instruction": "User: Our CI passes locally but fails on the runner.\nAssistant: Are the Python/runtime versions identical?\nUser: Local is 3.11, CI is pinned to 3.9.",
+    "output": "Match the runtime versions (update CI to 3.11 or make the code compatible with 3.9) so local and CI environments behave the same."
+  },
+  {
+    "instruction": "User: Nightly job OOMs even though memory looks fine during the day.\nAssistant: Is something else running concurrently at night?\nUser: A backup and an ETL job start at the same time.",
+    "output": "Stagger the overlapping schedules (or raise the memory limit during the window) so the backup, ETL, and nightly job don't compete for memory simultaneously."
+  },
+  {
+    "instruction": "User: Our logs fill the disk every few days.\nAssistant: Is log rotation configured?\nUser: No, the app just appends forever.",
+    "output": "Configure logrotate (daily rotation, bounded retention, compression) for the application log so it can't grow unbounded and fill the disk."
+  },
+  {
+    "instruction": "User: Certificate renewal reminder fires but the site still shows expired.\nAssistant: Did the web server reload after renewal?\nUser: certbot renews but nginx keeps the old cert.",
+    "output": "Add a certbot deploy hook that reloads the web server after each renewal, and verify the served certificate with openssl s_client afterwards."
+  },
+  {
+    "instruction": "User: mysqldump backup is 0 bytes but exits successfully.\nAssistant: Are errors being written to stderr and ignored?\nUser: The cron job redirects everything to /dev/null.",
+    "output": "Capture stderr, check mysqldump's exit status explicitly, and alert when the backup fails instead of discarding all output."
+  },
+  {
+    "instruction": "User: Deploy causes a few seconds of failed requests every time.\nAssistant: Are you stopping the old container before the new one is ready?\nUser: Yes, docker-compose up recreates the service.",
+    "output": "Configure a rolling update with maxUnavailable=0 plus readiness probes (or perform a blue-green switch) so the new instance is healthy before the old one goes away."
+  },
+  {
+    "instruction": "User: Users see stale data right after writing.\nAssistant: Are reads going to a replica that lags?\nUser: Yes, reads hit the read replica.",
+    "output": "Send consistency-critical reads to the primary (or pin the user's session to the replica they just wrote to) so read-your-writes consistency holds."
+  },
+  {
+    "instruction": "User: Payment webhook gets processed twice when the provider retries.\nAssistant: Are you making processing idempotent?\nUser: No, every delivery inserts a new record.",
+    "output": "Make processing idempotent by recording each event ID under a unique constraint and ignoring already-seen deliveries, since the provider will retry on non-2xx responses."
+  },
+  {
+    "instruction": "User: Docker builds keep failing with no space left on device.\nAssistant: Are old images and build cache piling up?\nUser: docker images shows hundreds of dangling layers.",
+    "output": "Run docker system prune (with --filter and a schedule; add builder prune for cache) so dangling images and layers don't exhaust the disk."
+  },
+  {
+    "instruction": "User: Alert fatigue: on-call gets paged for every blip.\nAssistant: Are alerts firing on single-sample thresholds?\nUser: Yes, any 1-minute spike triggers a page.",
+    "output": "Require breaches to be sustained over a time window, tune the thresholds, and route low-severity alerts to non-paging channels so only real incidents wake anyone."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My service is running but I can't connect to it from another machine.\nAssistant: It might be bound to 127.0.0.1 (localhost only). Check the bind address.\nUser: It says listening on 127.0.0.1:8080.",
+    "output": "Bind the service to 0.0.0.0:8080 instead of 127.0.0.1:8080."
+  },
+  {
+    "instruction": "User: My DNS resolution is slow.\nAssistant: Check /etc/resolv.conf and try a faster DNS server like 1.1.1.1 or 8.8.8.8.\nUser: It points to the ISP DNS.",
+    "output": "Update /etc/resolv.conf (or your system's DNS config) to use a fast public resolver like 1.1.1.1 or 8.8.8.8."
+  },
+  {
+    "instruction": "User: My port is already in use when starting the app.\nAssistant: Find the process using that port with lsof or ss.\nUser: ss shows a process on port 3000.",
+    "output": "Identify the process with ss -tlnp or lsof -i :3000, then kill it or configure your app to use a different port."
+  },
+  {
+    "instruction": "User: My firewall is blocking incoming connections.\nAssistant: Check ufw/iptables/firewalld rules for the port.\nUser: Using ufw.",
+    "output": "Allow the port through the firewall: sudo ufw allow 8080/tcp (or the equivalent for iptables/firewalld)."
+  },
+  {
+    "instruction": "User: My SSH connection is slow to establish.\nAssistant: DNS lookups on the server or GSSAPI auth can slow it down.\nUser: It takes ~10 seconds before the password prompt.",
+    "output": "Disable DNS lookups and GSSAPI on the server (UseDNS no) and client (GSSAPIAuthentication no) in sshd_config / ssh_config."
+  },
+  {
+    "instruction": "User: My load balancer health checks fail even though the app works locally.\nAssistant: The health check hits a specific path/port — verify it exists and responds on the right interface.\nUser: Health check hits /health on port 80, app is on 8080.",
+    "output": "Match the health check port to the app's port (8080), or configure a proxy from 80 to 8080."
+  },
+  {
+    "instruction": "User: My time sync is off and TLS certificates fail validation.\nAssistant: Check ntpdate or chrony. If the clock is wrong, cert validity checks fail.\nUser: Date shows a year off.",
+    "output": "Synchronize the system clock with NTP (chrony or ntpdate pool.ntp.org), then retry the TLS connection."
+  },
+  {
+    "instruction": "User: My reverse proxy passes the client IP as the proxy's IP.\nAssistant: You need to pass X-Forwarded-For and trust the proxy in the app.\nUser: Using nginx in front of Flask.",
+    "output": "Set X-Forwarded-For in nginx (proxy_set_header) and use ProxyFix middleware in the app to trust the proxy headers."
+  },
+  {
+    "instruction": "User: My WebSocket connection drops after a few minutes.\nAssistant: Proxy timeouts or keepalive settings may be closing idle connections.\nUser: Using nginx as a reverse proxy.",
+    "output": "Configure nginx for WebSockets: proxy_http_version 1.1, Upgrade/Connection headers, and raise proxy_read_timeout."
+  },
+  {
+    "instruction": "User: My IPv6 connections fail but IPv4 works.\nAssistant: The service might be listening only on IPv4. Check with ss -tlnp.\nUser: Shows *:80 (IPv4 only).",
+    "output": "Bind the service to [::]:80 (dual-stack) and verify IPv6 is enabled on the network interface."
+  },
+  {
+    "instruction": "User: Connection refused but the service says it's running.\nAssistant: Is it bound to 127.0.0.1 while you connect from another host?\nUser: Yes, the config says listen 127.0.0.1.",
+    "output": "Change the listen address from 127.0.0.1 to 0.0.0.0 so the service accepts connections from outside the local machine."
+  },
+  {
+    "instruction": "User: DNS resolution fails inside Docker but works on the host.\nAssistant: What does /etc/resolv.conf look like in the container?\nUser: It has the host's internal resolver IP that the container can't reach.",
+    "output": "Point the container at a reachable resolver via dns: in docker-compose (e.g. 1.1.1.1), since the host's internal nameserver often isn't routable from inside the container."
+  },
+  {
+    "instruction": "User: TLS handshake fails with certificate verify failed.\nAssistant: Is the certificate chain complete, and is the clock correct?\nUser: System time is off by a year.",
+    "output": "Synchronize the system clock with NTP so certificate validity periods are evaluated correctly, then retry the handshake."
+  },
+  {
+    "instruction": "User: Port 8080 shows as occupied but I can't find the process.\nAssistant: Which tool did you use to check?\nUser: Just netstat, and it didn't show a PID.",
+    "output": "Run sudo ss -tlnp (or sudo lsof -i :8080) to identify the process holding the port, then stop it or reconfigure your app to use another port."
+  },
+  {
+    "instruction": "User: SSH connection hangs instead of failing fast.\nAssistant: Is DNS or GSSAPI authentication stalling the handshake?\nUser: It takes 30+ seconds before prompting for a password.",
+    "output": "Set UseDNS no in sshd_config and GSSAPIAuthentication no on the client to remove the slow DNS/GSSAPI steps causing the delay."
+  },
+  {
+    "instruction": "User: My service is reachable locally but load balancer health checks fail.\nAssistant: What does the health check target — port and path?\nUser: It probes port 80 but the app is on 8080.",
+    "output": "Make the health check hit the port the app actually listens on (or front it with a proxy that maps 80 to that port)."
+  },
+  {
+    "instruction": "User: Requests from the load balancer show the proxy's IP, not the client's.\nAssistant: Are you reading REMOTE_ADDR directly?\nUser: Yes, and it's always the LB address.",
+    "output": "Read the X-Forwarded-For header and enable ProxyFix (or equivalent) so the app trusts the proxy's forwarding instead of seeing the LB's IP."
+  },
+  {
+    "instruction": "User: Intermittent resets under load between two services.\nAssistant: Are timeouts mismatched between client and server?\nUser: Client timeout is longer than the server's idle timeout.",
+    "output": "Set the client timeout slightly longer than the server's and add retries with exponential backoff so transient resets don't surface as errors."
+  },
+  {
+    "instruction": "User: IPv6-only clients can't reach my dual-stack service.\nAssistant: Is the service bound to IPv4 only?\nUser: It listens on 0.0.0.0:80.",
+    "output": "Bind the service to [::] (dual-stack) instead of 0.0.0.0 so IPv6 clients can connect as well."
+  },
+  {
+    "instruction": "User: Remote git over SSH intermittently times out.\nAssistant: Is there a flaky network path or an MTU issue?\nUser: It works sometimes and hangs others, usually on larger transfers.",
+    "output": "Test for an MTU/MSS blackhole (large packets succeed only when fragmented) and lower the interface MTU or clamp MSS on the path."
+  }
+]

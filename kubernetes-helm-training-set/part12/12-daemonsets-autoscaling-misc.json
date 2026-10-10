@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Write a DaemonSet running fluentd on every node.",
+    "output": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: fluentd\nspec:\n  selector:\n    matchLabels:\n      name: fluentd\n  template:\n    metadata:\n      labels:\n        name: fluentd\n    spec:\n      containers:\n      - name: fluentd\n        image: fluent/fluentd:v1.16\n        volumeMounts:\n        - name: varlog\n          mountPath: /var/log\n        - name: dockercontainerlog\n          mountPath: /var/lib/docker/containers\n          readOnly: true\n      volumes:\n      - name: varlog\n        hostPath:\n          path: /var/log\n      - name: dockercontainerlog\n        hostPath:\n          path: /var/lib/docker/containers"
+  },
+  {
+    "instruction": "Write a DaemonSet running node-exporter for Prometheus metrics on every node.",
+    "output": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: node-exporter\nspec:\n  selector:\n    matchLabels:\n      name: node-exporter\n  template:\n    metadata:\n      labels:\n        name: node-exporter\n      annotations:\n        prometheus.io/scrape: \"true\"\n        prometheus.io/port: \"9100\"\n    spec:\n      hostNetwork: true\n      hostPID: true\n      containers:\n      - name: node-exporter\n        image: prom/node-exporter:v1.8.1\n        ports:\n        - containerPort: 9100\n        args:\n        - --path.procfs=/host/proc\n        - --path.sysfs=/host/sys\n        volumeMounts:\n        - name: proc\n          mountPath: /host/proc\n          readOnly: true\n        - name: sys\n          mountPath: /host/sys\n          readOnly: true\n      volumes:\n      - name: proc\n        hostPath:\n          path: /proc\n      - name: sys\n        hostPath:\n          path: /sys"
+  },
+  {
+    "instruction": "Write an HPA scaling deployment 'web' between 2 and 10 replicas based on CPU 70%.",
+    "output": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: web-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: web\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70"
+  },
+  {
+    "instruction": "Write a VPA (VerticalPodAutoscaler) recommendation-only config for app 'api'.",
+    "output": "apiVersion: autoscaling.k8s.io/v1\nkind: VerticalPodAutoscaler\nmetadata:\n  name: api-vpa\nspec:\n  targetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: api\n  updatePolicy:\n    updateMode: \"Off\""
+  },
+  {
+    "instruction": "Write a DaemonSet with a toleration for all taints (node-level agent).",
+    "output": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: system-agent\nspec:\n  selector:\n    matchLabels:\n      name: system-agent\n  template:\n    metadata:\n      labels:\n        name: system-agent\n    spec:\n      tolerations:\n      - operator: Exists\n      containers:\n      - name: agent\n        image: agent:latest"
+  },
+  {
+    "instruction": "Write a Deployment with an HPA that also scales on memory at 80%.",
+    "output": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: app-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: app\n  minReplicas: 1\n  maxReplicas: 20\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: Utilization\n        averageUtilization: 80"
+  },
+  {
+    "instruction": "Write a PodDisruptionBudget allowing minimum 2 available pods for app 'web'.",
+    "output": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: web-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: web"
+  },
+  {
+    "instruction": "Write a PDB with maxUnavailable: 1 for app 'api'.",
+    "output": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: api-pdb\nspec:\n  maxUnavailable: 1\n  selector:\n    matchLabels:\n      app: api"
+  },
+  {
+    "instruction": "Write a PriorityClass with value 1000000 for critical system pods.",
+    "output": "apiVersion: scheduling.k8s.io/v1\nkind: PriorityClass\nmetadata:\n  name: system-cluster-critical\nvalue: 1000000\nglobalDefault: false\ndescription: \"Critical system pods\""
+  },
+  {
+    "instruction": "Write a RuntimeClass for gVisor (runsc) containers.",
+    "output": "apiVersion: node.k8s.io/v1\nkind: RuntimeClass\nmetadata:\n  name: gvisor\nhandler: runsc"
+  },
+  {
+    "instruction": "Write a LimitRange setting default CPU/memory limits for pods in namespace default.",
+    "output": "apiVersion: v1\nkind: LimitRange\nmetadata:\n  name: default-limits\n  namespace: default\nspec:\n  limits:\n  - default:\n      cpu: \"500m\"\n      memory: \"512Mi\"\n    defaultRequest:\n      cpu: \"100m\"\n      memory: \"128Mi\"\n    type: Container"
+  },
+  {
+    "instruction": "Write a ResourceQuota limiting total CPU to 4 and memory to 8Gi in namespace prod.",
+    "output": "apiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: prod-quota\n  namespace: prod\nspec:\n  hard:\n    requests.cpu: \"4\"\n    requests.memory: \"8Gi\"\n    limits.cpu: \"8\"\n    limits.memory: \"16Gi\"\n    pods: \"50\""
+  },
+  {
+    "instruction": "Write an HPA with custom metrics (requests per second) scaling.",
+    "output": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: rps-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: app\n  minReplicas: 2\n  maxReplicas: 50\n  metrics:\n  - type: Pods\n    pods:\n      metric:\n        name: http_requests_per_second\n      target:\n        type: AverageValue\n        averageValue: \"1000\""
+  },
+  {
+    "instruction": "Write a DaemonSet for a Prometheus alertmanager sidecar on every node.",
+    "output": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: alertmanager-agent\nspec:\n  selector:\n    matchLabels:\n      app: alertmanager\n  template:\n    metadata:\n      labels:\n        app: alertmanager\n    spec:\n      containers:\n      - name: alertmanager\n        image: prom/alertmanager:v0.27.0\n        ports:\n        - containerPort: 9093"
+  },
+  {
+    "instruction": "Write a Pod with a hostNetwork true for a DNS or proxy DaemonSet.",
+    "output": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: host-network-pod\nspec:\n  hostNetwork: true\n  dnsPolicy: ClusterFirstWithHostNet\n  containers:\n  - name: proxy\n    image: proxy:latest\n    ports:\n    - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a PriorityClass for best-effort non-critical workloads (negative value).",
+    "output": "apiVersion: scheduling.k8s.io/v1\nkind: PriorityClass\nmetadata:\n  name: best-effort\nvalue: -1000\nglobalDefault: false\ndescription: \"Best effort non-critical workloads\""
+  },
+  {
+    "instruction": "Write a Deployment with topologySpreadConstraints on hostname for HA.",
+    "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: ha-app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: ha-app\n  template:\n    metadata:\n      labels:\n        app: ha-app\n    spec:\n      topologySpreadConstraints:\n      - maxSkew: 1\n        topologyKey: kubernetes.io/hostname\n        whenUnsatisfiable: DoNotSchedule\n        labelSelector:\n          matchLabels:\n            app: ha-app\n      containers:\n      - name: app\n        image: app:latest\n        ports:\n        - containerPort: 8080"
+  },
+  {
+    "instruction": "Write a ResourceQuota limiting the number of pods to 10 in namespace dev.",
+    "output": "apiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: dev-pod-quota\n  namespace: dev\nspec:\n  hard:\n    pods: \"10\""
+  },
+  {
+    "instruction": "Write a LimitRange with min and max constraints per container.",
+    "output": "apiVersion: v1\nkind: LimitRange\nmetadata:\n  name: bounds\n  namespace: default\nspec:\n  limits:\n  - min:\n      cpu: \"50m\"\n      memory: \"64Mi\"\n    max:\n      cpu: \"2\"\n      memory: \"4Gi\"\n    type: Container"
+  },
+  {
+    "instruction": "Write a DaemonSet for Cilium or a CNI network plugin agent.",
+    "output": "apiVersion: apps/v1\nkind: DaemonSet\nmetadata:\n  name: cilium-agent\n  namespace: kube-system\nspec:\n  selector:\n    matchLabels:\n      k8s-app: cilium\n  template:\n    metadata:\n      labels:\n        k8s-app: cilium\n    spec:\n      hostNetwork: true\n      containers:\n      - name: cilium-agent\n        image: cilium/cilium:v1.15\n        securityContext:\n          privileged: true\n        volumeMounts:\n        - name: bpf-maps\n          mountPath: /sys/fs/bpf\n        - name: cni-bin\n          mountPath: /host/opt/cni/bin\n      volumes:\n      - name: bpf-maps\n        hostPath:\n          path: /sys/fs/bpf\n      - name: cni-bin\n        hostPath:\n          path: /opt/cni/bin"
+  },
+  {
+    "instruction": "Write a PDB using maxUnavailable percentage 50% for stateless app.",
+    "output": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: pct-pdb\nspec:\n  maxUnavailable: 50%\n  selector:\n    matchLabels:\n      app: stateless"
+  }
+]

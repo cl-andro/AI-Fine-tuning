@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "User: My model's loss doesn't decrease during training.\nAssistant: Check the learning rate — too high or too low can stall learning.\nUser: Learning rate is 1e-2 with Adam.",
+    "output": "Lower the learning rate (e.g., to 1e-3 or 1e-4) and verify your labels and loss function are correct for the task."
+  },
+  {
+    "instruction": "User: My QLoRA training runs out of GPU memory.\nAssistant: Reduce max_seq_length, batch size, or enable gradient checkpointing.\nUser: I have batch_size=8, seq_len=2048 on a T4.",
+    "output": "Reduce batch size to 1-2, increase gradient_accumulation_steps to keep effective batch size, lower max_seq_length, and enable gradient checkpointing."
+  },
+  {
+    "instruction": "User: My fine-tuned model's output is gibberish.\nAssistant: The model may be overfitting or the data format is wrong. Check a few training samples.\nUser: Data looks like instruction/output pairs.",
+    "output": "Ensure the chat template is applied correctly and compute loss only on assistant response tokens, not on the prompt tokens."
+  },
+  {
+    "instruction": "User: My training loss goes down but eval loss goes up.\nAssistant: That's overfitting. Use early stopping, more data, or stronger regularization.\nUser: Training for 10 epochs on 100 examples.",
+    "output": "Reduce the number of epochs, add more training data, or increase regularization (LoRA dropout, weight decay) to combat overfitting."
+  },
+  {
+    "instruction": "User: My tokenizer produces too-long sequences that get truncated.\nAssistant: Check max_seq_length and the tokenizer's model_max_length.\nUser: Many samples exceed 1024 tokens.",
+    "output": "Raise max_seq_length if VRAM allows, or filter out over-long samples / truncate during preprocessing."
+  },
+  {
+    "instruction": "User: My LoRA adapter produces different results after merging.\nAssistant: The merge process can introduce precision differences. Check merge dtype.\nUser: Merging to fp16.",
+    "output": "Merge in fp32 precision first, then downcast if needed, and verify target_modules in the LoRA config match the trained modules."
+  },
+  {
+    "instruction": "User: My dataset has formatting issues — the model learns bad patterns.\nAssistant: Inspect the prepared JSONL. Look for malformed records or inconsistent formatting.\nUser: Some records have empty responses.",
+    "output": "Filter the dataset to remove records with empty instruction or output before training."
+  },
+  {
+    "instruction": "User: My W&B metrics look noisy / inconsistent.\nAssistant: Small batch sizes cause noisy loss curves. Check logging frequency too.\nUser: batch_size=1, log every step.",
+    "output": "Reduce logging frequency (log every N steps) and use gradient accumulation to smooth the effective batch size."
+  },
+  {
+    "instruction": "User: My training speed is very slow on Kaggle T4.\nAssistant: Enable mixed precision (bf16/fp16), check data loading is not the bottleneck.\nUser: I'm using fp32 and loading data in the training loop.",
+    "output": "Enable mixed precision (bf16/fp16), pre-tokenize the dataset offline, and pin memory / use num_workers in the dataloader."
+  },
+  {
+    "instruction": "User: My inference with the adapter is slow.\nAssistant: Merge the adapter into the base model for faster inference, or use quantization.\nUser: I load base + adapter each time.",
+    "output": "Merge the LoRA adapter into the base weights once, save the merged model, and load it directly for faster inference."
+  },
+  {
+    "instruction": "User: My loss is NaN from the second step.\nAssistant: Check for exploding gradients or bad labels.\nUser: Labels include -1 for masked positions.",
+    "output": "Map the -1 labels to the loss-ignored index (typically -100) or configure ignore_index, so invalid targets don't contribute NaN gradients."
+  },
+  {
+    "instruction": "User: Training accuracy jumps to 100% in one epoch but validation stays at 50%.\nAssistant: That's classic overfitting — but check for leakage first.\nUser: The same sample appears in train and validation.",
+    "output": "Fix the data split so identical samples never appear in both train and validation; only then address overfitting with regularization or more data."
+  },
+  {
+    "instruction": "User: GPU utilization is 5% during training.\nAssistant: Are you bottlenecked on data loading?\nUser: num_workers=0 and I preprocess in the loop.",
+    "output": "Increase num_workers with pin_memory=True and pre-tokenize the dataset offline so the GPU isn't starved by single-threaded preprocessing."
+  },
+  {
+    "instruction": "User: My eval loss is lower than training loss.\nAssistant: Is the model in eval mode (dropout off) during evaluation?\nUser: Yes, and training uses dropout 0.1.",
+    "output": "This is expected: dropout (and similar training-only regularizers) inflate the training loss relative to evaluation, so the comparison isn't apples-to-apples."
+  },
+  {
+    "instruction": "User: LoRA fine-tuning barely changes outputs vs. the base model.\nAssistant: What rank and target modules did you choose?\nUser: rank=4 targeting only attention output projections.",
+    "output": "Raise the LoRA rank and expand target_modules to cover attention (q_proj, k_proj, v_proj, o_proj) plus MLP layers so the adapter has enough capacity."
+  },
+  {
+    "instruction": "User: Checkpoint resumes from step 0 every time despite saving.\nAssistant: Are you restoring optimizer and scheduler state, not just weights?\nUser: I only load model weights.",
+    "output": "Persist and restore optimizer, learning-rate scheduler, and RNG state alongside model weights so training resumes at the right step with the right dynamics."
+  },
+  {
+    "instruction": "User: Mixed precision training gives NaN loss only on some GPUs.\nAssistant: Is fp16 overflowing where bf16 wouldn't?\nUser: It happens on older GPUs without bf16 support.",
+    "output": "Enable a dynamic loss scaler for fp16 (or train those devices in fp32) to prevent gradient underflow/overflow from producing NaN loss."
+  },
+  {
+    "instruction": "User: My dataset has 20k empty instructions after preprocessing.\nAssistant: How are you filtering samples?\nUser: I concatenate fields and some source columns are blank.",
+    "output": "Drop samples whose instruction or output is empty (assert a minimum token length) before training so they don't waste steps or skew loss."
+  },
+  {
+    "instruction": "User: Inference is 10x slower after merging the LoRA adapter.\nAssistant: Are you still running the PEFT wrapper with extra dispatch logic?\nUser: I merge but keep loading through peft.",
+    "output": "Save the merged weights once and load them with the plain Transformers API, bypassing the PEFT dispatch layer that adds per-token overhead."
+  },
+  {
+    "instruction": "User: My metric improves but samples look repetitive and generic.\nAssistant: Is the model memorizing the training style?\nUser: It repeats the same phrases across unrelated prompts.",
+    "output": "Cut back the number of epochs, diversify the training data, and raise sampling temperature (plus repetition penalties) at inference to reduce rote repetition."
+  }
+]
