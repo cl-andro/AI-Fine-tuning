@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows where price is above the average",
+    "output": "SELECT * FROM listings WHERE price > (SELECT AVG(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRow with the highest price",
+    "output": "SELECT * FROM listings WHERE price = (SELECT MAX(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRow with the lowest price",
+    "output": "SELECT * FROM listings WHERE price = (SELECT MIN(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows where id is in a subquery from listings",
+    "output": "SELECT * FROM listings WHERE id IN (SELECT DISTINCT id FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows where id is not in the set of values 1 and 2",
+    "output": "SELECT * FROM listings WHERE id NOT IN (1, 2);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nUse EXISTS to find rows where a id appears more than once",
+    "output": "SELECT * FROM listings t WHERE EXISTS (SELECT 1 FROM listings t2 WHERE t2.id = t.id GROUP BY t2.id HAVING COUNT(*) > 1);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery in SELECT returning count per id",
+    "output": "SELECT t.*, (SELECT COUNT(*) FROM listings t2 WHERE t2.id = t.id) AS cnt FROM listings t;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows where price > the maximum of city plus 100 in subquery",
+    "output": "SELECT * FROM listings WHERE price > ((SELECT MAX(price) FROM listings) + 100);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSecond highest price using subquery",
+    "output": "SELECT MAX(price) FROM listings WHERE price < (SELECT MAX(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nCorrelated subquery: rows whose price is above the avg of their id",
+    "output": "SELECT * FROM listings t WHERE price > (SELECT AVG(price) FROM listings t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nColumns where price is greater than average in their group",
+    "output": "SELECT * FROM listings t WHERE price >= (SELECT AVG(price) FROM listings t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nDerived table returning count per id",
+    "output": "SELECT sub.id, sub.cnt FROM (SELECT id, COUNT(*) AS cnt FROM listings GROUP BY id) sub WHERE sub.cnt > 2;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery filtering rows with ANY operator",
+    "output": "SELECT * FROM listings WHERE price = ANY (SELECT price FROM listings WHERE price < 50);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery filtering rows with ALL operator",
+    "output": "SELECT * FROM listings WHERE price > ALL (SELECT AVG(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nScalar subquery for a single value",
+    "output": "SELECT (SELECT AVG(price) FROM listings) AS avg_val;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows matching set from a subquery using IN",
+    "output": "SELECT * FROM listings WHERE id IN (SELECT id FROM listings GROUP BY id HAVING COUNT(*) >= 3);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nLargest value strictly less than the global maximum",
+    "output": "SELECT price FROM listings ORDER BY price DESC LIMIT 1 OFFSET 1;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nNested subquery: top values per group based on derived ranking",
+    "output": "SELECT t.* FROM listings t WHERE t.price = (SELECT MAX(price) FROM listings t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nRows where city not present in a sub table",
+    "output": "SELECT * FROM listings WHERE city NOT IN (SELECT city FROM listings WHERE price > 90);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery used to compare against the overall total",
+    "output": "SELECT id, SUM(price) AS part FROM listings GROUP BY id HAVING SUM(price) > (SELECT AVG(price) FROM listings);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nUse a subquery to compute rolling reference count",
+    "output": "SELECT t.id, (SELECT COUNT(*) FROM listings t2 WHERE t2.id <= t.id) AS running FROM listings t;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nEXISTS correlated check to its own table values",
+    "output": "SELECT * FROM listings t WHERE EXISTS (SELECT 1 FROM listings t2 WHERE t2.id = t.id AND t2.price > t.price);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery comparing to the minimum plus a constant",
+    "output": "SELECT * FROM listings WHERE price > (SELECT MIN(price) FROM listings) + 10;"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery returning rows for a top slice group",
+    "output": "SELECT * FROM listings WHERE price IN (SELECT price FROM listings ORDER BY price DESC LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: listings(id, city, price)\nSubquery joining a derived aggregate",
+    "output": "SELECT t.* FROM listings t JOIN (SELECT id, MAX(price) mx FROM listings GROUP BY id) a ON a.id = t.id AND a.mx = t.price;"
+  }
+]

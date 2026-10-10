@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows where gpa is above the average",
+    "output": "SELECT * FROM students WHERE gpa > (SELECT AVG(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRow with the highest gpa",
+    "output": "SELECT * FROM students WHERE gpa = (SELECT MAX(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRow with the lowest gpa",
+    "output": "SELECT * FROM students WHERE gpa = (SELECT MIN(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows where major is in a subquery from students",
+    "output": "SELECT * FROM students WHERE major IN (SELECT DISTINCT major FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows where major is not in the set of values 1 and 2",
+    "output": "SELECT * FROM students WHERE major NOT IN (1, 2);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nUse EXISTS to find rows where a major appears more than once",
+    "output": "SELECT * FROM students t WHERE EXISTS (SELECT 1 FROM students t2 WHERE t2.major = t.major GROUP BY t2.major HAVING COUNT(*) > 1);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery in SELECT returning count per major",
+    "output": "SELECT t.*, (SELECT COUNT(*) FROM students t2 WHERE t2.major = t.major) AS cnt FROM students t;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows where gpa > the maximum of name plus 100 in subquery",
+    "output": "SELECT * FROM students WHERE gpa > ((SELECT MAX(gpa) FROM students) + 100);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSecond highest gpa using subquery",
+    "output": "SELECT MAX(gpa) FROM students WHERE gpa < (SELECT MAX(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nCorrelated subquery: rows whose gpa is above the avg of their major",
+    "output": "SELECT * FROM students t WHERE gpa > (SELECT AVG(gpa) FROM students t2 WHERE t2.major = t.major);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nColumns where gpa is greater than average in their group",
+    "output": "SELECT * FROM students t WHERE gpa >= (SELECT AVG(gpa) FROM students t2 WHERE t2.major = t.major);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nDerived table returning count per major",
+    "output": "SELECT sub.major, sub.cnt FROM (SELECT major, COUNT(*) AS cnt FROM students GROUP BY major) sub WHERE sub.cnt > 2;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery filtering rows with ANY operator",
+    "output": "SELECT * FROM students WHERE gpa = ANY (SELECT gpa FROM students WHERE gpa < 50);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery filtering rows with ALL operator",
+    "output": "SELECT * FROM students WHERE gpa > ALL (SELECT AVG(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nScalar subquery for a single value",
+    "output": "SELECT (SELECT AVG(gpa) FROM students) AS avg_val;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows matching set from a subquery using IN",
+    "output": "SELECT * FROM students WHERE major IN (SELECT major FROM students GROUP BY major HAVING COUNT(*) >= 3);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nLargest value strictly less than the global maximum",
+    "output": "SELECT gpa FROM students ORDER BY gpa DESC LIMIT 1 OFFSET 1;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nNested subquery: top values per group based on derived ranking",
+    "output": "SELECT t.* FROM students t WHERE t.gpa = (SELECT MAX(gpa) FROM students t2 WHERE t2.major = t.major);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nRows where name not present in a sub table",
+    "output": "SELECT * FROM students WHERE name NOT IN (SELECT name FROM students WHERE gpa > 90);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery used to compare against the overall total",
+    "output": "SELECT major, SUM(gpa) AS part FROM students GROUP BY major HAVING SUM(gpa) > (SELECT AVG(gpa) FROM students);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nUse a subquery to compute rolling reference count",
+    "output": "SELECT t.major, (SELECT COUNT(*) FROM students t2 WHERE t2.major <= t.major) AS running FROM students t;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nEXISTS correlated check to its own table values",
+    "output": "SELECT * FROM students t WHERE EXISTS (SELECT 1 FROM students t2 WHERE t2.major = t.major AND t2.gpa > t.gpa);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery comparing to the minimum plus a constant",
+    "output": "SELECT * FROM students WHERE gpa > (SELECT MIN(gpa) FROM students) + 10;"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery returning rows for a top slice group",
+    "output": "SELECT * FROM students WHERE gpa IN (SELECT gpa FROM students ORDER BY gpa DESC LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa, major)\nSubquery joining a derived aggregate",
+    "output": "SELECT t.* FROM students t JOIN (SELECT major, MAX(gpa) mx FROM students GROUP BY major) a ON a.major = t.major AND a.mx = t.gpa;"
+  }
+]

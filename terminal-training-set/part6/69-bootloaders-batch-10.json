@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a GRUB rescue disk using an existing system",
+    "output": "<think>\nSo the request is to create a GRUB rescue disk using an existing system.\nLet me consider what makes sense here.\nThe tool for this job is grub-mkrescue — grub-mkrescue operations.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nThe -v flag means verbose output, which matters here because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ngrub-mkrescue -o grub-rescue.iso && xorriso -as cdrecord -v dev=/dev/sr0 grub-rescue.iso"
+  },
+  {
+    "instruction": "Generate a GRUB configuration from scratch (no update-grub)",
+    "output": "<think>\nThe task requires us to generate a GRUB configuration from scratch (no update-grub).\nThe tool for this job is grub-mkconfig — grub-mkconfig operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ngrub-mkconfig -o /boot/grub/grub.cfg 2>/dev/null || /usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+  },
+  {
+    "instruction": "GRUB: chainload a Windows Boot Manager on UEFI",
+    "output": "<think>\nWe should gRUB: chainload a Windows Boot Manager on UEFI.\ncat is what we need — cat operations.\n</think>\ncat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry \"Windows UEFI\" {\n  insmod part_gpt\n  insmod fat\n  search --fs-uuid --no-floppy --set=root XXXX-XXXX\n  chainloader /EFI/Microsoft/Boot/bootmgfw.efi\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "Create a systemd-boot entry for a fallback kernel",
+    "output": "<think>\nAlright, we need to create a systemd-boot entry for a fallback kernel.\nLet me think through this step by step.\ncat is what we need — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /boot/efi/loader/entries/debian-fallback.conf <<'EOF'\ntitle Debian Fallback\nlinux /vmlinuz-fallback\ninitrd /initramfs-fallback.img\noptions root=UUID=xxx rw\nEOF"
+  },
+  {
+    "instruction": "List available SBAT policy levels for GRUB",
+    "output": "<think>\nThe user wants to list available SBAT policy levels for GRUB.\nLet me reason through this.\nThe tool for this job is cat — cat operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /usr/share/grub/sbat.csv 2>/dev/null | head -20"
+  },
+  {
+    "instruction": "Check if the system boots via GRUB or systemd-boot",
+    "output": "<think>\nThis is asking us to check if the system boots via GRUB or systemd-boot.\nI'd use efibootmgr for this — efibootmgr operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nefibootmgr -v | grep BootCurrent | grep -q GRUB && echo 'GRUB' || echo 'Other'"
+  },
+  {
+    "instruction": "Boot into Windows via GRUB command line (rescue mode)",
+    "output": "<think>\nThe task requires us to boot into Windows via GRUB command line (rescue mode).\nLet me think through this step by step.\nThis calls for grub. Grub operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ngrub> insmod ntfs\n insmod chain\n set root=(hd0,1)\n chainloader +1\n boot"
+  },
+  {
+    "instruction": "Use grub-mount to inspect a Linux root filesystem",
+    "output": "<think>\nThe goal is to use grub-mount to inspect a Linux root filesystem.\nI'll reach for grub-mount here because grub-mount operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ngrub-mount /dev/sda2 /mnt && ls /mnt"
+  },
+  {
+    "instruction": "Install GRUB to an external USB drive",
+    "output": "<think>\nThe task requires us to install GRUB to an external USB drive.\nLet me break this down.\nI'll reach for grub-install here because grub-install operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngrub-install --boot-directory=/mnt/usb/boot --efi-directory=/mnt/usb --target=x86_64-efi --removable /dev/sdb"
+  },
+  {
+    "instruction": "Create a portable GRUB USB with multiple ISOs",
+    "output": "<think>\nWe should create a portable GRUB USB with multiple ISOs.\nLet me break this down.\nThe tool for this job is grub-install — grub-install operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ngrub-install --boot-directory=/mnt/usb/boot --removable /dev/sdb && mkdir -p /mnt/usb/boot/iso && cp *.iso /mnt/usb/boot/iso/ && grub-mkconfig -o /mnt/usb/boot/grub/grub.cfg"
+  },
+  {
+    "instruction": "Set GRUB to boot with nomodeset kernel parameter",
+    "output": "<think>\nThis is asking us to set GRUB to boot with nomodeset kernel parameter.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'GRUB_CMDLINE_LINUX_DEFAULT=\"quiet nomodeset\"' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Remove old kernels from GRUB menu",
+    "output": "<think>\nAlright, we need to remove old kernels from GRUB menu.\nThe tool for this job is dpkg — dpkg operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndpkg --purge linux-image-OLDVERSION && update-grub"
+  },
+  {
+    "instruction": "Check the current GRUB device map",
+    "output": "<think>\nSo the request is to check the current GRUB device map.\nHere's how I'd approach this.\nThe tool for this job is cat — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\ncat /boot/grub/device.map"
+  },
+  {
+    "instruction": "Add GRUB_GFXPAYLOAD_LINUX to keep native resolution",
+    "output": "<think>\nThe task requires us to add GRUB_GFXPAYLOAD_LINUX to keep native resolution.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Use GRUB to boot a raw disk image",
+    "output": "<think>\nSo the request is to use GRUB to boot a raw disk image.\nLet me break this down.\nFor this, cat is the right tool — cat operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Boot Disk Image' {\n  set root=(hd0,1)\n  linux16 /memdisk\n  initrd16 /path/to/disk.img\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "Boot into single-user mode via GRUB",
+    "output": "<think>\nSo we need to boot into single-user mode via GRUB.\nLet me reason through this.\nI'll reach for grub-reboot here because grub-reboot operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ngrub-reboot 0"
+  },
+  {
+    "instruction": "Display details about the current boot process",
+    "output": "<think>\nThe user wants to display details about the current boot process.\nLet me think about the best approach.\nI'll reach for dmesg here because kernel ring buffer inspection.\nThe -E flag handles extended regex. Important because standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndmesg | grep -E 'Command line|Boot|EFI|BIOS' | head -20"
+  },
+  {
+    "instruction": "Show boot time of the system",
+    "output": "<think>\nWe're being asked to show boot time of the system.\nI'll reach for systemd-analyze here because systemd-analyze operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsystemd-analyze"
+  },
+  {
+    "instruction": "Show boot time breakdown by service",
+    "output": "<think>\nWe should show boot time breakdown by service.\nFirst, let me understand what's needed here.\nFor this, systemd-analyze is the right tool — systemd-analyze operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nsystemd-analyze blame"
+  },
+  {
+    "instruction": "Analyze boot critical chain",
+    "output": "<think>\nAlright, we need to analyze boot critical chain.\nLet me break this down.\nBest tool here is systemd-analyze — systemd-analyze operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsystemd-analyze critical-chain"
+  },
+  {
+    "instruction": "List all firmware-provided UEFI variables",
+    "output": "<think>\nSo the request is to list all firmware-provided UEFI variables.\nLet me think through this step by step.\nI'll reach for ls here because ls operations.\nI'm using -la for detailed listing including hidden files — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nls -la /sys/firmware/efi/efivars/ | head -30"
+  },
+  {
+    "instruction": "Check if systemd-boot is the active bootloader",
+    "output": "<think>\nThe task requires us to check if systemd-boot is the active bootloader.\nHere's how I'd approach this.\nefibootmgr is what we need — efibootmgr operations.\nI've added -i to interactive, prompt before action — without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nefibootmgr | grep -i systemd"
+  }
+]

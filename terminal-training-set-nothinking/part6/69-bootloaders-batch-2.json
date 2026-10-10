@@ -1,0 +1,23 @@
+[
+  {"instruction": "Create a custom GRUB menu entry that chainloads Windows", "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry \"Windows 10\" {\n  insmod ntfs\n  insmod chain\n  set root=(hd0,1)\n  chainloader +1\n}\nEOF\nupdate-grub"},
+  {"instruction": "Create a GRUB menuentry for a custom ISO boot", "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry \"SystemRescue\" {\n  set isofile=/boot/systemrescue.iso\n  loopback loop \\$isofile\n  linux (loop)/sysresccd/boot/vmlinuz archisobasedir=sysresccd img_dev=/dev/sda1 img_loop=\\$isofile\n  initrd (loop)/sysresccd/boot/sysresccd.img\n}\nEOF\nupdate-grub"},
+  {"instruction": "Set a GRUB superuser with password protection", "output": "echo 'set superusers=\"admin\"' >> /etc/grub.d/01_users && echo 'password_pbkdf2 admin grub.pbkdf2.sha512.10000.HEXHASH' >> /etc/grub.d/01_users && update-grub"},
+  {"instruction": "Add a GRUB background image", "output": "echo 'GRUB_BACKGROUND=/boot/grub/splash.png' >> /etc/default/grub && update-grub"},
+  {"instruction": "Change GRUB font size", "output": "echo 'GRUB_FONT=/boot/grub/fonts/DejaVuSansMono24.pf2' >> /etc/default/grub && update-grub"},
+  {"instruction": "Set GRUB to boot the previous entry next time only", "output": "grub-reboot 'Previous Linux versions>Debian GNU/Linux 6.1.0-25-amd64'"},
+  {"instruction": "List all GRUB boot entries with their indices", "output": "grep \"^menuentry\" /boot/grub/grub.cfg | awk -F\"'\" '{print NR-1 \\\": \\\"\\$2}'"},
+  {"instruction": "Create a GRUB rescue floppy image", "output": "grub-mkrescue -o grub-rescue-floppy.img --floppy"},
+  {"instruction": "Probe GRUB filesystem UUID", "output": "grub-probe -t fs_uuid /boot/grub"},
+  {"instruction": "Probe GRUB drive name for a path", "output": "grub-probe -t drive /boot"},
+  {"instruction": "Reinstall GRUB on a RAID array", "output": "grub-install --raid /dev/md0"},
+  {"instruction": "Set GRUB to be quiet (no boot messages)", "output": "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"quiet\"' >> /etc/default/grub && update-grub"},
+  {"instruction": "Disable GRUB os-prober to speed up config generation", "output": "echo 'GRUB_DISABLE_OS_PROBER=true' >> /etc/default/grub && update-grub"},
+  {"instruction": "Force GRUB to use a specific resolution", "output": "echo 'GRUB_GFXMODE=1920x1080x32' >> /etc/default/grub && echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub && update-grub"},
+  {"instruction": "Boot into recovery mode via GRUB", "output": "grub-reboot 'Advanced options for Debian>Debian GNU/Linux (recovery mode)' && reboot"},
+  {"instruction": "Create a custom GRUB entry for memtest86+", "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry \"Memtest86+\" {\n  linux16 /boot/memtest86+.bin\n}\nEOF\nupdate-grub"},
+  {"instruction": "Set GRUB timeout to -1 (wait forever)", "output": "echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub && update-grub"},
+  {"instruction": "Record the boot count with GRUB", "output": "echo 'GRUB_RECORDFAIL_TIMEOUT=30' >> /etc/default/grub && update-grub"},
+  {"instruction": "Encrypt GRUB password using plaintext (not recommended)", "output": "echo 'password admin secret' >> /etc/grub.d/01_users && update-grub"},
+  {"instruction": "GRUB: boot directly into a specific kernel by title", "output": "grub-set-default 'Debian GNU/Linux' && reboot"},
+  {"instruction": "Check GRUB installation targets on this system", "output": "grub-install --targets"}
+]

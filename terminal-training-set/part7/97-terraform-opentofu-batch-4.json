@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Initialize and apply in one command",
+    "output": "<think>\nThe goal is to initialize and apply in one command.\nLet me consider what makes sense here.\nI'll reach for terraform here because infrastructure provisioning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways run terraform plan before apply. Review the diff carefully.\nLet me verify afterward that it worked correctly.\n</think>\nterraform init && terraform apply -auto-approve"
+  },
+  {
+    "instruction": "Use backend type s3 with dynamodb locking",
+    "output": "<think>\nWe should use backend type s3 with dynamodb locking.\nHere's how I'd approach this.\nThe tool for this job is terraform — infrastructure provisioning.\nI've added -tf to list contents of archive — important to get the expected behavior.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform init -backend-config='bucket=my-tf-state' -backend-config='key=prod/terraform.tfstate' -backend-config='region=us-east-1' -backend-config='dynamodb_table=tf-locks'"
+  },
+  {
+    "instruction": "Migrate state from local to remote",
+    "output": "<think>\nThe goal is to migrate state from local to remote.\nLet me consider what makes sense here.\nterraform is what we need — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform init -migrate-state"
+  },
+  {
+    "instruction": "Reconfigure backend without migration prompt",
+    "output": "<think>\nThis is asking us to reconfigure backend without migration prompt.\nI'd use terraform for this — infrastructure provisioning.\nNo need for complex pipelines here — one command is sufficient.\nAlways run terraform plan before apply. Review the diff carefully.\nI'll check the output to make sure it did what we expected.\n</think>\nterraform init -reconfigure"
+  },
+  {
+    "instruction": "Lock state manually",
+    "output": "<think>\nThis is asking us to lock state manually.\nLet me break this down.\nI'll reach for terraform here because infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\nQuick verification after execution to be safe.\n</think>\nterraform plan -lock=true -lock-timeout=5m"
+  },
+  {
+    "instruction": "Override an input variable from environment",
+    "output": "<think>\nWe're being asked to override an input variable from environment.\nTF_VAR_region is what we need — TF_VAR_region operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nTF_VAR_region=eu-west-1 terraform plan"
+  },
+  {
+    "instruction": "Use sensitive variable in output without showing",
+    "output": "<think>\nThe user wants to use sensitive variable in output without showing.\nLet me consider what makes sense here.\nBest tool here is terraform — infrastructure provisioning.\nWhy -r? Recursive operation (descend into subdirectories). standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nterraform output -json | jq -r '.db_password.value'"
+  },
+  {
+    "instruction": "Mark an output as sensitive in configuration check",
+    "output": "<think>\nThe user wants to mark an output as sensitive in configuration check.\nLet me consider what makes sense here.\nI'd use grep for this — pattern searching.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrep 'sensitive = true' outputs.tf"
+  },
+  {
+    "instruction": "Create a data source dependency test",
+    "output": "<think>\nThe task requires us to create a data source dependency test.\nI'll reach for terraform here because infrastructure provisioning.\nNo need for complex pipelines here — one command is sufficient.\nAlways run terraform plan before apply. Review the diff carefully.\nI'll check the output to make sure it did what we expected.\n</think>\nterraform plan -refresh-only -target=data.aws_ami.ubuntu"
+  },
+  {
+    "instruction": "Use terraform_data resource to force a timestamp dependency",
+    "output": "<think>\nSo the request is to use terraform_data resource to force a timestamp dependency.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'resource \"terraform_data\" \"replacement\" { input = timestamp() }' > trigger.tf"
+  },
+  {
+    "instruction": "Use for_each with a map to create multiple resources",
+    "output": "<think>\nThe task requires us to use for_each with a map to create multiple resources.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'resource \"aws_s3_bucket\" \"this\" { for_each = var.buckets bucket = each.value }' > s3.tf"
+  },
+  {
+    "instruction": "Use count to create conditional resources",
+    "output": "<think>\nAlright, we need to use count to create conditional resources.\nLet me think through this step by step.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'resource \"aws_instance\" \"bastion\" { count = var.create_bastion ? 1 : 0 }' > bastion.tf"
+  },
+  {
+    "instruction": "Use try function to handle missing attributes",
+    "output": "<think>\nThe goal is to use try function to handle missing attributes.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'output \"ip\" { value = try(aws_instance.web.public_ip, \"\") }' > outputs.tf"
+  },
+  {
+    "instruction": "Use one function for module version selection",
+    "output": "<think>\nNeed to use one function for module version selection.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'module \"vpc\" { source = one([for m in data.terraform_remote_state.modules : m.outputs.vpc_module]) }'"
+  },
+  {
+    "instruction": "Create a local value for shorthand",
+    "output": "<think>\nWe're being asked to create a local value for shorthand.\nHere's how I'd approach this.\n</think>\necho 'locals { name_prefix = \"${var.environment}-${var.project}\" }' > locals.tf"
+  },
+  {
+    "instruction": "Use templatefile function for user data",
+    "output": "<think>\nNeed to use templatefile function for user data.\nLet me break this down.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'user_data = templatefile(\"${path.module}/init.sh.tpl\", { hostname = \"web01\" })' > ec2.tf"
+  },
+  {
+    "instruction": "Use jsonencode in Terraform for IAM policies",
+    "output": "<think>\nAlright, we need to use jsonencode in Terraform for IAM policies.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'policy = jsonencode({ Version = \"2012-10-17\", Statement = [{ Effect = \"Allow\", Action = \"s3:*\", Resource = \"*\" }] })' > iam.tf"
+  },
+  {
+    "instruction": "Use yamlencode for Kubernetes manifests",
+    "output": "<think>\nThe user wants to use yamlencode for Kubernetes manifests.\nFirst, let me understand what's needed here.\nLet me verify afterward that it worked correctly.\n</think>\necho 'manifest = yamlencode({ apiVersion = \"v1\", kind = \"Pod\", metadata = { name = \"nginx\" } })' > k8s.tf"
+  },
+  {
+    "instruction": "Create a null_resource with a provisioner",
+    "output": "<think>\nNeed to create a null_resource with a provisioner.\nLet me consider what makes sense here.\nThe -exec flag handles execute command on each match. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"null_resource\" \"provision\" { provisioner \"local-exec\" { command = \"echo hello\" } }' > provision.tf"
+  },
+  {
+    "instruction": "Use depends_on for implicit ordering",
+    "output": "<think>\nThe goal is to use depends_on for implicit ordering.\nLet me break this down.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'resource \"aws_instance\" \"app\" { depends_on = [aws_security_group.this] }' > app.tf"
+  },
+  {
+    "instruction": "Use lifecycle prevent_destroy",
+    "output": "<think>\nSo the request is to use lifecycle prevent_destroy.\nLet me think about the best approach.\nLet me verify afterward that it worked correctly.\n</think>\necho 'resource \"aws_instance\" \"db\" { lifecycle { prevent_destroy = true } }' > db.tf"
+  },
+  {
+    "instruction": "Use lifecycle create_before_destroy",
+    "output": "<think>\nAlright, we need to use lifecycle create_before_destroy.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'resource \"aws_instance\" \"web\" { lifecycle { create_before_destroy = true } }' > web.tf"
+  },
+  {
+    "instruction": "Use lifecycle ignore_changes for auto-scaling",
+    "output": "<think>\nWe're being asked to use lifecycle ignore_changes for auto-scaling.\nLet me break this down.\n</think>\necho 'resource \"aws_instance\" \"web\" { lifecycle { ignore_changes = [ami] } }' > web.tf"
+  },
+  {
+    "instruction": "Plan with -no-color for machine parsing",
+    "output": "<think>\nSo the request is to plan with -no-color for machine parsing.\nI'd use terraform for this — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform plan -no-color"
+  },
+  {
+    "instruction": "Apply with detailed exit code for CI checks",
+    "output": "<think>\nSo we need to apply with detailed exit code for CI checks.\nHere's how I'd approach this.\nBest tool here is terraform — infrastructure provisioning.\nNo need for complex pipelines here — one command is sufficient.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform apply -auto-approve -detailed-exitcode"
+  }
+]

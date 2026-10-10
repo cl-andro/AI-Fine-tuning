@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 25 'upstream health_checked'",
+    "output": "upstream health_checked {\n    zone upstream_health 128k;\n    server 10.0.0.10:8080 max_fails=3 fail_timeout=30s slow_start=30s;\n    server 10.0.0.11:8080 max_fails=3 fail_timeout=30s slow_start=30s;\n    server 10.0.0.12:8080 backup;\n}\nserver {\n    listen 80;\n    server_name health.example.com;\n    location / {\n        proxy_pass http://health_checked;\n        health_check interval=5s fails=3 passes=2 uri=/health;\n        health_check_timeout 3s;\n    }\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 25 'upstream zone_sync'",
+    "output": "upstream zone_sync {\n    zone backend 256k;\n    server 10.0.0.10:8080;\n    server 10.0.0.11:8080;\n    server 10.0.0.12:8080;\n    sticky cookie srv_id expires=1h domain=.example.com path=/;\n}\nserver {\n    listen 80;\n    server_name zone.example.com;\n    location / {\n        proxy_pass http://zone_sync;\n    }\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/nginx.conf | grep -A 15 'stream {'",
+    "output": "stream {\n    upstream stream_backend {\n        zone tcp_lb 64k;\n        least_conn;\n        server 10.0.0.60:3306;\n        server 10.0.0.61:3306;\n    }\n    server {\n        listen 3306;\n        proxy_pass stream_backend;\n        proxy_connect_timeout 5s;\n    }\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 25 'upstream with_health_check'",
+    "output": "upstream with_health_check {\n    zone backend 128k;\n    server 10.0.0.10:8080 slow_start=60s;\n    server 10.0.0.11:8080 slow_start=60s;\n}\nserver {\n    listen 80;\n    location / {\n        proxy_pass http://with_health_check;\n        health_check interval=10s jitter=2s uri=/health;\n        health_check_status 200 302;\n    }\n    location /status {\n        health_check_status;\n    }\n}"
+  },
+  {
+    "instruction": "nginx -s reopen",
+    "output": "nginx -s reopen"
+  },
+  {
+    "instruction": "ls -la /var/log/nginx/",
+    "output": "total 1234\ndrwxr-x---  2 www-data adm    4096 Jul 25 10:00 .\ndrwxr-xr-x 10 root     root    4096 Jul 20 10:00 ..\n-rw-r-----  1 www-data adm   45678 Jul 25 10:30 access.log\n-rw-r-----  1 www-data adm    1234 Jul 25 10:30 error.log"
+  },
+  {
+    "instruction": "tail -5 /var/log/nginx/access.log",
+    "output": "10.0.0.1 - - [25/Jul/2026:10:00:01 +0000] \"GET / HTTP/1.1\" 200 1234 \"-\" \"curl/7.88.1\"\n10.0.0.2 - - [25/Jul/2026:10:00:02 +0000] \"GET /api/data HTTP/1.1\" 200 567 \"-\" \"Mozilla/5.0\"\n10.0.0.3 - - [25/Jul/2026:10:00:03 +0000] \"GET /static/style.css HTTP/1.1\" 304 0 \"-\" \"curl/7.88.1\"\n10.0.0.4 - - [25/Jul/2026:10:00:04 +0000] \"POST /api/login HTTP/1.1\" 401 23 \"-\" \"curl/7.88.1\"\n10.0.0.5 - - [25/Jul/2026:10:00:05 +0000] \"GET /health HTTP/1.1\" 200 2 \"-\" \"nginx/1.24.0\""
+  },
+  {
+    "instruction": "nginx -T 2>&1 | grep -A 20 'upstream slow_start'",
+    "output": "upstream slow_start {\n    zone slow_start 128k;\n    server 10.0.0.10:8080 slow_start=120s;\n    server 10.0.0.11:8080 slow_start=120s;\n    server 10.0.0.12:8080 slow_start=60s backup;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/status.conf",
+    "output": "server {\n    listen 8080;\n    server_name _;\n    location /status {\n        stub_status;\n        allow 127.0.0.1;\n        allow 10.0.0.0/8;\n        deny all;\n    }\n}"
+  },
+  {
+    "instruction": "curl -s http://127.0.0.1:8080/status",
+    "output": "Active connections: 12\nserver accepts handled requests\n 12345 12345 34567\nReading: 0 Writing: 1 Waiting: 11"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 25 'upstream session_sticky'",
+    "output": "upstream session_sticky {\n    zone sticky 64k;\n    server 10.0.0.10:8080;\n    server 10.0.0.11:8080;\n    server 10.0.0.12:8080;\n    sticky learn\n        create=$upstream_cookie_exampleid\n        lookup=$cookie_exampleid\n        zone=client_sessions:1m\n        timeout=1h;\n}"
+  },
+  {
+    "instruction": "nginx -T 2>&1 | grep 'upstream'",
+    "output": "upstream backend {\nupstream api {\nupstream static {\nupstream health_checked {\nupstream zone_sync {\nupstream slow_start {\nupstream session_sticky {\nupstream tcp_backend {\nupstream grpc {\nupstream websocket {\nupstream backup_example {\nupstream canary {"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream least_time'",
+    "output": "upstream least_time {\n    zone least_time 64k;\n    least_time header;\n    server 10.0.0.10:8080;\n    server 10.0.0.11:8080;\n    server 10.0.0.12:8080;\n}"
+  },
+  {
+    "instruction": "nginx -s stop && sleep 1 && nginx",
+    "output": "nginx -s stop && sleep 1 && nginx"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'server { listen 443'",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name example.com;\n    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;\n    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;\n    location / {\n        proxy_pass http://backend;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n    }\n}"
+  },
+  {
+    "instruction": "echo 'checking nginx health endpoint'; curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1/health",
+    "output": "200"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream nlb'",
+    "output": "upstream nlb {\n    zone nlb 64k;\n    random;\n    server 10.0.0.80:8080;\n    server 10.0.0.81:8080;\n    server 10.0.0.82:8080;\n    keepalive 128;\n    keepalive_timeout 60s;\n}"
+  },
+  {
+    "instruction": "nginx -T 2>&1 | grep -c 'upstream'",
+    "output": "14"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream queue_example'",
+    "output": "upstream queue_example {\n    zone queue 64k;\n    queue 100 timeout=30s;\n    server 10.0.0.90:8080;\n    server 10.0.0.91:8080;\n    server 10.0.0.92:8080;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream servicemesh'",
+    "output": "upstream servicemesh {\n    zone mesh 64k;\n    server 10.0.0.95:8080;\n    server 10.0.0.96:8080;\n    nginx_service_mesh x-envoy-peer;\n}"
+  },
+  {
+    "instruction": "curl -s -H 'Host: health.example.com' http://localhost/health",
+    "output": "OK"
+  }
+]

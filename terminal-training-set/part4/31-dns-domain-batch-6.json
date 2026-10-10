@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Sign a zone with DNSSEC using dnssec-signzone",
+    "output": "<think>\nThe goal is to sign a zone with DNSSEC using dnssec-signzone.\nLet me think through this step by step.\nThis calls for dnssec-signzone. Dnssec-signzone operations.\nWhy -o? Output to file, OR operator in find. this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ndnssec-signzone -o example.com db.example.com"
+  },
+  {
+    "instruction": "Sign a zone with NSEC3 and a custom salt",
+    "output": "<think>\nWe're being asked to sign a zone with NSEC3 and a custom salt.\nThe tool for this job is dnssec-signzone — dnssec-signzone operations.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\n</think>\ndnssec-signzone -o example.com -S db.example.com"
+  },
+  {
+    "instruction": "Generate a DNSSEC key pair (zone signing key)",
+    "output": "<think>\nThe task requires us to generate a DNSSEC key pair (zone signing key).\nBest tool here is Generating — Generating operations.\nLet me verify afterward that it worked correctly.\n</think>\nGenerating ZSK key pair (256 bits)...\nKexample.com.+008+12345\n\nCreated key: /etc/bind/Kexample.com.+008+12345.key\nCreated private: /etc/bind/Kexample.com.+008+12345.private\n\nKey tag: 12345\nAlgorithm: RSASHA256 (8)\nSize: 256 bits\nUse dnssec-keygen -f KSK for a Key Signing Key."
+  },
+  {
+    "instruction": "Generate a KSK (Key Signing Key) for DNSSEC",
+    "output": "<think>\nThe goal is to generate a KSK (Key Signing Key) for DNSSEC.\nBest tool here is Generating — Generating operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nGenerating KSK key pair (2048 bits)...\nKexample.com.+008+67890\n\nCreated key: /etc/bind/Kexample.com.+008+67890.key\nCreated private: /etc/bind/Kexample.com.+008+67890.private\n\nKey tag: 67890\nAlgorithm: RSASHA256 (8)\nSize: 2048 bits\nKSK should have a higher bit length for security."
+  },
+  {
+    "instruction": "Generate a DNSSEC key with ECDSAP256SHA256 algorithm",
+    "output": "<think>\nWe should generate a DNSSEC key with ECDSAP256SHA256 algorithm.\nGenerating is what we need — Generating operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nGenerating ZSK key pair (256 bits)...\nKexample.com.+013+11111\n\nCreated key: /etc/bind/Kexample.com.+013+11111.key\nCreated private: /etc/bind/Kexample.com.+013+11111.private\n\nKey tag: 11111\nAlgorithm: ECDSAP256SHA256 (13)\nSize: 256 bits\n\nEC algorithm keys are smaller and faster than RSA."
+  },
+  {
+    "instruction": "Set the activation time on a DNSSEC key",
+    "output": "<think>\nThis is asking us to set the activation time on a DNSSEC key.\nFor this, Key is the right tool — Key operations.\nAfter running, I'll confirm the result looks right.\n</think>\nKey Kexample.com.+008+12345:\n  Active: now (2024-07-25 11:40:00)\n  Inactive: (unset)\n  Delete: (unset)\n  Published: now (2024-07-25 11:40:00)\n  Revoke: (unset)\n\nUse dnssec-settime -P now -A now +180d to schedule future activation."
+  },
+  {
+    "instruction": "Set key timing for DNSSEC rollover",
+    "output": "<think>\nThe task requires us to set key timing for DNSSEC rollover.\nLet me think through this step by step.\nThe tool for this job is Key — Key operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nKey Kexample.com.+008+12345:\n  Active: 2024-08-25 00:00:00\n  Inactive: 2024-10-25 00:00:00\n  Delete: 2024-11-25 00:00:00\n  Published: 2024-08-01 00:00:00\n  Revoke: (unset)\n\nScheduled ZSK rollover. Publish before active to allow cache expiration."
+  },
+  {
+    "instruction": "Revoke a DNSSEC key",
+    "output": "<think>\nThe goal is to revoke a DNSSEC key.\nFirst, let me understand what's needed here.\nBest tool here is Key — Key operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nKey Kexample.com.+008+67890:\n  Published: now\n  Active: now\n  Revoked: now\n\nSETREVOKE flag set. The key will be published with the REVOKE bit set.\nUse dnssec-settime -R now to set the revocation time."
+  },
+  {
+    "instruction": "Set a DS publication date for a DNSSEC key",
+    "output": "<think>\nThe user wants to set a DS publication date for a DNSSEC key.\nLet me think about the best approach.\nBest tool here is Key — Key operations.\n</think>\nKey Kexample.com.+008+67890:\n  Published: now\n  Active: 2024-08-25 00:00:00\n  DS: 2024-08-01 00:00:00 (parent publishes DS record)\n\nThe DS publish time should precede the key activation time."
+  },
+  {
+    "instruction": "View DNSSEC key details",
+    "output": "<think>\nSo we need to view DNSSEC key details.\nLet me think about the best approach.\nKey is what we need — Key operations.\n</think>\nKey: Kexample.com.+008+12345\nAlgorithm: RSASHA256 (8)\nKey Size: 256 bits\nKey Tag: 12345\nTiming:\n  Published: Thu 25 Jul 2024 11:40:00 AM UTC\n  Active: Thu 25 Jul 2024 11:40:00 AM UTC\n  Inactive: (not set)\n  Delete: (not set)\n\nKey flags: ZSK (Zone Signing Key)"
+  },
+  {
+    "instruction": "Generate a key pair with specific publication date",
+    "output": "<think>\nWe're being asked to generate a key pair with specific publication date.\nHere's how I'd approach this.\nBest tool here is Generating — Generating operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nGenerating ZSK key pair (256 bits)...\nKexample.com.+008+22222\n\nKey created with:\n  Published: 2024-07-01 00:00:00\n  Active: 2024-07-15 00:00:00\n\nUse -P and -A to set publication and activation timestamps."
+  },
+  {
+    "instruction": "Check DNSSEC key timings",
+    "output": "<think>\nThe task requires us to check DNSSEC key timings.\nThe tool for this job is Key — Key operations.\nQuick verification after execution to be safe.\n</think>\nKey: Kexample.com.+008+12345\n  Publish: 2024-07-25 11:40:00\n  Activate: 2024-07-25 11:40:00\n  Inactive: 2025-07-25 11:40:00\n  Delete: 2025-08-01 11:40:00\n  Revoke: (unset)\n\nNext rollover: ZSK scheduled at 2025-07-25"
+  },
+  {
+    "instruction": "Resign a zone with updated keys",
+    "output": "<think>\nAlright, we need to resign a zone with updated keys.\nFor this, Re-signing is the right tool — Re-signing operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nRe-signing zone with existing keys:\n- ZSK: Kexample.com.+008+12345\n- KSK: Kexample.com.+008+67890\n\nSignatures refreshed for all RRsets.\nRRSIG validity: 30 days\n\nSigned zone file updated."
+  },
+  {
+    "instruction": "Verify DNSSEC signatures in a zone file",
+    "output": "<think>\nThe user wants to verify DNSSEC signatures in a zone file.\nBest tool here is dnssec-signzone — dnssec-signzone operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndnssec-signzone -o example.com -N INCREMENT db.example.com"
+  },
+  {
+    "instruction": "Sign a zone with a specific key directory",
+    "output": "<think>\nWe should sign a zone with a specific key directory.\nLet me break this down.\nI'd use Using for this — Using operations.\n</think>\nUsing keys from /etc/bind/keys/\n\nZone signing complete:\nAlgorithm: NSEC3RSASHA256\nSignatures generated: 15\nSignatures verified: 15\nSigning time: 0.18 seconds\nSigned zone file: /etc/bind/db.example.com.signed"
+  },
+  {
+    "instruction": "Print the DNSSEC key tag for management",
+    "output": "<think>\nWe should print the DNSSEC key tag for management.\nLet me break this down.\nI'd use Kexample.com. for this — Kexample.com. operations.\n</think>\nKexample.com.+008+12345.key: tag = 12345\nKexample.com.+008+67890.key: tag = 67890\n\nUse the key tag to reference keys in dnssec-settime and dnssec-revoke."
+  },
+  {
+    "instruction": "Re-sign a zone without changing keys",
+    "output": "<think>\nThe user wants to re-sign a zone without changing keys.\nI'd use Maintaining for this — Maintaining operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nMaintaining existing keys:\n- ZSK: 12345 (Kexample.com.+008+12345)\n- KSK: 67890 (Kexample.com.+008+67890)\n\nSignatures refreshed: 12\nValidity period extended for another 30 days."
+  },
+  {
+    "instruction": "Generate an ECDSA key for DNSSEC",
+    "output": "<think>\nSo we need to generate an ECDSA key for DNSSEC.\nFirst, let me understand what's needed here.\nThis calls for Generating. Generating operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nGenerating ZSK key pair (384 bits)...\nKexample.com.+014+33333\n\nAlgorithm: ECDSAP384SHA384 (14)\nKey Tag: 33333\n\nECDSAP384SHA384 is FIPS-compliant and provides strong security."
+  },
+  {
+    "instruction": "Set the inactive time on a ZSK before rollover",
+    "output": "<think>\nAlright, we need to set the inactive time on a ZSK before rollover.\nI'd use Key for this — Key operations.\nLet me verify afterward that it worked correctly.\n</think>\nKey Kexample.com.+008+12345 inactive time set to 2024-09-25 00:00:00.\n\nExisting ZSK becomes inactive after the new ZSK is active."
+  },
+  {
+    "instruction": "Check the DNSSEC key state before a rollover",
+    "output": "<think>\nThe task requires us to check the DNSSEC key state before a rollover.\nLet me think about the best approach.\nFor this, Key is the right tool — Key operations.\n</think>\nKey: Kexample.com.+008+12345 (ZSK)\n  Published: 2024-07-25 11:40:00\n  Active: 2024-07-25 11:40:00\n  Retired: (not set)\n  Removed: (not set)\n\nUse dnssec-settime -I <date> to schedule key retirement."
+  }
+]

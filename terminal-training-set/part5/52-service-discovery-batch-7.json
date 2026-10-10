@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Acquire a lock in etcd with etcdctl",
+    "output": "<think>\nWe should acquire a lock in etcd with etcdctl.\nLet me consider what makes sense here.\nI'd use etcdctl for this — etcdctl operations.\n</think>\netcdctl lock mylock 'echo \"critical section running\"'\nmylock/1234567890abcdef\ncritical section running\n"
+  },
+  {
+    "instruction": "Execute a transaction in etcd with etcdctl",
+    "output": "<think>\nThe goal is to execute a transaction in etcd with etcdctl.\nI'll reach for etcdctl here because etcdctl operations.\nA quick sanity check afterward saves debugging time later.\n</think>\netcdctl txn <<'EOF'\ncompare:\n  value(\"/config/app/version\") = \"2\"\nsuccess:\n  put /config/app/version \"3\"\nfailure:\n  put /config/app/version-error \"mismatch\"\nEOF\nSUCCESS\n\n/config/app/version\n3"
+  },
+  {
+    "instruction": "Test a transaction in etcd that should fail",
+    "output": "<think>\nThis is asking us to test a transaction in etcd that should fail.\nLet me reason through this.\netcdctl is what we need — etcdctl operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\netcdctl txn <<'EOF'\ncompare:\n  value(\"/config/app/version\") = \"99\"\nsuccess:\n  put /config/app/version \"100\"\nfailure:\n  put /config/app/version-error \"expected version 99, got 3\"\nEOF\nFAILURE\n\n/config/app/version-error\nexpected version 99, got 3"
+  },
+  {
+    "instruction": "Grant a new lease in etcd with etcdctl",
+    "output": "<think>\nNeed to grant a new lease in etcd with etcdctl.\nHere's how I'd approach this.\netcdctl is what we need — etcdctl operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\netcdctl lease grant 60\nlease 1234567890abcdef granted with TTL(60s)"
+  },
+  {
+    "instruction": "Revoke a lease in etcd with etcdctl",
+    "output": "<think>\nThe task requires us to revoke a lease in etcd with etcdctl.\nFirst, let me understand what's needed here.\nThe tool for this job is etcdctl — etcdctl operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\netcdctl lease revoke 1234567890abcdef\nlease 1234567890abcdef revoked"
+  },
+  {
+    "instruction": "Keep a lease alive in etcd with etcdctl",
+    "output": "<think>\nWe're being asked to keep a lease alive in etcd with etcdctl.\nLet me think about the best approach.\netcdctl is what we need — etcdctl operations.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl lease keep-alive 1234567890abcdef\nlease 1234567890abcdef keepalived with TTL(60)\nlease 1234567890abcdef keepalived with TTL(60)\n..."
+  },
+  {
+    "instruction": "List all leases in etcd with etcdctl",
+    "output": "<think>\nThe user wants to list all leases in etcd with etcdctl.\nFor this, etcdctl is the right tool — etcdctl operations.\n</think>\netcdctl lease list\nfound 3 leases\n1234567890abcdef\n234567890abcdef1\n34567890abcdef12"
+  },
+  {
+    "instruction": "Add a member to the etcd cluster",
+    "output": "<think>\nThis is asking us to add a member to the etcd cluster.\nLet me think through this step by step.\nI'd use etcdctl for this — etcdctl operations.\n</think>\netcdctl member add infra3 --peer-urls=http://10.0.1.4:2380\nMember 45678901abcdef12 added to cluster ef12ab345678cd90\n\nETCD_NAME=\"infra3\"\nETCD_INITIAL_CLUSTER=\"infra0=http://10.0.1.1:2380,infra1=http://10.0.1.2:2380,infra2=http://10.0.1.3:2380,infra3=http://10.0.1.4:2380\"\nETCD_INITIAL_CLUSTER_STATE=\"existing\""
+  },
+  {
+    "instruction": "Remove a member from the etcd cluster",
+    "output": "<think>\nSo we need to remove a member from the etcd cluster.\nFirst, let me understand what's needed here.\nFor this, etcdctl is the right tool — etcdctl operations.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl member remove 45678901abcdef12\nMember 45678901abcdef12 removed from cluster ef12ab345678cd90"
+  },
+  {
+    "instruction": "Update a member's peer URL in etcd",
+    "output": "<think>\nThe user wants to update a member's peer URL in etcd.\nLet me think about the best approach.\nThis calls for etcdctl. Etcdctl operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\netcdctl member update 8214f0d9b4675f94 --peer-urls=http://10.0.1.1:2380,http://10.0.1.10:2380\nMember 8214f0d9b4675f94 updated in cluster ef12ab345678cd90"
+  },
+  {
+    "instruction": "List etcd members with JSON output",
+    "output": "<think>\nThis is asking us to list etcd members with JSON output.\nLet me consider what makes sense here.\nBest tool here is etcdctl — etcdctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\netcdctl member list -w json\n{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"members\":[{\"ID\":82150644016928900,\"name\":\"infra0\",\"peerURLs\":[\"http://10.0.1.1:2380\"],\"clientURLs\":[\"http://10.0.1.1:2379\"]},{\"ID\":10501334649042895635,\"name\":\"infra1\",\"peerURLs\":[\"http://10.0.1.2:2380\"],\"clientURLs\":[\"http://10.0.1.2:2379\"]}]}"
+  },
+  {
+    "instruction": "Check etcd cluster status",
+    "output": "<think>\nAlright, we need to check etcd cluster status.\nI'll reach for etcdctl here because etcdctl operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl endpoint status -w table\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|    ENDPOINT    |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n| 127.0.0.1:2379 | 8214f0d9b4675f94 |  3.5.9  |   25 MB |      true |      false |         4 |      12458 |              12458 |        |\n| 127.0.0.1:22379| f3a7d0e9b4675c12 |  3.5.9  |   24 MB |     false |      false |         4 |      12458 |              12458 |        |\n| 127.0.0.1:32379| c5e8a2b9d4675d34 |  3.5.9  |   24 MB |     false |      false |         4 |      12458 |              12458 |        |\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+"
+  },
+  {
+    "instruction": "Check etcd endpoint health",
+    "output": "<think>\nThe goal is to check etcd endpoint health.\nThis calls for etcdctl. Etcdctl operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\netcdctl endpoint health -w table\n+----------------+--------+------------+-------+\n|    ENDPOINT    | HEALTH |    TOOK    | ERROR |\n+----------------+--------+------------+-------+\n| 127.0.0.1:2379 |   true | 2.345678ms |       |\n| 127.0.0.1:22379|   true | 3.123456ms |       |\n| 127.0.0.1:32379|   true | 2.987654ms |       |\n+----------------+--------+------------+-------+"
+  },
+  {
+    "instruction": "Get the hash of an etcd KV store",
+    "output": "<think>\nSo we need to get the hash of an etcd KV store.\nLet me reason through this.\nBest tool here is etcdctl — etcdctl operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\netcdctl endpoint hashkv -w table\n+----------------+------------------+------------------+\n|    ENDPOINT    |        ID        |      HASH        |\n+----------------+------------------+------------------+\n| 127.0.0.1:2379 | 8214f0d9b4675f94 | 0xabcd1234ef567890 |\n| 127.0.0.1:22379| f3a7d0e9b4675c12 | 0xabcd1234ef567890 |\n| 127.0.0.1:32379| c5e8a2b9d4675d34 | 0xabcd1234ef567890 |\n+----------------+------------------+------------------+"
+  },
+  {
+    "instruction": "Check etcd status on a specific endpoint",
+    "output": "<think>\nWe're being asked to check etcd status on a specific endpoint.\nLet me think about the best approach.\nThe tool for this job is etcdctl — etcdctl operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\netcdctl endpoint status --endpoints=https://10.0.1.1:2379 -w json\n[{\"Endpoint\":\"https://10.0.1.1:2379\",\"Status\":{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"version\":\"3.5.9\",\"dbSize\":26214400,\"leader\":9372539479320773524,\"raftIndex\":12458,\"raftTerm\":4}}]"
+  },
+  {
+    "instruction": "Get etcd cluster member list with JSON output",
+    "output": "<think>\nNeed to get etcd cluster member list with JSON output.\netcdctl is what we need — etcdctl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\netcdctl member list -w fields\nID : 8214f0d9b4675f94\nName : infra0\nPeerURLs : [http://10.0.1.1:2380]\nClientURLs : [http://10.0.1.1:2379]"
+  },
+  {
+    "instruction": "List etcd members by endpoint",
+    "output": "<think>\nWe're being asked to list etcd members by endpoint.\nI'd use etcdctl for this — etcdctl operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\netcdctl member list --endpoints=https://10.0.1.1:2379 -w table\n+------------------+---------+--------+---------------------------+----------------------------+\n|        ID        | STATUS  |  NAME  |       PEER ADDRS          |      CLIENT ADDRS          |\n+------------------+---------+--------+---------------------------+----------------------------+\n| 8214f0d9b4675f94 | started | infra0 | http://10.0.1.1:2380      | http://10.0.1.1:2379       |\n+------------------+---------+--------+---------------------------+----------------------------+"
+  },
+  {
+    "instruction": "Add a new etcd user with password",
+    "output": "<think>\nWe're being asked to add a new etcd user with password.\nI'll reach for etcdctl here because etcdctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\netcdctl user add bob --new-user-password=s3cret!\nUser bob created"
+  },
+  {
+    "instruction": "Grant a role to an etcd user",
+    "output": "<think>\nWe should grant a role to an etcd user.\nFirst, let me understand what's needed here.\netcdctl is what we need — etcdctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\netcdctl user grant-role bob admin\nRole admin is granted to user bob"
+  },
+  {
+    "instruction": "Get etcd endpoint status with JSON output",
+    "output": "<think>\nWe're being asked to get etcd endpoint status with JSON output.\nFirst, let me understand what's needed here.\nBest tool here is etcdctl — etcdctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\netcdctl endpoint status -w json\n[{\"Endpoint\":\"127.0.0.1:2379\",\"Status\":{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"version\":\"3.5.9\",\"dbSize\":26214400,\"leader\":9372539479320773524,\"raftIndex\":12458,\"raftTerm\":4}}]"
+  },
+  {
+    "instruction": "Move etcd leader to another member",
+    "output": "<think>\nThis is asking us to move etcd leader to another member.\nFirst, let me understand what's needed here.\nThis calls for etcdctl. Etcdctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\netcdctl move-leader f3a7d0e9b4675c12\nLeadership transferred from 8214f0d9b4675f94 to f3a7d0e9b4675c12"
+  }
+]

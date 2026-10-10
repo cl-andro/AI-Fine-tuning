@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to install PowerDNS authoritative server",
+    "output": "<think>\nThe task requires us to install PowerDNS authoritative server.\nLet me consider what makes sense here.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install pdns-server pdns-backend-mysql"
+  },
+  {
+    "instruction": "How to install PowerDNS recursor",
+    "output": "<think>\nThis is asking us to install PowerDNS recursor.\nLet me think through this step by step.\nI'll reach for apt here because apt operations.\nNo need for complex pipelines here — one command is sufficient.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install pdns-recursor"
+  },
+  {
+    "instruction": "How to install dnsdist",
+    "output": "<think>\nWe're being asked to install dnsdist.\nLet me think through this step by step.\nI'd use apt for this — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install dnsdist"
+  },
+  {
+    "instruction": "How to create a primary zone with pdnsutil",
+    "output": "<think>\nThis is asking us to create a primary zone with pdnsutil.\nLet me think about the best approach.\nThe tool for this job is pdnsutil — PowerDNS zone and record management.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\npdnsutil create-zone example.com ns1.example.com admin.example.com"
+  },
+  {
+    "instruction": "How to set up a secondary zone in PowerDNS",
+    "output": "<think>\nSo the request is to set up a secondary zone in PowerDNS.\nFirst, let me understand what's needed here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'slave=yes' >> /etc/powerdns/pdns.conf && pdnsutil create-slave-zone example.com 192.168.1.1"
+  },
+  {
+    "instruction": "How to retrieve a slave zone immediately",
+    "output": "<think>\nAlright, we need to retrieve a slave zone immediately.\nFirst, let me understand what's needed here.\nThe tool for this job is pdns_control — pdns_control operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\npdns_control retrieve example.com"
+  },
+  {
+    "instruction": "How to notify slaves of zone change",
+    "output": "<think>\nThe goal is to notify slaves of zone change.\nBest tool here is pdns_control — pdns_control operations.\n</think>\npdns_control notify example.com"
+  },
+  {
+    "instruction": "How to redirect query in dnsdist",
+    "output": "<think>\nNeed to redirect query in dnsdist.\nLet me break this down.\nBest tool here is dnsdist — dnsdist operations.\nI've added -e to edit or executable — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\ndnsdist -e 'addAction(QType(\"A\"), RCodeAction(dnsdist.NXDOMAIN))'"
+  },
+  {
+    "instruction": "How to add dnsdist console ACL",
+    "output": "<think>\nSo we need to add dnsdist console ACL.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'console-acl=127.0.0.0/8' >> /etc/dnsdist/dnsdist.conf"
+  },
+  {
+    "instruction": "How to set dnsdist to listen on port 53",
+    "output": "<think>\nNeed to set dnsdist to listen on port 53.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'setLocal(\"0.0.0.0:53\")' >> /etc/dnsdist/dnsdist.conf"
+  },
+  {
+    "instruction": "How to add pool backends in dnsdist",
+    "output": "<think>\nNeed to add pool backends in dnsdist.\nI'd use dnsdist for this — dnsdist operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ndnsdist -e 'newServer({address=\"192.168.1.1:53\", pool=\"auth\"})'"
+  },
+  {
+    "instruction": "How to set dnsdist load balancing policy",
+    "output": "<think>\nThe goal is to set dnsdist load balancing policy.\nLet me reason through this.\nThe tool for this job is dnsdist — dnsdist operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ndnsdist -e 'setServerPolicy(leastOutstanding)'"
+  },
+  {
+    "instruction": "How to set dnsdist to drop large queries",
+    "output": "<think>\nWe should set dnsdist to drop large queries.\nI'll reach for dnsdist here because dnsdist operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ndnsdist -e 'addAction(MaxQSizeAction(512), DropAction())'"
+  },
+  {
+    "instruction": "How to enable DNSSEC processing in dnsdist",
+    "output": "<think>\nThe task requires us to enable DNSSEC processing in dnsdist.\nFirst, let me understand what's needed here.\ndnsdist is what we need — dnsdist operations.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\n</think>\ndnsdist -e 'setDNSSECPool(\"dnssec-pool\")'"
+  },
+  {
+    "instruction": "How to view dnsdist top queries",
+    "output": "<think>\nThe task requires us to view dnsdist top queries.\nHere's how I'd approach this.\nI'll reach for dnsdist here because dnsdist operations.\nI'm using -e for edit or executable — standard practice for this kind of operation.\n</think>\ndnsdist -e 'topQueries()'"
+  },
+  {
+    "instruction": "How to view dnsdist client statistics",
+    "output": "<think>\nThe goal is to view dnsdist client statistics.\nHere's how I'd approach this.\nThis calls for dnsdist. Dnsdist operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\ndnsdist -e 'showServers()'"
+  },
+  {
+    "instruction": "How to check dnsdist latency",
+    "output": "<think>\nSo the request is to check dnsdist latency.\nLet me think about the best approach.\nI'd use dnsdist for this — dnsdist operations.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndnsdist -e 'showResponseLatencies()'"
+  },
+  {
+    "instruction": "How to restart dnsdist service",
+    "output": "<think>\nNeed to restart dnsdist service.\nLet me think about the best approach.\nI'll reach for systemctl here because managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart dnsdist"
+  },
+  {
+    "instruction": "How to add a Lua action in dnsdist",
+    "output": "<think>\nWe should add a Lua action in dnsdist.\nHere's how I'd approach this.\ndnsdist is what we need — dnsdist operations.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndnsdist -e 'addAction(AllRule(), DelayAction(100))'"
+  },
+  {
+    "instruction": "How to rate limit in dnsdist",
+    "output": "<think>\nThis is asking us to rate limit in dnsdist.\nLet me break this down.\nBest tool here is dnsdist — dnsdist operations.\nI've added -e to edit or executable — this controls how the output is formatted.\nQuick verification after execution to be safe.\n</think>\ndnsdist -e 'addAction(QType(\"A\"), RCodeAction(dnsdist.NXDOMAIN))'"
+  },
+  {
+    "instruction": "How to use rec_control to flush cache",
+    "output": "<think>\nWe're being asked to use rec_control to flush cache.\nLet me think through this step by step.\nI'll reach for rec_control here because rec_control operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nrec_control flush-cache example.com"
+  },
+  {
+    "instruction": "How to view recursor cache dump",
+    "output": "<think>\nWe're being asked to view recursor cache dump.\nI'll reach for rec_control here because rec_control operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nrec_control dump-cache /tmp/cache.dump"
+  },
+  {
+    "instruction": "How to set rec-control as server",
+    "output": "<think>\nThe task requires us to set rec-control as server.\nHere's how I'd approach this.\nI'll reach for rec_control here because rec_control operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nrec_control ping"
+  },
+  {
+    "instruction": "How to check recursor trace for a domain",
+    "output": "<think>\nWe should check recursor trace for a domain.\nLet me reason through this.\nrec_control is what we need — rec_control operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nrec_control trace-regex \".*example.com\""
+  },
+  {
+    "instruction": "How to add forward zone in pdns-recursor",
+    "output": "<think>\nThis is asking us to add forward zone in pdns-recursor.\nLet me break this down.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'forward-zones=example.com=8.8.8.8' >> /etc/powerdns/recursor.conf"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "istioctl experimental describe pod sleep-6c9f78b8d6-abc12 -n default",
+    "output": "<think>\nSo we need to istioctl experimental describe pod sleep-6c9f78b8d6-abc12 -n default.\nLet me think about the best approach.\nFor this, Pod is the right tool — Pod operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nPod: sleep-6c9f78b8d6-abc12\n   Revision: default\n   Pod Ports: 80 (sleep), 15090 (istio-proxy)\n   Service: sleep (10.96.0.20:80)\n   DestinationRules: sleep-dr (host: sleep.default.svc.cluster.local)\n   VirtualServices: sleep-vs (host: sleep.default.svc.cluster.local)\n   Authorization Policies: allow-all (action: ALLOW)"
+  },
+  {
+    "instruction": "istioctl experimental injector list",
+    "output": "<think>\nThe task requires us to istioctl experimental injector list.\nLet me consider what makes sense here.\nNAME is what we need — NAME operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nNAME               NAMESPACE       WORKLOAD SELECTOR\nsidecar-injector   istio-system    <all workloads>\nRevision: default, injection enabled namespaces:\n  - ns/default\n  - ns/prod\n"
+  },
+  {
+    "instruction": "istioctl operator init",
+    "output": "<think>\nThis is asking us to istioctl operator init.\nLet me consider what makes sense here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\n✓ Istio operator init completed\n✓ Created operator deployment: istio-operator\n✓ Created CRDs: IstioOperator, IstioRevision, WasmPlugin"
+  },
+  {
+    "instruction": "istioctl operator remove",
+    "output": "<think>\nThe task requires us to istioctl operator remove.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\n✓ Istio operator removed successfully\n✓ Removed istio-operator deployment\n✓ Removed CRDs"
+  },
+  {
+    "instruction": "istioctl profile list",
+    "output": "<think>\nThe task requires us to istioctl profile list.\nI'd use Istio for this — Istio operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nIstio configuration profiles:\n    default\n    demo\n    minimal\n    remote\n    ambient\n    preview\n    stable"
+  },
+  {
+    "instruction": "istioctl profile dump default",
+    "output": "<think>\nNeed to istioctl profile dump default.\nLet me consider what makes sense here.\nBest tool here is components — components operations.\n</think>\ncomponents:\n  base:\n    enabled: true\n  pilot:\n    enabled: true\n    k8s:\n      resources:\n        requests:\n          cpu: 100m\n          memory: 128Mi\n  ingressGateways:\n  - name: istio-ingressgateway\n    enabled: true\nmeshConfig:\n  accessLogFile: /dev/stdout\nvalues:\n  global:\n    meshID: mesh1\n"
+  },
+  {
+    "instruction": "istioctl manifest generate --set profile=default -o /tmp/istio-manifest",
+    "output": "<think>\nNeed to istioctl manifest generate --set profile=default -o /tmp/istio-manifest.\nHere's how I'd approach this.\n</think>\n✓ Generating manifest for profile default\n✓ Manifest written to /tmp/istio-manifest"
+  },
+  {
+    "instruction": "ls /tmp/istio-manifest/",
+    "output": "<think>\nSo the request is to ls /tmp/istio-manifest/.\nFor this, base is the right tool — base operations.\nI'll check the output to make sure it did what we expected.\n</think>\nbase  crds  gateway  istiod  namespaces  profile.yaml"
+  },
+  {
+    "instruction": "istioctl manifest apply -f /tmp/istio-manifest/",
+    "output": "<think>\nWe're being asked to istioctl manifest apply -f /tmp/istio-manifest/.\nAfter running, I'll confirm the result looks right.\n</think>\n✓ Applying manifest\n✓ Istio core installed\n✓ Istiod installed\n✓ Ingress gateways installed\n✓ Installation complete"
+  },
+  {
+    "instruction": "istioctl manifest diff /tmp/istio-manifest/ /tmp/istio-manifest-v2/",
+    "output": "<think>\nWe're being asked to istioctl manifest diff /tmp/istio-manifest/ /tmp/istio-manifest-v2/.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\n--- /tmp/istio-manifest/profile.yaml\n+++ /tmp/istio-manifest-v2/profile.yaml\n@@ -1,5 +1,6 @@\n profile: default\n pilot:\n   enabled: true\n+  k8s:\n+    resources:\n+      requests:\n+        cpu: 200m\n+        memory: 256Mi\n"
+  },
+  {
+    "instruction": "istioctl install --set profile=demo --set meshConfig.accessLogFile=/dev/stdout -y",
+    "output": "<think>\nWe should istioctl install --set profile=demo --set meshConfig.accessLogFile=/dev/stdout -y.\n</think>\n✓ Istio core installed\n✓ Istiod installed\n✓ Egress gateways installed\n✓ Ingress gateways installed\n✓ Installation complete"
+  },
+  {
+    "instruction": "istioctl manifest versions",
+    "output": "<think>\nThis is asking us to istioctl manifest versions.\nLet me think about the best approach.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\n1.22.0\n1.21.4\n1.20.7"
+  },
+  {
+    "instruction": "istioctl experimental revision list",
+    "output": "<think>\nThe task requires us to istioctl experimental revision list.\nThe tool for this job is REVISION — REVISION operations.\nI'll check the output to make sure it did what we expected.\n</think>\nREVISION    ENABLED    ACTIVE    ACTIVE_PROXIES\ndefault     true       true      3\ncanary      false      false     1"
+  },
+  {
+    "instruction": "istioctl experimental revision tag list",
+    "output": "<think>\nThe user wants to istioctl experimental revision tag list.\nThis calls for TAG. TAG operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nTAG         REVISION    NAMESPACES\nstable      default     default,prod\ncanary-tag  canary      staging"
+  },
+  {
+    "instruction": "istioctl experimental revision tag set canary-tag --revision canary",
+    "output": "<think>\nNeed to istioctl experimental revision tag set canary-tag --revision canary.\nFirst, let me understand what's needed here.\nQuick verification after execution to be safe.\n</think>\n✓ Revision tag 'canary-tag' set for revision 'canary'. Use `kubectl label ns <namespace> istio.io/rev=canary-tag` to enable injection."
+  },
+  {
+    "instruction": "istioctl x uninstall --purge -y",
+    "output": "<think>\nSo the request is to istioctl x uninstall --purge -y.\nNo need for complex pipelines here — one command is sufficient.\n</think>\n✓ Uninstall confirmed\n✓ Removing Istio resources...\n✓ All Istio resources removed successfully"
+  },
+  {
+    "instruction": "istioctl experimental revision tag remove canary-tag",
+    "output": "<think>\nNeed to istioctl experimental revision tag remove canary-tag.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\n✓ Revision tag 'canary-tag' removed"
+  },
+  {
+    "instruction": "istioctl experimental revision describe default",
+    "output": "<think>\nWe should istioctl experimental revision describe default.\nLet me consider what makes sense here.\nThis calls for Revision. Revision operations.\n</think>\nRevision: default\n  Enabled: true\n  Active: true\n  Proxies: 3\n  Injection Enabled Namespaces: default, prod\n  Ingress Gateways: istio-ingressgateway\n  Egress Gateways: istio-egressgateway\n  CNI Enabled: false\n"
+  },
+  {
+    "instruction": "istioctl experimental version --remote=false",
+    "output": "<think>\nThe goal is to istioctl experimental version --remote=false.\nLet me think through this step by step.\nBest tool here is client — client operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nclient version: 1.22.0"
+  },
+  {
+    "instruction": "istioctl experimental istiod-injector-list",
+    "output": "<think>\nWe should istioctl experimental istiod-injector-list.\ninjector is what we need — injector operations.\nI'll check the output to make sure it did what we expected.\n</think>\ninjector: sidecar-injector (istio-system)\n  revision: default\n  namespaces:\n    - default (label: istio-injection=enabled)\n    - prod (label: istio-injection=enabled)\n"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Mount /dev/sdb1 at /mnt/data",
+    "output": "<think>\nThe user wants to mount /dev/sdb1 at /mnt/data.\nI'd use mount for this — filesystem mounting.\nA quick sanity check afterward saves debugging time later.\n</think>\nmount /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Mount with ext4 specific options (noatime, nodiratime)",
+    "output": "<think>\nWe should mount with ext4 specific options (noatime, nodiratime).\nLet me break this down.\nThe tool for this job is mount — filesystem mounting.\nThe -t flag means sort by modification time, which matters here because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmount -t ext4 -o noatime,nodiratime /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Mount a tmpfs of 2GiB at /mnt/ramdisk",
+    "output": "<think>\nThe goal is to mount a tmpfs of 2GiB at /mnt/ramdisk.\nLet me break this down.\nFor this, mount is the right tool — filesystem mounting.\nThe -t flag means sort by modification time, which matters here because without it the command won't work as we need.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\n</think>\nmount -t tmpfs -o size=2G tmpfs /mnt/ramdisk"
+  },
+  {
+    "instruction": "Mount an XFS filesystem with quota support",
+    "output": "<think>\nSo we need to mount an XFS filesystem with quota support.\nFor this, mount is the right tool — filesystem mounting.\nWhy -t? Sort by modification time. needed for this specific use case.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nmount -t xfs -o uquota,pquota /dev/sdc1 /mnt/logs"
+  },
+  {
+    "instruction": "Mount a Btrfs subvolume at /mnt/snap",
+    "output": "<think>\nWe should mount a Btrfs subvolume at /mnt/snap.\nLet me think about the best approach.\nThis calls for mount. Filesystem mounting.\nThe -t flag means sort by modification time, which matters here because important to get the expected behavior.\nThe -o flag handles output to file, OR operator in find. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmount -t btrfs -o subvol=@snapshots /dev/sdd1 /mnt/snap"
+  },
+  {
+    "instruction": "Bind mount /home to /mnt/backup",
+    "output": "<think>\nNeed to bind mount /home to /mnt/backup.\nLet me think through this step by step.\nI'd use mount for this — filesystem mounting.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nmount --bind /home /mnt/backup"
+  },
+  {
+    "instruction": "Remount / as read-write",
+    "output": "<think>\nThe task requires us to remount / as read-write.\nLet me think through this step by step.\nBest tool here is mount — filesystem mounting.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nmount -o remount,rw /"
+  },
+  {
+    "instruction": "Mount a SMB share",
+    "output": "<think>\nSo the request is to mount a SMB share.\nLet me reason through this.\nBest tool here is mount — filesystem mounting.\nI've added -t to sort by modification time — this controls how the output is formatted.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\n</think>\nmount -t cifs -o username=user,password=pass //server/share /mnt/smb"
+  },
+  {
+    "instruction": "Unmount /mnt/data",
+    "output": "<think>\nNeed to unmount /mnt/data.\nThis calls for umount. Filesystem unmounting.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\numount /mnt/data"
+  },
+  {
+    "instruction": "Force unmount a busy filesystem",
+    "output": "<think>\nThe goal is to force unmount a busy filesystem.\nLet me think through this step by step.\nFor this, umount is the right tool — filesystem unmounting.\nWhy -f? Force, suppress errors. standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\numount -f /mnt/data"
+  },
+  {
+    "instruction": "Lazy unmount (detach now, clean later)",
+    "output": "<think>\nSo we need to lazy unmount (detach now, clean later).\nI'd use umount for this — filesystem unmounting.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\numount -l /mnt/data"
+  },
+  {
+    "instruction": "Unmount all mounted filesystems under /mnt",
+    "output": "<think>\nThe user wants to unmount all mounted filesystems under /mnt.\nFirst, let me understand what's needed here.\nThis calls for umount. Filesystem unmounting.\nThe -R flag handles recursive operation. Important because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\numount -R /mnt"
+  },
+  {
+    "instruction": "Add /dev/sdb1 to /etc/fstab for auto-mount at /mnt/data",
+    "output": "<think>\nWe're being asked to add /dev/sdb1 to /etc/fstab for auto-mount at /mnt/data.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'UUID=abc-123 /mnt/data ext4 defaults 0 2' >> /etc/fstab"
+  },
+  {
+    "instruction": "Add an NFS mount to /etc/fstab",
+    "output": "<think>\nWe're being asked to add an NFS mount to /etc/fstab.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'server:/export /mnt/nfs nfs4 defaults,_netdev 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Add a tmpfs entry to /etc/fstab",
+    "output": "<think>\nThe user wants to add a tmpfs entry to /etc/fstab.\nLet me think through this step by step.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'tmpfs /mnt/ram tmpfs defaults,size=1G 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Mount all entries from /etc/fstab",
+    "output": "<think>\nThe goal is to mount all entries from /etc/fstab.\nLet me think through this step by step.\nI'd use mount for this — filesystem mounting.\nThe -a flag means AND operator in find, which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nmount -a"
+  },
+  {
+    "instruction": "Mount with discard option for TRIM support",
+    "output": "<think>\nSo we need to mount with discard option for TRIM support.\nFirst, let me understand what's needed here.\nFor this, mount is the right tool — filesystem mounting.\nI've added -o to output to file, OR operator in find — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nmount -o discard /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Mount a loop device at /mnt/loop",
+    "output": "<think>\nNeed to mount a loop device at /mnt/loop.\nLet me reason through this.\nmount is what we need — filesystem mounting.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmount -o loop /image.img /mnt/loop"
+  },
+  {
+    "instruction": "Mount overlayfs merging /lower and /upper",
+    "output": "<think>\nWe're being asked to mount overlayfs merging /lower and /upper.\nmount is what we need — filesystem mounting.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nmount -t overlay overlay -o lowerdir=/lower,upperdir=/upper,workdir=/work /mnt/merge"
+  },
+  {
+    "instruction": "Mount /dev/cdrom at /mnt/cdrom",
+    "output": "<think>\nThe task requires us to mount /dev/cdrom at /mnt/cdrom.\nLet me reason through this.\nBest tool here is mount — filesystem mounting.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nmount /dev/cdrom /mnt/cdrom"
+  },
+  {
+    "instruction": "Read-only mount /dev/sdb1",
+    "output": "<think>\nThe task requires us to read-only mount /dev/sdb1.\nLet me consider what makes sense here.\nmount is what we need — filesystem mounting.\nI'm using -o for output to file, OR operator in find — needed for this specific use case.\nQuick verification after execution to be safe.\n</think>\nmount -o ro /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Mount with noexec,nosuid,nodev for security",
+    "output": "<think>\nWe're being asked to mount with noexec,nosuid,nodev for security.\nLet me break this down.\nThe tool for this job is mount — filesystem mounting.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\n</think>\nmount -o noexec,nosuid,nodev /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Reload systemd mount unit after fstab edit",
+    "output": "<think>\nNeed to reload systemd mount unit after fstab edit.\nsystemctl is what we need — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl daemon-reload"
+  },
+  {
+    "instruction": "Verify fstab entry for /dev/sdb1",
+    "output": "<think>\nThis is asking us to verify fstab entry for /dev/sdb1.\nLet me consider what makes sense here.\nI'd use findmnt for this — findmnt operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nfindmnt --fstab /dev/sdb1"
+  },
+  {
+    "instruction": "Show fstab entries only",
+    "output": "<think>\nThis is asking us to show fstab entries only.\nLet me think about the best approach.\nThe tool for this job is findmnt — findmnt operations.\nI'm using -t for sort by modification time — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nfindmnt --fstab -t ext4"
+  }
+]

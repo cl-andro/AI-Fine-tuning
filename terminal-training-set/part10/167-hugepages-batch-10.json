@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Show hugepage statistics from memory info",
+    "output": "<think>\nAlright, we need to show hugepage statistics from memory info.\nFor this, grep is the right tool — pattern searching.\nI'm using -i for interactive, prompt before action — standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngrep -i huge /proc/meminfo"
+  },
+  {
+    "instruction": "Display THP enabled and defrag modes together",
+    "output": "<think>\nWe're being asked to display THP enabled and defrag modes together.\nLet me break this down.\nFor this, for is the right tool — for operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nfor f in enabled defrag; do echo \"$f: $(cat /sys/kernel/mm/transparent_hugepage/$f)\"; done"
+  },
+  {
+    "instruction": "Set hugetlb SHM group to GID 1000",
+    "output": "<think>\nWe should set hugetlb SHM group to GID 1000.\nHere's how I'd approach this.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 1000 | sudo tee /proc/sys/vm/hugetlb_shm_group"
+  },
+  {
+    "instruction": "Check if process uses transparent hugepages via smaps",
+    "output": "<think>\nSo the request is to check if process uses transparent hugepages via smaps.\nI'll reach for grep here because pattern searching.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrep AnonHugePages /proc/1/smaps 2>/dev/null; echo 'check PID=1'"
+  },
+  {
+    "instruction": "Enable transparent hugepages via sysfs",
+    "output": "<think>\nSo the request is to enable transparent hugepages via sysfs.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "View hugetlb SHM group setting",
+    "output": "<think>\nNeed to view hugetlb SHM group setting.\nFirst, let me understand what's needed here.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/sys/vm/hugetlb_shm_group"
+  },
+  {
+    "instruction": "Set NUMA node 0 hugepages to 64",
+    "output": "<think>\nNeed to set NUMA node 0 hugepages to 64.\nFirst, let me understand what's needed here.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\necho 64 | sudo tee /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Check 1GB hugepage count",
+    "output": "<think>\nSo the request is to check 1GB hugepage count.\nLet me think through this step by step.\nI'll reach for cat here because cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+  },
+  {
+    "instruction": "Mount hugetlbfs with 2MB page size",
+    "output": "<think>\nWe should mount hugetlbfs with 2MB page size.\nHere's how I'd approach this.\nI'd use mount for this — filesystem mounting.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mount -t hugetlbfs -o pagesize=2M hugetlbfs /mnt/huge"
+  },
+  {
+    "instruction": "Check THP khugepaged pages_to_scan",
+    "output": "<think>\nThe user wants to check THP khugepaged pages_to_scan.\nFor this, cat is the right tool — cat operations.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan"
+  },
+  {
+    "instruction": "Show system hugepage usage summary from meminfo",
+    "output": "<think>\nThe user wants to show system hugepage usage summary from meminfo.\nThe tool for this job is cat — cat operations.\nThe -E flag means extended regex, which matters here because needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/meminfo | grep -E '^Huge'"
+  },
+  {
+    "instruction": "Check transparent hugepage mode",
+    "output": "<think>\nThe goal is to check transparent hugepage mode.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Allocate 100 hugepages immediately",
+    "output": "<think>\nThe goal is to allocate 100 hugepages immediately.\nHere's how I'd approach this.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\necho 100 | sudo tee /proc/sys/vm/nr_hugepages"
+  },
+  {
+    "instruction": "Check hugepage and THP vmstat counters",
+    "output": "<think>\nWe're being asked to check hugepage and THP vmstat counters.\nLet me break this down.\nI'd use cat for this — cat operations.\nI'm using -E for extended regex — without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ncat /proc/vmstat | grep -E 'huge|thp'"
+  },
+  {
+    "instruction": "Disable THP defragmentation",
+    "output": "<think>\nWe should disable THP defragmentation.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho never | sudo tee /sys/kernel/mm/transparent_hugepage/defrag"
+  },
+  {
+    "instruction": "Check if THP supports shmem",
+    "output": "<think>\nWe're being asked to check if THP supports shmem.\nI'd use cat for this — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/shmem_enabled"
+  },
+  {
+    "instruction": "Check nr_overcommit_hugepages current value",
+    "output": "<think>\nSo the request is to check nr_overcommit_hugepages current value.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncat /proc/sys/vm/nr_overcommit_hugepages"
+  },
+  {
+    "instruction": "Check 2MB hugepage count",
+    "output": "<think>\nSo the request is to check 2MB hugepage count.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Check THP defragmentation settings",
+    "output": "<think>\nThe goal is to check THP defragmentation settings.\nThis calls for cat. Cat operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/defrag"
+  },
+  {
+    "instruction": "Check khugepaged sleep duration in milliseconds",
+    "output": "<think>\nThe goal is to check khugepaged sleep duration in milliseconds.\nLet me break this down.\nBest tool here is cat — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/khugepaged/sleep_millisecs"
+  },
+  {
+    "instruction": "Check available hugepage sizes from hstates directory",
+    "output": "<think>\nWe should check available hugepage sizes from hstates directory.\nLet me consider what makes sense here.\nThe tool for this job is ls — ls operations.\nLet me verify afterward that it worked correctly.\n</think>\nls /sys/kernel/mm/hugepages/"
+  },
+  {
+    "instruction": "Check shared memory segments using hugepages",
+    "output": "<think>\nSo we need to check shared memory segments using hugepages.\nLet me break this down.\nThe tool for this job is ipcs — ipcs operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nipcs -m"
+  },
+  {
+    "instruction": "Persist 128 hugepages via sysctl config file",
+    "output": "<think>\nWe should persist 128 hugepages via sysctl config file.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'vm.nr_hugepages=128' | sudo tee /etc/sysctl.d/hugepages.conf"
+  },
+  {
+    "instruction": "Enable THP zero page",
+    "output": "<think>\nSo the request is to enable THP zero page.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 1 | sudo tee /sys/kernel/mm/transparent_hugepage/use_zero_page"
+  },
+  {
+    "instruction": "Display Hugetlb value in megabytes",
+    "output": "<think>\nNeed to display Hugetlb value in megabytes.\nI'd use awk for this — text processing and reporting.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nawk '/Hugetlb/ {printf \"%.0f MB\\n\", $2/1024}' /proc/meminfo"
+  },
+  {
+    "instruction": "Check free hugepages count",
+    "output": "<think>\nThis is asking us to check free hugepages count.\nFirst, let me understand what's needed here.\nI'd use grep for this — pattern searching.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngrep HugePages_Free /proc/meminfo"
+  }
+]

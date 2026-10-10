@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s rr",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s rr"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:443 -s wrr",
+    "output": "ipvsadm -A -t 10.0.0.100:443 -s wrr"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:3306 -s lc",
+    "output": "ipvsadm -A -t 10.0.0.100:3306 -s lc"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:53 -s wlc",
+    "output": "ipvsadm -A -t 10.0.0.100:53 -s wlc"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:6379 -s lblc",
+    "output": "ipvsadm -A -t 10.0.0.100:6379 -s lblc"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s lblcr",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s lblcr"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s dh",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s dh"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s sh",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s sh"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s sed",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s sed"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s nq",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s nq"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s rr -p 600",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s rr -p 600"
+  },
+  {
+    "instruction": "ipvsadm -L -n",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.100:80 rr persistent 600\n  -> 10.0.0.10:8080               Masq    1      0          0\n  -> 10.0.0.11:8080               Masq    1      0          0\nTCP  10.0.0.100:443 wrr\n  -> 10.0.0.10:8443               Masq    2      0          0\n  -> 10.0.0.11:8443               Masq    1      0          0\nTCP  10.0.0.100:3306 lc\n  -> 10.0.0.20:3306               Masq    1      0          0\n  -> 10.0.0.21:3306               Masq    1      0          0"
+  },
+  {
+    "instruction": "cat /etc/keepalived/keepalived.conf",
+    "output": "global_defs {\n   notification_email {\n     admin@example.com\n   }\n   router_id LVS_DEVEL\n   vrrp_skip_check_adv_addr\n   vrrp_garp_interval 0\n   vrrp_gna_interval 0\n}\nvrrp_instance VI_1 {\n    state MASTER\n    interface eth0\n    virtual_router_id 51\n    priority 100\n    advert_int 1\n    authentication {\n        auth_type PASS\n        auth_pass 1234\n    }\n    virtual_ipaddress {\n        10.0.0.100\n    }\n}\nvirtual_server 10.0.0.100 80 {\n    delay_loop 6\n    lb_algo wrr\n    lb_kind NAT\n    persistence_timeout 600\n    protocol TCP\n    real_server 10.0.0.10 8080 {\n        weight 1\n        HTTP_GET {\n            url {\n                path /health\n                status_code 200\n            }\n            connect_timeout 3\n        }\n    }\n    real_server 10.0.0.11 8080 {\n        weight 1\n        HTTP_GET {\n            url {\n                path /health\n                status_code 200\n            }\n            connect_timeout 3\n        }\n    }\n}"
+  },
+  {
+    "instruction": "systemctl restart keepalived",
+    "output": "systemctl restart keepalived"
+  },
+  {
+    "instruction": "systemctl status keepalived",
+    "output": "\u25cf keepalived.service - Keepalive Daemon (LVS and VRRP)\n     Loaded: loaded (/lib/systemd/system/keepalived.service; enabled; preset: enabled)\n     Active: active (running) since Sat 2026-07-25 10:00:00 UTC; 1h ago\n   Main PID: 3456 (keepalived)\n      Tasks: 2 (limit: 23042)\n     Memory: 3.2M\n        CPU: 123ms\n     CGroup: /system.slice/keepalived.service\n             \u251c\u25003456 keepalived <-- 10.0.0.100\n             \u2514\u25003457 keepalived --vrrp\n"
+  },
+  {
+    "instruction": "ip addr show dev eth0 | grep inet",
+    "output": "    inet 10.0.0.5/24 brd 10.0.0.255 scope global eth0\n    inet 10.0.0.100/32 scope global eth0\n    inet6 fe80::250:56ff:feab:1234/64 scope link"
+  },
+  {
+    "instruction": "ipvsadm -L -n --rate",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.100:80 wrr persistent 600\n  -> 10.0.0.10:8080               Masq    1      0          0         12 5 8 0 0 3 0 0\n  -> 10.0.0.11:8080               Masq    1      0          0         10 4 6 0 0 2 0 0"
+  },
+  {
+    "instruction": "ipvsadm -A -u 10.0.0.100:53 -s rr",
+    "output": "ipvsadm -A -u 10.0.0.100:53 -s rr"
+  },
+  {
+    "instruction": "ipvsadm -a -u 10.0.0.100:53 -r 10.0.0.30:53 -m",
+    "output": "ipvsadm -a -u 10.0.0.100:53 -r 10.0.0.30:53 -m"
+  },
+  {
+    "instruction": "ipvsadm -a -u 10.0.0.100:53 -r 10.0.0.31:53 -m",
+    "output": "ipvsadm -a -u 10.0.0.100:53 -r 10.0.0.31:53 -m"
+  },
+  {
+    "instruction": "ipvsadm -Z -t 10.0.0.100:80",
+    "output": "ipvsadm -Z -t 10.0.0.100:80"
+  },
+  {
+    "instruction": "ipvsadm -L -n --thresholds",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.100:80 wrr persistent 600\n  -> 10.0.0.10:8080               Masq    1      0          0          u-th=200 l-th=10\n  -> 10.0.0.11:8080               Masq    1      0          0          u-th=200 l-th=10"
+  },
+  {
+    "instruction": "keepalived --dump-conf",
+    "output": "Global definitions\n  Router ID: LVS_DEVEL\nVRRP Instance(s):\n  VI_1: state=MASTER, interface=eth0, vrid=51, priority=100\nVirtual Server:\n  10.0.0.100:80, lb_algo=wrr, lb_kind=NAT, persistence=600\n  real servers:\n    10.0.0.10:8080 weight=1 HTTP_GET /health\n    10.0.0.11:8080 weight=1 HTTP_GET /health"
+  },
+  {
+    "instruction": "ipvsadm -S -n",
+    "output": "-A -t 10.0.0.100:80 -s wrr -p 600\na -t 10.0.0.100:80 -r 10.0.0.10:8080 -m -w 1\na -t 10.0.0.100:80 -r 10.0.0.11:8080 -m -w 1\n-A -t 10.0.0.100:443 -s wrr\na -t 10.0.0.100:443 -r 10.0.0.10:8443 -m -w 2\na -t 10.0.0.100:443 -r 10.0.0.11:8443 -m -w 1\n-A -t 10.0.0.100:3306 -s lc\na -t 10.0.0.100:3306 -r 10.0.0.20:3306 -m -w 1\na -t 10.0.0.100:3306 -r 10.0.0.21:3306 -m -w 1"
+  },
+  {
+    "instruction": "ipvsadm -R < /etc/ipvsadm.rules",
+    "output": "ipvsadm -R < /etc/ipvsadm.rules"
+  }
+]

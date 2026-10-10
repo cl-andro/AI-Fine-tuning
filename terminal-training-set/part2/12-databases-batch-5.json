@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Run Redis benchmark (10k requests, 50 parallel)",
+    "output": "<think>\nThe goal is to run Redis benchmark (10k requests, 50 parallel).\nredis-benchmark is what we need — redis-benchmark operations.\nI've added -n to dry-run, no changes — this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nredis-benchmark -n 10000 -c 50"
+  },
+  {
+    "instruction": "Check Redis memory usage",
+    "output": "<think>\nAlright, we need to check Redis memory usage.\nFor this, redis-cli is the right tool — Redis operations.\nThe -E flag means extended regex, which matters here because standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nredis-cli info memory | grep -E 'used_memory:|maxmemory:'"
+  },
+  {
+    "instruction": "Set Redis password",
+    "output": "<think>\nAlright, we need to set Redis password.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'requirepass mypassword' >> /etc/redis/redis.conf && systemctl restart redis-server"
+  },
+  {
+    "instruction": "Configure Redis for persistence",
+    "output": "<think>\nThis is asking us to configure Redis for persistence.\nLet me break this down.\nI've added -e to edit or executable — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\necho -e 'save 60 1000\\nsave 300 100\\nsave 3600 10\\nappendonly yes' >> /etc/redis/redis.conf && systemctl restart redis-server"
+  },
+  {
+    "instruction": "Connect to Redis with password",
+    "output": "<think>\nWe're being asked to connect to Redis with password.\nLet me think through this step by step.\nI'll reach for redis-cli here because Redis operations.\nThe -a flag handles AND operator in find. Important because standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nredis-cli -a mypassword"
+  },
+  {
+    "instruction": "Install and use memcached",
+    "output": "<think>\nThe goal is to install and use memcached.\nLet me think through this step by step.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y memcached libmemcached-tools && systemctl start memcached"
+  },
+  {
+    "instruction": "Store a value in memcached",
+    "output": "<think>\nWe're being asked to store a value in memcached.\nWhy -e? Edit or executable. needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\necho -e 'set mykey 0 3600 5\\nhello' | nc localhost 11211"
+  },
+  {
+    "instruction": "Retrieve a value from memcached",
+    "output": "<think>\nThe user wants to retrieve a value from memcached.\nLet me think through this step by step.\nI've added -e to edit or executable — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho -e 'get mykey' | nc localhost 11211"
+  },
+  {
+    "instruction": "Install Elasticsearch",
+    "output": "<think>\nWe're being asked to install Elasticsearch.\nThis calls for wget. Downloading files.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -qO- https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch.gpg && echo 'deb [signed-by=/usr/share/keyrings/elasticsearch.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main' > /etc/apt/sources.list.d/elastic-8.x.list && apt update && apt install -y elasticsearch"
+  },
+  {
+    "instruction": "Configure Elasticsearch for single-node",
+    "output": "<think>\nWe're being asked to configure Elasticsearch for single-node.\nLet me break this down.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho -e 'discovery.type: single-node\\nxpack.security.enabled: false' >> /etc/elasticsearch/elasticsearch.yml && systemctl restart elasticsearch"
+  },
+  {
+    "instruction": "Index a document in Elasticsearch",
+    "output": "<think>\nThe goal is to index a document in Elasticsearch.\nFirst, let me understand what's needed here.\nFor this, curl is the right tool — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X POST http://localhost:9200/mydb/_doc -H 'Content-Type: application/json' -d '{\"name\":\"John\",\"email\":\"john@example.com\"}'"
+  },
+  {
+    "instruction": "Search Elasticsearch",
+    "output": "<think>\nWe should search Elasticsearch.\nLet me think about the best approach.\nFor this, curl is the right tool — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nI'm using -H for follow symlinks on command line only — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s http://localhost:9200/mydb/_search -H 'Content-Type: application/json' -d '{\"query\":{\"match\":{\"name\":\"John\"}}}' | jq '.'"
+  },
+  {
+    "instruction": "Install and configure RabbitMQ",
+    "output": "<think>\nThe goal is to install and configure RabbitMQ.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y rabbitmq-server && systemctl start rabbitmq-server"
+  },
+  {
+    "instruction": "Check RabbitMQ status",
+    "output": "<think>\nSo the request is to check RabbitMQ status.\nLet me consider what makes sense here.\nI'll reach for rabbitmqctl here because rabbitmqctl operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nrabbitmqctl status | head -30"
+  },
+  {
+    "instruction": "Create a RabbitMQ user",
+    "output": "<think>\nAlright, we need to create a RabbitMQ user.\nThe tool for this job is rabbitmqctl — rabbitmqctl operations.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nrabbitmqctl add_user john password && rabbitmqctl set_permissions -p / john '.*' '.*' '.*'"
+  },
+  {
+    "instruction": "List RabbitMQ queues",
+    "output": "<think>\nThe goal is to list RabbitMQ queues.\nHere's how I'd approach this.\nThe tool for this job is rabbitmqctl — rabbitmqctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nrabbitmqctl list_queues"
+  },
+  {
+    "instruction": "Install and configure Kafka",
+    "output": "<think>\nThe goal is to install and configure Kafka.\nLet me think through this step by step.\nThe tool for this job is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y kafka && systemctl start kafka"
+  },
+  {
+    "instruction": "Create a Kafka topic",
+    "output": "<think>\nWe should create a Kafka topic.\nLet me think about the best approach.\nI'd use kafka-topics for this — kafka-topics operations.\nLet me verify afterward that it worked correctly.\n</think>\nkafka-topics --create --topic mytopic --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1"
+  },
+  {
+    "instruction": "List Kafka topics",
+    "output": "<think>\nThe task requires us to list Kafka topics.\nBest tool here is kafka-topics — kafka-topics operations.\nQuick verification after execution to be safe.\n</think>\nkafka-topics --list --bootstrap-server localhost:9092"
+  },
+  {
+    "instruction": "Produce a message to Kafka",
+    "output": "<think>\nAlright, we need to produce a message to Kafka.\nHere's how I'd approach this.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho '{\"key\":\"value\"}' | kafka-console-producer --topic mytopic --bootstrap-server localhost:9092"
+  },
+  {
+    "instruction": "Consume messages from Kafka",
+    "output": "<think>\nWe should consume messages from Kafka.\nFirst, let me understand what's needed here.\nBest tool here is kafka-console-consumer — kafka-console-consumer operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nkafka-console-consumer --topic mytopic --bootstrap-server localhost:9092 --from-beginning --max-messages 5"
+  },
+  {
+    "instruction": "Check Kafka consumer group offsets",
+    "output": "<think>\nThis is asking us to check Kafka consumer group offsets.\nLet me consider what makes sense here.\nI'll reach for kafka-consumer-groups here because kafka-consumer-groups operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nkafka-consumer-groups --bootstrap-server localhost:9092 --all-groups --describe"
+  },
+  {
+    "instruction": "Install and use etcd",
+    "output": "<think>\nThe user wants to install and use etcd.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y etcd && systemctl start etcd"
+  },
+  {
+    "instruction": "Put a key in etcd",
+    "output": "<think>\nThe goal is to put a key in etcd.\nLet me think through this step by step.\nFor this, etcdctl is the right tool — etcdctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\netcdctl put /config/key 'value'"
+  },
+  {
+    "instruction": "Get a key from etcd",
+    "output": "<think>\nThe user wants to get a key from etcd.\nLet me think through this step by step.\nI'll reach for etcdctl here because etcdctl operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\netcdctl get /config/key"
+  }
+]

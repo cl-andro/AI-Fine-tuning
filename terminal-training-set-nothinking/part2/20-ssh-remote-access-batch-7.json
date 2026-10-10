@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a SSH config alias 'jumpserver' that uses a jump host to reach a target",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost jumpserver\n  HostName 10.0.1.50\n  User admin\n  Port 2222\n  IdentityFile ~/.ssh/id_ed25519\n  ProxyJump bastion.example.com\nEOF"
+  },
+  {
+    "instruction": "Set up ControlMaster multiplexing in SSH config for faster reconnections",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost *\n  ControlMaster auto\n  ControlPath ~/.ssh/controlmasters/%r@%h:%p\n  ControlPersist 10m\nEOF\nmkdir -p ~/.ssh/controlmasters"
+  },
+  {
+    "instruction": "Open a local port forward from localhost:8080 to remote server:80 via SSH",
+    "output": "ssh -L 8080:localhost:80 user@remote.example.com"
+  },
+  {
+    "instruction": "Open a remote port forward so remote port 3000 tunnels to localhost:3000",
+    "output": "ssh -R 3000:localhost:3000 user@remote.example.com"
+  },
+  {
+    "instruction": "Create a dynamic SOCKS5 tunnel on port 1080 through an SSH server",
+    "output": "ssh -D 1080 -C -N user@proxy.example.com"
+  },
+  {
+    "instruction": "Use ProxyCommand with netcat to hop through a jump host",
+    "output": "ssh -o ProxyCommand='ssh bastion.example.com -W %h:%p' user@target.internal:2222"
+  },
+  {
+    "instruction": "Add a SSH config entry that uses ProxyCommand with nc for a target behind a bastion",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost internal-box\n  HostName 172.16.0.10\n  User appuser\n  Port 22\n  ProxyCommand ssh bastion.example.com -W %h:%p\nEOF"
+  },
+  {
+    "instruction": "Disable host key checking (ephemeral environments only) and log known_hosts to /dev/null",
+    "output": "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null user@192.168.1.100"
+  },
+  {
+    "instruction": "Forward X11 connections over SSH with compression",
+    "output": "ssh -X -C user@remote.example.com"
+  },
+  {
+    "instruction": "Pass the SSH agent through a jump chain of two hosts",
+    "output": "ssh -o ProxyJump=user@jump1.example.com -A user@target.internal"
+  },
+  {
+    "instruction": "Create a SSH config entry with both ProxyJump and agent forwarding",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost db-proxy\n  HostName db.internal\n  User dba\n  ProxyJump bastion.example.com\n  ForwardAgent yes\nEOF"
+  },
+  {
+    "instruction": "Set a non-default SSH port and custom timeout in the config for a host",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost legacy-box\n  HostName 10.0.0.5\n  Port 2222\n  User root\n  ConnectTimeout 5\n  ServerAliveInterval 30\nEOF"
+  },
+  {
+    "instruction": "Run a single command on a remote host with SSH and allocate a pseudo-TTY",
+    "output": "ssh -t user@remote.example.com 'sudo systemctl status nginx'"
+  },
+  {
+    "instruction": "Keep an SSH tunnel alive with ServerAliveInterval and exit on signal",
+    "output": "ssh -L 3307:localhost:3306 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -N user@db.example.com"
+  },
+  {
+    "instruction": "Use escape character to suspend an SSH session and bring it back (tilde control)",
+    "output": "ssh user@remote.example.com"
+  },
+  {
+    "instruction": "Print the SSH config that will be applied for a given host",
+    "output": "ssh -G internal-box 2>/dev/null"
+  },
+  {
+    "instruction": "Start a SSH master connection manually and then reuse it",
+    "output": "ssh -M -S ~/.ssh/ctrl-socket user@remote.example.com\nssh -S ~/.ssh/ctrl-socket user@remote.example.com 'uptime'"
+  },
+  {
+    "instruction": "Close a multiplexed SSH session gracefully via the control socket",
+    "output": "ssh -O exit -S ~/.ssh/ctrl-socket user@remote.example.com"
+  },
+  {
+    "instruction": "Check the status of a multiplexed SSH control socket",
+    "output": "ssh -O check -S ~/.ssh/ctrl-socket user@remote.example.com"
+  },
+  {
+    "instruction": "Forward multiple local ports in a single SSH connection",
+    "output": "ssh -L 8888:localhost:8888 -L 9000:localhost:9000 -N user@remote.example.com"
+  },
+  {
+    "instruction": "Use SSH config with a wildcard host to apply common settings to all hosts",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost *.internal\n  User admin\n  Port 22\n  IdentityFile ~/.ssh/id_ed25519-internal\n  ProxyJump bastion.example.com\nEOF"
+  },
+  {
+    "instruction": "Set up a reverse dynamic tunnel (remote SOCKS)",
+    "output": "ssh -R 1080 -N -f user@remote.example.com"
+  },
+  {
+    "instruction": "Execute a command with no PTY allocation and no agent forwarding",
+    "output": "ssh -T -o ForwardAgent=no user@remote.example.com 'df -h /'"
+  },
+  {
+    "instruction": "Login to a host and automatically cd into a directory and activate a venv",
+    "output": "ssh -t user@remote.example.com 'cd /opt/app && source venv/bin/activate && exec bash -l'"
+  },
+  {
+    "instruction": "Use the CheckHostIP and HashKnownHosts security options",
+    "output": "cat >> ~/.ssh/config << 'EOF'\nHost *\n  CheckHostIP yes\n  HashKnownHosts yes\n  StrictHostKeyChecking ask\nEOF"
+  }
+]

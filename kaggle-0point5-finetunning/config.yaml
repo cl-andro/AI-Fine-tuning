@@ -1,0 +1,54 @@
+# ==============================================================
+# Training configuration - QLoRA fine-tune of a 0.5B instruction model
+# Precedence:  CLI args  >  .env overrides  >  this file
+# ==============================================================
+
+# --- Base model ---------------------------------------------------
+model_name: Qwen/Qwen2.5-0.5B-Instruct
+model_revision: main
+resume_adapter_path: null
+
+# --- Data ---------------------------------------------------------
+train_dataset_path: data/raw
+processed_dir: data/processed
+val_split: 0.05
+seed: 42
+system_prompt: >-
+  You are a helpful, concise and accurate SQL assistant. Given a schema and a
+  question, produce the correct SQL query.
+max_seq_length: 1024
+
+# --- QLoRA --------------------------------------------------------
+use_4bit: true
+bnb_4bit_quant_type: nf4
+bnb_4bit_use_double_quant: true
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules: null
+train_lm_head: false
+
+# --- Training -----------------------------------------------------
+output_dir: outputs
+num_train_epochs: 3
+max_steps: -1
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 4
+gradient_accumulation_steps: 2
+learning_rate: 2.0e-4
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.001
+bf16: auto
+fp16: auto
+gradient_checkpointing: true
+logging_steps: 5
+eval_strategy: epoch
+save_strategy: epoch
+save_total_limit: 2
+resume_from_checkpoint: true
+report_to: auto
+
+# --- Post-training ------------------------------------------------
+merge_and_save: true
+push_to_hub: false

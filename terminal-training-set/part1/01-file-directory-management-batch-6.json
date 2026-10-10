@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Print a tree of directories with file sizes",
+    "output": "<think>\nThis is asking us to print a tree of directories with file sizes.\nFirst, let me understand what's needed here.\ntree is what we need — tree operations.\nThe -h flag means human-readable format, which matters here because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\ntree -h"
+  },
+  {
+    "instruction": "Print a tree limited to depth 3",
+    "output": "<think>\nThe goal is to print a tree limited to depth 3.\nI'd use tree for this — tree operations.\nI'm using -L for follow symlinks when processing — needed for this specific use case.\nAfter running, I'll confirm the result looks right.\n</think>\ntree -L 3"
+  },
+  {
+    "instruction": "Print a tree showing only directories",
+    "output": "<think>\nWe should print a tree showing only directories.\nLet me break this down.\nFor this, tree is the right tool — tree operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntree -d"
+  },
+  {
+    "instruction": "Create a symbolic link relative to the link location",
+    "output": "<think>\nThis is asking us to create a symbolic link relative to the link location.\nLet me think through this step by step.\nThe tool for this job is ln — ln operations.\nA single command handles this cleanly — no need to overcomplicate it.\nBe careful with symlink paths — a wrong absolute path breaks the link.\n</think>\nln -rs /target/path linkname"
+  },
+  {
+    "instruction": "Show the target of a symbolic link",
+    "output": "<think>\nNeed to show the target of a symbolic link.\nFor this, readlink is the right tool — readlink operations.\n</think>\nreadlink symlink"
+  },
+  {
+    "instruction": "Find broken symbolic links",
+    "output": "<think>\nSo the request is to find broken symbolic links.\nfind is what we need — file searching.\nI'm using -type for filter by file type — standard practice for this kind of operation.\nI'm using -exec for execute command on each match — important to get the expected behavior.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nQuick verification after execution to be safe.\n</think>\nfind . -type l ! -exec test -e {} \\; -print"
+  },
+  {
+    "instruction": "Remove all broken symbolic links",
+    "output": "<think>\nNeed to remove all broken symbolic links.\nThe tool for this job is find — file searching.\nThe -type flag means filter by file type, which matters here because important to get the expected behavior.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nfind . -type l ! -exec test -e {} \\; -delete"
+  },
+  {
+    "instruction": "Set extended attribute user.description on a file",
+    "output": "<think>\nSo the request is to set extended attribute user.description on a file.\nLet me break this down.\nI'd use setfattr for this — setfattr operations.\nThe -n flag means dry-run, no changes, which matters here because without it the command won't work as we need.\nThe -v flag means verbose output, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nsetfattr -n user.description -v \"my file\" file.txt"
+  },
+  {
+    "instruction": "Read extended attributes from a file",
+    "output": "<think>\nSo we need to read extended attributes from a file.\nFirst, let me understand what's needed here.\nI'd use getfattr for this — getfattr operations.\nI'm using -d for directory listing, don't descend — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ngetfattr -d file.txt"
+  },
+  {
+    "instruction": "Remove an extended attribute from a file",
+    "output": "<think>\nWe should remove an extended attribute from a file.\nHere's how I'd approach this.\nThe tool for this job is setfattr — setfattr operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsetfattr -x user.description file.txt"
+  },
+  {
+    "instruction": "Copy extended attributes along with the file",
+    "output": "<think>\nThe goal is to copy extended attributes along with the file.\ncp is what we need — file copying.\nNo need for complex pipelines here — one command is sufficient.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp --preserve=xattr src dest"
+  },
+  {
+    "instruction": "Count files by extension",
+    "output": "<think>\nThe task requires us to count files by extension.\nHere's how I'd approach this.\nI'll reach for find here because file searching.\nEach pipe stage handles one transformation, keeping the logic composable.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind . -type f | sed 's/.*\\.//' | sort | uniq -c"
+  },
+  {
+    "instruction": "Find and delete files with specific content",
+    "output": "<think>\nWe should find and delete files with specific content.\nLet me consider what makes sense here.\nBest tool here is grep — pattern searching.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\ngrep -rl \"secret\" . | xargs rm"
+  },
+  {
+    "instruction": "Watch a file's size grow in real time",
+    "output": "<think>\nAlright, we need to watch a file's size grow in real time.\nThe tool for this job is watch — watch operations.\nThe -n flag means dry-run, no changes, which matters here because important to get the expected behavior.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nwatch -n 1 \"stat --format=%s download.iso\""
+  },
+  {
+    "instruction": "Spawn a shell with a different root directory (chroot)",
+    "output": "<think>\nThe user wants to spawn a shell with a different root directory (chroot).\nThe tool for this job is chroot — chroot operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo chroot /mnt/newroot /bin/bash"
+  },
+  {
+    "instruction": "Bind mount a directory to another location",
+    "output": "<think>\nThe task requires us to bind mount a directory to another location.\nLet me think through this step by step.\nThis calls for mount. Filesystem mounting.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nmount --bind /source /destination"
+  },
+  {
+    "instruction": "Remount a filesystem as read-only",
+    "output": "<think>\nThe user wants to remount a filesystem as read-only.\nFor this, mount is the right tool — filesystem mounting.\n</think>\nmount -o remount,ro /dev/sda1"
+  },
+  {
+    "instruction": "Find the mount point of a given path",
+    "output": "<think>\nSo the request is to find the mount point of a given path.\nHere's how I'd approach this.\ndf is what we need — disk space checking.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndf /some/path | tail -1 | awk '{print $6}'"
+  },
+  {
+    "instruction": "List open files system-wide",
+    "output": "<think>\nSo we need to list open files system-wide.\nI'll reach for lsof here because lsof operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nlsof"
+  },
+  {
+    "instruction": "List files opened by a specific user",
+    "output": "<think>\nNeed to list files opened by a specific user.\nHere's how I'd approach this.\nThis calls for lsof. Lsof operations.\n</think>\nlsof -u john"
+  },
+  {
+    "instruction": "List files opened by a specific process",
+    "output": "<think>\nThis is asking us to list files opened by a specific process.\nI'd use lsof for this — lsof operations.\nQuick verification after execution to be safe.\n</think>\nlsof -p 1234"
+  },
+  {
+    "instruction": "Find which process is listening on a port",
+    "output": "<think>\nThe user wants to find which process is listening on a port.\nLet me break this down.\nFor this, lsof is the right tool — lsof operations.\nWhy -i? Interactive, prompt before action. standard practice for this kind of operation.\nAfter running, I'll confirm the result looks right.\n</think>\nlsof -i :8080"
+  },
+  {
+    "instruction": "Show total disk usage of each user's home",
+    "output": "<think>\nThis is asking us to show total disk usage of each user's home.\nLet me consider what makes sense here.\ndu is what we need — disk usage analysis.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nAfter running, I'll confirm the result looks right.\n</think>\ndu -sh /home/*"
+  },
+  {
+    "instruction": "Check disk I/O statistics",
+    "output": "<think>\nThe task requires us to check disk I/O statistics.\nLet me think about the best approach.\nFor this, iostat is the right tool — disk I/O performance monitoring.\n</think>\niostat -xz 1 5"
+  },
+  {
+    "instruction": "Run disk benchmarking with dd",
+    "output": "<think>\nThe task requires us to run disk benchmarking with dd.\nLet me break this down.\nFor this, dd is the right tool — dd operations.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/dev/zero of=./test bs=1M count=1024 conv=fdatasync"
+  }
+]

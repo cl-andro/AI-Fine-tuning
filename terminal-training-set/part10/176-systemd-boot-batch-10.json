@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Check EFI boot entries",
+    "output": "<think>\nWe're being asked to check EFI boot entries.\nHere's how I'd approach this.\nThe tool for this job is efibootmgr — efibootmgr operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nefibootmgr -v"
+  },
+  {
+    "instruction": "Set current kernel as default",
+    "output": "<think>\nThis is asking us to set current kernel as default.\nLet me break this down.\nThe tool for this job is bootctl — EFI firmware boot manager.\nCheck the output for errors before proceeding to the next step.\n</think>\nbootctl set @current"
+  },
+  {
+    "instruction": "View boot loader configuration",
+    "output": "<think>\nNeed to view boot loader configuration.\nThe tool for this job is cat — cat operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ncat /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "Remove a kernel via kernel-install",
+    "output": "<think>\nWe should remove a kernel via kernel-install.\nThe tool for this job is kernel-install — kernel-install operations.\n</think>\nkernel-install remove 6.1.0-13-amd64"
+  },
+  {
+    "instruction": "Rebuild initramfs for specific kernel",
+    "output": "<think>\nAlright, we need to rebuild initramfs for specific kernel.\nLet me consider what makes sense here.\nI'll reach for update-initramfs here because update-initramfs operations.\nWhy -u? Show or sort by access time. this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nupdate-initramfs -k 6.1.0-13-amd64 -u"
+  },
+  {
+    "instruction": "Install systemd-boot to specific path",
+    "output": "<think>\nWe're being asked to install systemd-boot to specific path.\nLet me think through this step by step.\nI'll reach for bootctl here because EFI firmware boot manager.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nbootctl install --esp-path=/boot"
+  },
+  {
+    "instruction": "Check if system is booted with UEFI",
+    "output": "<think>\nThe user wants to check if system is booted with UEFI.\nFirst, let me understand what's needed here.\nFor this, test is the right tool — test operations.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ntest -d /sys/firmware/efi && echo 'UEFI' || echo 'Legacy'"
+  },
+  {
+    "instruction": "List boot loader entries",
+    "output": "<think>\nThe goal is to list boot loader entries.\nThe tool for this job is bootctl — EFI firmware boot manager.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbootctl list"
+  },
+  {
+    "instruction": "Check bootctl version",
+    "output": "<think>\nThe goal is to check bootctl version.\nLet me consider what makes sense here.\nFor this, bootctl is the right tool — EFI firmware boot manager.\nThe --version flag handles show version info. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nbootctl --version"
+  },
+  {
+    "instruction": "Check EFI variables",
+    "output": "<think>\nWe should check EFI variables.\nLet me reason through this.\nBest tool here is efibootmgr — efibootmgr operations.\n</think>\nefibootmgr"
+  },
+  {
+    "instruction": "Check bootloader status",
+    "output": "<think>\nThe user wants to check bootloader status.\nLet me break this down.\nFor this, bootctl is the right tool — EFI firmware boot manager.\n</think>\nbootctl status"
+  },
+  {
+    "instruction": "Check kernel-install layout",
+    "output": "<think>\nSo the request is to check kernel-install layout.\nBest tool here is ls — ls operations.\nQuick verification after execution to be safe.\n</think>\nls /boot/*/"
+  },
+  {
+    "instruction": "Delete EFI boot entry 0003",
+    "output": "<think>\nThe user wants to delete EFI boot entry 0003.\nFor this, efibootmgr is the right tool — efibootmgr operations.\nThe -b flag means brief output, which matters here because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\nefibootmgr -b 0003 -B"
+  },
+  {
+    "instruction": "Create EFI boot entry for systemd-boot",
+    "output": "<think>\nSo we need to create EFI boot entry for systemd-boot.\nHere's how I'd approach this.\nFor this, efibootmgr is the right tool — efibootmgr operations.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nI've added -d to directory listing, don't descend — important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\nefibootmgr -c -d /dev/sda -p 1 -L 'Linux Boot' -l \\\\EFI\\\\systemd\\\\systemd-bootx64.efi"
+  },
+  {
+    "instruction": "Update systemd-boot bootloader",
+    "output": "<think>\nWe're being asked to update systemd-boot bootloader.\nLet me think through this step by step.\nThis calls for bootctl. EFI firmware boot manager.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nbootctl update"
+  },
+  {
+    "instruction": "Show systemd-boot random seed status",
+    "output": "<think>\nSo we need to show systemd-boot random seed status.\nThe tool for this job is bootctl — EFI firmware boot manager.\nAfter running, confirm it worked as expected before moving on.\n</think>\nbootctl random-seed"
+  },
+  {
+    "instruction": "Set boot loader entry-whitelist",
+    "output": "<think>\nAlright, we need to set boot loader entry-whitelist.\nLet me consider what makes sense here.\nFor this, printf is the right tool — printf operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nprintf 'entry-whitelist custom\\n' > /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "Update bootloader files only",
+    "output": "<think>\nSo we need to update bootloader files only.\nHere's how I'd approach this.\nBest tool here is bootctl — EFI firmware boot manager.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nbootctl update --graceful"
+  },
+  {
+    "instruction": "View boot entries with full details",
+    "output": "<think>\nSo the request is to view boot entries with full details.\nI'll reach for bootctl here because EFI firmware boot manager.\n</think>\nbootctl list --all"
+  },
+  {
+    "instruction": "Create a UKI boot entry",
+    "output": "<think>\nThis is asking us to create a UKI boot entry.\nFirst, let me understand what's needed here.\nThe tool for this job is printf — printf operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nprintf 'title My UKI\\nefi /EFI/Linux/my-uki.efi\\n' > /boot/loader/entries/my-uki.conf"
+  },
+  {
+    "instruction": "Set boot order to entries 0001,0002",
+    "output": "<think>\nSo we need to set boot order to entries 0001,0002.\nHere's how I'd approach this.\nI'd use efibootmgr for this — efibootmgr operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nefibootmgr -o 0001,0002"
+  },
+  {
+    "instruction": "Add kernel with kernel-install and all plugins",
+    "output": "<think>\nThe task requires us to add kernel with kernel-install and all plugins.\nThis calls for kernel-install. Kernel-install operations.\nWhy -6? Use IPv6 only. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nkernel-install add 6.1.0-14-amd64 /boot/vmlinuz-6.1.0-14-amd64"
+  },
+  {
+    "instruction": "Set next boot to UEFI entry 0001",
+    "output": "<think>\nThe goal is to set next boot to UEFI entry 0001.\nI'd use efibootmgr for this — efibootmgr operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nefibootmgr -n 0001"
+  },
+  {
+    "instruction": "Show boot loader random seed",
+    "output": "<think>\nSo the request is to show boot loader random seed.\nLet me break this down.\nI'd use cat for this — cat operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ncat /boot/loader/random-seed 2>/dev/null; echo '(if exists)'"
+  },
+  {
+    "instruction": "Check bootctl installation path",
+    "output": "<think>\nThis is asking us to check bootctl installation path.\nLet me reason through this.\nThe tool for this job is bootctl — EFI firmware boot manager.\n</think>\nbootctl --print-esp-path"
+  }
+]

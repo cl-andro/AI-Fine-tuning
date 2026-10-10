@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create user namespace and check caps inside",
+    "output": "<think>\nWe're being asked to create user namespace and check caps inside.\nLet me think through this step by step.\nunshare is what we need — unshare operations.\nI've added -r to recursive operation (descend into subdirectories) — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nunshare -r capsh --print"
+  },
+  {
+    "instruction": "Run a command with CAP_NET_RAW in user ns",
+    "output": "<think>\nThe user wants to run a command with CAP_NET_RAW in user ns.\nI'll reach for unshare here because unshare operations.\nI'm using -r for recursive operation (descend into subdirectories) — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\nunshare -r setcap cap_net_raw+ep /usr/bin/ping && getcap /usr/bin/ping"
+  },
+  {
+    "instruction": "Check capabilities of root in user namespace",
+    "output": "<think>\nThe user wants to check capabilities of root in user namespace.\nLet me reason through this.\nunshare is what we need — unshare operations.\nI'm using -r for recursive operation (descend into subdirectories) — important to get the expected behavior.\nThe -c flag handles count or create. Important because needed for this specific use case.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare -r capsh --has-cap=cap_sys_admin -- -c 'echo has CAP_SYS_ADMIN'"
+  },
+  {
+    "instruction": "Run command with inherited caps inside ns",
+    "output": "<think>\nThe goal is to run command with inherited caps inside ns.\nLet me consider what makes sense here.\nBest tool here is unshare — unshare operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunshare -Ur capsh --inh=cap_net_admin -- -c 'ip addr'"
+  },
+  {
+    "instruction": "Use ambient caps in user namespace",
+    "output": "<think>\nThis is asking us to use ambient caps in user namespace.\nLet me think through this step by step.\nI'll reach for unshare here because unshare operations.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nQuick verification after execution to be safe.\n</think>\nunshare -Ur capsh --keep=1 --user=65534 --addamb=cap_net_raw -- -c 'ping -c1 127.0.0.1'"
+  },
+  {
+    "instruction": "Check max user namespaces allowed",
+    "output": "<think>\nThe goal is to check max user namespaces allowed.\nLet me break this down.\ncat is what we need — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/sys/user/max_user_namespaces"
+  },
+  {
+    "instruction": "Set max user namespaces to 1000",
+    "output": "<think>\nThe user wants to set max user namespaces to 1000.\nLet me think about the best approach.\nFor this, sysctl is the right tool — kernel parameter tuning.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w user.max_user_namespaces=1000"
+  },
+  {
+    "instruction": "Permanently allow user namespaces",
+    "output": "<think>\nThe goal is to permanently allow user namespaces.\n</think>\necho 'user.max_user_namespaces=1000' > /etc/sysctl.d/99-userns.conf"
+  },
+  {
+    "instruction": "Check if unprivileged user namespaces are enabled",
+    "output": "<think>\nSo the request is to check if unprivileged user namespaces are enabled.\nLet me break this down.\nI'll reach for sysctl here because kernel parameter tuning.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsysctl kernel.unprivileged_userns_clone 2>/dev/null || echo 'Not available'"
+  },
+  {
+    "instruction": "Enable unprivileged user namespace clone",
+    "output": "<think>\nThis is asking us to enable unprivileged user namespace clone.\nThe tool for this job is sysctl — kernel parameter tuning.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysctl -w kernel.unprivileged_userns_clone=1 2>/dev/null || echo 'Option unavailable'"
+  },
+  {
+    "instruction": "Disable unprivileged user namespaces",
+    "output": "<think>\nSo the request is to disable unprivileged user namespaces.\nsysctl is what we need — kernel parameter tuning.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w kernel.unprivileged_userns_clone=0 2>/dev/null || echo 'Option unavailable'"
+  },
+  {
+    "instruction": "Check user namespace map for current process",
+    "output": "<think>\nWe're being asked to check user namespace map for current process.\nFirst, let me understand what's needed here.\ncat is what we need — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncat /proc/self/uid_map && cat /proc/self/gid_map"
+  },
+  {
+    "instruction": "Set up uid/gid mapping for user namespace",
+    "output": "<think>\nSo we need to set up uid/gid mapping for user namespace.\nLet me think about the best approach.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\n[ -f /proc/self/uid_map ] && echo '0 0 1' > /proc/self/uid_map 2>/dev/null || echo 'Cannot write mappings'"
+  },
+  {
+    "instruction": "Check if newuidmap/newgidmap are installed",
+    "output": "<think>\nThe goal is to check if newuidmap/newgidmap are installed.\nThis calls for which. Which operations.\n</think>\nwhich newuidmap newgidmap"
+  },
+  {
+    "instruction": "Configure subuid/subgid for user",
+    "output": "<think>\nAlright, we need to configure subuid/subgid for user.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'user1:100000:65536' >> /etc/subuid && echo 'user1:100000:65536' >> /etc/subgid"
+  },
+  {
+    "instruction": "Verify newuidmap availability",
+    "output": "<think>\nThe goal is to verify newuidmap availability.\nFor this, ls is the right tool — ls operations.\nWhy -la? Detailed listing including hidden files. important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nls -la /usr/bin/newuidmap /usr/bin/newgidmap 2>/dev/null"
+  },
+  {
+    "instruction": "Set cap on file owned by root as user",
+    "output": "<think>\nSo we need to set cap on file owned by root as user.\nsetcap is what we need — setcap operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo setcap cap_net_raw+ep /usr/bin/ping"
+  },
+  {
+    "instruction": "Allow user to setcap on own files",
+    "output": "<think>\nThis is asking us to allow user to setcap on own files.\nsetcap is what we need — setcap operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nsetcap cap_net_raw+ep ~/myprogram 2>/dev/null || echo 'Cannot set caps as user'"
+  },
+  {
+    "instruction": "Use capabilities with podman (rootless)",
+    "output": "<think>\nSo the request is to use capabilities with podman (rootless).\npodman is what we need — rootless containers.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\npodman run --cap-add=NET_RAW alpine ping 8.8.8.8"
+  },
+  {
+    "instruction": "List caps in rootless podman container",
+    "output": "<think>\nAlright, we need to list caps in rootless podman container.\nFirst, let me understand what's needed here.\nThe tool for this job is podman — rootless containers.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\npodman run --rm alpine getpcaps 1"
+  },
+  {
+    "instruction": "Drop all caps in podman container",
+    "output": "<think>\nThe task requires us to drop all caps in podman container.\nLet me break this down.\npodman is what we need — rootless containers.\nAfter running, confirm it worked as expected before moving on.\n</think>\npodman run --cap-drop=ALL --rm alpine capsh --print"
+  },
+  {
+    "instruction": "Run podman with specific cap",
+    "output": "<think>\nThis is asking us to run podman with specific cap.\nThe tool for this job is podman — rootless containers.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\npodman run --cap-add=SYS_PTRACE --rm alpine strace echo test"
+  }
+]

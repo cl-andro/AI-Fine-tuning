@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Restart wg0 iteration 22",
+    "output": "<think>\nThis is asking us to restart wg0 iteration 22.\nThis calls for wg-quick. Wg-quick operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nwg-quick down wg0 && wg-quick up wg0"
+  },
+  {
+    "instruction": "Add peer with allowed-ips",
+    "output": "<think>\nSo the request is to add peer with allowed-ips.\nFirst, let me understand what's needed here.\nwg is what we need — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nI'll check the output to make sure it did what we expected.\n</think>\nwg set wg0 peer abc123def456... allowed-ips 10.0.0.2/32"
+  },
+  {
+    "instruction": "Add peer with endpoint and keepalive",
+    "output": "<think>\nWe should add peer with endpoint and keepalive.\nLet me think about the best approach.\nwg is what we need — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nwg set wg0 peer abc123def456... allowed-ips 10.0.0.2/32 endpoint 203.0.113.5:51820 persistent-keepalive 25"
+  },
+  {
+    "instruction": "Remove a peer",
+    "output": "<think>\nThe task requires us to remove a peer.\nwg is what we need — WireGuard VPN interface management.\nNo need for complex pipelines here — one command is sufficient.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nwg set wg0 peer abc123def456... remove"
+  },
+  {
+    "instruction": "Set private key",
+    "output": "<think>\nThis is asking us to set private key.\nFirst, let me understand what's needed here.\nFor this, wg is the right tool — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nQuick verification after execution to be safe.\n</think>\nwg set wg0 private-key /etc/wireguard/privatekey"
+  },
+  {
+    "instruction": "Set listen port",
+    "output": "<think>\nThe task requires us to set listen port.\nLet me think about the best approach.\nThis calls for wg. WireGuard VPN interface management.\nOne command does the job. Simple is better.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nwg set wg0 listen-port 51820"
+  },
+  {
+    "instruction": "Set MTU",
+    "output": "<think>\nAlright, we need to set MTU.\nLet me consider what makes sense here.\nFor this, wg is the right tool — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nQuick verification after execution to be safe.\n</think>\nwg set wg0 mtu 1420"
+  },
+  {
+    "instruction": "Set fwmark",
+    "output": "<think>\nThe goal is to set fwmark.\nLet me reason through this.\nI'll reach for wg here because WireGuard VPN interface management.\nNo need for complex pipelines here — one command is sufficient.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nwg set wg0 fwmark 0xca6c"
+  },
+  {
+    "instruction": "Set routing table",
+    "output": "<think>\nThis is asking us to set routing table.\nwg is what we need — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nQuick verification after execution to be safe.\n</think>\nwg set wg0 table 51820"
+  },
+  {
+    "instruction": "Create server config",
+    "output": "<think>\nAlright, we need to create server config.\nLet me consider what makes sense here.\nThe -e flag means edit or executable, which matters here because this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e \"[Interface]\\nPrivateKey = $(cat privatekey)\\nAddress = 10.0.0.1/24\\nListenPort = 51820\\nSaveConfig = true\" > /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add peer to config",
+    "output": "<think>\nWe're being asked to add peer to config.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\n</think>\necho -e \"\\n[Peer]\\nPublicKey = $(cat peer1.pub)\\nAllowedIPs = 10.0.0.2/32\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add PostUp iptables rule",
+    "output": "<think>\nThe goal is to add PostUp iptables rule.\nLet me consider what makes sense here.\nThe -i flag handles interactive, prompt before action. Important because this controls how the output is formatted.\nThe -o flag means output to file, OR operator in find, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho \"PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add PreDown iptables rule",
+    "output": "<think>\nThe goal is to add PreDown iptables rule.\nFirst, let me understand what's needed here.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nLet me verify afterward that it worked correctly.\n</think>\necho \"PreDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Create client config",
+    "output": "<think>\nAlright, we need to create client config.\nI've added -e to edit or executable — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e \"[Interface]\\nPrivateKey = $(cat client-priv)\\nAddress = 10.0.0.2/32\\nDNS = 1.1.1.1\\n\\n[Peer]\\nPublicKey = $(cat server-pub)\\nEndpoint = server.example.com:51820\\nAllowedIPs = 0.0.0.0/0\\nPersistentKeepalive = 25\" > /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Check transfer stats",
+    "output": "<think>\nSo we need to check transfer stats.\nLet me think through this step by step.\nBest tool here is wg — WireGuard VPN interface management.\n</think>\nwg show wg0 transfer"
+  },
+  {
+    "instruction": "Check latest handshakes",
+    "output": "<think>\nSo we need to check latest handshakes.\nLet me break this down.\nI'd use wg for this — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nQuick verification after execution to be safe.\n</think>\nwg show wg0 latest-handshakes"
+  },
+  {
+    "instruction": "Check allowed-ips for peers",
+    "output": "<think>\nWe should check allowed-ips for peers.\nFirst, let me understand what's needed here.\nThis calls for wg. WireGuard VPN interface management.\nA single command handles this cleanly — no need to overcomplicate it.\nWireGuard configs contain private keys — keep permissions at 600.\nLet me verify afterward that it worked correctly.\n</think>\nwg show wg0 allowed-ips"
+  },
+  {
+    "instruction": "Enable IP forwarding",
+    "output": "<think>\nSo the request is to enable IP forwarding.\nFirst, let me understand what's needed here.\nI'll reach for sysctl here because kernel parameter tuning.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysctl -w net.ipv4.ip_forward=1"
+  },
+  {
+    "instruction": "Make IP forwarding permanent",
+    "output": "<think>\nThe task requires us to make IP forwarding permanent.\nLet me consider what makes sense here.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho \"net.ipv4.ip_forward=1\" >> /etc/sysctl.d/99-wireguard.conf"
+  },
+  {
+    "instruction": "Save running config",
+    "output": "<think>\nWe should save running config.\nFirst, let me understand what's needed here.\nI'd use wg-quick for this — wg-quick operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nwg-quick save wg0"
+  },
+  {
+    "instruction": "Dump all in JSON",
+    "output": "<think>\nWe should dump all in JSON.\nLet me reason through this.\nThis calls for wg. WireGuard VPN interface management.\nA single command handles this cleanly — no need to overcomplicate it.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nwg show all dump"
+  },
+  {
+    "instruction": "Generate QR code for client config",
+    "output": "<think>\nWe're being asked to generate QR code for client config.\nLet me think through this step by step.\nThis calls for qrencode. Qrencode operations.\nThe -t flag handles sort by modification time. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nqrencode -t ansiutf8 < /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Show peers with public keys",
+    "output": "<think>\nNeed to show peers with public keys.\nFirst, let me understand what's needed here.\nThe tool for this job is wg — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nI'll check the output to make sure it did what we expected.\n</think>\nwg show wg0 peers"
+  },
+  {
+    "instruction": "Strip private key from show",
+    "output": "<think>\nThis is asking us to strip private key from show.\nLet me think through this step by step.\nwg is what we need — WireGuard VPN interface management.\nOne command does the job. Simple is better.\nWireGuard configs contain private keys — keep permissions at 600.\nLet me verify afterward that it worked correctly.\n</think>\nwg show wg0 --no-private"
+  }
+]

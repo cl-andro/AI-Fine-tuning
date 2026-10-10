@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a systemd mount unit file for /mnt/data",
+    "output": "<think>\nThis is asking us to create a systemd mount unit file for /mnt/data.\nLet me think about the best approach.\nThis calls for tee. Tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/mnt-data.mount <<< '[Mount]\\nWhat=/dev/sdb1\\nWhere=/mnt/data\\nType=ext4\\nOptions=defaults,noatime'"
+  },
+  {
+    "instruction": "Create a systemd automount unit for on-demand mounting",
+    "output": "<think>\nThe task requires us to create a systemd automount unit for on-demand mounting.\nI'd use tee for this — tee operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/mnt-data.automount <<< '[Automount]\\nWhere=/mnt/data\\nTimeoutIdleSec=30'"
+  },
+  {
+    "instruction": "Set What= in a .mount unit to use UUID",
+    "output": "<think>\nThe goal is to set What= in a .mount unit to use UUID.\nLet me break this down.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'What=UUID=abc12345-abcd-1234-abcd-123456789abc' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Set the filesystem Type in a .mount unit",
+    "output": "<think>\nThis is asking us to set the filesystem Type in a .mount unit.\nThe -a flag means AND operator in find, which matters here because important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'Type=btrfs' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Set mount options (compress,noatime) in a .mount unit",
+    "output": "<think>\nAlright, we need to set mount options (compress,noatime) in a .mount unit.\nI'm using -a for AND operator in find — without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'Options=compress=zstd,noatime,discard' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Add TimeoutSec for mount attempt in a .mount unit",
+    "output": "<think>\nWe're being asked to add TimeoutSec for mount attempt in a .mount unit.\nThe -a flag handles AND operator in find. Important because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'TimeoutSec=30s' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Add SloppyOptions=true to ignore invalid mount options",
+    "output": "<think>\nThe goal is to add SloppyOptions=true to ignore invalid mount options.\nLet me think through this step by step.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'SloppyOptions=true' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Add ForceUnmount=true to forcefully unmount on stop",
+    "output": "<think>\nWe should add ForceUnmount=true to forcefully unmount on stop.\nLet me consider what makes sense here.\nI'm using -a for AND operator in find — needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'ForceUnmount=true' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Add DirectoryMode to set permissions on mount point dir",
+    "output": "<think>\nWe're being asked to add DirectoryMode to set permissions on mount point dir.\nLet me think about the best approach.\nWhy -a? AND operator in find. standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'DirectoryMode=0755' | sudo tee -a /etc/systemd/system/mnt-data.mount"
+  },
+  {
+    "instruction": "Enable and start a systemd mount unit",
+    "output": "<think>\nWe're being asked to enable and start a systemd mount unit.\nLet me think through this step by step.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemctl enable --now mnt-data.mount"
+  },
+  {
+    "instruction": "Enable and start a systemd automount unit",
+    "output": "<think>\nThe task requires us to enable and start a systemd automount unit.\nLet me think about the best approach.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl enable --now mnt-data.automount"
+  },
+  {
+    "instruction": "Start a mount unit explicitly",
+    "output": "<think>\nThe user wants to start a mount unit explicitly.\nLet me think about the best approach.\nFor this, systemctl is the right tool — managing systemd services.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo systemctl start mnt-data.mount"
+  },
+  {
+    "instruction": "Stop a systemd mount unit and unmount",
+    "output": "<think>\nThis is asking us to stop a systemd mount unit and unmount.\nFor this, systemctl is the right tool — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl stop mnt-data.mount"
+  },
+  {
+    "instruction": "Reload systemd after creating new mount units",
+    "output": "<think>\nWe should reload systemd after creating new mount units.\nFirst, let me understand what's needed here.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl daemon-reload"
+  },
+  {
+    "instruction": "Check status of a systemd mount unit",
+    "output": "<think>\nSo the request is to check status of a systemd mount unit.\nLet me break this down.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo systemctl status mnt-data.mount"
+  },
+  {
+    "instruction": "List all systemd mount units",
+    "output": "<think>\nThe task requires us to list all systemd mount units.\nFirst, let me understand what's needed here.\nThis calls for systemctl. Managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl list-units --type=mount"
+  },
+  {
+    "instruction": "Use systemd-mount to mount a device directly",
+    "output": "<think>\nWe should use systemd-mount to mount a device directly.\nLet me consider what makes sense here.\nI'd use systemd-mount for this — systemd-mount operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo systemd-mount /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Use systemd-mount with options",
+    "output": "<think>\nNeed to use systemd-mount with options.\nThe tool for this job is systemd-mount — systemd-mount operations.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-mount -o noatime,nodiratime /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Use systemd-mount with automount enabled",
+    "output": "<think>\nWe're being asked to use systemd-mount with automount enabled.\nThe tool for this job is systemd-mount — systemd-mount operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo systemd-mount --automount=yes /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Use systemd-mount with timeout",
+    "output": "<think>\nThe user wants to use systemd-mount with timeout.\nLet me consider what makes sense here.\nsystemd-mount is what we need — systemd-mount operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-mount --timeout-idle-sec=60 /dev/sdb1 /mnt/data"
+  },
+  {
+    "instruction": "Use systemd-umount to unmount a path",
+    "output": "<think>\nWe should use systemd-umount to unmount a path.\nI'd use systemd-umount for this — systemd-umount operations.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo systemd-umount /mnt/data"
+  },
+  {
+    "instruction": "Escape a path for use in systemd unit names",
+    "output": "<think>\nThe user wants to escape a path for use in systemd unit names.\nLet me consider what makes sense here.\nThis calls for systemd-escape. Systemd-escape operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsystemd-escape /mnt/disk/data"
+  },
+  {
+    "instruction": "Unescape a systemd-escaped mount path",
+    "output": "<think>\nNeed to unescape a systemd-escaped mount path.\nLet me think about the best approach.\nThe tool for this job is systemd-escape — systemd-escape operations.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\n</think>\nsystemd-escape -u mnt-disk-data"
+  },
+  {
+    "instruction": "Create a complete .mount unit for NFS with systemd-mount",
+    "output": "<think>\nNeed to create a complete .mount unit for NFS with systemd-mount.\nBest tool here is systemd-mount — systemd-mount operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo systemd-mount --type=nfs -o soft,intr server:/export /mnt/nfs"
+  }
+]

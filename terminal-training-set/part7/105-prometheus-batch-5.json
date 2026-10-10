@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure Prometheus remote write endpoint",
+    "output": "<think>\nThe task requires us to configure Prometheus remote write endpoint.\nLet me think through this step by step.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'remote_write: - url: https://thanos.example.com/api/v1/receive basic_auth: username: prom password_file: /etc/prometheus/pass' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure Prometheus remote read endpoint",
+    "output": "<think>\nThe task requires us to configure Prometheus remote read endpoint.\nLet me reason through this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'remote_read: - url: https://thanos.example.com/api/v1/read read_recent: true' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add queue config for remote write",
+    "output": "<think>\nThis is asking us to add queue config for remote write.\nLet me reason through this.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'remote_write: - url: http://remote:8080/write queue_config: capacity: 5000 max_shards: 200 min_shards: 10' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add retry config for remote write",
+    "output": "<think>\nSo the request is to add retry config for remote write.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'remote_write: - url: http://remote:8080/write queue_config: max_retries: 5 min_backoff: 100ms max_backoff: 5s' >> prometheus.yml"
+  },
+  {
+    "instruction": "Enable WAL compression for remote write",
+    "output": "<think>\nAlright, we need to enable WAL compression for remote write.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'remote_write: - url: http://remote:8081/write write_relabel_configs: - source_labels: [__name__] regex: \"expensive.*\" action: drop' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add alerting config with Alertmanager",
+    "output": "<think>\nAlright, we need to add alerting config with Alertmanager.\nLet me reason through this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'alerting: alertmanagers: - static_configs: - targets: - localhost:9093' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add multiple Alertmanagers with relabel",
+    "output": "<think>\nThe goal is to add multiple Alertmanagers with relabel.\nHere's how I'd approach this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'alerting: alertmanagers: - scheme: https tls_config: ca_file: ca.crt static_configs: - targets: - alert1:9093 - alert2:9093' >> prometheus.yml"
+  },
+  {
+    "instruction": "Set alertmanager scrape interval",
+    "output": "<think>\nAlright, we need to set alertmanager scrape interval.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\necho 'alerting: alertmanagers: - static_configs: - targets: - alertmanager:9093 scrape_interval: 30s' >> prometheus.yml"
+  },
+  {
+    "instruction": "Start prometheus with web console templates",
+    "output": "<think>\nWe're being asked to start prometheus with web console templates.\nLet me think about the best approach.\nI'll reach for prometheus here because prometheus operations.\nAfter running, I'll confirm the result looks right.\n</think>\nprometheus --config.file prometheus.yml --web.console.templates /etc/prometheus/consoles"
+  },
+  {
+    "instruction": "Start prometheus with web external URL",
+    "output": "<think>\nNeed to start prometheus with web external URL.\nFirst, let me understand what's needed here.\nI'd use prometheus for this — prometheus operations.\nQuick verification after execution to be safe.\n</think>\nprometheus --config.file prometheus.yml --web.external-url https://prom.example.com/"
+  },
+  {
+    "instruction": "Enable admin API in Prometheus",
+    "output": "<think>\nWe're being asked to enable admin API in Prometheus.\nLet me consider what makes sense here.\nFor this, prometheus is the right tool — prometheus operations.\nQuick verification after execution to be safe.\n</think>\nprometheus --config.file prometheus.yml --web.enable-admin-api"
+  },
+  {
+    "instruction": "Enable lifecycle API for reload",
+    "output": "<think>\nThis is asking us to enable lifecycle API for reload.\nLet me break this down.\nI'll reach for prometheus here because prometheus operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nprometheus --config.file prometheus.yml --web.enable-lifecycle"
+  },
+  {
+    "instruction": "Reload prometheus config via API",
+    "output": "<think>\nThis is asking us to reload prometheus config via API.\nI'd use curl for this — making HTTP requests.\nA quick sanity check afterward saves debugging time later.\n</think>\ncurl -X POST http://localhost:9090/-/reload"
+  },
+  {
+    "instruction": "Query Prometheus via HTTP API",
+    "output": "<think>\nNeed to query Prometheus via HTTP API.\ncurl is what we need — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl 'http://localhost:9090/api/v1/query?query=up'"
+  },
+  {
+    "instruction": "Query range via HTTP API",
+    "output": "<think>\nThe user wants to query range via HTTP API.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl 'http://localhost:9090/api/v1/query_range?query=rate(http_requests_total[5m])&start=2026-07-25T00:00:00Z&end=2026-07-26T00:00:00Z&step=60s'"
+  },
+  {
+    "instruction": "Query series via HTTP API",
+    "output": "<think>\nThe user wants to query series via HTTP API.\nLet me consider what makes sense here.\nBest tool here is curl — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl 'http://localhost:9090/api/v1/series?match[]=up&match[]=node_cpu_seconds_total'"
+  },
+  {
+    "instruction": "Get label names via HTTP API",
+    "output": "<think>\nAlright, we need to get label names via HTTP API.\nLet me think about the best approach.\nThe tool for this job is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl 'http://localhost:9090/api/v1/labels'"
+  },
+  {
+    "instruction": "Get label values via HTTP API",
+    "output": "<think>\nThe user wants to get label values via HTTP API.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl 'http://localhost:9090/api/v1/label/job/values'"
+  },
+  {
+    "instruction": "Get metric metadata via HTTP API",
+    "output": "<think>\nThe task requires us to get metric metadata via HTTP API.\nLet me think about the best approach.\nThe tool for this job is curl — making HTTP requests.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl 'http://localhost:9090/api/v1/metadata'"
+  },
+  {
+    "instruction": "Check Prometheus targets via HTTP API",
+    "output": "<think>\nSo we need to check Prometheus targets via HTTP API.\nLet me break this down.\nThe tool for this job is curl — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl 'http://localhost:9090/api/v1/targets'"
+  },
+  {
+    "instruction": "Check Prometheus rules via HTTP API",
+    "output": "<think>\nSo the request is to check Prometheus rules via HTTP API.\nLet me consider what makes sense here.\nThe tool for this job is curl — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl 'http://localhost:9090/api/v1/rules'"
+  },
+  {
+    "instruction": "Check alertmanagers via HTTP API",
+    "output": "<think>\nAlright, we need to check alertmanagers via HTTP API.\nLet me think about the best approach.\nBest tool here is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl 'http://localhost:9090/api/v1/alertmanagers'"
+  },
+  {
+    "instruction": "Get TSDB stats via HTTP API",
+    "output": "<think>\nNeed to get TSDB stats via HTTP API.\nI'll reach for curl here because making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl 'http://localhost:9090/api/v1/status/tsdb'"
+  },
+  {
+    "instruction": "Get build info via HTTP API",
+    "output": "<think>\nSo we need to get build info via HTTP API.\ncurl is what we need — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl 'http://localhost:9090/api/v1/status/buildinfo'"
+  },
+  {
+    "instruction": "Get runtime info via HTTP API",
+    "output": "<think>\nSo we need to get runtime info via HTTP API.\nThis calls for curl. Making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl 'http://localhost:9090/api/v1/status/runtimeinfo'"
+  }
+]

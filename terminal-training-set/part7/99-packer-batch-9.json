@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a Windows image with IIS installed",
+    "output": "<think>\nThe goal is to create a Windows image with IIS installed.\nLet me think about the best approach.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'source \"amazon-ebs\" \"windows\" { communicator = \"winrm\" winrm_username = \"Administrator\" } build { sources = [\"source.amazon-ebs.windows\"] provisioner \"powershell\" { inline = [\"Install-WindowsFeature -Name Web-Server\"] } }' > windows-iis.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Windows feature install with subfeatures",
+    "output": "<think>\nThe task requires us to use the Windows feature install with subfeatures.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Install-WindowsFeature -Name Web-WebServer -IncludeAllSubFeature\"] }' > win-features.pkr.hcl"
+  },
+  {
+    "instruction": "Enable Windows Remote Management in Packer",
+    "output": "<think>\nAlright, we need to enable Windows Remote Management in Packer.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Enable-PSRemoting -Force\"] }' > win-psremoting.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Windows scheduled task via Packer",
+    "output": "<think>\nThis is asking us to create a Windows scheduled task via Packer.\nLet me reason through this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Register-ScheduledTask -TaskName \\\"Cleanup\\\" -Action (New-ScheduledTaskAction -Execute \\\"powershell.exe\\\")\"] }' > win-task.pkr.hcl"
+  },
+  {
+    "instruction": "Set Windows registry values in Packer",
+    "output": "<think>\nWe should set Windows registry values in Packer.\nOne command does the job. Simple is better.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Set-ItemProperty -Path \\\"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\\" -Name fDenyTSConnections -Value 0\"] }' > win-registry.pkr.hcl"
+  },
+  {
+    "instruction": "Download a file via Invoke-WebRequest in a Windows build",
+    "output": "<think>\nThe goal is to download a file via Invoke-WebRequest in a Windows build.\nLet me reason through this.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Invoke-WebRequest -Uri https://example.com/installer.exe -OutFile C:\\\\installer.exe\"] }' > win-download.pkr.hcl"
+  },
+  {
+    "instruction": "Install a Windows feature via DISM in Packer",
+    "output": "<think>\nWe should install a Windows feature via DISM in Packer.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'provisioner \"powershell\" { inline = [\"dism /online /enable-feature /featurename:IIS-WebServerRole /all\"] }' > win-dism.pkr.hcl"
+  },
+  {
+    "instruction": "Run a Windows MSI installer silently in Packer",
+    "output": "<think>\nSo we need to run a Windows MSI installer silently in Packer.\nLet me think about the best approach.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Start-Process msiexec.exe -ArgumentList \\\"/i C:\\\\agent.msi /quiet\\\" -Wait\"] }' > win-msi.pkr.hcl"
+  },
+  {
+    "instruction": "Create a local user account on Windows via Packer",
+    "output": "<think>\nWe should create a local user account on Windows via Packer.\nWhy -user? Filter by owner. needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'provisioner \"powershell\" { inline = [\"New-LocalUser -Name deploy -Password (ConvertTo-SecureString \\\"Pass123!\\\" -AsPlainText -Force)\", \"Add-LocalGroupMember -Group Administrators -Member deploy\"] }' > win-user.pkr.hcl"
+  },
+  {
+    "instruction": "Configure Windows Update settings in Packer",
+    "output": "<think>\nNeed to configure Windows Update settings in Packer.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Set-ItemProperty -Path \\\"HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\\\" -Name NoAutoUpdate -Value 0\"] }' > win-update.pkr.hcl"
+  },
+  {
+    "instruction": "Join a Windows domain during Packer build",
+    "output": "<think>\nThe goal is to join a Windows domain during Packer build.\nLet me break this down.\n</think>\necho 'provisioner \"powershell\" { inline = [\"Add-Computer -DomainName example.com -Credential (New-Object System.Management.Automation.PSCredential(\\\"admin\\\", (ConvertTo-SecureString \\\"password\\\" -AsPlainText -Force))) -Restart -Force\"] }' > win-domain.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Windows Shell provisioner for batch commands",
+    "output": "<think>\nThis is asking us to use the Windows Shell provisioner for batch commands.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'provisioner \"windows-shell\" { inline = [\"echo %COMPUTERNAME%\"] }' > win-shell.pkr.hcl"
+  },
+  {
+    "instruction": "Upload a file to Windows via WinRM",
+    "output": "<think>\nThe task requires us to upload a file to Windows via WinRM.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'provisioner \"file\" { source = \"app.exe\" destination = \"C:\\\\app\\\\app.exe\" }' > win-file.pkr.hcl"
+  },
+  {
+    "instruction": "Use the packer console for HCL expression testing",
+    "output": "<think>\nWe're being asked to use the packer console for HCL expression testing.\nLet me consider what makes sense here.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'formatdate(\"YYYY-MM-DD\", timestamp())' | packer console"
+  },
+  {
+    "instruction": "Test variable interpolation in packer console",
+    "output": "<think>\nWe're being asked to test variable interpolation in packer console.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'var.region' | packer console -var 'region=us-east-1'"
+  },
+  {
+    "instruction": "Use packer console with a variables file loaded",
+    "output": "<think>\nThe task requires us to use packer console with a variables file loaded.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'var.instance_type' | packer console -var-file=prod.pkrvars.hcl"
+  },
+  {
+    "instruction": "Test a complex function in packer console",
+    "output": "<think>\nThis is asking us to test a complex function in packer console.\nLet me think through this step by step.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\necho 'cidrhost(\"10.0.0.0/24\", 5)' | packer console"
+  },
+  {
+    "instruction": "Test a condition in packer console",
+    "output": "<think>\nWe should test a condition in packer console.\nLet me think through this step by step.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\necho 'true ? \"yes\" : \"no\"' | packer console"
+  },
+  {
+    "instruction": "Use packer console to test templatefile",
+    "output": "<think>\nThe goal is to use packer console to test templatefile.\nLet me consider what makes sense here.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'templatefile(\"${path.root}/templates/test.tpl\", {name = \"world\"})' | packer console"
+  },
+  {
+    "instruction": "Test packer string functions in console",
+    "output": "<think>\nThe user wants to test packer string functions in console.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\necho 'upper(\"hello\")' | packer console"
+  },
+  {
+    "instruction": "Check the syntax of a complex expression in console",
+    "output": "<think>\nAlright, we need to check the syntax of a complex expression in console.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'merge(map(\"a\", 1), map(\"b\", 2))' | packer console"
+  },
+  {
+    "instruction": "Test file function existence in packer console",
+    "output": "<think>\nNeed to test file function existence in packer console.\nLet me consider what makes sense here.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'fileexists(\"template.pkr.hcl\")' | packer console"
+  },
+  {
+    "instruction": "Use hcl2_upgrade to convert from JSON to HCL2",
+    "output": "<think>\nSo the request is to use hcl2_upgrade to convert from JSON to HCL2.\nLet me think about the best approach.\nFor this, packer is the right tool — packer operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\npacker hcl2_upgrade legacy.json"
+  },
+  {
+    "instruction": "See the difference between JSON and HCL templates after upgrade",
+    "output": "<think>\nThe task requires us to see the difference between JSON and HCL templates after upgrade.\nLet me consider what makes sense here.\nBest tool here is diff — diff operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndiff legacy.json legacy.json.hcl2_upgrade"
+  }
+]

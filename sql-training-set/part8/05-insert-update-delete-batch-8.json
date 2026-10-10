@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert a single row with product_id='John'",
+    "output": "INSERT INTO orders (product_id, qty) VALUES ('John', 100);"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert multiple rows at once",
+    "output": "INSERT INTO orders (product_id, qty) VALUES ('John', 1), ('Jane', 2), ('Jim', 3);"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert into orders from a select that filters status",
+    "output": "INSERT INTO orders (product_id, qty) SELECT product_id, qty FROM orders_src WHERE status = 'x';"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate the row with id=7",
+    "output": "UPDATE orders SET product_id = 'NewName' WHERE id = 7;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate all rows setting qty to 0",
+    "output": "UPDATE orders SET qty = 0;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate orders increasing all qty by 10%",
+    "output": "UPDATE orders SET qty = qty * 1.1;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate rows where status equals 'done'",
+    "output": "UPDATE orders SET product_id = 'Finished' WHERE status = 'done';"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete a row by id 12",
+    "output": "DELETE FROM orders WHERE id = 12;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete rows where qty is below 50",
+    "output": "DELETE FROM orders WHERE qty < 50;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete rows where status is NULL",
+    "output": "DELETE FROM orders WHERE status IS NULL;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete all rows from orders",
+    "output": "DELETE FROM orders;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpsert: insert or update on conflict of the id",
+    "output": "INSERT INTO orders (id, product_id) VALUES (1, 'X') ON CONFLICT (id) DO UPDATE SET product_id = EXCLUDED.product_id;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nConditional update using CASE",
+    "output": "UPDATE orders SET qty = CASE WHEN qty > 100 THEN qty - 10 ELSE qty + 10 END;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate a join-based target using a subquery value",
+    "output": "UPDATE orders SET qty = (SELECT MAX(qty) FROM orders) WHERE qty IS NULL;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete with a subquery filter",
+    "output": "DELETE FROM orders WHERE qty IN (SELECT qty FROM orders WHERE status = 'skip');"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert with explicit column list and defaults",
+    "output": "INSERT INTO orders (product_id, qty, status) VALUES ('A', 5, 'active');"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate with a LIMIT to only change a few rows",
+    "output": "UPDATE orders SET qty = qty + 1 WHERE id IN (SELECT id FROM orders LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert ignoring duplicates",
+    "output": "INSERT OR IGNORE INTO orders (product_id) VALUES ('Dup');"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nDelete a range where qty between two values",
+    "output": "DELETE FROM orders WHERE qty BETWEEN 20 AND 30;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nUpdate setting multiple columns",
+    "output": "UPDATE orders SET product_id = 'Z', qty = 0, status = NULL WHERE id = 9;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nInsert a row returning its id",
+    "output": "INSERT INTO orders (product_id) VALUES ('Ret') RETURNING id;"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nReplace all occurrences in a string column",
+    "output": "UPDATE orders SET status = REPLACE(status, 'a', 'b');"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nTrim whitespace then update product_id",
+    "output": "UPDATE orders SET product_id = TRIM(product_id);"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nLowercase a text column in place",
+    "output": "UPDATE orders SET product_id = LOWER(product_id);"
+  },
+  {
+    "instruction": "Schema: orders(id, product_id, qty, status)\nBulk upsert with multiple rows",
+    "output": "INSERT INTO orders (id, product_id) VALUES (1, 'A'), (2, 'B') ON CONFLICT (id) DO UPDATE SET product_id = EXCLUDED.product_id;"
+  }
+]

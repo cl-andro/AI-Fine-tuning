@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "traefik version",
+    "output": "version: v3.1.4\ncodename: v3.1\nbuilt: 2026-03-15_10:00:00\ngo version: go1.22.5"
+  },
+  {
+    "instruction": "traefik healthcheck",
+    "output": "OK: https://localhost:8080/api/health"
+  },
+  {
+    "instruction": "traefik healthcheck --ping",
+    "output": "Ping endpoint: OK (200)"
+  },
+  {
+    "instruction": "curl -s http://localhost:8080/api/rawdata | python3 -m json.tool | head -30",
+    "output": "{\n    \"routers\": {\n        \"api\": {\n            \"entryPoints\": [\"traefik\"],\n            \"service\": \"api@internal\",\n            \"rule\": \"PathPrefix(`/api`)\"\n        },\n        \"web\": {\n            \"entryPoints\": [\"web\"],\n            \"service\": \"backend\",\n            \"rule\": \"Host(`example.com`)\"\n        }\n    },\n    \"services\": {\n        \"backend\": {\n            \"loadBalancer\": {\n                \"servers\": [\n                    {\"url\": \"http://10.0.0.10:8080\"},\n                    {\"url\": \"http://10.0.0.11:8080\"}\n                ],\n                \"healthCheck\": {\"path\": \"/health\", \"interval\": \"10s\"}\n            }\n        }\n    }\n}"
+  },
+  {
+    "instruction": "cat /etc/traefik/traefik.yml",
+    "output": "api:\n  dashboard: true\n  debug: true\nentryPoints:\n  web:\n    address: \":80\"\n  websecure:\n    address: \":443\"\nproviders:\n  file:\n    filename: /etc/traefik/dynamic.yml\n    watch: true\nping: {}\nlog:\n  level: INFO"
+  },
+  {
+    "instruction": "cat /etc/traefik/dynamic.yml",
+    "output": "http:\n  routers:\n    web:\n      rule: \"Host(`example.com`)\"\n      service: backend\n      entryPoints:\n        - web\n      middlewares:\n        - rate-limit\n  services:\n    backend:\n      loadBalancer:\n        servers:\n          - url: \"http://10.0.0.10:8080\"\n          - url: \"http://10.0.0.11:8080\"\n        healthCheck:\n          path: /health\n          interval: 10s\n          timeout: 3s\n  middlewares:\n    rate-limit:\n      rateLimit:\n        average: 100\n        burst: 50"
+  },
+  {
+    "instruction": "systemctl restart traefik",
+    "output": "systemctl restart traefik"
+  },
+  {
+    "instruction": "journalctl -u traefik -n 10 --no-pager",
+    "output": "Jul 25 10:00:01 debian traefik[3456]: Starting provider *file.Provider\nJul 25 10:00:01 debian traefik[3456]: Starting provider *traefik.Provider\nJul 25 10:00:01 debian traefik[3456]: Found new router: web\nJul 25 10:00:01 debian traefik[3456]: Found new service: backend\nJul 25 10:00:02 debian traefik[3456]: Server started on :80\nJul 25 10:00:02 debian traefik[3456]: Server started on :443"
+  },
+  {
+    "instruction": "envoy --version",
+    "output": "envoy  version: 1.30.1 (e3a0c2f101a29b8e1d3f7c4e53a8b6a9c2d1e0f1)"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy.yaml",
+    "output": "[2026-07-25 10:00:01.123][12345][info][main] initializing epoch 0\n[2026-07-25 10:00:01.124][12345][info][main] validation complete"
+  },
+  {
+    "instruction": "envoy -c /etc/envoy/envoy.yaml --mode serve &",
+    "output": "[2026-07-25 10:00:01.123][12346][info][main] initializing epoch 0\n[2026-07-25 10:00:01.456][12346][info][upstream] server started"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/server_info",
+    "output": "{\"version\":\"1.30.1\",\"state\":\"LIVE\",\"uptime_current_epoch_ms\":\"1234567\",\"hot_restart_version\":\"11.0\",\"command_line_options\":{\"base_id\":\"0\",\"config_path\":\"/etc/envoy/envoy.yaml\",\"admin_address\":\"0.0.0.0\",\"admin_port\":\"9901\"}}"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/clusters | head -15",
+    "output": "backend::default::health_flags::healthy\nbackend::default::hostname::10.0.0.10\nbackend::default::priority::0\nbackend::default::weight::1\nbackend::default::uptime::1234567\nbackend::default::cx_active::2\nbackend::default::cx_total::12345\nbackend::default::rq_active::5\nbackend::default::rq_total::67890\nbackend::default::healthy::true"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/certs",
+    "output": "{\"certificates\":[]}"
+  },
+  {
+    "instruction": "cat /etc/envoy/envoy.yaml | grep -A 20 'clusters'",
+    "output": "  clusters:\n  - name: backend\n    type: STRICT_DNS\n    lb_policy: LEAST_REQUEST\n    health_checks:\n      timeout: 5s\n      interval: 10s\n      unhealthy_threshold: 3\n      healthy_threshold: 2\n      http_health_check:\n        path: /health\n    load_assignment:\n      cluster_name: backend\n      endpoints:\n      - lb_endpoints:\n        - endpoint:\n            address:\n              socket_address:\n                address: 10.0.0.10\n                port_value: 8080\n        - endpoint:\n            address:\n              socket_address:\n                address: 10.0.0.11\n                port_value: 8080"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy.yaml 2>/dev/null; echo 'Exit: '$?",
+    "output": "Exit: 0"
+  },
+  {
+    "instruction": "traefik test --configFile=/etc/traefik/traefik.yml",
+    "output": "Configuration file is valid"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/stats | grep -E 'server.version|server.uptime'",
+    "output": "server.version: 1.30.1\nserver.uptime: 1234567"
+  },
+  {
+    "instruction": "traefik bug-report",
+    "output": "Bug report saved to /tmp/traefik-bug-report-20260725.zip"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy-bad.yaml 2>&1 | tail -3",
+    "output": "[2026-07-25 10:00:01.456][12347][critical][main] error initializing configuration\n[2026-07-25 10:00:01.457][12347][info][main] VALIDATION FAILED\nInvalid configuration: proto: field 'cluster_name' is required"
+  },
+  {
+    "instruction": "curl -s -X POST http://localhost:9901/logging?level=warning",
+    "output": "Log level has been changed to warning"
+  }
+]

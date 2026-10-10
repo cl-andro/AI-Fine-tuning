@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Display the contents of /etc/fstab",
+    "output": "<think>\nSo we need to display the contents of /etc/fstab.\nFor this, cat is the right tool — cat operations.\n</think>\ncat /etc/fstab"
+  },
+  {
+    "instruction": "Add an ext4 entry to fstab for /dev/sdb1 mounting to /mnt/data with defaults",
+    "output": "<think>\nSo the request is to add an ext4 entry to fstab for /dev/sdb1 mounting to /mnt/data with defaults.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'UUID=abc12345-abcd-1234-abcd-123456789abc /mnt/data ext4 defaults 0 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add an XFS entry in fstab using LABEL",
+    "output": "<think>\nNeed to add an XFS entry in fstab using LABEL.\nFirst, let me understand what's needed here.\nWhy -a? AND operator in find. needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\necho 'LABEL=storage /mnt/xfs xfs defaults 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add an NTFS entry with dmask,fmask for user access",
+    "output": "<think>\nNeed to add an NTFS entry with dmask,fmask for user access.\nI've added -a to AND operator in find — needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'UUID=ntfs-uuid-here /mnt/ntfs ntfs-3g defaults,uid=1000,gid=1000,dmask=027,fmask=137 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add a CIFS fstab entry with credentials file",
+    "output": "<think>\nThe task requires us to add a CIFS fstab entry with credentials file.\nFirst, let me understand what's needed here.\nWhy -a? AND operator in find. this controls how the output is formatted.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\necho '//server/share /mnt/smb cifs credentials=/home/user/.smbcreds,uid=1000,gid=1000 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add an NFSv4 fstab entry with soft,intr options",
+    "output": "<think>\nSo the request is to add an NFSv4 fstab entry with soft,intr options.\nFirst, let me understand what's needed here.\nI've added -a to AND operator in find — needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'server:/export /mnt/nfs nfs4 soft,intr,rsize=8192,wsize=8192 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add a tmpfs entry in fstab with size limit",
+    "output": "<think>\nSo the request is to add a tmpfs entry in fstab with size limit.\nI'm using -a for AND operator in find — without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'tmpfs /mnt/ramdisk tmpfs size=2G,mode=1777 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add a swap partition entry in fstab",
+    "output": "<think>\nThe user wants to add a swap partition entry in fstab.\nI've added -a to AND operator in find — standard practice for this kind of operation.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'UUID=swap-uuid-here none swap sw 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add a Btrfs fstab entry with zstd compression",
+    "output": "<think>\nThe user wants to add a Btrfs fstab entry with zstd compression.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'UUID=btrfs-uuid /mnt/btrfs btrfs defaults,compress=zstd 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Edit fstab to disable access time updates (noatime)",
+    "output": "<think>\nThe user wants to edit fstab to disable access time updates (noatime).\nHere's how I'd approach this.\nsed is what we need — text stream editing.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/defaults/defaults,noatime/' /etc/fstab"
+  },
+  {
+    "instruction": "Add x-systemd.automount to a fstab entry for on-demand mounting",
+    "output": "<think>\nSo the request is to add x-systemd.automount to a fstab entry for on-demand mounting.\nI've added -a to AND operator in find — this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\necho 'UUID=auto-uuid /mnt/auto ext4 defaults,x-systemd.automount,x-systemd.idle-timeout=30 0 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add x-systemd.device-timeout for delayed device availability",
+    "output": "<think>\nThe user wants to add x-systemd.device-timeout for delayed device availability.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'UUID=late-uuid /mnt/late ext4 defaults,x-systemd.device-timeout=60s 0 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add nofail option so boot proceeds if mount fails",
+    "output": "<think>\nAlright, we need to add nofail option so boot proceeds if mount fails.\nFirst, let me understand what's needed here.\nWhy -a? AND operator in find. standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\necho 'UUID=optional-uuid /mnt/optional ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add _netdev for network filesystem to wait for network",
+    "output": "<think>\nWe're being asked to add _netdev for network filesystem to wait for network.\nLet me reason through this.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\necho '//server/share /mnt/smb cifs credentials=/home/user/.smbcreds,_netdev 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Add x-gvfs-show to make mount visible in file manager",
+    "output": "<think>\nWe should add x-gvfs-show to make mount visible in file manager.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'UUID=external-uuid /mnt/external ext4 defaults,x-gvfs-show 0 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Set dump field to 1 to allow dump backup",
+    "output": "<think>\nNeed to set dump field to 1 to allow dump backup.\nI've added -a to AND operator in find — needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\necho 'UUID=backup-uuid /mnt/backup ext4 defaults 1 2' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Set pass field to 0 to skip fsck on boot",
+    "output": "<think>\nSo we need to set pass field to 0 to skip fsck on boot.\nLet me reason through this.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'UUID=nofsck-uuid /mnt/nofsck ext4 defaults 0 0' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Set pass field to 1 for root filesystem fsck priority",
+    "output": "<think>\nThis is asking us to set pass field to 1 for root filesystem fsck priority.\nLet me think about the best approach.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'UUID=root-uuid / ext4 defaults 0 1' | sudo tee -a /etc/fstab"
+  },
+  {
+    "instruction": "Mount all filesystems in fstab not already mounted",
+    "output": "<think>\nWe should mount all filesystems in fstab not already mounted.\nLet me think through this step by step.\nBest tool here is mount — filesystem mounting.\nI'm using -a for AND operator in find — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mount -a"
+  },
+  {
+    "instruction": "Mount only filesystems with nofail option from fstab",
+    "output": "<think>\nAlright, we need to mount only filesystems with nofail option from fstab.\nFor this, mount is the right tool — filesystem mounting.\nThe -a flag handles AND operator in find. Important because important to get the expected behavior.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mount -a -O nofail"
+  },
+  {
+    "instruction": "Mount all fstab entries of a specific type",
+    "output": "<think>\nThe user wants to mount all fstab entries of a specific type.\nI'll reach for mount here because filesystem mounting.\nThe -a flag handles AND operator in find. Important because without it the command won't work as we need.\nI've added -t to sort by modification time — this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo mount -a -t nfs"
+  },
+  {
+    "instruction": "Display fstab entries for a specific mount point",
+    "output": "<think>\nThe task requires us to display fstab entries for a specific mount point.\nHere's how I'd approach this.\nThis calls for findmnt. Findmnt operations.\nLet me verify afterward that it worked correctly.\n</think>\nfindmnt --fstab --target /mnt/data"
+  },
+  {
+    "instruction": "Validate fstab syntax without mounting",
+    "output": "<think>\nWe should validate fstab syntax without mounting.\nHere's how I'd approach this.\nThis calls for findmnt. Findmnt operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo findmnt --verify --fstab"
+  },
+  {
+    "instruction": "Reload systemd daemon after editing fstab",
+    "output": "<think>\nThis is asking us to reload systemd daemon after editing fstab.\nFirst, let me understand what's needed here.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemctl daemon-reload"
+  },
+  {
+    "instruction": "Check if all fstab entries can be mounted",
+    "output": "<think>\nThe goal is to check if all fstab entries can be mounted.\nI'll reach for mount here because filesystem mounting.\nI've added -a to AND operator in find — without it the command won't work as we need.\nThe -v flag means verbose output, which matters here because important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo mount -a -v --dry-run"
+  }
+]

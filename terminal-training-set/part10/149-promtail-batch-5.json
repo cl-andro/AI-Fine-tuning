@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create Loki config for local storage",
+    "output": "<think>\nAlright, we need to create Loki config for local storage.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat > /etc/loki/config.yml << 'EOF'\nauth_enabled: false\nserver:\n  http_listen_port: 3100\n  grpc_listen_port: 9095\ncommon:\n  path_prefix: /var/lib/loki\n  replication_factor: 1\n  ring:\n    kvstore:\n      store: inmemory\nschema_config:\n  configs:\n    - from: 2020-10-24\n      store: boltdb-shipper\n      object_store: filesystem\n      schema: v11\n      index:\n        prefix: index_\n        period: 24h\nstorage_config:\n  boltdb_shipper:\n    active_index_directory: /var/lib/loki/index\n    cache_location: /var/lib/loki/cache\n  filesystem:\n    directory: /var/lib/loki/chunks\nlimits_config:\n  reject_old_samples: true\n  reject_old_samples_max_age: 168h\nEOF"
+  },
+  {
+    "instruction": "Create Loki config for S3 storage",
+    "output": "<think>\nSo the request is to create Loki config for S3 storage.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat > /etc/loki/s3-config.yml << 'EOF'\nauth_enabled: false\nserver:\n  http_listen_port: 3100\ncommon:\n  storage:\n    s3:\n      endpoint: s3.amazonaws.com\n      region: us-east-1\n      bucketnames: my-loki-bucket\n      access_key_id: ${AWS_ACCESS_KEY_ID}\n      secret_access_key: ${AWS_SECRET_ACCESS_KEY}\n      s3forcepathstyle: true\n  path_prefix: /var/lib/loki\nschema_config:\n  configs:\n    - from: 2020-10-24\n      store: boltdb-shipper\n      object_store: s3\n      schema: v11\nEOF"
+  },
+  {
+    "instruction": "Create Loki config for memberlist clustering",
+    "output": "<think>\nNeed to create Loki config for memberlist clustering.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\n</think>\ncat > /etc/loki/cluster-config.yml << 'EOF'\nring:\n  kvstore:\n    store: memberlist\n  replication_factor: 3\nmemberlist:\n  join_members:\n    - loki-1:7946\n    - loki-2:7946\n    - loki-3:7946\nEOF"
+  },
+  {
+    "instruction": "Enable Loki authentication",
+    "output": "<think>\nSo we need to enable Loki authentication.\ncat is what we need — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nauth_enabled: true\nmulti_tenant_mode: true\nEOF"
+  },
+  {
+    "instruction": "Configure Loki retention period",
+    "output": "<think>\nThe goal is to configure Loki retention period.\nLet me think about the best approach.\ncat is what we need — cat operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  retention_period: 720h\n  max_query_length: 720h\nEOF"
+  },
+  {
+    "instruction": "Set ingestion rate limits in Loki",
+    "output": "<think>\nSo the request is to set ingestion rate limits in Loki.\nLet me consider what makes sense here.\ncat is what we need — cat operations.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  ingestion_rate_mb: 10\n  ingestion_burst_size_mb: 20\nEOF"
+  },
+  {
+    "instruction": "Enable compactor in Loki",
+    "output": "<think>\nSo the request is to enable compactor in Loki.\nLet me consider what makes sense here.\nBest tool here is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\ncompactor:\n  working_directory: /var/lib/loki/compactor\n  shared_store: filesystem\n  retention_enabled: true\nEOF"
+  },
+  {
+    "instruction": "Configure Loki table manager",
+    "output": "<think>\nWe're being asked to configure Loki table manager.\nLet me break this down.\nThis calls for cat. Cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\ntable_manager:\n  retention_deletes_enabled: true\n  retention_period: 720h\nEOF"
+  },
+  {
+    "instruction": "Configure Loki ruler for alerting",
+    "output": "<think>\nAlright, we need to configure Loki ruler for alerting.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nruler:\n  storage:\n    type: local\n    local:\n      directory: /etc/loki/rules\n  rule_path: /tmp/loki/rules\n  alertmanager_url: http://alertmanager:9093\nEOF"
+  },
+  {
+    "instruction": "Enable Loki query splitting",
+    "output": "<think>\nWe should enable Loki query splitting.\nLet me think about the best approach.\nI'd use cat for this — cat operations.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nquery_range:\n  split_queries_by_interval: 24h\n  results_cache:\n    cache:\n      embedded_cache:\n        enabled: true\n        max_size_mb: 100\nEOF"
+  },
+  {
+    "instruction": "Set max query series in Loki",
+    "output": "<think>\nSo the request is to set max query series in Loki.\nHere's how I'd approach this.\nThe tool for this job is cat — cat operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  max_query_series: 10000\nEOF"
+  },
+  {
+    "instruction": "Enable cardinality limit in Loki",
+    "output": "<think>\nThis is asking us to enable cardinality limit in Loki.\nLet me think through this step by step.\nI'll reach for cat here because cat operations.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  max_label_names_per_series: 30\n  max_global_streams_per_user: 10000\nEOF"
+  },
+  {
+    "instruction": "Disable Loki rate limiting",
+    "output": "<think>\nNeed to disable Loki rate limiting.\nLet me reason through this.\nI'll reach for cat here because cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  ingestion_rate_mb: 0\n  ingestion_burst_size_mb: 0\nEOF"
+  },
+  {
+    "instruction": "Query Loki for series cardinality",
+    "output": "<think>\nThis is asking us to query Loki for series cardinality.\nLet me consider what makes sense here.\nFor this, logcli is the right tool — logcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nlogcli series '{job=~\".+\"}' --analyze-labels"
+  },
+  {
+    "instruction": "Check Loki new log detection",
+    "output": "<think>\nThe user wants to check Loki new log detection.\nHere's how I'd approach this.\nThis calls for logcli. Logcli operations.\n</think>\nlogcli query '{job=\"nginx\"}' --limit=1 2>&1; echo 'No output means no new logs'"
+  },
+  {
+    "instruction": "Debug Loki query issues",
+    "output": "<think>\nNeed to debug Loki query issues.\nlogcli is what we need — logcli operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nlogcli query '{job=\"nginx\"}' --stats 2>&1"
+  },
+  {
+    "instruction": "Check if Loki has any data for a label",
+    "output": "<think>\nWe should check if Loki has any data for a label.\nI'll reach for curl here because making HTTP requests.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://localhost:3100/loki/api/v1/label/job/values | python3 -m json.tool"
+  },
+  {
+    "instruction": "Purge old index data from Loki",
+    "output": "<think>\nNeed to purge old index data from Loki.\nThe tool for this job is curl — making HTTP requests.\nWhy -H? Follow symlinks on command line only. without it the command won't work as we need.\nThe -d flag means directory listing, don't descend, which matters here because needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST 'http://localhost:3100/compactor/delete_jobs' -H 'Content-Type: application/json' -d '{}'"
+  },
+  {
+    "instruction": "Query Loki log volume per label",
+    "output": "<think>\nThe user wants to query Loki log volume per label.\nLet me think about the best approach.\nI'll reach for logcli here because logcli operations.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli query 'sum by (job) (count_over_time({job=~\".+\"}[1h]))' --limit=20"
+  },
+  {
+    "instruction": "Check Loki ingester health",
+    "output": "<think>\nNeed to check Loki ingester health.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://localhost:3100/ready"
+  }
+]

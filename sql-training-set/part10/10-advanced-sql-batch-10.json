@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nPivot a column to present values as columns",
+    "output": "SELECT * FROM (SELECT cateredcol FROM files) src PIVOT (COUNT(*) FOR cateredcol IN (1, 2, 3));"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nUnpivot columns back to rows",
+    "output": "SELECT * FROM files UNPIVOT (val FOR keycol IN (a, b, c));"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nUse CASE to map a numeric to a label",
+    "output": "SELECT *, CASE WHEN col > 100 THEN 'high' WHEN col > 50 THEN 'mid' ELSE 'low' END AS bucket FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nExtract a value from a JSON column",
+    "output": "SELECT files.*, attrs ->> 'color' AS color FROM files WHERE attrs ->> 'color' = 'red';"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nFull-text search against a text column",
+    "output": "SELECT * FROM files WHERE to_tsvector('english', col) @@ to_tsquery('english', 'term');"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nRegex find rows matching a pattern",
+    "output": "SELECT * FROM files WHERE col ~ '^[A-Z]2[0-9]+$';"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nCoalesce to replace null with a fallback",
+    "output": "SELECT files.*, COALESCE(col, 'UNKNOWN') AS col_filled FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nPrevent division by zero using NULLIF",
+    "output": "SELECT files.*, price / NULLIF(discount, 0) AS effective FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nUpsert with a single statement",
+    "output": "INSERT INTO files (id, col) VALUES (1, 'x') ON CONFLICT (id) DO UPDATE SET col = EXCLUDED.col;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nSelf join to compare rows to their previous one",
+    "output": "SELECT a.* FROM files a JOIN files b ON a.id = b.id + 1;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nRecursive query expanding a tree",
+    "output": "WITH RECURSIVE t AS (SELECT id FROM files WHERE parent_id IS NULL UNION ALL SELECT c.id FROM files c JOIN t ON c.parent_id = t.id) SELECT * FROM t;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nGrouped string aggregation combining text values",
+    "output": "SELECT grp, STRING_AGG(col, ', ') FROM files GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nWindow rank used to select a top row",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY col DESC) rn FROM files) x WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nDate truncation to bucket into weeks",
+    "output": "SELECT date_trunc('week', dt), COUNT(*) FROM files GROUP BY date_trunc('week', dt);"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nGREATEST/LEAST to clamp a value",
+    "output": "SELECT *, GREATEST(col, 0) AS clamped FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nUse EXTRACT to pull the year from a date",
+    "output": "SELECT *, EXTRACT(YEAR FROM dt) AS yr FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nArray unnest to flatten into rows",
+    "output": "SELECT files.*, unnest(tags) AS tag FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nGaps-and-islands via window differences",
+    "output": "SELECT *, SUM(new_grp) OVER (ORDER BY dt) AS grp FROM (SELECT *, CASE WHEN LAG(dt) OVER (ORDER BY dt) IS NULL OR dt - LAG(dt) OVER (ORDER BY dt) > INTERVAL '1 day' THEN 1 ELSE 0 END AS new_grp FROM files) x;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nCondensation of a table into delimited string",
+    "output": "SELECT STRING_AGG(DISTINCT grp, '|') FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nCompute a running percentile",
+    "output": "SELECT col, PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY col) OVER () FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nBackfill missing values with LAST_VALUE ignoring nulls",
+    "output": "SELECT *, COALESCE(col, LAST_VALUE(col IGNORE NULLS) OVER (ORDER BY dt)) FROM files;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nGenerate a date series joined to data",
+    "output": "SELECT gs, COUNT(t.id) FROM generate_series('2024-01-01','2024-01-10','1 day') gs LEFT JOIN files t ON t.dt::date = gs GROUP BY gs;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nTranslate / pivot using FILTER clause",
+    "output": "SELECT grp, COUNT(*) FILTER (WHERE col = 'x') AS xs, COUNT(*) FILTER (WHERE col = 'y') AS ys FROM files GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nMulti-column UNPIVOT style via CROSS JOIN LATERAL",
+    "output": "SELECT t.*, k.v FROM files t CROSS JOIN LATERAL (VALUES ('col1',col1),('col2',col2)) AS k(k,v);"
+  },
+  {
+    "instruction": "Schema: files(id, folder_id, name, size)\nWindow difference between partition first and current",
+    "output": "SELECT *, col - FIRST_VALUE(col) OVER (PARTITION BY grp ORDER BY dt) AS delta FROM files;"
+  }
+]

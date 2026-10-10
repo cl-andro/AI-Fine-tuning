@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Set RLIMIT_LOCKS (file locks) with prlimit",
+    "output": "<think>\nThe user wants to set RLIMIT_LOCKS (file locks) with prlimit.\nFor this, prlimit is the right tool — prlimit operations.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nprlimit -p 1234 --locks=1024"
+  },
+  {
+    "instruction": "Set RLIMIT_MSGQUEUE (mq msg bytes) with prlimit",
+    "output": "<think>\nThe user wants to set RLIMIT_MSGQUEUE (mq msg bytes) with prlimit.\nHere's how I'd approach this.\nBest tool here is prlimit — prlimit operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nprlimit -p 1234 --msgqueue=819200"
+  },
+  {
+    "instruction": "Configure huge pages via kernel mm hugepages directory",
+    "output": "<think>\nThe user wants to configure huge pages via kernel mm hugepages directory.\nFirst, let me understand what's needed here.\nAfter running, I'll confirm the result looks right.\n</think>\necho 128 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+  },
+  {
+    "instruction": "Use hugeadm to set pool huge pages",
+    "output": "<think>\nSo we need to use hugeadm to set pool huge pages.\nThe tool for this job is hugeadm — hugeadm operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nhugeadm --pool-pages-min 2MB:256"
+  },
+  {
+    "instruction": "Use hugeadm to set max huge pages",
+    "output": "<think>\nThe user wants to use hugeadm to set max huge pages.\nLet me reason through this.\nI'll reach for hugeadm here because hugeadm operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nhugeadm --pool-pages-max 2MB:512"
+  },
+  {
+    "instruction": "Set persistent huge pages via sysctl",
+    "output": "<think>\nThe user wants to set persistent huge pages via sysctl.\nThis calls for sysctl. Kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl vm.nr_hugepages=128"
+  },
+  {
+    "instruction": "Check current huge pages usage",
+    "output": "<think>\nThis is asking us to check current huge pages usage.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/meminfo | grep HugePages"
+  },
+  {
+    "instruction": "Enable transparent hugepage defrag with madvise",
+    "output": "<think>\nSo we need to enable transparent hugepage defrag with madvise.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho madvise > /sys/kernel/mm/transparent_hugepage/defrag"
+  },
+  {
+    "instruction": "Set transparent hugepage khugepaged pages to scan",
+    "output": "<think>\nWe should set transparent hugepage khugepaged pages to scan.\nQuick verification after execution to be safe.\n</think>\necho 1000 > /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan"
+  },
+  {
+    "instruction": "Set transparent hugepage scan sleep ms",
+    "output": "<think>\nWe're being asked to set transparent hugepage scan sleep ms.\nLet me think through this step by step.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 5000 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs"
+  },
+  {
+    "instruction": "Set transparent hugepage alloc sleep ms",
+    "output": "<think>\nNeed to set transparent hugepage alloc sleep ms.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\necho 10000 > /sys/kernel/mm/transparent_hugepage/khugepaged/alloc_sleep_millisecs"
+  },
+  {
+    "instruction": "Use tuned-adm to set virtual-host profile",
+    "output": "<think>\nWe're being asked to use tuned-adm to set virtual-host profile.\nLet me think through this step by step.\nThis calls for tuned-adm. Tuned-adm operations.\n</think>\ntuned-adm profile virtual-host"
+  },
+  {
+    "instruction": "Use tuned-adm to set spindown-disk profile",
+    "output": "<think>\nWe're being asked to use tuned-adm to set spindown-disk profile.\nLet me consider what makes sense here.\nThis calls for tuned-adm. Tuned-adm operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntuned-adm profile spindown-disk"
+  },
+  {
+    "instruction": "Create a custom tuned profile directory",
+    "output": "<think>\nWe're being asked to create a custom tuned profile directory.\nLet me think about the best approach.\nmkdir is what we need — directory creation.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmkdir /etc/tuned/mycustom"
+  },
+  {
+    "instruction": "Create a custom tuned.conf",
+    "output": "<think>\nThe user wants to create a custom tuned.conf.\nFirst, let me understand what's needed here.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e '[main]\nsummary=Custom Profile\n\n[cpu]\ngovernor=performance\n\n[vm]\ntransparent_hugepages=always' > /etc/tuned/mycustom/tuned.conf"
+  },
+  {
+    "instruction": "Activate custom tuned profile",
+    "output": "<think>\nSo the request is to activate custom tuned profile.\nThis calls for tuned-adm. Tuned-adm operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntuned-adm profile mycustom"
+  },
+  {
+    "instruction": "Disable earlyoom temporarily via SIGSTOP",
+    "output": "<think>\nThe user wants to disable earlyoom temporarily via SIGSTOP.\nHere's how I'd approach this.\nI'll reach for killall here because killall operations.\nAfter running, I'll confirm the result looks right.\n</think>\nkillall -STOP earlyoom"
+  },
+  {
+    "instruction": "Resume earlyoom via SIGCONT",
+    "output": "<think>\nThe user wants to resume earlyoom via SIGCONT.\nkillall is what we need — killall operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nkillall -CONT earlyoom"
+  },
+  {
+    "instruction": "Run earlyoom with prefer root protection",
+    "output": "<think>\nThe user wants to run earlyoom with prefer root protection.\nThis calls for earlyoom. Earlyoom operations.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nearlyoom --prefer '(^|/)root/'"
+  },
+  {
+    "instruction": "Avoid killing specific processes with earlyoom",
+    "output": "<think>\nSo the request is to avoid killing specific processes with earlyoom.\nLet me reason through this.\nI'd use earlyoom for this — earlyoom operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\nearlyoom --avoid '(X|firefox)'"
+  },
+  {
+    "instruction": "Check earlyoom logs for killed processes",
+    "output": "<think>\nSo the request is to check earlyoom logs for killed processes.\njournalctl is what we need — checking systemd logs.\nI'm using -u for show or sort by access time — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u earlyoom"
+  },
+  {
+    "instruction": "Use nohang to protect a specific process from OOM",
+    "output": "<think>\nSo we need to use nohang to protect a specific process from OOM.\nFirst, let me understand what's needed here.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1234 > /proc/1234/oom_score_adj"
+  },
+  {
+    "instruction": "Check nohang configuration",
+    "output": "<think>\nAlright, we need to check nohang configuration.\nFirst, let me understand what's needed here.\ncat is what we need — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\ncat /etc/nohang/nohang.conf"
+  },
+  {
+    "instruction": "Set nohang checking interval",
+    "output": "<think>\nAlright, we need to set nohang checking interval.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'INTERVAL=10' >> /etc/nohang/nohang.conf"
+  },
+  {
+    "instruction": "Run nohang with dry-run flag",
+    "output": "<think>\nSo we need to run nohang with dry-run flag.\nHere's how I'd approach this.\nFor this, nohang is the right tool — nohang operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nnohang --dry-run"
+  },
+  {
+    "instruction": "Use nohang report only mode",
+    "output": "<think>\nThe goal is to use nohang report only mode.\nLet me consider what makes sense here.\nFor this, nohang is the right tool — nohang operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nnohang --report"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Query rate of HTTP requests over 5 minutes",
+    "output": "<think>\nWe should query rate of HTTP requests over 5 minutes.\nBest tool here is rate — rate operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nrate(http_requests_total[5m])"
+  },
+  {
+    "instruction": "Query average request duration in last minute",
+    "output": "<think>\nThe user wants to query average request duration in last minute.\nFor this, avg is the right tool — avg operations.\nLet me verify afterward that it worked correctly.\n</think>\navg(rate(http_request_duration_seconds_sum[1m]) / rate(http_request_duration_seconds_count[1m]))"
+  },
+  {
+    "instruction": "Query 99th percentile of request duration",
+    "output": "<think>\nThis is asking us to query 99th percentile of request duration.\nLet me consider what makes sense here.\nI'll reach for histogram_quantile here because histogram_quantile operations.\nOne command does the job. Simple is better.\n</think>\nhistogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))"
+  },
+  {
+    "instruction": "Query CPU usage percentage",
+    "output": "<think>\nAlright, we need to query CPU usage percentage.\nLet me consider what makes sense here.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\n100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+  },
+  {
+    "instruction": "Query memory usage percentage",
+    "output": "<think>\nThe goal is to query memory usage percentage.\nA quick sanity check afterward saves debugging time later.\n</think>\n100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)"
+  },
+  {
+    "instruction": "Query disk usage percentage",
+    "output": "<think>\nThis is asking us to query disk usage percentage.\nLet me think about the best approach.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\n100 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} * 100)"
+  },
+  {
+    "instruction": "Count distinct label values",
+    "output": "<think>\nSo the request is to count distinct label values.\nLet me reason through this.\nThis calls for count. Count operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncount(count by (instance) (up))"
+  },
+  {
+    "instruction": "Sum of metrics by a label",
+    "output": "<think>\nAlright, we need to sum of metrics by a label.\nBest tool here is sum — sum operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nsum by (job) (rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Top 5 instances by CPU usage",
+    "output": "<think>\nSo the request is to top 5 instances by CPU usage.\nLet me think through this step by step.\nFor this, topk is the right tool — topk operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ntopk(5, avg by (instance) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])))"
+  },
+  {
+    "instruction": "Bottom 5 instances by free memory",
+    "output": "<think>\nWe're being asked to bottom 5 instances by free memory.\nLet me consider what makes sense here.\nThe tool for this job is bottomk — bottomk operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nbottomk(5, node_memory_MemAvailable_bytes)"
+  },
+  {
+    "instruction": "Use offset modifier to compare with previous week",
+    "output": "<think>\nWe should use offset modifier to compare with previous week.\nLet me break this down.\nThe tool for this job is node_cpu_seconds_total — node_cpu_seconds_total operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nnode_cpu_seconds_total offset 1w"
+  },
+  {
+    "instruction": "Use offset to compare current and previous value",
+    "output": "<think>\nAlright, we need to use offset to compare current and previous value.\nLet me think about the best approach.\nBest tool here is node_memory_MemAvailable_bytes — node_memory_MemAvailable_bytes operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nnode_memory_MemAvailable_bytes - node_memory_MemAvailable_bytes offset 1h"
+  },
+  {
+    "instruction": "Use @ modifier to query at a specific timestamp",
+    "output": "<think>\nSo we need to use @ modifier to query at a specific timestamp.\nLet me think about the best approach.\nThis calls for node_cpu_seconds_total. Node_cpu_seconds_total operations.\nQuick verification after execution to be safe.\n</think>\nnode_cpu_seconds_total @ 1721923200"
+  },
+  {
+    "instruction": "Check if any target is down",
+    "output": "<think>\nThis is asking us to check if any target is down.\nLet me think through this step by step.\nup is what we need — up operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nup == 0"
+  },
+  {
+    "instruction": "Predict disk fill time",
+    "output": "<think>\nNeed to predict disk fill time.\nI'd use predict_linear for this — predict_linear operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\npredict_linear(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"}[6h], 86400)"
+  },
+  {
+    "instruction": "Absent function to detect missing series",
+    "output": "<think>\nSo we need to absent function to detect missing series.\nLet me break this down.\nabsent is what we need — absent operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nabsent(up{job=\"node\"})"
+  },
+  {
+    "instruction": "Changes function to detect changes over time",
+    "output": "<think>\nSo the request is to changes function to detect changes over time.\nHere's how I'd approach this.\nBest tool here is changes — changes operations.\n</think>\nchanges(node_cpu_seconds_total[10m]) > 0"
+  },
+  {
+    "instruction": "Delta over a range vector",
+    "output": "<think>\nWe're being asked to delta over a range vector.\nI'll reach for delta here because delta operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ndelta(node_cpu_seconds_total[5m])"
+  },
+  {
+    "instruction": "Increase over a range",
+    "output": "<think>\nThe goal is to increase over a range.\nHere's how I'd approach this.\nI'll reach for increase here because increase operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nincrease(http_requests_total[1h])"
+  },
+  {
+    "instruction": "Irate for instant rate with high-res",
+    "output": "<think>\nThis is asking us to irate for instant rate with high-res.\nLet me think through this step by step.\nThe tool for this job is irate — irate operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nirate(node_network_receive_bytes_total[5m])"
+  },
+  {
+    "instruction": "Deriv of a gauge over time",
+    "output": "<think>\nSo we need to deriv of a gauge over time.\nBest tool here is deriv — deriv operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nderiv(node_memory_MemFree_bytes[30m])"
+  },
+  {
+    "instruction": "Histogram quantile for latency",
+    "output": "<think>\nThe user wants to histogram quantile for latency.\nLet me think through this step by step.\nI'll reach for histogram_quantile here because histogram_quantile operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nhistogram_quantile(0.95, sum(rate(grpc_server_handling_seconds_bucket[5m])) by (le, service))"
+  },
+  {
+    "instruction": "Label replace function",
+    "output": "<think>\nWe're being asked to label replace function.\nLet me think through this step by step.\nFor this, label_replace is the right tool — label_replace operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nlabel_replace(up, \"dc\", \"$1\", \"instance\", \"(.*):.*\")"
+  },
+  {
+    "instruction": "Label join function",
+    "output": "<think>\nThe task requires us to label join function.\nLet me consider what makes sense here.\nI'll reach for label_join here because label_join operations.\nLet me verify afterward that it worked correctly.\n</think>\nlabel_join(up, \"full_name\", \":\", \"job\", \"instance\")"
+  },
+  {
+    "instruction": "Sort by value ascending",
+    "output": "<think>\nThe user wants to sort by value ascending.\nFirst, let me understand what's needed here.\nBest tool here is sort — sort operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nsort(node_memory_MemFree_bytes)"
+  }
+]

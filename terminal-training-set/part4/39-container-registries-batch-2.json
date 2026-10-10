@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Create a Docker registry with htpasswd authentication",
+    "output": "<think>\nWe're being asked to create a Docker registry with htpasswd authentication.\nThis calls for docker. Container management.\nI've added -d to directory listing, don't descend — this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d -p 5000:5000 -v /auth:/auth -e REGISTRY_AUTH=htpasswd -e REGISTRY_AUTH_HTPASSWD_REALM=Registry -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd --name registry registry:2"
+  },
+  {
+    "instruction": "Generate an htpasswd file for registry authentication",
+    "output": "<think>\nWe're being asked to generate an htpasswd file for registry authentication.\nLet me reason through this.\nhtpasswd is what we need — htpasswd operations.\n</think>\nhtpasswd -Bbn admin mypassword > /auth/htpasswd"
+  },
+  {
+    "instruction": "Create a Docker registry with TLS enabled",
+    "output": "<think>\nNeed to create a Docker registry with TLS enabled.\nFirst, let me understand what's needed here.\nI'll reach for docker here because container management.\nWhy -d? Directory listing, don't descend. this controls how the output is formatted.\nThe -p flag handles create parent directories as needed. Important because this controls how the output is formatted.\nWhy -v? Verbose output. this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d -p 5000:5000 -v /certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key --name registry registry:2"
+  },
+  {
+    "instruction": "Generate a self-signed certificate for the registry",
+    "output": "<think>\nWe're being asked to generate a self-signed certificate for the registry.\nLet me reason through this.\nopenssl is what we need — cryptographic operations and certificate management.\nA single command handles this cleanly — no need to overcomplicate it.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl req -newkey rsa:4096 -nodes -sha256 -keyout /certs/domain.key -x509 -days 365 -out /certs/domain.crt -subj \"/CN=myregistry.example.com\""
+  },
+  {
+    "instruction": "Login to a TLS-enabled private registry",
+    "output": "<think>\nWe should login to a TLS-enabled private registry.\nLet me reason through this.\nBest tool here is docker — container management.\nI'm using -u for show or sort by access time — standard practice for this kind of operation.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker login myregistry.example.com:5000 -u admin --password-stdin <<< \"mypassword\""
+  },
+  {
+    "instruction": "Use docker buildx imagetools to inspect a remote image",
+    "output": "<think>\nThe goal is to use docker buildx imagetools to inspect a remote image.\nI'd use docker for this — container management.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ndocker buildx imagetools inspect myuser/myapp:latest"
+  },
+  {
+    "instruction": "Create a new image tag using buildx imagetools",
+    "output": "<think>\nWe're being asked to create a new image tag using buildx imagetools.\nThis calls for docker. Container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker buildx imagetools create myuser/myapp:1.0 --tag myuser/myapp:stable"
+  },
+  {
+    "instruction": "Filter registry tags using buildx imagetools",
+    "output": "<think>\nThis is asking us to filter registry tags using buildx imagetools.\nThe tool for this job is docker — container management.\nLet me verify afterward that it worked correctly.\n</think>\ndocker buildx imagetools inspect --raw myuser/myapp:latest"
+  },
+  {
+    "instruction": "Harbor login to a Harbor registry",
+    "output": "<think>\nSo we need to harbor login to a Harbor registry.\nLet me think about the best approach.\nharbor is what we need — harbor operations.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nharbor login myharbor.example.com -u admin"
+  },
+  {
+    "instruction": "Push an image to a Harbor registry",
+    "output": "<think>\nWe're being asked to push an image to a Harbor registry.\nLet me reason through this.\nBest tool here is docker — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker push myharbor.example.com/library/myapp:1.0"
+  },
+  {
+    "instruction": "Pull an image from a Harbor registry",
+    "output": "<think>\nWe should pull an image from a Harbor registry.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker pull myharbor.example.com/library/myapp:1.0"
+  },
+  {
+    "instruction": "Show Harbor CLI help",
+    "output": "<think>\nNeed to show Harbor CLI help.\nBest tool here is harbor — harbor operations.\n</think>\nharbor help"
+  },
+  {
+    "instruction": "List all Harbor projects",
+    "output": "<think>\nThe goal is to list all Harbor projects.\nI'll reach for curl here because making HTTP requests.\nI've added -u to show or sort by access time — standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:password https://myharbor.example.com/api/v2.0/projects"
+  },
+  {
+    "instruction": "Create a new Harbor project via API",
+    "output": "<think>\nThe goal is to create a new Harbor project via API.\nThis calls for curl. Making HTTP requests.\nI'm using -u for show or sort by access time — standard practice for this kind of operation.\nWhy -H? Follow symlinks on command line only. important to get the expected behavior.\nI've added -d to directory listing, don't descend — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:password -X POST -H \"Content-Type: application/json\" -d '{\"project_name\":\"myproject\",\"storage_limit\":-1}' https://myharbor.example.com/api/v2.0/projects"
+  },
+  {
+    "instruction": "Configure registry storage with S3 backend",
+    "output": "<think>\nThis is asking us to configure registry storage with S3 backend.\nI'll reach for docker here because container management.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_STORAGE=s3 -e REGISTRY_STORAGE_S3_REGION=us-east-1 -e REGISTRY_STORAGE_S3_BUCKET=my-bucket --name registry registry:2"
+  },
+  {
+    "instruction": "Configure registry storage with filesystem backend",
+    "output": "<think>\nThe task requires us to configure registry storage with filesystem backend.\nI'd use docker for this — container management.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data --name registry registry:2"
+  },
+  {
+    "instruction": "Set registry HTTP secret for upload purging",
+    "output": "<think>\nWe're being asked to set registry HTTP secret for upload purging.\nLet me think through this step by step.\nBest tool here is docker — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_HTTP_SECRET=mysecret --name registry registry:2"
+  },
+  {
+    "instruction": "Limit registry uploads to a specific CIDR block",
+    "output": "<think>\nSo the request is to limit registry uploads to a specific CIDR block.\nLet me think through this step by step.\nI'll reach for docker here because container management.\nI'm using -d for directory listing, don't descend — this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_MIDDLEWARE_REMOTEIP_SOURCEHEADER=X-Forwarded-For -e REGISTRY_MIDDLEWARE_REMOTEIP_ALLOWEDNETWORKS='10.0.0.0/8' --name registry registry:2"
+  },
+  {
+    "instruction": "Enable the registry's read-only mode",
+    "output": "<think>\nWe should enable the registry's read-only mode.\nLet me think about the best approach.\nBest tool here is docker — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_STORAGE_MAINTENANCE_READONLY_ENABLED=true --name registry registry:2"
+  },
+  {
+    "instruction": "Create a Docker registry with a Proxy cache",
+    "output": "<think>\nThe task requires us to create a Docker registry with a Proxy cache.\nLet me think about the best approach.\nI'll reach for docker here because container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run -d -p 5000:5000 -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io --name registry registry:2"
+  },
+  {
+    "instruction": "List blobs in a registry repository",
+    "output": "<think>\nWe're being asked to list blobs in a registry repository.\nHere's how I'd approach this.\nThe tool for this job is curl — making HTTP requests.\nWhy -u? Show or sort by access time. without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -u admin:password https://myharbor.example.com/api/v2.0/projects/library/repositories/myapp/artifacts"
+  },
+  {
+    "instruction": "Delete a Harbor repository via API",
+    "output": "<think>\nThis is asking us to delete a Harbor repository via API.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nI've added -u to show or sort by access time — without it the command won't work as we need.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -u admin:password -X DELETE https://myharbor.example.com/api/v2.0/projects/library/repositories/myapp"
+  },
+  {
+    "instruction": "Create a robot account in Harbor",
+    "output": "<think>\nWe should create a robot account in Harbor.\nLet me consider what makes sense here.\nFor this, curl is the right tool — making HTTP requests.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:password -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"robot-ci\",\"duration\":-1,\"access\":[{\"resource\":\"project\",\"action\":\"push\"}]}' https://myharbor.example.com/api/v2.0/robots"
+  },
+  {
+    "instruction": "Retrieve Harbor project configuration",
+    "output": "<think>\nThe user wants to retrieve Harbor project configuration.\nLet me think about the best approach.\nFor this, curl is the right tool — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncurl -u admin:password https://myharbor.example.com/api/v2.0/projects/library"
+  },
+  {
+    "instruction": "Install htpasswd on Debian 12",
+    "output": "<think>\nThe task requires us to install htpasswd on Debian 12.\napt-get is what we need — apt-get operations.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo apt-get install apache2-utils -y"
+  },
+  {
+    "instruction": "Check the Harbor system health",
+    "output": "<think>\nThe task requires us to check the Harbor system health.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:password https://myharbor.example.com/api/v2.0/health"
+  }
+]

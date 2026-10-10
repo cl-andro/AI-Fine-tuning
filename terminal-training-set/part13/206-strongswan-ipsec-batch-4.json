@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to install swanctl on Debian",
+    "output": "<think>\nAlright, we need to install swanctl on Debian.\napt is what we need — apt operations.\nOne command does the job. Simple is better.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install strongswan-swanctl"
+  },
+  {
+    "instruction": "How to install pki tool for certificates",
+    "output": "<think>\nSo we need to install pki tool for certificates.\napt is what we need — apt operations.\nOne command does the job. Simple is better.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install strongswan-pki"
+  },
+  {
+    "instruction": "How to generate CA key and cert with strongSwan pki",
+    "output": "<think>\nThe task requires us to generate CA key and cert with strongSwan pki.\nLet me break this down.\nThis calls for pki. Pki operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\npki --gen --type rsa --size 2048 --outform pem > /etc/swanctl/private/ca.key && pki --self --ca --in /etc/swanctl/private/ca.key --dn 'CN=Example CA, O=Example' --outform pem > /etc/swanctl/x509ca/ca.crt"
+  },
+  {
+    "instruction": "How to generate server certificate with strongSwan pki",
+    "output": "<think>\nThe task requires us to generate server certificate with strongSwan pki.\nLet me reason through this.\nFor this, pki is the right tool — pki operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npki --gen --type rsa --size 2048 --outform pem > /etc/swanctl/private/server.key && pki --pub --in /etc/swanctl/private/server.key | pki --issue --cacert /etc/swanctl/x509ca/ca.crt --cakey /etc/swanctl/private/ca.key --dn 'CN=server.example.com, O=Example' --san server.example.com --flag serverAuth --flag ikeIntermediate --outform pem > /etc/swanctl/x509/server.crt"
+  },
+  {
+    "instruction": "How to generate client certificate with strongSwan pki",
+    "output": "<think>\nWe should generate client certificate with strongSwan pki.\nLet me think about the best approach.\nThis calls for pki. Pki operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\npki --gen --type rsa --size 2048 --outform pem > /etc/swanctl/private/client.key && pki --pub --in /etc/swanctl/private/client.key | pki --issue --cacert /etc/swanctl/x509ca/ca.crt --cakey /etc/swanctl/private/ca.key --dn 'CN=client.example.com, O=Example' --san client.example.com --outform pem > /etc/swanctl/x509/client.crt"
+  },
+  {
+    "instruction": "How to generate an ECDSA key with pki",
+    "output": "<think>\nThe user wants to generate an ECDSA key with pki.\nLet me break this down.\nBest tool here is pki — pki operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npki --gen --type ecdsa --size 384 --outform pem > ecdsa.key"
+  },
+  {
+    "instruction": "How to export certificate in DER format",
+    "output": "<think>\nThe goal is to export certificate in DER format.\nHere's how I'd approach this.\nBest tool here is pki — pki operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npki --export --cacert ca.crt --outform der > ca.der"
+  },
+  {
+    "instruction": "How to export PKCS#12 from certs",
+    "output": "<think>\nWe should export PKCS#12 from certs.\nFirst, let me understand what's needed here.\nI'll reach for openssl here because cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nAfter running, I'll confirm the result looks right.\n</think>\nopenssl pkcs12 -export -inkey server.key -in server.crt -certfile ca.crt -out server.p12"
+  },
+  {
+    "instruction": "How to import a certificate into strongSwan",
+    "output": "<think>\nSo the request is to import a certificate into strongSwan.\nFirst, let me understand what's needed here.\nFor this, cp is the right tool — file copying.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncp mycert.crt /etc/swanctl/x509/ && cp mykey.key /etc/swanctl/private/"
+  },
+  {
+    "instruction": "How to install CA certificate in strongSwan",
+    "output": "<think>\nThis is asking us to install CA certificate in strongSwan.\nFirst, let me understand what's needed here.\ncp is what we need — file copying.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp ca.crt /etc/swanctl/x509ca/ && swanctl --load-creds"
+  },
+  {
+    "instruction": "How to import a CRL into strongSwan",
+    "output": "<think>\nThis is asking us to import a CRL into strongSwan.\nHere's how I'd approach this.\nThe tool for this job is cp — file copying.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp crl.pem /etc/swanctl/x509crl/ && swanctl --load-creds"
+  },
+  {
+    "instruction": "How to show all loaded credentials",
+    "output": "<think>\nThe task requires us to show all loaded credentials.\nThis calls for swanctl. Swanctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\nswanctl --list-creds"
+  },
+  {
+    "instruction": "How to show strongSwan objects summary",
+    "output": "<think>\nWe should show strongSwan objects summary.\nFirst, let me understand what's needed here.\nBest tool here is swanctl — swanctl operations.\n</think>\nswanctl --stats"
+  },
+  {
+    "instruction": "How to show charon counters",
+    "output": "<think>\nWe're being asked to show charon counters.\nFirst, let me understand what's needed here.\nI'll reach for swanctl here because swanctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nswanctl --counters"
+  },
+  {
+    "instruction": "How to show version info from charon",
+    "output": "<think>\nAlright, we need to show version info from charon.\nHere's how I'd approach this.\nBest tool here is swanctl — swanctl operations.\n</think>\nswanctl --version"
+  },
+  {
+    "instruction": "How to list charon plugins",
+    "output": "<think>\nThe task requires us to list charon plugins.\nI'll reach for swanctl here because swanctl operations.\nAfter running, I'll confirm the result looks right.\n</think>\nswanctl --list-plugins"
+  },
+  {
+    "instruction": "How to run charon in foreground for testing",
+    "output": "<think>\nWe should run charon in foreground for testing.\nFirst, let me understand what's needed here.\nFor this, ipsec is the right tool — IPsec VPN tunnel management.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nipsec start --nofork"
+  },
+  {
+    "instruction": "How to send SIGUSR2 to charon for debug",
+    "output": "<think>\nWe should send SIGUSR2 to charon for debug.\nBest tool here is ipsec — IPsec VPN tunnel management.\nAfter running, I'll confirm the result looks right.\n</think>\nipsec reload"
+  },
+  {
+    "instruction": "How to enable charon debug for IKE",
+    "output": "<think>\nNeed to enable charon debug for IKE.\n</think>\necho 'charon {\n  syslog {\n    ike = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to enable debug for kernel interface",
+    "output": "<think>\nThis is asking us to enable debug for kernel interface.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'charon {\n  syslog {\n    knl = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to enable debug for CHILD SA",
+    "output": "<think>\nSo the request is to enable debug for CHILD SA.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'charon {\n  syslog {\n    chd = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to enable debug for configuration",
+    "output": "<think>\nAlright, we need to enable debug for configuration.\nHere's how I'd approach this.\n</think>\necho 'charon {\n  syslog {\n    cfg = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to enable debug for networking",
+    "output": "<think>\nSo the request is to enable debug for networking.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'charon {\n  syslog {\n    net = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to enable debug for TLS",
+    "output": "<think>\nAlright, we need to enable debug for TLS.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'charon {\n  syslog {\n    tls = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to set charon to log all debug to stderr",
+    "output": "<think>\nThis is asking us to set charon to log all debug to stderr.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'charon {\n  stderr {\n    default = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an alias for common SSH command",
+    "output": "<think>\nAlright, we need to create an alias for common SSH command.\nFirst, let me understand what's needed here.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho \"alias myssh='ssh -i ~/.ssh/deploy_key -p 2222 user@host'\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Create a function to extract any archive type",
+    "output": "<think>\nWe're being asked to create a function to extract any archive type.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e \"extract() {\\n  case \\\"\\$1\\\" in\\n    *.tar.gz|*.tgz) tar xzf \\\"\\$1\\\";;\\n    *.tar.bz2|*.tbz2) tar xjf \\\"\\$1\\\";;\\n    *.zip) unzip \\\"\\$1\\\";;\\n    *.7z) 7z x \\\"\\$1\\\";;\\n    *) echo \\\"Unknown format\\\";;\\n  esac\\n}\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Create a function for mkdir + cd",
+    "output": "<think>\nThis is asking us to create a function for mkdir + cd.\nLet me break this down.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e \"mkcd() {\\n  mkdir -p \\\"\\$1\\\" && cd \\\"\\$1\\\"\\n}\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Set $EDITOR environment variable",
+    "output": "<think>\nNeed to set $EDITOR environment variable.\nHere's how I'd approach this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'export EDITOR=nvim' >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Add ~/bin to PATH",
+    "output": "<think>\nWe should add ~/bin to PATH.\nHere's how I'd approach this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'export PATH=\"$HOME/bin:$PATH\"' >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Set shell history options",
+    "output": "<think>\nThe user wants to set shell history options.\nFirst, let me understand what's needed here.\nWhy -e? Edit or executable. needed for this specific use case.\nWhy -s? Summarize or silent mode. without it the command won't work as we need.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e 'HISTSIZE=10000\\nHISTFILESIZE=20000\\nHISTTIMEFORMAT=\"%F %T \"\\nHISTCONTROL=ignoreboth:erasedups\\nshopt -s histappend' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set up bash completion for aliases",
+    "output": "<think>\nThe goal is to set up bash completion for aliases.\nLet me break this down.\nI'll reach for complete here because complete operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ncomplete -F _known_hosts sshmux"
+  },
+  {
+    "instruction": "Enable bash programmable completion",
+    "output": "<think>\nThe goal is to enable bash programmable completion.\nFirst, let me understand what's needed here.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y bash-completion && echo 'source /usr/share/bash-completion/bash_completion' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Use PS1 to customize prompt",
+    "output": "<think>\nThe goal is to use PS1 to customize prompt.\nOne command does the job. Simple is better.\n</think>\necho 'export PS1=\"\\u@\\h:\\w \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set a colored bash prompt",
+    "output": "<think>\nThe task requires us to set a colored bash prompt.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'export PS1=\"\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\] \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set up git-aware bash prompt",
+    "output": "<think>\nThe task requires us to set up git-aware bash prompt.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho -e 'parse_git_branch() {\\n  git branch 2>/dev/null | sed -n -e \"s/^* //p\"\\n}\\nexport PS1=\"\\u@\\h:\\w (\\$(parse_git_branch)) \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Create a trap to prevent Ctrl+C during critical ops",
+    "output": "<think>\nWe're being asked to create a trap to prevent Ctrl+C during critical ops.\nI'd use trap for this — trap operations.\nOne command does the job. Simple is better.\n</think>\ntrap '' SIGINT; echo Critical operation; sleep 5; trap - SIGINT"
+  },
+  {
+    "instruction": "Use a lock file for exclusive script execution",
+    "output": "<think>\nAlright, we need to use a lock file for exclusive script execution.\nFirst, let me understand what's needed here.\nThis calls for if. If operations.\nI've added -f to force, suppress errors — important to get the expected behavior.\nI'm using -f for force, suppress errors — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nif [ -f /tmp/script.lock ]; then echo Already running; exit 1; else touch /tmp/script.lock; trap 'rm -f /tmp/script.lock' EXIT; fi"
+  },
+  {
+    "instruction": "Use flock for file locking",
+    "output": "<think>\nSo we need to use flock for file locking.\nFor this, exec is the right tool — exec operations.\nWhy -n? Dry-run, no changes. standard practice for this kind of operation.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nexec 200>/tmp/lock; flock -n 200 || { echo busy; exit 1; }; echo Locked && sleep 5 && flock -u 200"
+  },
+  {
+    "instruction": "Create a script that retries a command up to 3 times",
+    "output": "<think>\nWe should create a script that retries a command up to 3 times.\nI'll reach for for here because for operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nfor i in 1 2 3; do command && break || sleep 5; done"
+  },
+  {
+    "instruction": "Create a script with exponential backoff",
+    "output": "<think>\nWe should create a script with exponential backoff.\nFor this, for is the right tool — for operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nfor i in 1 2 4 8 16; do command && s=0 && break || s=$i; sleep $s; done"
+  },
+  {
+    "instruction": "Use /dev/null to discard output",
+    "output": "<think>\nThis is asking us to use /dev/null to discard output.\nLet me think about the best approach.\nThe tool for this job is command — command operations.\n</think>\ncommand > /dev/null 2>&1"
+  },
+  {
+    "instruction": "Capture exit code of a pipe correctly",
+    "output": "<think>\nAlright, we need to capture exit code of a pipe correctly.\nFirst, let me understand what's needed here.\nset is what we need — set operations.\nWhy -o? Output to file, OR operator in find. this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nset -o pipefail; command1 | command2; echo \"Exit: $?\""
+  },
+  {
+    "instruction": "Use shopt -s nullglob to avoid literal glob when no matches",
+    "output": "<think>\nThe goal is to use shopt -s nullglob to avoid literal glob when no matches.\nFirst, let me understand what's needed here.\nshopt is what we need — shopt operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nshopt -s nullglob; for f in *.nonexistent; do echo $f; done"
+  },
+  {
+    "instruction": "Use readarray to read lines into an array",
+    "output": "<think>\nWe're being asked to use readarray to read lines into an array.\nLet me break this down.\nThis calls for readarray. Readarray operations.\n</think>\nreadarray -t lines < file.txt; for line in \"${lines[@]}\"; do echo $line; done"
+  },
+  {
+    "instruction": "Use IFS to split a string into an array",
+    "output": "<think>\nThe user wants to use IFS to split a string into an array.\nLet me think about the best approach.\nBest tool here is IFS — IFS operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nIFS=',' read -ra arr <<< 'a,b,c'; for item in \"${arr[@]}\"; do echo $item; done"
+  },
+  {
+    "instruction": "Check if a variable is empty",
+    "output": "<think>\nWe're being asked to check if a variable is empty.\nThe tool for this job is if — if operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nif [ -z \"$var\" ]; then echo empty; else echo not empty; fi"
+  },
+  {
+    "instruction": "Check if a variable is not empty",
+    "output": "<think>\nSo the request is to check if a variable is not empty.\nFirst, let me understand what's needed here.\nThe tool for this job is if — if operations.\nWhy -n? Dry-run, no changes. needed for this specific use case.\nAfter running, I'll confirm the result looks right.\n</think>\nif [ -n \"$var\" ]; then echo not empty; fi"
+  },
+  {
+    "instruction": "Use parameter substitution defaults",
+    "output": "<think>\nThe task requires us to use parameter substitution defaults.\nHere's how I'd approach this.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho \"${var:-default}\""
+  },
+  {
+    "instruction": "Use ${var#} and ${var%} for string manipulation",
+    "output": "<think>\nNeed to use ${var#} and ${var%} for string manipulation.\nLet me think through this step by step.\nFor this, file is the right tool — file operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfile=archive.tar.gz; echo ${file%.*}"
+  }
+]

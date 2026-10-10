@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Run a comprehensive stress-ng test (all stressors)",
+    "output": "<think>\nSo the request is to run a comprehensive stress-ng test (all stressors).\nLet me reason through this.\nThe tool for this job is stress-ng — stress-ng operations.\nI'm using --timeout for set max execution time — standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nstress-ng --all 1 --timeout 30s --metrics"
+  },
+  {
+    "instruction": "Check the list of available sysctl parameters",
+    "output": "<think>\nWe're being asked to check the list of available sysctl parameters.\nFirst, let me understand what's needed here.\nsysctl is what we need — kernel parameter tuning.\nWhy -a? AND operator in find. needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysctl -a | wc -l"
+  },
+  {
+    "instruction": "Export all sysctl values to a file",
+    "output": "<think>\nWe should export all sysctl values to a file.\nHere's how I'd approach this.\nI'll reach for sysctl here because kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -a > sysctl_pre_tuning.txt"
+  },
+  {
+    "instruction": "Compare sysctl values before and after tuning",
+    "output": "<think>\nWe're being asked to compare sysctl values before and after tuning.\nI'll reach for diff here because diff operations.\n</think>\ndiff sysctl_pre_tuning.txt sysctl_post_tuning.txt"
+  },
+  {
+    "instruction": "Check Perf event support",
+    "output": "<think>\nSo the request is to check Perf event support.\nFor this, perf is the right tool — performance profiling.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nperf list | head -20"
+  },
+  {
+    "instruction": "Collect CPU performance counters",
+    "output": "<think>\nThe user wants to collect CPU performance counters.\nLet me think about the best approach.\nThe tool for this job is perf — performance profiling.\nI've added -e to edit or executable — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nperf stat -B -e cycles,instructions,cache-misses ./myapp"
+  },
+  {
+    "instruction": "Sample CPU call chain with perf",
+    "output": "<think>\nWe should sample CPU call chain with perf.\nFor this, perf is the right tool — performance profiling.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nperf record -F 99 -g ./myapp && perf report -g graph --no-children"
+  },
+  {
+    "instruction": "Generate a flame graph from perf data",
+    "output": "<think>\nNeed to generate a flame graph from perf data.\nThis calls for perf. Performance profiling.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nperf script | stackcollapse-perf.pl | flamegraph.pl > flame.svg"
+  },
+  {
+    "instruction": "Check cache misses with perf stat",
+    "output": "<think>\nThe goal is to check cache misses with perf stat.\nLet me consider what makes sense here.\nThe tool for this job is perf — performance profiling.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nperf stat -e cache-misses,cache-references,L1-dcache-load-misses,L1-dcache-loads ./myapp"
+  },
+  {
+    "instruction": "Check branch prediction accuracy",
+    "output": "<think>\nThis is asking us to check branch prediction accuracy.\nLet me break this down.\nFor this, perf is the right tool — performance profiling.\nI'm using -e for edit or executable — without it the command won't work as we need.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nperf stat -e branches,branch-misses ./myapp"
+  },
+  {
+    "instruction": "Measure IPC (instructions per cycle)",
+    "output": "<think>\nThe goal is to measure IPC (instructions per cycle).\nI'd use perf for this — performance profiling.\nI'm using -e for edit or executable — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\nperf stat -e cycles,instructions ./myapp 2>&1 | awk '/instructions/ {printf \"IPC: %.2f\\n\", $1/$4}'"
+  },
+  {
+    "instruction": "Check TLB misses with perf",
+    "output": "<think>\nThe task requires us to check TLB misses with perf.\nHere's how I'd approach this.\nI'd use perf for this — performance profiling.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nperf stat -e dTLB-load-misses,dTLB-loads,iTLB-load-misses,iTLB-loads ./myapp"
+  },
+  {
+    "instruction": "Use perf top to see live hottest functions",
+    "output": "<think>\nWe should use perf top to see live hottest functions.\nFirst, let me understand what's needed here.\nI'd use perf for this — performance profiling.\nI've added -p to create parent directories as needed — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nperf top -p 1234"
+  },
+  {
+    "instruction": "Profile a running process with perf record",
+    "output": "<think>\nNeed to profile a running process with perf record.\nHere's how I'd approach this.\nI'd use perf for this — performance profiling.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nperf record -F 99 -p 1234 -- sleep 30"
+  },
+  {
+    "instruction": "Generate a perf report with source lines",
+    "output": "<think>\nAlright, we need to generate a perf report with source lines.\nLet me think through this step by step.\nperf is what we need — performance profiling.\nThe -n flag means dry-run, no changes, which matters here because important to get the expected behavior.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nperf report -n --stdio | head -40"
+  },
+  {
+    "instruction": "Use perf annotate to see assembly/hotspots",
+    "output": "<think>\nThe task requires us to use perf annotate to see assembly/hotspots.\nFor this, perf is the right tool — performance profiling.\nThe -s flag means summarize or silent mode, which matters here because important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nperf annotate -s function_name"
+  },
+  {
+    "instruction": "Use FlameGraph tools to analyze stacks",
+    "output": "<think>\nSo we need to use FlameGraph tools to analyze stacks.\nLet me consider what makes sense here.\nFor this, git is the right tool — version control operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ngit clone https://github.com/brendangregg/FlameGraph.git && cd FlameGraph && perf script -i /tmp/perf.data | ./stackcollapse-perf.pl | ./flamegraph.pl > /tmp/flame.svg"
+  },
+  {
+    "instruction": "Check process CPU cache utilization with cachestat",
+    "output": "<think>\nSo the request is to check process CPU cache utilization with cachestat.\nThe tool for this job is cachestat — cachestat operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\ncachestat 1 5"
+  },
+  {
+    "instruction": "Check file descriptor cache usage",
+    "output": "<think>\nThis is asking us to check file descriptor cache usage.\nLet me think through this step by step.\nslabtop is what we need — slabtop operations.\nThe -s flag means summarize or silent mode, which matters here because this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\nslabtop -s c | head -10"
+  },
+  {
+    "instruction": "Use irqtop for live IRQ monitoring",
+    "output": "<think>\nSo we need to use irqtop for live IRQ monitoring.\nLet me think through this step by step.\nI'd use irqtop for this — irqtop operations.\nThe -d flag handles directory listing, don't descend. Important because needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\nirqtop -d 1"
+  },
+  {
+    "instruction": "Check CPU topology with lstopo",
+    "output": "<think>\nThis is asking us to check CPU topology with lstopo.\nLet me consider what makes sense here.\nI'd use apt for this — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y hwloc && lstopo --of png > topology.png"
+  },
+  {
+    "instruction": "List all available HWLoc objects",
+    "output": "<think>\nThis is asking us to list all available HWLoc objects.\nThe tool for this job is lstopo-no-graphics — lstopo-no-graphics operations.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nlstopo-no-graphics -v | head -30"
+  },
+  {
+    "instruction": "Check which processes are bound to which NUMA nodes",
+    "output": "<think>\nThe goal is to check which processes are bound to which NUMA nodes.\nThis calls for numactl. Numactl operations.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nnumactl --show && for pid in $(pgrep -x myapp); do echo \"PID $pid: $(numactl --show -p $pid)\"; done"
+  },
+  {
+    "instruction": "Run a process with memory on local NUMA node",
+    "output": "<think>\nThe task requires us to run a process with memory on local NUMA node.\nI'll reach for numactl here because numactl operations.\n</think>\nnumactl --cpunodebind=0 --membind=0 ./myapp"
+  },
+  {
+    "instruction": "Bind a process to specific CPUs and memory nodes",
+    "output": "<think>\nSo we need to bind a process to specific CPUs and memory nodes.\nLet me break this down.\nThis calls for numactl. Numactl operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nnumactl --physcpubind=0-3 --membind=0 ./myapp"
+  }
+]

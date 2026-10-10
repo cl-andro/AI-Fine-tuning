@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to install ODL from debian package",
+    "output": "<think>\nSo the request is to install ODL from debian package.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install opendaylight"
+  },
+  {
+    "instruction": "How to download ODL from nexus",
+    "output": "<think>\nThis is asking us to download ODL from nexus.\nI'd use wget for this — downloading files.\nI'll check the output to make sure it did what we expected.\n</think>\nwget https://nexus.opendaylight.org/content/repositories/public/org/opendaylight/integration/karaf/0.10.0/karaf-0.10.0.tar.gz"
+  },
+  {
+    "instruction": "How to unpack and start ODL",
+    "output": "<think>\nNeed to unpack and start ODL.\nFor this, tar is the right tool — file archiving.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck that the target device has enough space before extracting large archives.\nLet me verify afterward that it worked correctly.\n</think>\ntar xzf karaf-0.10.0.tar.gz && cd karaf-0.10.0 && bin/start"
+  },
+  {
+    "instruction": "How to view ODL OpenFlow port status",
+    "output": "<think>\nThe user wants to view ODL OpenFlow port status.\nLet me reason through this.\nI'd use curl for this — making HTTP requests.\nI've added -u to show or sort by access time — this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ncurl -u admin:admin http://localhost:8181/restconf/operational/opendaylight-inventory:nodes/node/openflow:1 | jq '.node[0].\"flow-node-inventory:node-connector\"'"
+  },
+  {
+    "instruction": "How to add OpenFlow IPv4 flow in ODL",
+    "output": "<think>\nThe goal is to add OpenFlow IPv4 flow in ODL.\nI'd use curl for this — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{\"flow\":[{\"id\":\"ipv4-flow\",\"priority\":100,\"match\":{\"ipv4-source\":\"10.0.0.0/24\",\"ethernet-match\":{\"ethernet-type\":{\"type\":2048}}}}]}' http://localhost:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:1/table:0"
+  },
+  {
+    "instruction": "How to add ARP flow in ODL",
+    "output": "<think>\nNeed to add ARP flow in ODL.\nLet me consider what makes sense here.\nFor this, curl is the right tool — making HTTP requests.\nI've added -u to show or sort by access time — needed for this specific use case.\nI'm using -H for follow symlinks on command line only — needed for this specific use case.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{\"flow\":[{\"id\":\"arp-flow\",\"priority\":100,\"match\":{\"ethernet-match\":{\"ethernet-type\":{\"type\":0x0806}}}}]}' http://localhost:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:1/table:0"
+  },
+  {
+    "instruction": "How to install VPN service in ODL",
+    "output": "<think>\nThe goal is to install VPN service in ODL.\nI'll reach for feature here because feature operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfeature:install odl-vpnservice-api"
+  },
+  {
+    "instruction": "How to configure OVS with ODL controller",
+    "output": "<think>\nThis is asking us to configure OVS with ODL controller.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl set-controller br0 tcp:192.168.1.10:6653"
+  },
+  {
+    "instruction": "How to set OVS connection to ODL via SSL",
+    "output": "<think>\nAlright, we need to set OVS connection to ODL via SSL.\nFirst, let me understand what's needed here.\novs-vsctl is what we need — ovs-vsctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\novs-vsctl set-controller br0 ssl:192.168.1.10:6653"
+  },
+  {
+    "instruction": "How to check OVS ODL connection",
+    "output": "<think>\nNeed to check OVS ODL connection.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl show | grep Controller"
+  },
+  {
+    "instruction": "How to create a TUNNEL in ODL",
+    "output": "<think>\nWe should create a TUNNEL in ODL.\nFirst, let me understand what's needed here.\nFor this, curl is the right tool — making HTTP requests.\nThe -u flag handles show or sort by access time. Important because needed for this specific use case.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{\"network-topology:node\":[{\"node-id\":\"tunnel-node\"}]}' http://localhost:8181/restconf/config/network-topology:network-topology/topology/ovsdb:1"
+  },
+  {
+    "instruction": "How to get ODL operational datastore state",
+    "output": "<think>\nThe goal is to get ODL operational datastore state.\nI'll reach for curl here because making HTTP requests.\nI've added -u to show or sort by access time — needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:admin http://localhost:8181/restconf/operational/network-topology:network-topology/topology/ovsdb:1"
+  },
+  {
+    "instruction": "How to enable OpenFlow TLS in ODL",
+    "output": "<think>\nThe task requires us to enable OpenFlow TLS in ODL.\nLet me reason through this.\nThe tool for this job is feature — feature operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nfeature:install odl-openflowplugin-flow-services-tls"
+  },
+  {
+    "instruction": "How to generate ODL certificates for OpenFlow",
+    "output": "<think>\nSo the request is to generate ODL certificates for OpenFlow.\nLet me think about the best approach.\nThis calls for keytool. Keytool operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nkeytool -genkey -alias odl -keyalg RSA -keystore odl.jks -keysize 2048"
+  },
+  {
+    "instruction": "How to set https in ODL Karaf",
+    "output": "<think>\nSo the request is to set https in ODL Karaf.\nexport is what we need — export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\nexport ORG_OSGI_SERVICE_HTTPS_PORT=8443 && bin/karaf"
+  },
+  {
+    "instruction": "How to list OpenDaylight identity providers",
+    "output": "<think>\nWe're being asked to list OpenDaylight identity providers.\nLet me reason through this.\nFor this, curl is the right tool — making HTTP requests.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nQuick verification after execution to be safe.\n</think>\ncurl -u admin:admin http://localhost:8181/restconf/config/aaa:id-providers"
+  },
+  {
+    "instruction": "How to create ODL network topology from YAML",
+    "output": "<think>\nThis is asking us to create ODL network topology from YAML.\nThe tool for this job is curl — making HTTP requests.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:admin -X POST -H 'Content-Type: application/json' -d @topology.json http://localhost:8181/restconf/config/network-topology:network-topology"
+  },
+  {
+    "instruction": "How to check ODL module health",
+    "output": "<think>\nThis is asking us to check ODL module health.\nFor this, http is the right tool — http operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nhttp://localhost:8181/restconf/operational/module:module-status"
+  },
+  {
+    "instruction": "How to remove an ODL feature",
+    "output": "<think>\nWe're being asked to remove an ODL feature.\nFirst, let me understand what's needed here.\nFor this, feature is the right tool — feature operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nfeature:uninstall odl-openflowplugin-flow-services"
+  },
+  {
+    "instruction": "How to enable concurrent session for ODL",
+    "output": "<think>\nThe task requires us to enable concurrent session for ODL.\nLet me break this down.\nThis calls for export. Export operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nexport KARAF_INTERACTIVE_SESSION_TIMEOUT=0 && bin/karaf"
+  },
+  {
+    "instruction": "How to check ODL MDSAL datastore type",
+    "output": "<think>\nThe task requires us to check ODL MDSAL datastore type.\nLet me think through this step by step.\nI'd use curl for this — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -u admin:admin http://localhost:8181/restconf/operational/mdsal-operational-datastore"
+  },
+  {
+    "instruction": "How to install odl-mdsal-clustering",
+    "output": "<think>\nNeed to install odl-mdsal-clustering.\nLet me break this down.\nI'd use feature for this — feature operations.\n</think>\nfeature:install odl-mdsal-clustering"
+  },
+  {
+    "instruction": "How to install odl-topology-processing-framework",
+    "output": "<think>\nThe task requires us to install odl-topology-processing-framework.\nFirst, let me understand what's needed here.\nI'll reach for feature here because feature operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nfeature:install odl-topology-processing-framework"
+  },
+  {
+    "instruction": "How to check ODL shard status",
+    "output": "<think>\nSo we need to check ODL shard status.\nHere's how I'd approach this.\nThe tool for this job is curl — making HTTP requests.\nWhy -u? Show or sort by access time. without it the command won't work as we need.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -u admin:admin http://localhost:8181/restconf/operational/mdsal-operational-datastore/shard:shards"
+  },
+  {
+    "instruction": "How to change ODL cluster member role",
+    "output": "<think>\nSo the request is to change ODL cluster member role.\nThe tool for this job is curl — making HTTP requests.\nI've added -u to show or sort by access time — important to get the expected behavior.\nWhy -H? Follow symlinks on command line only. standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{\"member-role\":\"member\"}' http://localhost:8181/restconf/config/odl-cluster:cluster"
+  }
+]

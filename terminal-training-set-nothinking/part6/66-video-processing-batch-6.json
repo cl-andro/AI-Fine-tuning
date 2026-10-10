@@ -1,0 +1,23 @@
+[
+  {"instruction": "Create an HLS stream with 5-second segments", "output": "ffmpeg -i input.mp4 -codec: h264 -b:v 2M -hls_time 5 -hls_list_size 0 -f hls output.m3u8"},
+  {"instruction": "Create a DASH stream with multiple bitrate renditions", "output": "ffmpeg -i input.mp4 -map 0:v -b:v:0 1M -b:v:1 3M -map 0:a -f dash output.mpd"},
+  {"instruction": "Stream video to RTMP server for Twitch or YouTube", "output": "ffmpeg -i input.mp4 -c:v libx264 -b:v 4M -g 120 -f flv rtmp://live.twitch.tv/app/streamkey"},
+  {"instruction": "Stream desktop screen to UDP multicast", "output": "ffmpeg -f x11grab -video_size 1920x1080 -i :0.0 -c:v libx264 -preset ultrafast -f mpegts udp://239.0.0.1:1234"},
+  {"instruction": "Receive and save a UDP stream", "output": "ffmpeg -i udp://239.0.0.1:1234 -c copy received.ts"},
+  {"instruction": "Create HLS with multiple quality variants", "output": "ffmpeg -i input.mp4 -filter_complex [0:v]split=3[v1][v2][v3] -map [v1] -b:v:0 1M -map [v2] -b:v:1 3M -map [v3] -b:v:2 6M -map 0:a -f hls -hls_time 5 adaptive.m3u8"},
+  {"instruction": "Stream a looping video to RTMP", "output": "ffmpeg -re -stream_loop -1 -i input.mp4 -c copy -f flv rtmp://live.example.com/app/stream"},
+  {"instruction": "Transcode and push to RTMP with GPU acceleration", "output": "ffmpeg -i input.mp4 -c:v h264_nvenc -preset llhp -b:v 4M -f flv rtmp://ingest.example.com/live/key"},
+  {"instruction": "Generate an MPD manifest for MPEG-DASH", "output": "ffmpeg -i input.mp4 -c:v libx264 -b:v:0 800k -b:v:1 2M -s:0 640:360 -s:1 1280:720 -map 0:v -adaptation_sets id=0,streams=v -f dash output.mpd"},
+  {"instruction": "Stream raw video over RTP", "output": "ffmpeg -i input.mp4 -c:v libx264 -f rtp rtp://233.0.0.1:5004"},
+  {"instruction": "Push an SRT stream", "output": "ffmpeg -i input.mp4 -c copy -f mpegts srt://myserver:1234?mode=caller"},
+  {"instruction": "Receive and save an SRT stream", "output": "ffmpeg -i srt://:1234?mode=listener -c copy received.ts"},
+  {"instruction": "Add drawtext watermark with current time", "output": "ffmpeg -i input.mp4 -vf drawtext=text=%%{localtime}:fontsize=20:fontcolor=white:x=w-tw-10:y=h-th-10 output.mp4"},
+  {"instruction": "Overlay a scrolling ticker text", "output": "ffmpeg -i input.mp4 -vf drawtext=text=Breaking+News:fontsize=28:fontcolor=red:x=w-mod(t*w,w):y=100 output.mp4"},
+  {"instruction": "Use font in drawtext with a TTF file", "output": "ffmpeg -i input.mp4 -vf drawtext=fontfile=/usr/share/fonts/truetype/arial.ttf:text=Watermark:fontsize=36 output.mp4"},
+  {"instruction": "Create a video from an image and audio", "output": "ffmpeg -loop 1 -i image.jpg -i audio.mp3 -c:v libx264 -c:a aac -shortest output.mp4"},
+  {"instruction": "Generate a test pattern with sine tone", "output": "ffmpeg -f lavfi -i testsrc2=duration=10:size=1280x720:rate=30 -f lavfi -i sine=frequency=440:duration=10 output.mp4"},
+  {"instruction": "Create a color bar test video", "output": "ffmpeg -f lavfi -i color=c=blue:size=1920x1080:d=10 -f lavfi -i anullsrc -shortest output.mp4"},
+  {"instruction": "Overlay a video in picture-in-picture mode", "output": "ffmpeg -i main.mp4 -i pip.mp4 -filter_complex [1:v]scale=320:240[pip];[0:v][pip]overlay=W-w-10:H-h-10 output.mp4"},
+  {"instruction": "Side-by-side combine two videos", "output": "ffmpeg -i left.mp4 -i right.mp4 -filter_complex hstack output.mp4"},
+  {"instruction": "Stack two videos vertically", "output": "ffmpeg -i top.mp4 -i bottom.mp4 -filter_complex vstack output.mp4"}
+]

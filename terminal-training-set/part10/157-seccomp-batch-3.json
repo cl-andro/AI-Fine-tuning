@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Run strace with only network syscalls",
+    "output": "<think>\nThe goal is to run strace with only network syscalls.\nstrace is what we need — system call tracing.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nThe -f flag handles force, suppress errors. Important because important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e trace=network -f ./myapp"
+  },
+  {
+    "instruction": "View the default Docker seccomp profile with less",
+    "output": "<think>\nWe're being asked to view the default Docker seccomp profile with less.\nThis calls for less. Less operations.\nOne command does the job. Simple is better.\n</think>\nless /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Extract syscalls from a binary using strace",
+    "output": "<think>\nThe goal is to extract syscalls from a binary using strace.\nThis calls for strace. System call tracing.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e raw=all -f -o /tmp/syscalls.log ./myapp"
+  },
+  {
+    "instruction": "Dump nginx seccomp filter",
+    "output": "<think>\nThe goal is to dump nginx seccomp filter.\nHere's how I'd approach this.\nFor this, seccomp-tools is the right tool — seccomp-tools operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nseccomp-tools dump $(pidof nginx)"
+  },
+  {
+    "instruction": "Install latest strace on Debian",
+    "output": "<think>\nThe task requires us to install latest strace on Debian.\nI'd use apt-get for this — apt-get operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt-get install -y strace"
+  },
+  {
+    "instruction": "Extract only errno syscalls from seccomp profile",
+    "output": "<think>\nSo we need to extract only errno syscalls from seccomp profile.\nLet me reason through this.\nBest tool here is jq — jq operations.\nI'm using -l for long format with details — needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ERRNO\") | .names[]' /usr/share/docker/default-seccomp.json | wc -l"
+  },
+  {
+    "instruction": "Show seccomp actions_avail",
+    "output": "<think>\nAlright, we need to show seccomp actions_avail.\nFor this, cat is the right tool — cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Build strace from source",
+    "output": "<think>\nWe should build strace from source.\nThis calls for git. Version control operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ngit clone https://github.com/strace/strace.git && cd strace && ./bootstrap && ./configure && make -j$(nproc)"
+  },
+  {
+    "instruction": "Dump seccomp filters for a running process",
+    "output": "<think>\nThis is asking us to dump seccomp filters for a running process.\nLet me think about the best approach.\nI'd use seccomp-tools for this — seccomp-tools operations.\nI'm using -f for force, suppress errors — this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nseccomp-tools dump $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "List all syscalls in Docker default profile",
+    "output": "<think>\nThe goal is to list all syscalls in Docker default profile.\nLet me think about the best approach.\nThe tool for this job is jq — jq operations.\nI've added -u to show or sort by access time — this controls how the output is formatted.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\njq '.syscalls[].names[]' /usr/share/docker/default-seccomp.json | sort -u"
+  },
+  {
+    "instruction": "List syscalls blocked by Docker seccomp profile",
+    "output": "<think>\nWe're being asked to list syscalls blocked by Docker seccomp profile.\nLet me think through this step by step.\nFor this, jq is the right tool — jq operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ERRNO\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Trace all syscalls of a program",
+    "output": "<think>\nSo the request is to trace all syscalls of a program.\nHere's how I'd approach this.\nBest tool here is strace — system call tracing.\nThe -f flag handles force, suppress errors. Important because important to get the expected behavior.\nThe -o flag handles output to file, OR operator in find. Important because this controls how the output is formatted.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -f -o /tmp/all.log ./myapp"
+  },
+  {
+    "instruction": "Filter Docker seccomp for allowed syscalls",
+    "output": "<think>\nWe should filter Docker seccomp for allowed syscalls.\nBest tool here is jq — jq operations.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Run container with no seccomp filter",
+    "output": "<think>\nSo we need to run container with no seccomp filter.\nBest tool here is docker — container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run --security-opt seccomp=unconfined alpine"
+  },
+  {
+    "instruction": "Use seccomp-tools to inspect a container",
+    "output": "<think>\nThe task requires us to use seccomp-tools to inspect a container.\nThe tool for this job is seccomp-tools — seccomp-tools operations.\nQuick verification after execution to be safe.\n</think>\nseccomp-tools dump $(docker inspect --format '{{.State.Pid}}' container_name)"
+  },
+  {
+    "instruction": "Run strace with IPC syscalls",
+    "output": "<think>\nWe're being asked to run strace with IPC syscalls.\nLet me think through this step by step.\nBest tool here is strace — system call tracing.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nstrace -e trace=ipc ./myapp"
+  },
+  {
+    "instruction": "Count allowed syscalls in Docker profile",
+    "output": "<think>\nSo the request is to count allowed syscalls in Docker profile.\nI'll reach for jq here because jq operations.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\njq '[.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]] | length' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Check kernel seccomp support",
+    "output": "<think>\nSo the request is to check kernel seccomp support.\nFirst, let me understand what's needed here.\nI'll reach for zgrep here because zgrep operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nzgrep SECCOMP /proc/config.gz"
+  },
+  {
+    "instruction": "Generate a seccomp profile from strace output",
+    "output": "<think>\nNeed to generate a seccomp profile from strace output.\nLet me think through this step by step.\nBest tool here is strace — system call tracing.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nstrace -c -f -S calls ./myapp 2>&1 | awk '{print $NF}' | sort -u > whitelist.txt"
+  },
+  {
+    "instruction": "List seccomp actions available on system",
+    "output": "<think>\nThe task requires us to list seccomp actions available on system.\nLet me think about the best approach.\nThis calls for cat. Cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run strace on PID",
+    "output": "<think>\nThe task requires us to run strace on PID.\nLet me consider what makes sense here.\nThis calls for strace. System call tracing.\nI'm using -p for create parent directories as needed — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -p $(pgrep -f myapp) -o /tmp/trace.out"
+  }
+]

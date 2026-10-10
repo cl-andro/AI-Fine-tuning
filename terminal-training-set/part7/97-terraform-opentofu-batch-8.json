@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Terraform Cloud API token for CLI",
+    "output": "<think>\nWe should create a Terraform Cloud API token for CLI.\n</think>\necho 'credentials \"app.terraform.io\" { token = \"xxxxx\" }' > ~/.terraformrc"
+  },
+  {
+    "instruction": "Login to Terraform Cloud from CLI",
+    "output": "<think>\nWe're being asked to login to Terraform Cloud from CLI.\nLet me break this down.\nThe tool for this job is terraform — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\nAfter running, I'll confirm the result looks right.\n</think>\nterraform login"
+  },
+  {
+    "instruction": "Set Terraform Cloud workspace name in config",
+    "output": "<think>\nWe're being asked to set Terraform Cloud workspace name in config.\nLet me break this down.\nQuick verification after execution to be safe.\n</think>\necho 'terraform { cloud { organization = \"my-org\" workspaces { name = \"prod-infra\" } } }' > cloud.tf"
+  },
+  {
+    "instruction": "Run init with Terraform Cloud remote execution",
+    "output": "<think>\nThe user wants to run init with Terraform Cloud remote execution.\nLet me think through this step by step.\nI'd use terraform for this — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform init"
+  },
+  {
+    "instruction": "Run plan on Terraform Cloud remotely",
+    "output": "<think>\nAlright, we need to run plan on Terraform Cloud remotely.\nFirst, let me understand what's needed here.\nterraform is what we need — infrastructure provisioning.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform plan"
+  },
+  {
+    "instruction": "Trigger a Terraform Cloud run via API",
+    "output": "<think>\nWe're being asked to trigger a Terraform Cloud run via API.\nLet me reason through this.\ncurl is what we need — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s --header \"Authorization: Bearer $TOKEN\" --header \"Content-Type: application/vnd.api+json\" -X POST https://app.terraform.io/api/v2/runs -d '{\"data\":{\"type\":\"runs\",\"relationships\":{\"workspace\":{\"data\":{\"type\":\"workspaces\",\"id\":\"ws-xxxxx\"}}}}}'"
+  },
+  {
+    "instruction": "List Terraform Cloud workspaces",
+    "output": "<think>\nThe user wants to list Terraform Cloud workspaces.\nFirst, let me understand what's needed here.\nterraform is what we need — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\nQuick verification after execution to be safe.\n</think>\nterraform workspace list"
+  },
+  {
+    "instruction": "Set Terraform Cloud variables via API",
+    "output": "<think>\nSo the request is to set Terraform Cloud variables via API.\nLet me think about the best approach.\nI'll reach for curl here because making HTTP requests.\nWhy -s? Summarize or silent mode. this controls how the output is formatted.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s --header \"Authorization: Bearer $TOKEN\" --header \"Content-Type: application/vnd.api+json\" -X POST https://app.terraform.io/api/v2/vars -d '{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"region\",\"value\":\"us-east-1\",\"category\":\"terraform\"}}}'"
+  },
+  {
+    "instruction": "Check Terraform Cloud run status via API",
+    "output": "<think>\nNeed to check Terraform Cloud run status via API.\nLet me break this down.\nThis calls for curl. Making HTTP requests.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\nThe -r flag handles recursive operation (descend into subdirectories). Important because without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s --header \"Authorization: Bearer $TOKEN\" https://app.terraform.io/api/v2/runs/run-xxxxx | jq -r '.data.attributes.status'"
+  },
+  {
+    "instruction": "Create a Terraform Cloud team API token",
+    "output": "<think>\nNeed to create a Terraform Cloud team API token.\nLet me think through this step by step.\nThis calls for curl. Making HTTP requests.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nI've added -r to recursive operation (descend into subdirectories) — standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s --header \"Authorization: Bearer $TOKEN\" -X POST https://app.terraform.io/api/v2/teams/team-xxxxx/authentication-token | jq -r '.data.attributes.token'"
+  },
+  {
+    "instruction": "Use Terraform Cloud policy sets via API",
+    "output": "<think>\nWe should use Terraform Cloud policy sets via API.\ncurl is what we need — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s --header \"Authorization: Bearer $TOKEN\" https://app.terraform.io/api/v2/policy-sets"
+  },
+  {
+    "instruction": "Set up remote state data source from another workspace",
+    "output": "<think>\nWe should set up remote state data source from another workspace.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'data \"terraform_remote_state\" \"shared\" { backend = \"remote\" config = { organization = \"my-org\" workspaces = { name = \"shared-infra\" } } }' > remote.tf"
+  },
+  {
+    "instruction": "Use local state data source",
+    "output": "<think>\nAlright, we need to use local state data source.\nOne command does the job. Simple is better.\n</think>\necho 'data \"terraform_remote_state\" \"local\" { backend = \"local\" config = { path = \"../shared/terraform.tfstate\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use S3 remote state data source",
+    "output": "<think>\nWe should use S3 remote state data source.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'data \"terraform_remote_state\" \"network\" { backend = \"s3\" config = { bucket = \"tf-state\" key = \"network/terraform.tfstate\" region = \"us-east-1\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use consul remote state data source",
+    "output": "<think>\nThe task requires us to use consul remote state data source.\nQuick verification after execution to be safe.\n</think>\necho 'data \"terraform_remote_state\" \"db\" { backend = \"consul\" config = { path = \"tf/state/db\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use etcd remote state data source",
+    "output": "<think>\nThe task requires us to use etcd remote state data source.\nLet me break this down.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'data \"terraform_remote_state\" \"config\" { backend = \"etcdv3\" config = { endpoints = [\"http://etcd:2379\"] path = \"/tf/kv/state\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Check if a local Terraform state is locked",
+    "output": "<think>\nSo we need to check if a local Terraform state is locked.\nLet me break this down.\nls is what we need — ls operations.\nI'm using -la for detailed listing including hidden files — this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\nls -la .terraform/terraform.tfstate.lock.info 2>/dev/null && echo 'locked' || echo 'unlocked'"
+  },
+  {
+    "instruction": "Remove a stale local lock file",
+    "output": "<think>\nAlright, we need to remove a stale local lock file.\nLet me consider what makes sense here.\nFor this, rm is the right tool — file deletion.\nWhy -f? Force, suppress errors. without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nrm -f .terraform/terraform.tfstate.lock.info"
+  },
+  {
+    "instruction": "Regenerate the .terraform.lock.hcl file",
+    "output": "<think>\nThe goal is to regenerate the .terraform.lock.hcl file.\nBest tool here is rm — file deletion.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\nQuick verification after execution to be safe.\n</think>\nrm .terraform.lock.hcl && terraform init"
+  },
+  {
+    "instruction": "Show the dependency lock file contents",
+    "output": "<think>\nThe user wants to show the dependency lock file contents.\nLet me think about the best approach.\nFor this, cat is the right tool — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat .terraform.lock.hcl"
+  },
+  {
+    "instruction": "Update the lock file for new provider hashes",
+    "output": "<think>\nSo the request is to update the lock file for new provider hashes.\nLet me consider what makes sense here.\nThis calls for terraform. Infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\n</think>\nterraform providers lock -platform=linux_amd64 -platform=darwin_amd64"
+  },
+  {
+    "instruction": "Check provider hash mismatch error",
+    "output": "<think>\nWe're being asked to check provider hash mismatch error.\nLet me think through this step by step.\nThe tool for this job is terraform — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\nAfter running, I'll confirm the result looks right.\n</think>\nterraform providers lock -platform=linux_amd64"
+  },
+  {
+    "instruction": "Use sentinel with Terraform Cloud",
+    "output": "<think>\nAlright, we need to use sentinel with Terraform Cloud.\nBest tool here is cat — cat operations.\nI've added -c to count or create — important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat .terraform.lock.hcl | grep -c 'hash'"
+  },
+  {
+    "instruction": "Cache providers locally for offline use",
+    "output": "<think>\nSo the request is to cache providers locally for offline use.\nLet me think through this step by step.\nBest tool here is terraform — infrastructure provisioning.\nLet me verify afterward that it worked correctly.\n</think>\nterraform providers mirror /opt/terraform/providers"
+  },
+  {
+    "instruction": "Use a custom plugin cache directory",
+    "output": "<think>\nThis is asking us to use a custom plugin cache directory.\nI'll reach for export here because export operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nexport TF_PLUGIN_CACHE_DIR=/opt/terraform/plugin-cache && terraform init"
+  }
+]

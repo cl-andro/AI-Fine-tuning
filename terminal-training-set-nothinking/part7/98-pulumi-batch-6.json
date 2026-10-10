@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an S3 bucket with versioning",
+    "output": "echo 'bucket = aws.s3.Bucket(\"data\", versioning=aws.s3.BucketVersioningArgs(enabled=True))' > __main__.py"
+  },
+  {
+    "instruction": "Create an S3 bucket notification for Lambda",
+    "output": "echo 'notification = aws.s3.BucketNotification(\"notif\", bucket=bucket.id, lambda_functions=[aws.s3.BucketNotificationLambdaFunctionArgs(lambda_function_arn=fn.arn, events=[\"s3:ObjectCreated:*\"])])' > __main__.py"
+  },
+  {
+    "instruction": "Create a CloudFront distribution with custom origin",
+    "output": "echo 'cdn = aws.cloudfront.Distribution(\"cdn\", enabled=True, origins=[aws.cloudfront.DistributionOriginArgs(domain_name=lb.dns_name, origin_id=\"alb\", custom_origin_config=aws.cloudfront.DistributionOriginCustomOriginConfigArgs(http_port=80, https_port=443, origin_protocol_policy=\"https-only\"))], default_cache_behavior=aws.cloudfront.DistributionDefaultCacheBehaviorArgs(target_origin_id=\"alb\", viewer_protocol_policy=\"redirect-to-https\", allowed_methods=[\"GET\", \"HEAD\"], cached_methods=[\"GET\", \"HEAD\"]))' > __main__.py"
+  },
+  {
+    "instruction": "Create a DynamoDB table with autoscaling",
+    "output": "echo 'table = aws.dynamodb.Table(\"data\", attributes=[aws.dynamodb.TableAttributeArgs(name=\"id\", type=\"S\")], hash_key=\"id\", billing_mode=\"PROVISIONED\", read_capacity=5, write_capacity=5); read_target = aws.appautoscaling.Target(\"read-dynamo\", max_capacity=100, min_capacity=5, resource_id=f\"table/{table.name}\", scalable_dimension=\"dynamodb:table:ReadCapacityUnits\", service_namespace=\"dynamodb\")' > dynamo.py"
+  },
+  {
+    "instruction": "Create an SQS dead-letter queue",
+    "output": "echo 'dlq = aws.sqs.Queue(\"dlq\"); queue = aws.sqs.Queue(\"main\", redrive_policy=aws.sqs.QueueRedrivePolicyArgs(max_receive_count=5, dead_letter_target_arn=dlq.arn))' > sqs.py"
+  },
+  {
+    "instruction": "Create an SNS topic with filter policy",
+    "output": "echo 'topic = aws.sns.Topic(\"alerts\"); sub = aws.sns.TopicSubscription(\"high-pri\", topic=topic.arn, protocol=\"lambda\", endpoint=fn.arn, filter_policy=json.dumps({\"priority\":[\"critical\",\"high\"]}))' > sns.py"
+  },
+  {
+    "instruction": "Create an IAM policy with multiple statements",
+    "output": "echo 'policy = aws.iam.Policy(\"custom\", policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::my-bucket/*\"},{\"Effect\":\"Allow\",\"Action\":\"kms:Decrypt\",\"Resource\":\"*\"}]}))' > iam.py"
+  },
+  {
+    "instruction": "Attach a managed policy to a role",
+    "output": "echo 'attachment = aws.iam.RolePolicyAttachment(\"s3-read\", role=role.name, policy_arn=\"arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess\")' > iam-attach.py"
+  },
+  {
+    "instruction": "Create a KMS key with alias",
+    "output": "echo 'key = aws.kms.Key(\"app\"); alias = aws.kms.Alias(\"app\", target_key_id=key.key_id, name=\"alias/app-key\")' > kms.py"
+  },
+  {
+    "instruction": "Create a Secrets Manager secret with rotation",
+    "output": "echo 'secret = aws.secretsmanager.Secret(\"db\", name=\"prod/db/password\", rotation_rules=aws.secretsmanager.SecretRotationRulesArgs(automatically_after_days=30))' > secrets.py"
+  },
+  {
+    "instruction": "Create an SSM parameter hierarchy",
+    "output": "echo 'param = aws.ssm.Parameter(\"config\", name=\"/app/prod/api_url\", type=\"String\", value=\"https://api.example.com\")' > ssm.py"
+  },
+  {
+    "instruction": "Create an EBS volume and attach to instance",
+    "output": "echo 'vol = aws.ebs.Volume(\"data\", availability_zone=instance.availability_zone, size=100); att = aws.ec2.VolumeAttachment(\"data-attach\", volume_id=vol.id, instance_id=instance.id, device_name=\"/dev/xvdf\")' > ebs.py"
+  },
+  {
+    "instruction": "Create an ALB with HTTPS listener",
+    "output": "echo 'lb = aws.lb.LoadBalancer(\"web\", internal=False, security_groups=[sg.id], subnets=[subnet.id]); tg = aws.lb.TargetGroup(\"web\", port=80, protocol=\"HTTP\", vpc_id=vpc.id); listener = aws.lb.Listener(\"https\", load_balancer_arn=lb.arn, port=443, protocol=\"HTTPS\", certificate_arn=cert.arn, default_actions=[aws.lb.ListenerDefaultActionArgs(type=\"forward\", target_group_arn=tg.arn)])' > alb.py"
+  },
+  {
+    "instruction": "Create a WAF v2 web ACL",
+    "output": "echo 'waf = aws.wafv2.WebAcl(\"main\", default_action=aws.wafv2.WebAclDefaultActionArgs(allow={}), scope=\"REGIONAL\", visibility_config=aws.wafv2.WebAclVisibilityConfigArgs(cloudwatch_metrics_enabled=True, metric_name=\"waf-main\", sampled_requests_enabled=True), rules=[aws.wafv2.WebAclRuleArgs(name=\"rate-limit\", priority=1, action=aws.wafv2.WebAclRuleActionArgs(block={}), statement=aws.wafv2.WebAclRuleStatementArgs(rate_based_statement=aws.wafv2.WebAclRuleStatementRateBasedStatementArgs(limit=2000, aggregate_key_type=\"IP\")))])' > waf.py"
+  },
+  {
+    "instruction": "Create a CloudWatch dashboard",
+    "output": "echo 'dashboard = aws.cloudwatch.Dashboard(\"main\", dashboard_name=\"InfraOverview\", dashboard_body=json.dumps({\"widgets\":[{\"type\":\"metric\",\"properties\":{\"metrics\":[[\"AWS/EC2\",\"CPUUtilization\"]],\"period\":300,\"stat\":\"Average\",\"region\":\"us-east-1\",\"title\":\"EC2 CPU\"}}]}))' > dashboard.py"
+  },
+  {
+    "instruction": "Create a CloudWatch alarm",
+    "output": "echo 'alarm = aws.cloudwatch.MetricAlarm(\"high-cpu\", comparison_operator=\"GreaterThanThreshold\", evaluation_periods=2, metric_name=\"CPUUtilization\", namespace=\"AWS/EC2\", period=300, statistic=\"Average\", threshold=80, alarm_description=\"High CPU alert\", dimensions={ \"InstanceId\": instance.id })' > alarm.py"
+  },
+  {
+    "instruction": "Create an EventBridge rule for cron schedule",
+    "output": "echo 'rule = aws.cloudwatch.EventRule(\"nightly\", schedule_expression=\"cron(0 2 * * ? *)\"); target = aws.cloudwatch.EventTarget(\"lambda\", rule=rule.name, arn=fn.arn)' > eventbridge.py"
+  },
+  {
+    "instruction": "Create an IAM role for cross-account access",
+    "output": "echo 'role = aws.iam.Role(\"cross-account\", assume_role_policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Action\":\"sts:AssumeRole\"}]}))' > cross-account.py"
+  },
+  {
+    "instruction": "Create a VPC peering connection",
+    "output": "echo 'peering = aws.ec2.VpcPeeringConnection(\"peer\", vpc_id=vpc1.id, peer_vpc_id=vpc2.id, peer_region=\"eu-west-1\"); route = aws.ec2.Route(\"peer-route\", route_table_id=rtb1.id, destination_cidr_block=vpc2.cidr_block, vpc_peering_connection_id=peering.id)' > peering.py"
+  },
+  {
+    "instruction": "Create an EC2 launch template for auto-scaling",
+    "output": "echo 'lt = aws.ec2.LaunchTemplate(\"web\", image_id=ami.id, instance_type=\"t3.micro\", key_name=\"my-key\", vpc_security_group_ids=[sg.id]); asg = aws.autoscaling.Group(\"web\", launch_template=aws.autoscaling.GroupLaunchTemplateArgs(name=lt.name, version=\"\\$Latest\"), min_size=2, max_size=10, desired_capacity=2, vpc_zone_identifiers=[subnet.id])' > asg.py"
+  },
+  {
+    "instruction": "Create an ECR lifecycle policy",
+    "output": "echo 'policy = aws.ecr.LifecyclePolicy(\"cleanup\", repository=repo.name, policy=json.dumps({\"rules\":[{\"rulePriority\":1,\"description\":\"Expire old\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":100},\"action\":{\"type\":\"expire\"}}]}))' > ecr.py"
+  },
+  {
+    "instruction": "Create an ElastiCache replication group",
+    "output": "echo 'group = aws.elasticache.ReplicationGroup(\"cache\", replication_group_id=\"app-cache\", engine=\"redis\", engine_version=\"7.0\", node_type=\"cache.t3.micro\", num_cache_clusters=2, parameter_group_name=\"default.redis7\", automatic_failover_enabled=True, subnet_group_name=subnet_group.name)' > elasticache.py"
+  },
+  {
+    "instruction": "Create an EFS filesystem with mount targets",
+    "output": "echo 'fs = aws.efs.FileSystem(\"data\"); mt1 = aws.efs.MountTarget(\"az1\", file_system_id=fs.id, subnet_id=subnet1.id, security_groups=[sg.id]); mt2 = aws.efs.MountTarget(\"az2\", file_system_id=fs.id, subnet_id=subnet2.id, security_groups=[sg.id])' > efs.py"
+  },
+  {
+    "instruction": "Create an API Gateway REST API",
+    "output": "echo 'api = aws.apigateway.RestApi(\"api\"); resource = aws.apigateway.Resource(\"proxy\", rest_api=api.id, parent_id=api.root_resource_id, path_part=\"{proxy+}\"); method = aws.apigateway.Method(\"any\", rest_api=api.id, resource_id=resource.id, http_method=\"ANY\", authorization=\"NONE\"); integration = aws.apigateway.Integration(\"lambda\", rest_api=api.id, resource_id=resource.id, http_method=method.http_method, type=\"AWS_PROXY\", integration_http_method=\"POST\", uri=fn.invoke_arn)' > apigw.py"
+  },
+  {
+    "instruction": "Create an ACM certificate with DNS validation",
+    "output": "echo 'cert = aws.acm.Certificate(\"www\", domain_name=\"example.com\", validation_method=\"DNS\"); record = aws.route53.Record(\"validation\", zone_id=zone.id, name=cert.domain_validation_options[0].resource_record_name, type=cert.domain_validation_options[0].resource_record_type, records=[cert.domain_validation_options[0].resource_record_value], ttl=60); validation = aws.acm.CertificateValidation(\"cert\", certificate_arn=cert.arn, validation_record_fqdns=[record.fqdn])' > acm.py"
+  }
+]

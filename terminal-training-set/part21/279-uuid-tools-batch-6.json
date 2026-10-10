@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to generate a UUID using od from /dev/urandom",
+    "output": "<think>\nThe user wants to generate a UUID using od from /dev/urandom.\nHere's how I'd approach this.\nFor this, od is the right tool — od operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nod -x -N 16 /dev/urandom | head -1 | awk '{print $2$3$4$5}'"
+  },
+  {
+    "instruction": "How to generate a UUID with xxd from /dev/urandom in proper format",
+    "output": "<think>\nThe task requires us to generate a UUID with xxd from /dev/urandom in proper format.\nI'd use xxd for this — xxd operations.\nWhy -l? Long format with details. important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nxxd -l 16 -p /dev/urandom | sed 's/^/&-/;s/-//4'"
+  },
+  {
+    "instruction": "How to format raw bytes as a UUID with sed",
+    "output": "<think>\nNeed to format raw bytes as a UUID with sed.\nFor this, xxd is the right tool — xxd operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\nxxd -l 16 -p /dev/urandom | sed -r 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\\1-\\2-\\3-\\4-\\5/'"
+  },
+  {
+    "instruction": "How to generate a UUID with od in the standard format",
+    "output": "<think>\nThe task requires us to generate a UUID with od in the standard format.\nLet me consider what makes sense here.\nI'd use od for this — od operations.\nThe -t flag handles sort by modification time. Important because standard practice for this kind of operation.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nod -A n -N 16 -t x1 /dev/urandom | tr -d ' \\n' | sed -r 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\\1-\\2-\\3-\\4-\\5/'"
+  },
+  {
+    "instruction": "How to generate a UUID with python3 using the uuid module",
+    "output": "<think>\nNeed to generate a UUID with python3 using the uuid module.\nBest tool here is python3 — Python interpreter for scripting and automation.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\npython3 -c 'import uuid; print(uuid.uuid4())'"
+  },
+  {
+    "instruction": "How to generate a UUID using perl",
+    "output": "<think>\nWe should generate a UUID using perl.\nThis calls for perl. Perl interpreter for text processing.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nperl -MData::UUID -e 'print new Data::UUID()->create_str'"
+  },
+  {
+    "instruction": "How to generate a UUID with uuidgen and format as C struct",
+    "output": "<think>\nThis is asking us to generate a UUID with uuidgen and format as C struct.\nLet me think through this step by step.\nuuidgen is what we need — uuidgen operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nuuidgen -F C"
+  },
+  {
+    "instruction": "How to generate a UUID from /dev/random with proper structure",
+    "output": "<think>\nThe user wants to generate a UUID from /dev/random with proper structure.\nFirst, let me understand what's needed here.\nhead is what we need — head operations.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nhead -c 16 /dev/random | xxd -p | fold -w 8 | head -1"
+  },
+  {
+    "instruction": "How to generate a UUID with bash using /dev/urandom",
+    "output": "<think>\nSo the request is to generate a UUID with bash using /dev/urandom.\nprintf is what we need — printf operations.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\nprintf '%04x%04x-%04x-%04x-%04x-%04x%04x%04x\\n' $((RANDOM<<16|RANDOM)) $((RANDOM<<16|RANDOM)) $((RANDOM<<16|RANDOM)) $((RANDOM<<16|RANDOM|0x4000)) $((RANDOM<<16|RANDOM|0x8000)) $((RANDOM<<16|RANDOM)) $((RANDOM<<16|RANDOM)) $((RANDOM<<16|RANDOM))"
+  },
+  {
+    "instruction": "How to generate a UUID with openssl and format it",
+    "output": "<think>\nAlright, we need to generate a UUID with openssl and format it.\nFirst, let me understand what's needed here.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nPipes let me chain these operations efficiently without writing temp files.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl rand -hex 16 | sed -r 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\\1-\\2-\\3-\\4-\\5/'"
+  },
+  {
+    "instruction": "How to generate a version 4 UUID with a fixed variant",
+    "output": "<think>\nWe should generate a version 4 UUID with a fixed variant.\nBest tool here is python3 — Python interpreter for scripting and automation.\n</think>\npython3 -c \"import uuid; u=uuid.uuid4(); print(u)\""
+  },
+  {
+    "instruction": "How to generate a UUID with node.js",
+    "output": "<think>\nNeed to generate a UUID with node.js.\nLet me think about the best approach.\nI'd use node for this — Node.js JavaScript runtime.\nI've added -e to edit or executable — without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\nnode -e 'console.log(require(\"crypto\").randomUUID())'"
+  },
+  {
+    "instruction": "How to generate a UUID using sqlite3",
+    "output": "<think>\nSo we need to generate a UUID using sqlite3.\nLet me break this down.\nThis calls for sqlite3. SQLite database operations.\nI've added -4 to use IPv4 only — this controls how the output is formatted.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nsqlite3 :memory: 'SELECT hex(randomblob(4)) || \"-\" || hex(randomblob(2)) || \"-4\" || substr(hex(randomblob(3)),2) || \"-\" || printf(\"%x\", (random() % 4) + 8) || substr(hex(randomblob(2)),2) || \"-\" || hex(randomblob(6));'"
+  },
+  {
+    "instruction": "How to convert a hexadecimal string to a UUID format",
+    "output": "<think>\nAlright, we need to convert a hexadecimal string to a UUID format.\nLet me break this down.\nI'm using -r for recursive operation (descend into subdirectories) — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\necho '0123456789abcdef0123456789abcdef' | sed -r 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\\1-\\2-\\3-\\4-\\5/'"
+  },
+  {
+    "instruction": "How to generate a UUID with the dmidecode system UUID",
+    "output": "<think>\nWe should generate a UUID with the dmidecode system UUID.\nFor this, dmidecode is the right tool — dmidecode operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo dmidecode -s system-uuid"
+  },
+  {
+    "instruction": "How to generate a UUID using awk from /dev/urandom",
+    "output": "<think>\nThe user wants to generate a UUID using awk from /dev/urandom.\nFor this, awk is the right tool — text processing and reporting.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nawk 'BEGIN {srand(); printf \"%08x-%04x-%04x-%04x-%012x\\n\", rand()*2^32, rand()*2^16, rand()*2^16|0x4000, rand()*2^16|0x8000, rand()*2^48}'"
+  },
+  {
+    "instruction": "How to generate a UUID with the wmic command via wine",
+    "output": "<think>\nThis is asking us to generate a UUID with the wmic command via wine.\nFor this, wmic is the right tool — wmic operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nwmic path win32_computersystemproduct get uuid"
+  },
+  {
+    "instruction": "How to generate a UUID and validate it with grep",
+    "output": "<think>\nNeed to generate a UUID and validate it with grep.\nuuidgen is what we need — uuidgen operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nuuidgen | grep -qE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' && echo valid"
+  },
+  {
+    "instruction": "How to generate a UUID using /proc/sys/kernel/random/boot_id",
+    "output": "<think>\nThis is asking us to generate a UUID using /proc/sys/kernel/random/boot_id.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/sys/kernel/random/boot_id"
+  },
+  {
+    "instruction": "How to generate a UUID with libuuid directly via C",
+    "output": "<think>\nThe goal is to generate a UUID with libuuid directly via C.\nFirst, let me understand what's needed here.\nThis calls for gcc. Gcc operations.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ngcc -luuid -o uuid_gen -xc - <<< '#include <uuid/uuid.h> int main() { uuid_t u; char s[37]; uuid_generate(u); uuid_unparse(s, u); printf(\"%s\\n\", s); }' && ./uuid_gen"
+  },
+  {
+    "instruction": "How to generate a UUID using a shell function",
+    "output": "<think>\nWe should generate a UUID using a shell function.\ngenuuid is what we need — genuuid operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ngenuuid() { uuidgen; } && genuuid"
+  },
+  {
+    "instruction": "How to generate a UUID with base64 encoding for URL-safe use",
+    "output": "<think>\nSo we need to generate a UUID with base64 encoding for URL-safe use.\nThis calls for uuidgen. Uuidgen operations.\nThe -d flag means directory listing, don't descend, which matters here because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nuuidgen | base64 | tr '+/' '-_' | tr -d '='"
+  },
+  {
+    "instruction": "How to generate a UUID with dmidecode for hardware UUID",
+    "output": "<think>\nSo the request is to generate a UUID with dmidecode for hardware UUID.\nFor this, dmidecode is the right tool — dmidecode operations.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo dmidecode -t 1 | grep UUID | awk '{print $2}'"
+  },
+  {
+    "instruction": "How to generate a UUID from the system DMI data",
+    "output": "<think>\nWe should generate a UUID from the system DMI data.\nThe tool for this job is cat — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/class/dmi/id/product_uuid"
+  }
+]

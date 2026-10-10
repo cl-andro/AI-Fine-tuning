@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Update initramfs for current kernel",
+    "output": "<think>\nWe're being asked to update initramfs for current kernel.\nLet me think through this step by step.\nThe tool for this job is update-initramfs — update-initramfs operations.\n</think>\nupdate-initramfs -u"
+  },
+  {
+    "instruction": "Update initramfs for all kernels",
+    "output": "<think>\nSo we need to update initramfs for all kernels.\nLet me consider what makes sense here.\nI'll reach for update-initramfs here because update-initramfs operations.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\n</think>\nupdate-initramfs -u -k all"
+  },
+  {
+    "instruction": "Create initramfs for kernel 6.1.0-17-amd64",
+    "output": "<think>\nWe should create initramfs for kernel 6.1.0-17-amd64.\nLet me consider what makes sense here.\nThis calls for update-initramfs. Update-initramfs operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nupdate-initramfs -c -k 6.1.0-17-amd64"
+  },
+  {
+    "instruction": "Delete initramfs for a kernel",
+    "output": "<think>\nThis is asking us to delete initramfs for a kernel.\nupdate-initramfs is what we need — update-initramfs operations.\nI've added -d to directory listing, don't descend — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nupdate-initramfs -d -k 6.1.0-17-amd64"
+  },
+  {
+    "instruction": "Backup then update initramfs",
+    "output": "<think>\nThe task requires us to backup then update initramfs.\nLet me break this down.\nI'd use update-initramfs for this — update-initramfs operations.\nI'm using -b for brief output — standard practice for this kind of operation.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nupdate-initramfs -b -u -k 6.1.0-17-amd64"
+  },
+  {
+    "instruction": "Create initramfs with mkinitramfs",
+    "output": "<think>\nWe should create initramfs with mkinitramfs.\nI'd use mkinitramfs for this — mkinitramfs operations.\nI've added -o to output to file, OR operator in find — standard practice for this kind of operation.\nThe -6 flag handles use IPv6 only. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nmkinitramfs -o /boot/initrd.img-6.1.0-17-amd64 6.1.0-17-amd64"
+  },
+  {
+    "instruction": "Create compressed initramfs with lz4",
+    "output": "<think>\nThe task requires us to create compressed initramfs with lz4.\nLet me think through this step by step.\nFor this, mkinitramfs is the right tool — mkinitramfs operations.\nAfter running, I'll confirm the result looks right.\n</think>\nmkinitramfs -c lz4 -o /boot/initrd.img-custom 6.1.0-17-amd64"
+  },
+  {
+    "instruction": "Set up a zram device of 2GiB",
+    "output": "<think>\nThe user wants to set up a zram device of 2GiB.\nThis calls for modprobe. Kernel module loading and removal.\nI've added -p to create parent directories as needed — important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nmodprobe zram && echo 2G > /sys/block/zram0/disksize && mkswap /dev/zram0 && swapon -p 100 /dev/zram0"
+  },
+  {
+    "instruction": "Configure zram with lz4 compression",
+    "output": "<think>\nThis is asking us to configure zram with lz4 compression.\nLet me think through this step by step.\nAfter running, I'll confirm the result looks right.\n</think>\necho lz4 > /sys/block/zram0/comp_algorithm"
+  },
+  {
+    "instruction": "Reset zram device to free memory",
+    "output": "<think>\nWe're being asked to reset zram device to free memory.\nLet me break this down.\nThe tool for this job is swapoff — swapoff operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nswapoff /dev/zram0 && echo 1 > /sys/block/zram0/reset"
+  },
+  {
+    "instruction": "Show zram stats and compression ratios",
+    "output": "<think>\nThe task requires us to show zram stats and compression ratios.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\n</think>\ncat /sys/block/zram0/mm_stat"
+  },
+  {
+    "instruction": "Enable zswap (compressed swap cache)",
+    "output": "<think>\nWe're being asked to enable zswap (compressed swap cache).\nLet me think through this step by step.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho lz4 > /sys/module/zswap/parameters/compressor && echo 20 > /sys/module/zswap/parameters/max_pool_percent"
+  },
+  {
+    "instruction": "Check zswap current usage",
+    "output": "<think>\nWe're being asked to check zswap current usage.\nHere's how I'd approach this.\nFor this, grep is the right tool — pattern searching.\nI'm using -r for recursive operation (descend into subdirectories) — standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrep -r . /sys/kernel/debug/zswap/ 2>/dev/null || cat /sys/kernel/debug/zswap/stored_pages"
+  },
+  {
+    "instruction": "Enable Kernel Same-page Merging (KSM)",
+    "output": "<think>\nSo we need to enable Kernel Same-page Merging (KSM).\nLet me break this down.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 1 > /sys/kernel/mm/ksm/run"
+  },
+  {
+    "instruction": "Set KSM sleep time (milliseconds)",
+    "output": "<think>\nThe task requires us to set KSM sleep time (milliseconds).\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 100 > /sys/kernel/mm/ksm/sleep_millisecs"
+  },
+  {
+    "instruction": "Set KSM merge across nodes to 1",
+    "output": "<think>\nWe're being asked to set KSM merge across nodes to 1.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 1 > /sys/kernel/mm/ksm/merge_across_nodes"
+  },
+  {
+    "instruction": "Show KSM statistics",
+    "output": "<think>\nAlright, we need to show KSM statistics.\nLet me consider what makes sense here.\nBest tool here is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /sys/kernel/mm/ksm/pages_shared"
+  },
+  {
+    "instruction": "Allocate 512 hugepages dynamically",
+    "output": "<think>\nThe goal is to allocate 512 hugepages dynamically.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 512 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Allocate 1GiB huge pages",
+    "output": "<think>\nNeed to allocate 1GiB huge pages.\nHere's how I'd approach this.\n</think>\necho 4 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+  },
+  {
+    "instruction": "Show hugepage allocation info",
+    "output": "<think>\nWe're being asked to show hugepage allocation info.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nThe -i flag handles interactive, prompt before action. Important because this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/meminfo | grep -i huge"
+  },
+  {
+    "instruction": "Make zram device persistent via /etc/initramfs-tools",
+    "output": "<think>\nWe should make zram device persistent via /etc/initramfs-tools.\nLet me break this down.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'zram' >> /etc/initramfs-tools/modules"
+  },
+  {
+    "instruction": "Configure zram with multiple devices",
+    "output": "<think>\nThe goal is to configure zram with multiple devices.\nFirst, let me understand what's needed here.\nThe tool for this job is modprobe — kernel module loading and removal.\n</think>\nmodprobe zram num_devices=4"
+  },
+  {
+    "instruction": "Check zswap compressor parameter",
+    "output": "<think>\nSo the request is to check zswap compressor parameter.\nThis calls for cat. Cat operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /sys/module/zswap/parameters/compressor"
+  },
+  {
+    "instruction": "Check KSM full scans count",
+    "output": "<think>\nSo the request is to check KSM full scans count.\nThe tool for this job is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /sys/kernel/mm/ksm/full_scans"
+  },
+  {
+    "instruction": "Set max hugepages at boot via sysctl",
+    "output": "<think>\nNeed to set max hugepages at boot via sysctl.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'vm.nr_hugepages=1024' > /etc/sysctl.d/99-hugepages.conf"
+  }
+]

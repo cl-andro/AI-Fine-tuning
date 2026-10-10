@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Disable root SSH login entirely in sshd_config",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Enable only Ed25519 and ED25519-SK host keys for SSH",
+    "output": "sudo sed -i 's/^HostKey.*/"
+  },
+  {
+    "instruction": "Restrict SSH access to only the 'admin' and 'devops' groups using AllowGroups",
+    "output": "echo 'AllowGroups admin devops' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Whitelist specific users for SSH access with AllowUsers",
+    "output": "echo 'AllowUsers alice bob charlie' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable password authentication entirely for SSH",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Only allow key-based public key authentication",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set a custom AuthorizedKeysFile pointing to a centralized location",
+    "output": "echo 'AuthorizedKeysFile /etc/ssh/authorized_keys/%u' | sudo tee -a /etc/ssh/sshd_config && sudo mkdir -p /etc/ssh/authorized_keys && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Use a Match block to apply different settings for users from a specific address",
+    "output": "cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch Address 10.0.0.0/8\n  PasswordAuthentication yes\n  AllowUsers backup-robot\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Chroot a SFTP-only user to their home directory",
+    "output": "sudo useradd -m -s /usr/sbin/nologin sftp-user && sudo mkdir -p /home/sftp-user/uploads && sudo chown root:root /home/sftp-user && sudo chmod 755 /home/sftp-user && cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch User sftp-user\n  ChrootDirectory /home/sftp-user\n  ForceCommand internal-sftp\n  X11Forwarding no\n  AllowTcpForwarding no\n  PermitTTY no\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "ForceCommand to run a script when a specific user logs in",
+    "output": "cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch User monitor\n  ForceCommand /usr/local/bin/run-monitor.sh\n  PermitTTY yes\n  X11Forwarding no\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable X11 forwarding globally in sshd_config",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Disable TCP port forwarding globally",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Limit SSH to protocol version 2 only",
+    "output": "echo 'Protocol 2' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Reduce the login grace time and max auth tries",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set MaxSessions and MaxStartups to prevent connection flooding",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Change the SSH listening port to 2222",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Bind SSH to a specific IP address only",
+    "output": "echo 'ListenAddress 192.168.1.10' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Enable verbose SSH logging and send logs to authpriv",
+    "output": "sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Enable two-factor authentication with libpam-google-authenticator",
+    "output": "sudo apt-get install -y libpam-google-authenticator && google-authenticator -t -d -f -r 3 -R 30 -w 3 && echo 'auth required pam_google_authenticator.so' | sudo tee -a /etc/pam.d/sshd && sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set a banner message displayed before SSH login",
+    "output": "echo 'Authorized access only. All activity is logged.' | sudo tee /etc/ssh/banner && echo 'Banner /etc/ssh/banner' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Use a Match block to restrict a user group to a specific source IP",
+    "output": "cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch Group developers Address 192.168.1.0/24\n  PasswordAuthentication no\n  PubkeyAuthentication yes\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Deny a specific user (john) from SSH access with a DenyUsers directive",
+    "output": "echo 'DenyUsers john' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Permit root login only with key-based authentication from a specific subnet",
+    "output": "cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nPermitRootLogin prohibit-password\nMatch Address 10.10.0.0/16\n  PermitRootLogin yes\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Test the sshd_config for syntax errors before restarting",
+    "output": "sudo sshd -t"
+  },
+  {
+    "instruction": "Reload sshd configuration without dropping active connections",
+    "output": "sudo systemctl reload sshd"
+  },
+  {
+    "instruction": "Display current SSH server configuration with all active settings",
+    "output": "sudo sshd -T | less"
+  }
+]

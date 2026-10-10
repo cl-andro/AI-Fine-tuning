@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to add a conntrack helper in iptables",
+    "output": "<think>\nThis is asking us to add a conntrack helper in iptables.\nBest tool here is iptables — firewall management.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nThe -p flag means create parent directories as needed, which matters here because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -t raw -A PREROUTING -p tcp --dport 21 -j CT --helper ftp"
+  },
+  {
+    "instruction": "How to assign a zone to conntrack",
+    "output": "<think>\nThe task requires us to assign a zone to conntrack.\nI'll reach for iptables here because firewall management.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -t raw -A PREROUTING -p tcp --dport 80 -j CT --zone 1"
+  },
+  {
+    "instruction": "How to set notrack for a specific traffic",
+    "output": "<think>\nThe user wants to set notrack for a specific traffic.\nLet me think about the best approach.\nI'd use iptables for this — firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t raw -A PREROUTING -p tcp --dport 80 -j NOTRACK"
+  },
+  {
+    "instruction": "How to list raw table rules",
+    "output": "<think>\nSo the request is to list raw table rules.\nLet me think about the best approach.\nFor this, iptables is the right tool — firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t raw -L -n"
+  },
+  {
+    "instruction": "How to check which helper is loaded for conntrack",
+    "output": "<think>\nThis is asking us to check which helper is loaded for conntrack.\nLet me think through this step by step.\nThe tool for this job is lsmod — kernel module listing.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nlsmod | grep nf_conntrack"
+  },
+  {
+    "instruction": "How to disable conntrack for loopback",
+    "output": "<think>\nThe task requires us to disable conntrack for loopback.\nI'll reach for iptables here because firewall management.\nI'm using -t for sort by modification time — important to get the expected behavior.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -t raw -A PREROUTING -i lo -j NOTRACK"
+  },
+  {
+    "instruction": "How to disable conntrack for forwarded traffic",
+    "output": "<think>\nThe task requires us to disable conntrack for forwarded traffic.\nFor this, iptables is the right tool — firewall management.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nThe -i flag handles interactive, prompt before action. Important because important to get the expected behavior.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t raw -A PREROUTING -i eth0 -j NOTRACK"
+  },
+  {
+    "instruction": "How to use nfct to add a helper",
+    "output": "<think>\nThis is asking us to use nfct to add a helper.\nLet me reason through this.\nThe tool for this job is nfct — nfct operations.\nLet me verify afterward that it worked correctly.\n</think>\nnfct add helper ftp inet tcp"
+  },
+  {
+    "instruction": "How to list conntrack helpers with nfct",
+    "output": "<think>\nSo we need to list conntrack helpers with nfct.\nI'd use nfct for this — nfct operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nnfct list helper"
+  },
+  {
+    "instruction": "How to delete a conntrack helper",
+    "output": "<think>\nThe user wants to delete a conntrack helper.\nFirst, let me understand what's needed here.\nnfct is what we need — nfct operations.\n</think>\nnfct delete helper ftp"
+  },
+  {
+    "instruction": "How to add conntrack timeout policy",
+    "output": "<think>\nAlright, we need to add conntrack timeout policy.\nLet me think through this step by step.\nBest tool here is nfct — nfct operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nnfct add timeout my-timeout inet tcp established 60000"
+  },
+  {
+    "instruction": "How to list conntrack timeouts",
+    "output": "<think>\nWe're being asked to list conntrack timeouts.\nThis calls for nfct. Nfct operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnfct list timeout"
+  },
+  {
+    "instruction": "How to assign timeout policy with iptables",
+    "output": "<think>\nThe task requires us to assign timeout policy with iptables.\nLet me reason through this.\niptables is what we need — firewall management.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t raw -A PREROUTING -p tcp --dport 80 -j CT --timeout my-timeout"
+  },
+  {
+    "instruction": "How to add a conntrack expectation for SIP",
+    "output": "<think>\nAlright, we need to add a conntrack expectation for SIP.\nLet me break this down.\nFor this, modprobe is the right tool — kernel module loading and removal.\nThe -p flag handles create parent directories as needed. Important because needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\nmodprobe nf_conntrack_sip && iptables -A INPUT -p udp --dport 5060 -j ACCEPT"
+  },
+  {
+    "instruction": "How to create a conntrack bucket tuning",
+    "output": "<think>\nThe user wants to create a conntrack bucket tuning.\nFirst, let me understand what's needed here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 262144 > /sys/module/nf_conntrack/parameters/hashsize"
+  },
+  {
+    "instruction": "How to check conntrack module params",
+    "output": "<think>\nThe user wants to check conntrack module params.\nHere's how I'd approach this.\nFor this, sysctl is the right tool — kernel parameter tuning.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nsysctl -a | grep conntrack"
+  },
+  {
+    "instruction": "How to check conntrack max for UDP tracking",
+    "output": "<think>\nWe're being asked to check conntrack max for UDP tracking.\nLet me reason through this.\nI'd use sysctl for this — kernel parameter tuning.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysctl net.netfilter.nf_conntrack_udp_timeout_stream"
+  },
+  {
+    "instruction": "How to set conntrack for streaming UDP",
+    "output": "<think>\nThe goal is to set conntrack for streaming UDP.\nLet me reason through this.\nI'd use sysctl for this — kernel parameter tuning.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsysctl -w net.netfilter.nf_conntrack_udp_timeout_stream=180"
+  },
+  {
+    "instruction": "How to check ICMP conntrack timeout",
+    "output": "<think>\nThe goal is to check ICMP conntrack timeout.\nFirst, let me understand what's needed here.\nI'd use sysctl for this — kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl net.netfilter.nf_conntrack_icmp_timeout"
+  },
+  {
+    "instruction": "How to set ICMP conntrack timeout",
+    "output": "<think>\nSo we need to set ICMP conntrack timeout.\nLet me break this down.\nFor this, sysctl is the right tool — kernel parameter tuning.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w net.netfilter.nf_conntrack_icmp_timeout=30"
+  },
+  {
+    "instruction": "How to check generic timeout",
+    "output": "<think>\nThe task requires us to check generic timeout.\nLet me think through this step by step.\nBest tool here is sysctl — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsysctl net.netfilter.nf_conntrack_generic_timeout"
+  },
+  {
+    "instruction": "How to set generic conntrack timeout",
+    "output": "<think>\nThis is asking us to set generic conntrack timeout.\nsysctl is what we need — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.netfilter.nf_conntrack_generic_timeout=600"
+  },
+  {
+    "instruction": "How to check conntrack TCP close wait timeout",
+    "output": "<think>\nThe goal is to check conntrack TCP close wait timeout.\nsysctl is what we need — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl net.netfilter.nf_conntrack_tcp_timeout_close_wait"
+  },
+  {
+    "instruction": "How to set TCP close wait timeout",
+    "output": "<think>\nThe task requires us to set TCP close wait timeout.\nThe tool for this job is sysctl — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsysctl -w net.netfilter.nf_conntrack_tcp_timeout_close_wait=60"
+  },
+  {
+    "instruction": "How to query conntrack with specific source port",
+    "output": "<think>\nSo the request is to query conntrack with specific source port.\nconntrack is what we need — conntrack operations.\nI'm using -L for follow symlinks when processing — standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nconntrack -L --orig-port-src 12345"
+  }
+]

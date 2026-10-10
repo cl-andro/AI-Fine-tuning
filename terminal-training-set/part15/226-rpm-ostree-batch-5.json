@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to check if rpm-ostree is using p2p or container updates",
+    "output": "<think>\nThe goal is to check if rpm-ostree is using p2p or container updates.\nHere's how I'd approach this.\nFor this, rpm-ostree is the right tool — rpm-ostree operations.\nI'm using -E for extended regex — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree status | grep -E 'Container|P2P'"
+  },
+  {
+    "instruction": "How to override kernel arguments to enable serial console",
+    "output": "<think>\nThe user wants to override kernel arguments to enable serial console.\nLet me consider what makes sense here.\nThis calls for rpm-ostree. Rpm-ostree operations.\n</think>\nrpm-ostree kargs --append='console=ttyS0,115200'"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deploy ID",
+    "output": "<think>\nWe should see the rpm-ostree deploy ID.\nLet me break this down.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nrpm-ostree status --booted | grep 'DeployID'"
+  },
+  {
+    "instruction": "How to add an unsigned GPG key to rpm-ostree trust",
+    "output": "<think>\nThis is asking us to add an unsigned GPG key to rpm-ostree trust.\nLet me think about the best approach.\nThis calls for ostree. Ostree operations.\nI'll check the output to make sure it did what we expected.\n</think>\nostree remote gpg-import --repo=/sysroot/ostree/repo custom-remote /path/to/key.asc"
+  },
+  {
+    "instruction": "How to check the rpm-ostree base image signature",
+    "output": "<think>\nThe goal is to check the rpm-ostree base image signature.\nHere's how I'd approach this.\nI'd use rpm-ostree for this — rpm-ostree operations.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree status | grep 'GPGSignature'"
+  },
+  {
+    "instruction": "How to view the current deployment's release",
+    "output": "<think>\nWe're being asked to view the current deployment's release.\nHere's how I'd approach this.\nBest tool here is rpm-ostree — rpm-ostree operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nrpm-ostree status | head -5"
+  },
+  {
+    "instruction": "How to manage rpm-ostree with systemd timers",
+    "output": "<think>\nSo the request is to manage rpm-ostree with systemd timers.\nLet me reason through this.\nI'd use systemctl for this — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl enable rpm-ostreed-automatic.timer --now"
+  },
+  {
+    "instruction": "How to override a container image for rpm-ostree",
+    "output": "<think>\nAlright, we need to override a container image for rpm-ostree.\nLet me reason through this.\nBest tool here is rpm-ostree — rpm-ostree operations.\n</think>\nrpm-ostree rebase ostree-image-signed:docker://example.com/image:tag"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deployment signature status",
+    "output": "<think>\nSo the request is to see the rpm-ostree deployment signature status.\nI'd use ostree for this — ostree operations.\nOne command does the job. Simple is better.\n</think>\nostree gpg-verify --repo=/sysroot/ostree/repo $(ostree rev-parse --repo=/sysroot/ostree/repo fedora)"
+  },
+  {
+    "instruction": "How to inspect the rpm-ostree deployment's commit metadata",
+    "output": "<think>\nSo we need to inspect the rpm-ostree deployment's commit metadata.\nThe tool for this job is ostree — ostree operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nostree log --repo=/sysroot/ostree/repo $(rpm-ostree status --booted | grep Commit | awk '{print $2}')"
+  },
+  {
+    "instruction": "How to configure rpm-ostree to use a proxy",
+    "output": "<think>\nSo we need to configure rpm-ostree to use a proxy.\nLet me think through this step by step.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\necho 'Proxy=http://proxy:3128' >> /etc/rpm-ostreed.conf && systemctl restart rpm-ostreed"
+  },
+  {
+    "instruction": "How to empty the rpm-ostree upgrade download cache",
+    "output": "<think>\nWe should empty the rpm-ostree upgrade download cache.\nLet me think about the best approach.\nBest tool here is rpm-ostree — rpm-ostree operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree cleanup --repomd"
+  },
+  {
+    "instruction": "How to check the rpm-ostree build ID",
+    "output": "<think>\nSo we need to check the rpm-ostree build ID.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrpm-ostree status --json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"deployments\"][0][\"buildid\"])'"
+  },
+  {
+    "instruction": "How to update rpm-ostree to a specific commit hash",
+    "output": "<think>\nThe goal is to update rpm-ostree to a specific commit hash.\nLet me think about the best approach.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree deploy fedora:fedora/39/x86_64/silverblue@HASH"
+  },
+  {
+    "instruction": "How to perform a filesystem overlay in rpm-ostree",
+    "output": "<think>\nThe task requires us to perform a filesystem overlay in rpm-ostree.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nrpm-ostree usroverlay && echo 'changes' > /usr/local/test"
+  },
+  {
+    "instruction": "How to see if there are any pending updates staged for next boot",
+    "output": "<think>\nNeed to see if there are any pending updates staged for next boot.\nBest tool here is rpm-ostree — rpm-ostree operations.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nrpm-ostree status | grep 'Staged:'"
+  },
+  {
+    "instruction": "How to override a default package with a custom version in rpm-ostree",
+    "output": "<think>\nThe task requires us to override a default package with a custom version in rpm-ostree.\nLet me think about the best approach.\nBest tool here is rpm-ostree — rpm-ostree operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree override remove default-package && rpm-ostree override add custom-package-version"
+  },
+  {
+    "instruction": "How to show the rpm-ostree endpoint URL",
+    "output": "<think>\nThe goal is to show the rpm-ostree endpoint URL.\nI'd use rpm-ostree for this — rpm-ostree operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nrpm-ostree status | grep 'Remote'"
+  },
+  {
+    "instruction": "How to list the rpm-ostree supported features",
+    "output": "<think>\nWe're being asked to list the rpm-ostree supported features.\nFirst, let me understand what's needed here.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nThe --help flag handles show usage information. Important because standard practice for this kind of operation.\nThe -E flag handles extended regex. Important because without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nrpm-ostree --help | grep -E '  [a-z]'"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deployment's container registry",
+    "output": "<think>\nWe should see the rpm-ostree deployment's container registry.\nThis calls for rpm-ostree. Rpm-ostree operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree status | grep 'ContainerImage' | awk '{print $2}'"
+  }
+]

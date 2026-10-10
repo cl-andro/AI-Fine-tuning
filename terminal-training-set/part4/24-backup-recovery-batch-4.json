@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Start rsync in daemon mode",
+    "output": "<think>\nThe user wants to start rsync in daemon mode.\nLet me reason through this.\nThis calls for rsync. Efficient file synchronization.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrsync --daemon --config=/etc/rsyncd.conf"
+  },
+  {
+    "instruction": "Create Borg backup to a remote repository via SSH",
+    "output": "<think>\nThe user wants to create Borg backup to a remote repository via SSH.\nI'll reach for borg here because deduplicating backups.\nAfter running, I'll confirm the result looks right.\n</think>\nborg create user@192.168.1.100:/backup/borg::home-{now:%Y-%m-%d} /home/user"
+  },
+  {
+    "instruction": "List Borg archives in a remote repo",
+    "output": "<think>\nSo the request is to list Borg archives in a remote repo.\nI'll reach for borg here because deduplicating backups.\nA quick sanity check afterward saves debugging time later.\n</think>\nborg list user@192.168.1.100:/backup/borg"
+  },
+  {
+    "instruction": "Initialize Restic with rclone remote backend",
+    "output": "<think>\nThe task requires us to initialize Restic with rclone remote backend.\nFirst, let me understand what's needed here.\nI'd use restic for this — encrypted backups.\nI'm using -r for recursive operation (descend into subdirectories) — this controls how the output is formatted.\nAfter running, I'll confirm the result looks right.\n</think>\nrestic -r rclone:remote:backup-repo init"
+  },
+  {
+    "instruction": "Calculate rdiff-backup statistics",
+    "output": "<think>\nSo the request is to calculate rdiff-backup statistics.\nFirst, let me understand what's needed here.\nI'd use rdiff-backup for this — rdiff-backup operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrdiff-backup --calculate-average /backup/etc"
+  },
+  {
+    "instruction": "List duplicity backup files",
+    "output": "<think>\nAlright, we need to list duplicity backup files.\nLet me break this down.\nFor this, duplicity is the right tool — duplicity operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nduplicity list-current-files file:///backup/duplicity"
+  },
+  {
+    "instruction": "Slice DAR archive into 100MB volumes",
+    "output": "<think>\nThe goal is to slice DAR archive into 100MB volumes.\nHere's how I'd approach this.\ndar is what we need — dar operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nI've added -s to summarize or silent mode — this controls how the output is formatted.\nI'm using -R for recursive operation — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\ndar -c /backup/home-dar -s 100M -R /home/user"
+  },
+  {
+    "instruction": "Restore a Mondo archive",
+    "output": "<think>\nWe're being asked to restore a Mondo archive.\nmondorestore is what we need — mondorestore operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nmondorestore"
+  },
+  {
+    "instruction": "Restore a filesystem with fsarchiver",
+    "output": "<think>\nThis is asking us to restore a filesystem with fsarchiver.\nThe tool for this job is fsarchiver — fsarchiver operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfsarchiver restfs /backup/sda1.fsa id=0,dest=/dev/sda1"
+  },
+  {
+    "instruction": "Restore a partition with partimage",
+    "output": "<think>\nSo the request is to restore a partition with partimage.\nBest tool here is partimage — partimage operations.\n</think>\npartimage restore /dev/sda1 /backup/sda1.img"
+  },
+  {
+    "instruction": "Restore a partition with partclone",
+    "output": "<think>\nThe goal is to restore a partition with partclone.\nThe tool for this job is partclone.ext4 — partclone.ext4 operations.\nI'm using -r for recursive operation (descend into subdirectories) — needed for this specific use case.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\n</think>\npartclone.ext4 -r -s /backup/sda1.pcl -o /dev/sda1"
+  },
+  {
+    "instruction": "Create incremental dump level 1",
+    "output": "<think>\nThe user wants to create incremental dump level 1.\nLet me reason through this.\nI'd use dump for this — dump operations.\n</think>\ndump -1uf /backup/sda1-level1.dump /dev/sda1"
+  },
+  {
+    "instruction": "Restore interactively from a dump file",
+    "output": "<think>\nWe're being asked to restore interactively from a dump file.\nLet me reason through this.\nBest tool here is restore — restore operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nrestore -if /backup/sda1.dump"
+  },
+  {
+    "instruction": "Clone disk with dd using conv options",
+    "output": "<think>\nThe task requires us to clone disk with dd using conv options.\nFirst, let me understand what's needed here.\nI'd use dd for this — dd operations.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\nI'll check the output to make sure it did what we expected.\n</think>\ndd if=/dev/sda of=/dev/sdb bs=4M conv=noerror,sync status=progress"
+  },
+  {
+    "instruction": "Rescue disk with ddrescue direct disk access",
+    "output": "<think>\nWe should rescue disk with ddrescue direct disk access.\nI'll reach for ddrescue here because ddrescue operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nddrescue -d /dev/sda /backup/sda.img /backup/sda.log"
+  },
+  {
+    "instruction": "Restore from GNU tar incremental backup",
+    "output": "<think>\nSo the request is to restore from GNU tar incremental backup.\nLet me think through this step by step.\nFor this, tar is the right tool — file archiving.\nCheck that the target device has enough space before extracting large archives.\nQuick verification after execution to be safe.\n</think>\ntar --listed-incremental=/backup/snapshot.snar -xzvf /backup/home-inc.tar.gz"
+  },
+  {
+    "instruction": "Create cpio archive with gzip compression",
+    "output": "<think>\nWe should create cpio archive with gzip compression.\nLet me break this down.\nFor this, find is the right tool — file searching.\nI've added -o to output to file, OR operator in find — standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nLet me verify afterward that it worked correctly.\n</think>\nfind /home/user -depth -print | cpio -o | gzip > /backup/home.cpio.gz"
+  },
+  {
+    "instruction": "Create pax archive with extended headers",
+    "output": "<think>\nThe task requires us to create pax archive with extended headers.\nLet me break this down.\npax is what we need — pax operations.\nThe -f flag handles force, suppress errors. Important because needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\npax -w -x pax -f /backup/www.pax /var/www"
+  },
+  {
+    "instruction": "Bidirectional sync with rclone bisync",
+    "output": "<think>\nSo we need to bidirectional sync with rclone bisync.\nLet me reason through this.\nThis calls for rclone. Cloud storage sync.\nOne command does the job. Simple is better.\nLike rsync — --dry-run first. Cloud transfers might incur costs for large syncs.\n</think>\nrclone bisync /home/user remote:backup-home --resync"
+  },
+  {
+    "instruction": "List objects in S3 bucket with s3cmd",
+    "output": "<think>\nAlright, we need to list objects in S3 bucket with s3cmd.\nHere's how I'd approach this.\nI'll reach for s3cmd here because s3cmd operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ns3cmd ls s3://my-backup-bucket/"
+  },
+  {
+    "instruction": "Delete old S3 objects with s3cmd",
+    "output": "<think>\nWe're being asked to delete old S3 objects with s3cmd.\nFirst, let me understand what's needed here.\nI'd use s3cmd for this — s3cmd operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ns3cmd del s3://my-backup-bucket/old-backup.tar.gz"
+  },
+  {
+    "instruction": "Custom format PostgreSQL dump with compression",
+    "output": "<think>\nSo we need to custom format PostgreSQL dump with compression.\nLet me consider what makes sense here.\nFor this, pg_dump is the right tool — PostgreSQL database backup.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\n</think>\npg_dump -Fc mydb > /backup/mydb.dump"
+  },
+  {
+    "instruction": "Restore PostgreSQL custom format dump",
+    "output": "<think>\nThis is asking us to restore PostgreSQL custom format dump.\nThe tool for this job is pg_restore — pg_restore operations.\nThe -d flag handles directory listing, don't descend. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\npg_restore -d mydb /backup/mydb.dump"
+  },
+  {
+    "instruction": "Dump specific MySQL databases",
+    "output": "<think>\nNeed to dump specific MySQL databases.\nI'll reach for mysqldump here because MySQL database backup.\nA single command handles this cleanly — no need to overcomplicate it.\nUse --single-transaction for InnoDB to get a consistent snapshot without locking.\n</think>\nmysqldump --databases db1 db2 > /backup/dbs.sql"
+  },
+  {
+    "instruction": "Extract specific paths from Borg archive",
+    "output": "<think>\nWe should extract specific paths from Borg archive.\nLet me think through this step by step.\nFor this, borg is the right tool — deduplicating backups.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nborg extract /backup/borg::home-2026-07-20 home/user/Documents"
+  }
+]

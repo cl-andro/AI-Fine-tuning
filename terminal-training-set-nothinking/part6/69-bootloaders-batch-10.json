@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a GRUB rescue disk using an existing system",
+    "output": "grub-mkrescue -o grub-rescue.iso && xorriso -as cdrecord -v dev=/dev/sr0 grub-rescue.iso"
+  },
+  {
+    "instruction": "Generate a GRUB configuration from scratch (no update-grub)",
+    "output": "grub-mkconfig -o /boot/grub/grub.cfg 2>/dev/null || /usr/sbin/grub-mkconfig -o /boot/grub/grub.cfg"
+  },
+  {
+    "instruction": "GRUB: chainload a Windows Boot Manager on UEFI",
+    "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry \"Windows UEFI\" {\n  insmod part_gpt\n  insmod fat\n  search --fs-uuid --no-floppy --set=root XXXX-XXXX\n  chainloader /EFI/Microsoft/Boot/bootmgfw.efi\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "Create a systemd-boot entry for a fallback kernel",
+    "output": "cat > /boot/efi/loader/entries/debian-fallback.conf <<'EOF'\ntitle Debian Fallback\nlinux /vmlinuz-fallback\ninitrd /initramfs-fallback.img\noptions root=UUID=xxx rw\nEOF"
+  },
+  {
+    "instruction": "List available SBAT policy levels for GRUB",
+    "output": "cat /usr/share/grub/sbat.csv 2>/dev/null | head -20"
+  },
+  {
+    "instruction": "Check if the system boots via GRUB or systemd-boot",
+    "output": "efibootmgr -v | grep BootCurrent | grep -q GRUB && echo 'GRUB' || echo 'Other'"
+  },
+  {
+    "instruction": "Boot into Windows via GRUB command line (rescue mode)",
+    "output": "grub> insmod ntfs\n insmod chain\n set root=(hd0,1)\n chainloader +1\n boot"
+  },
+  {
+    "instruction": "Use grub-mount to inspect a Linux root filesystem",
+    "output": "grub-mount /dev/sda2 /mnt && ls /mnt"
+  },
+  {
+    "instruction": "Install GRUB to an external USB drive",
+    "output": "grub-install --boot-directory=/mnt/usb/boot --efi-directory=/mnt/usb --target=x86_64-efi --removable /dev/sdb"
+  },
+  {
+    "instruction": "Create a portable GRUB USB with multiple ISOs",
+    "output": "grub-install --boot-directory=/mnt/usb/boot --removable /dev/sdb && mkdir -p /mnt/usb/boot/iso && cp *.iso /mnt/usb/boot/iso/ && grub-mkconfig -o /mnt/usb/boot/grub/grub.cfg"
+  },
+  {
+    "instruction": "Set GRUB to boot with nomodeset kernel parameter",
+    "output": "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"quiet nomodeset\"' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Remove old kernels from GRUB menu",
+    "output": "dpkg --purge linux-image-OLDVERSION && update-grub"
+  },
+  {
+    "instruction": "Check the current GRUB device map",
+    "output": "cat /boot/grub/device.map"
+  },
+  {
+    "instruction": "Add GRUB_GFXPAYLOAD_LINUX to keep native resolution",
+    "output": "echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Use GRUB to boot a raw disk image",
+    "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Boot Disk Image' {\n  set root=(hd0,1)\n  linux16 /memdisk\n  initrd16 /path/to/disk.img\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "Boot into single-user mode via GRUB",
+    "output": "grub-reboot 0"
+  },
+  {
+    "instruction": "Display details about the current boot process",
+    "output": "dmesg | grep -E 'Command line|Boot|EFI|BIOS' | head -20"
+  },
+  {
+    "instruction": "Show boot time of the system",
+    "output": "systemd-analyze"
+  },
+  {
+    "instruction": "Show boot time breakdown by service",
+    "output": "systemd-analyze blame"
+  },
+  {
+    "instruction": "Analyze boot critical chain",
+    "output": "systemd-analyze critical-chain"
+  },
+  {
+    "instruction": "List all firmware-provided UEFI variables",
+    "output": "ls -la /sys/firmware/efi/efivars/ | head -30"
+  },
+  {
+    "instruction": "Check if systemd-boot is the active bootloader",
+    "output": "efibootmgr | grep -i systemd"
+  }
+]

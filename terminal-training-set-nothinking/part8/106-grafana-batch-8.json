@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create Grafana alert rule with multiple conditions",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/v1/provisioning/alert-rules -H 'Content-Type: application/json' -d '{\"title\":\"MultiCondition\",\"condition\":\"C\",\"data\":[{\"refId\":\"A\",\"relativeTimeRange\":{\"from\":600,\"to\":0},\"datasourceUid\":\"prom\",\"model\":{\"expr\":\"node_cpu_seconds_total > 0.8\"}},{\"refId\":\"B\",\"relativeTimeRange\":{\"from\":600,\"to\":0},\"datasourceUid\":\"prom\",\"model\":{\"expr\":\"node_memory_usage > 0.9\"}},{\"refId\":\"C\",\"relativeTimeRange\":{\"from\":0,\"to\":0},\"datasourceUid\":\"__expr__\",\"model\":{\"type\":\"math\",\"expression\":\"$A >= 1 && $B >= 1\"}}],\"ruleGroup\":\"multi\",\"noDataState\":\"NoData\",\"execErrState\":\"Alerting\",\"for\":\"5m\"}'"
+  },
+  {
+    "instruction": "Get Grafana user organizations via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/users/1/orgs | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana user info by ID via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/users/1 | jq '.'"
+  },
+  {
+    "instruction": "Search Grafana users via API",
+    "output": "curl -s 'http://admin:admin@localhost:3000/api/users?query=jdoe' | jq '.'"
+  },
+  {
+    "instruction": "List Grafana users with paging via API",
+    "output": "curl -s 'http://admin:admin@localhost:3000/api/users?perpage=50&page=1' | jq '.'"
+  },
+  {
+    "instruction": "Create Grafana service account with Admin role via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/serviceaccounts -H 'Content-Type: application/json' -d '{\"name\":\"deploy-bot\",\"role\":\"Admin\"}'"
+  },
+  {
+    "instruction": "Enable Grafana service account via API",
+    "output": "curl -X PATCH http://admin:admin@localhost:3000/api/serviceaccounts/1 -H 'Content-Type: application/json' -d '{\"isDisabled\":false}'"
+  },
+  {
+    "instruction": "Get Grafana service account by id via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/serviceaccounts/1 | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana access control roles via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/access-control/roles | jq '.'"
+  },
+  {
+    "instruction": "Create Grafana custom role via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/access-control/roles -H 'Content-Type: application/json' -d '{\"name\":\"custom:viewer\",\"displayName\":\"Custom Viewer\",\"group\":\"Custom\",\"version\":1,\"global\":true,\"permissions\":[{\"action\":\"dashboards:read\",\"scope\":\"dashboards:*\"}]}'"
+  },
+  {
+    "instruction": "Delete Grafana custom role via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/access-control/roles/custom:viewer"
+  },
+  {
+    "instruction": "Set Grafana user role assignment via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/access-control/users/1/roles -H 'Content-Type: application/json' -d '{\"roleUID\":\"abc123\",\"orgId\":1}'"
+  },
+  {
+    "instruction": "Remove Grafana user role assignment via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/access-control/users/1/roles/abc123"
+  },
+  {
+    "instruction": "Get Grafana team role assignments via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/access-control/teams/1/roles | jq '.'"
+  },
+  {
+    "instruction": "Assign Grafana team role via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/access-control/teams/1/roles -H 'Content-Type: application/json' -d '{\"roleUID\":\"abc\",\"orgId\":1}'"
+  },
+  {
+    "instruction": "Remove Grafana team role via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/access-control/teams/1/roles/abc"
+  },
+  {
+    "instruction": "List Grafana role assignments for a user via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/access-control/users/1/roles | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana org roles via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/access-control/orgs/1/roles | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana built-in role assignments via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/access-control/builtin-roles | jq '.'"
+  },
+  {
+    "instruction": "Assign Grafana built-in role to a user via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/access-control/builtin-roles -H 'Content-Type: application/json' -d '{\"roleUID\":\"basic_editor\",\"orgId\":1,\"builtinRole\":\"Viewer\",\"global\":false}'"
+  },
+  {
+    "instruction": "Remove Grafana built-in role assignment via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/access-control/builtin-roles/basic_editor?orgId=1&builtinRole=Viewer"
+  },
+  {
+    "instruction": "Get Grafana datasource permissions via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/datasources/1/permissions | jq '.'"
+  },
+  {
+    "instruction": "Add Grafana datasource permission for a user via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/datasources/1/permissions -H 'Content-Type: application/json' -d '{\"userId\":2,\"permission\":1}'"
+  },
+  {
+    "instruction": "Add Grafana datasource permission for a team via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/datasources/1/permissions -H 'Content-Type: application/json' -d '{\"teamId\":1,\"permission\":2}'"
+  },
+  {
+    "instruction": "Delete Grafana datasource permission via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/datasources/1/permissions/1"
+  }
+]

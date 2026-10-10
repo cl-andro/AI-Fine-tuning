@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a DRBD split-brain handler script",
+    "output": "<think>\nWe should create a DRBD split-brain handler script.\nHere's how I'd approach this.\nThis calls for split-brain. Split-brain operations.\n</think>\nsplit-brain /usr/local/bin/drbd-split-brain.sh"
+  },
+  {
+    "instruction": "Show DRBD statistics with drbdsetup",
+    "output": "<think>\nWe're being asked to show DRBD statistics with drbdsetup.\nBest tool here is drbdsetup — drbdsetup operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdsetup show r0"
+  },
+  {
+    "instruction": "Set DRBD AL (activity log) size",
+    "output": "<think>\nThis is asking us to set DRBD AL (activity log) size.\nFirst, let me understand what's needed here.\nThe tool for this job is drbdmeta — drbdmeta operations.\nQuick verification after execution to be safe.\n</think>\ndrbdmeta /dev/sdb v06 0 set-gi 0"
+  },
+  {
+    "instruction": "Initialize DRBD metadata with force overwrite",
+    "output": "<think>\nSo we need to initialize DRBD metadata with force overwrite.\nThe tool for this job is drbdadm — drbdadm operations.\nThe --force flag means override warnings, which matters here because needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndrbdadm create-md --force r0"
+  },
+  {
+    "instruction": "Set up a DRBD device with write-back cache",
+    "output": "<think>\nThis is asking us to set up a DRBD device with write-back cache.\nFirst, let me understand what's needed here.\nI'd use drbdadm for this — drbdadm operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\ndrbdadm disk-options --set-defaults --disk-barrier=safe r0"
+  },
+  {
+    "instruction": "Configure Corosync with redundant ring",
+    "output": "<think>\nThe goal is to configure Corosync with redundant ring.\nLet me consider what makes sense here.\nThe tool for this job is nodelist — nodelist operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nnodelist {\n  node {\n    ring0_addr: 192.168.1.10\n    ring1_addr: 10.0.0.10\n    nodeid: 1\n  }\n  node {\n    ring0_addr: 192.168.1.11\n    ring1_addr: 10.0.0.11\n    nodeid: 2\n  }\n}"
+  },
+  {
+    "instruction": "Configure Corosync encryption with NSS",
+    "output": "<think>\nAlright, we need to configure Corosync encryption with NSS.\nBest tool here is crypto_hash — crypto_hash operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncrypto_hash: sha256\ncrypto_cipher: aes256"
+  },
+  {
+    "instruction": "Set Corosync logging to debug mode",
+    "output": "<think>\nAlright, we need to set Corosync logging to debug mode.\nThe tool for this job is logging — logging operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nlogging {\n  fileline: on\n  to_syslog: yes\n  to_logfile: yes\n  logfile: /var/log/corosync/corosync.log\n  debug: on\n}"
+  },
+  {
+    "instruction": "Configure Corosync with quorum device",
+    "output": "<think>\nThe user wants to configure Corosync with quorum device.\nLet me consider what makes sense here.\nThis calls for quorum. Quorum operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nquorum {\n  provider: corosync_votequorum\n  qdevice_setup: yes\n  qdevice_model: net\n}"
+  },
+  {
+    "instruction": "Configure a Corosync external vote quorum device",
+    "output": "<think>\nAlright, we need to configure a Corosync external vote quorum device.\nLet me break this down.\nBest tool here is quorum.device.net — quorum.device.net operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nquorum.device.net {\n  host: 10.0.0.200\n  port: 5403\n  key: /etc/corosync/qnetd-auth.key\n}"
+  },
+  {
+    "instruction": "Enable quorum device in Corosync",
+    "output": "<think>\nWe're being asked to enable quorum device in Corosync.\nLet me consider what makes sense here.\nBest tool here is pcs — pcs operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npcs quorum device add model net host=10.0.0.200 algorithm=ffsplit"
+  },
+  {
+    "instruction": "Remove quorum device from cluster",
+    "output": "<think>\nThis is asking us to remove quorum device from cluster.\nLet me think through this step by step.\nThis calls for pcs. Pcs operations.\n</think>\npcs quorum device remove"
+  },
+  {
+    "instruction": "Show quorum device status",
+    "output": "<think>\nSo we need to show quorum device status.\nLet me reason through this.\npcs is what we need — pcs operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\npcs quorum device status"
+  },
+  {
+    "instruction": "Set up a Corosync QDevice on a separate host",
+    "output": "<think>\nWe should set up a Corosync QDevice on a separate host.\nThis calls for pcs. Pcs operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\npcs qdevice setup model net --enable --start 10.0.0.200"
+  },
+  {
+    "instruction": "Change Pacemaker quorum policy to freeze",
+    "output": "<think>\nSo we need to change Pacemaker quorum policy to freeze.\nI'd use pcs for this — pcs operations.\nLet me verify afterward that it worked correctly.\n</think>\npcs property set no-quorum-policy=freeze"
+  },
+  {
+    "instruction": "Change Pacemaker quorum policy to stop",
+    "output": "<think>\nThe task requires us to change Pacemaker quorum policy to stop.\nLet me think through this step by step.\nBest tool here is pcs — pcs operations.\n</think>\npcs property set no-quorum-policy=stop"
+  },
+  {
+    "instruction": "Change Pacemaker quorum policy to suicide",
+    "output": "<think>\nSo the request is to change Pacemaker quorum policy to suicide.\nFirst, let me understand what's needed here.\nI'd use pcs for this — pcs operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\npcs property set no-quorum-policy=suicide"
+  },
+  {
+    "instruction": "Configure Pacemaker concurrent-fencing",
+    "output": "<think>\nThe task requires us to configure Pacemaker concurrent-fencing.\nFirst, let me understand what's needed here.\nBest tool here is pcs — pcs operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npcs property set concurrent-fencing=true"
+  },
+  {
+    "instruction": "Configure Pacemaker shutdown policy",
+    "output": "<think>\nThis is asking us to configure Pacemaker shutdown policy.\nThis calls for pcs. Pcs operations.\n</think>\npcs property set shutdown-escalation=10"
+  },
+  {
+    "instruction": "Configure Pacemaker startup fencing",
+    "output": "<think>\nThis is asking us to configure Pacemaker startup fencing.\nLet me consider what makes sense here.\npcs is what we need — pcs operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npcs property set startup-fencing=false"
+  },
+  {
+    "instruction": "Set Pacemaker cluster recheck interval",
+    "output": "<think>\nThe goal is to set Pacemaker cluster recheck interval.\nLet me consider what makes sense here.\nBest tool here is pcs — pcs operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\npcs property set cluster-recheck-interval=5min"
+  },
+  {
+    "instruction": "Configure two-node cluster in Pacemaker",
+    "output": "<think>\nNeed to configure two-node cluster in Pacemaker.\nLet me reason through this.\nI'd use pcs for this — pcs operations.\nQuick verification after execution to be safe.\n</think>\npcs property set two-node=1"
+  },
+  {
+    "instruction": "Set minimum quorum votes in Corosync",
+    "output": "<think>\nWe should set minimum quorum votes in Corosync.\nFor this, pcs is the right tool — pcs operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\npcs quorum expected-votes 2"
+  },
+  {
+    "instruction": "Wait for cluster to settle in Pacemaker",
+    "output": "<think>\nThe goal is to wait for cluster to settle in Pacemaker.\nFirst, let me understand what's needed here.\nFor this, crm_resource is the right tool — crm_resource operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\ncrm_resource --wait"
+  },
+  {
+    "instruction": "Check if cluster is quorate in Pacemaker",
+    "output": "<think>\nThe goal is to check if cluster is quorate in Pacemaker.\ncrm_mon is what we need — crm_mon operations.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\ncrm_mon --one-shot | grep -i quorum"
+  }
+]

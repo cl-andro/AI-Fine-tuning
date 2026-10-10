@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create persistent namespace with bind mount",
+    "output": "<think>\nNeed to create persistent namespace with bind mount.\ntouch is what we need — touch operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\ntouch /netns/blue && mount --bind /proc/self/ns/net /netns/blue"
+  },
+  {
+    "instruction": "Use unshare to persist net namespace",
+    "output": "<think>\nWe should use unshare to persist net namespace.\nHere's how I'd approach this.\nFor this, unshare is the right tool — unshare operations.\nQuick verification after execution to be safe.\n</think>\nunshare --net=/netns/persistent-net /bin/bash"
+  },
+  {
+    "instruction": "Join persistent namespace with nsenter",
+    "output": "<think>\nSo the request is to join persistent namespace with nsenter.\nBest tool here is nsenter — nsenter operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnsenter --net=/netns/persistent-net /bin/bash"
+  },
+  {
+    "instruction": "List persistent namespace bind mounts",
+    "output": "<think>\nWe should list persistent namespace bind mounts.\nFor this, cat is the right tool — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/mounts | grep netns"
+  },
+  {
+    "instruction": "Create persistent PID namespace",
+    "output": "<think>\nWe should create persistent PID namespace.\nunshare is what we need — unshare operations.\n</think>\nunshare --pid=/netns/persistent-pid --fork --mount-proc /bin/bash"
+  },
+  {
+    "instruction": "Monitor namespace events with inotify",
+    "output": "<think>\nWe should monitor namespace events with inotify.\nLet me consider what makes sense here.\nI'll reach for inotifywait here because inotifywait operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ninotifywait -m /proc/self/ns/"
+  },
+  {
+    "instruction": "Use nsenter with path to namespace file",
+    "output": "<think>\nNeed to use nsenter with path to namespace file.\nThe tool for this job is nsenter — nsenter operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nnsenter --net=/var/run/netns/ns1 ip addr"
+  },
+  {
+    "instruction": "Clean up namespace bind mount",
+    "output": "<think>\nSo we need to clean up namespace bind mount.\nI'd use umount for this — filesystem unmounting.\nI've added -f to force, suppress errors — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\numount /netns/blue && rm -f /netns/blue"
+  },
+  {
+    "instruction": "Kernel namespace configuration",
+    "output": "<think>\nThe goal is to kernel namespace configuration.\nLet me consider what makes sense here.\ncat is what we need — cat operations.\nOne command does the job. Simple is better.\n</think>\ncat /proc/sys/user/max_user_namespaces; cat /proc/sys/kernel/ns_last_pid"
+  },
+  {
+    "instruction": "Check max PID in namespace",
+    "output": "<think>\nWe should check max PID in namespace.\nBest tool here is cat — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/sys/kernel/ns_last_pid"
+  },
+  {
+    "instruction": "Set max PIDs per namespace",
+    "output": "<think>\nThis is asking us to set max PIDs per namespace.\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho 65535 > /proc/sys/kernel/ns_last_pid"
+  },
+  {
+    "instruction": "Run a full container with busybox and unshare",
+    "output": "<think>\nWe're being asked to run a full container with busybox and unshare.\nFirst, let me understand what's needed here.\nFor this, unshare is the right tool — unshare operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nunshare --mount --uts --ipc --net --pid --fork --mount-proc busybox sh"
+  },
+  {
+    "instruction": "Minimal container using unshare and pivot_root",
+    "output": "<think>\nNeed to minimal container using unshare and pivot_root.\nLet me reason through this.\nunshare is what we need — unshare operations.\nThe -c flag handles count or create. Important because this controls how the output is formatted.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare --mount --pid --fork --mount-proc bash -c 'mkdir -p /newroot && mount -t tmpfs tmpfs /newroot && mkdir -p /newroot/{bin,proc} && cp /bin/busybox /newroot/bin/ && pivot_root /newroot /newroot/oldroot && exec chroot . /bin/busybox sh'"
+  },
+  {
+    "instruction": "Use nsenter to debug pod networking",
+    "output": "<think>\nAlright, we need to use nsenter to debug pod networking.\nLet me consider what makes sense here.\nBest tool here is nsenter — nsenter operations.\nThe -n flag handles dry-run, no changes. Important because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nnsenter -n -t $(docker inspect --format '{{.State.Pid}}' web) tcpdump -i eth0"
+  },
+  {
+    "instruction": "Check network namespace of Kubernetes pod",
+    "output": "<think>\nNeed to check network namespace of Kubernetes pod.\nThe tool for this job is crictl — crictl operations.\nThe -q flag means quiet mode, minimal output, which matters here because standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\ncrictl inspect $(crictl pods --name mypod -q) | jq '.info.runtimeSpec.linux.namespaces[] | select(.type == \"network\")'"
+  },
+  {
+    "instruction": "Enter k8s pod network namespace",
+    "output": "<think>\nNeed to enter k8s pod network namespace.\nFirst, let me understand what's needed here.\nI'd use nsenter for this — nsenter operations.\nWhy -n? Dry-run, no changes. needed for this specific use case.\nThe -t flag handles sort by modification time. Important because needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nnsenter -n -t $(crictl inspect $(crictl pods -q | head -1) | jq '.info.pid') ip addr"
+  },
+  {
+    "instruction": "Debug k8s pod with nsenter",
+    "output": "<think>\nThe task requires us to debug k8s pod with nsenter.\nFor this, nsenter is the right tool — nsenter operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nnsenter -t $(crictl inspect $(crictl ps --pod $(crictl pods --name nginx -q) -q) | jq '.info.pid') -a /bin/bash"
+  },
+  {
+    "instruction": "Find process namespaces in systemd",
+    "output": "<think>\nThe user wants to find process namespaces in systemd.\nThis calls for systemctl. Managing systemd services.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show --property MainPID sshd | cut -d= -f2 | xargs -I{} ls -la /proc/{}/ns/"
+  },
+  {
+    "instruction": "Run systemd service with private /tmp",
+    "output": "<think>\nSo we need to run systemd service with private /tmp.\nFirst, let me understand what's needed here.\nThe tool for this job is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat > /etc/systemd/system/myservice.service << 'EOF'\n[Service]\nExecStart=/bin/bash -c 'echo running'\nPrivateTmp=true\nEOF"
+  },
+  {
+    "instruction": "Run systemd service with network namespace",
+    "output": "<think>\nThis is asking us to run systemd service with network namespace.\ncat is what we need — cat operations.\n</think>\ncat > /etc/systemd/system/mynetapp.service << 'EOF'\n[Service]\nExecStart=/usr/bin/myapp\nPrivateNetwork=true\nEOF"
+  },
+  {
+    "instruction": "Enable/disable namespace isolation per service",
+    "output": "<think>\nWe should enable/disable namespace isolation per service.\nLet me think through this step by step.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show myapp.service -p PrivateNetwork -p PrivateTmp -p PrivateDevices"
+  },
+  {
+    "instruction": "Run with all systemd sandboxing options",
+    "output": "<think>\nSo the request is to run with all systemd sandboxing options.\nLet me think about the best approach.\nI'll reach for cat here because cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/systemd/system/sandboxed.service << 'EOF'\n[Service]\nExecStart=/usr/bin/secure-app\nPrivateTmp=true\nPrivateNetwork=true\nPrivateDevices=true\nProtectSystem=strict\nProtectHome=true\nNoNewPrivileges=true\nEOF"
+  }
+]

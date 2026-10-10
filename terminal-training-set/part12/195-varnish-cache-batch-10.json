@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to show Varnish statistics in JSON",
+    "output": "<think>\nWe're being asked to show Varnish statistics in JSON.\nHere's how I'd approach this.\nI'll reach for varnishstat here because varnishstat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nvarnishstat -j"
+  },
+  {
+    "instruction": "How to reload VCL in Varnish without restart",
+    "output": "<think>\nWe should reload VCL in Varnish without restart.\nLet me reason through this.\nvarnishadm is what we need — Varnish cache administration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nvarnishadm vcl.load reloaded /etc/varnish/default.vcl && varnishadm vcl.use reloaded"
+  },
+  {
+    "instruction": "How to show Varnish transaction log for a specific tag",
+    "output": "<think>\nThe task requires us to show Varnish transaction log for a specific tag.\nI'll reach for varnishlog here because varnishlog operations.\nI'll check the output to make sure it did what we expected.\n</think>\nvarnishlog -g vxid -i TxStatus,TxURL"
+  },
+  {
+    "instruction": "How to show Varnish version",
+    "output": "<think>\nThis is asking us to show Varnish version.\nI'll reach for varnishd here because varnishd operations.\nI'll check the output to make sure it did what we expected.\n</think>\nvarnishd -V"
+  },
+  {
+    "instruction": "How to show Varnish backend list",
+    "output": "<think>\nWe're being asked to show Varnish backend list.\nThe tool for this job is varnishadm — Varnish cache administration.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nvarnishadm backend.list"
+  },
+  {
+    "instruction": "How to watch Varnish live statistics",
+    "output": "<think>\nWe should watch Varnish live statistics.\nLet me reason through this.\nThe tool for this job is varnishstat — varnishstat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nvarnishstat -w 2"
+  },
+  {
+    "instruction": "How to show Varnish statistics with rate counters",
+    "output": "<think>\nNeed to show Varnish statistics with rate counters.\nvarnishstat is what we need — varnishstat operations.\nWhy -r? Recursive operation (descend into subdirectories). standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\n</think>\nvarnishstat -r"
+  },
+  {
+    "instruction": "How to add caching rules for specific content types",
+    "output": "<think>\nSo we need to add caching rules for specific content types.\nFirst, let me understand what's needed here.\nThe -type flag handles filter by file type. Important because important to get the expected behavior.\nThe -type flag means filter by file type, which matters here because without it the command won't work as we need.\n</think>\necho 'sub vcl_backend_response { if (beresp.http.content-type ~ \"text/css\") { set beresp.ttl = 1h; } if (beresp.http.content-type ~ \"image/\") { set beresp.ttl = 24h; } }' > /etc/varnish/cache-rules.vcl"
+  },
+  {
+    "instruction": "How to start Varnish with multiple backends",
+    "output": "<think>\nWe're being asked to start Varnish with multiple backends.\nLet me break this down.\nBest tool here is varnishd — varnishd operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nvarnishd -a :80 -f /etc/varnish/multi.vcl -s malloc,512m -p default_ttl=120"
+  },
+  {
+    "instruction": "How to show Varnish runtime parameters",
+    "output": "<think>\nThe task requires us to show Varnish runtime parameters.\nI'd use varnishadm for this — Varnish cache administration.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nvarnishadm param.show"
+  },
+  {
+    "instruction": "How to add a health probe in VCL",
+    "output": "<think>\nWe're being asked to add a health probe in VCL.\nLet me verify afterward that it worked correctly.\n</think>\necho 'probe health_check { .url = \"/health\"; .interval = 5s; .timeout = 1s; .window = 5; .threshold = 3; } backend server1 { .host = \"10.0.0.1\"; .port = \"80\"; .probe = health_check; }' > /etc/varnish/health.vcl"
+  },
+  {
+    "instruction": "How to show Varnish log with client IP",
+    "output": "<think>\nThe goal is to show Varnish log with client IP.\nBest tool here is varnishlog — varnishlog operations.\nQuick verification after execution to be safe.\n</think>\nvarnishlog -g request -i ReqStart,RxRequest"
+  },
+  {
+    "instruction": "How to add custom header in VCL",
+    "output": "<think>\nThe task requires us to add custom header in VCL.\nLet me break this down.\n</think>\necho 'sub vcl_deliver { set resp.http.X-Cache = \"HIT\"; }' > /etc/varnish/custom-header.vcl"
+  },
+  {
+    "instruction": "How to add cookie stripping in VCL",
+    "output": "<think>\nAlright, we need to add cookie stripping in VCL.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'sub vcl_recv { if (req.url ~ \"^/static/\") { unset req.http.cookie; } }' > /etc/varnish/strip-cookies.vcl"
+  },
+  {
+    "instruction": "How to test VCL syntax",
+    "output": "<think>\nWe should test VCL syntax.\nLet me think through this step by step.\nFor this, varnishd is the right tool — varnishd operations.\nQuick verification after execution to be safe.\n</think>\nvarnishd -C -f /etc/varnish/default.vcl > /dev/null 2>&1"
+  },
+  {
+    "instruction": "How to ban all objects from a backend in Varnish",
+    "output": "<think>\nNeed to ban all objects from a backend in Varnish.\nLet me think about the best approach.\nThe tool for this job is varnishadm — Varnish cache administration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nvarnishadm ban req.http.host ~ '.*' && varnishadm ban req.url ~ '.*'"
+  },
+  {
+    "instruction": "How to purge by cache tag in Varnish",
+    "output": "<think>\nSo the request is to purge by cache tag in Varnish.\nFor this, varnishadm is the right tool — Varnish cache administration.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nvarnishadm ban obj.http.x-cache-tag ~ '^product_1234'"
+  },
+  {
+    "instruction": "How to show Varnish storage usage",
+    "output": "<think>\nWe're being asked to show Varnish storage usage.\nBest tool here is varnishstat — varnishstat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\nvarnishstat -1 | grep -E 'SMA|SMF'"
+  },
+  {
+    "instruction": "How to show Varnish statistics summary",
+    "output": "<think>\nThe goal is to show Varnish statistics summary.\nThe tool for this job is varnishstat — varnishstat operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nvarnishstat -1"
+  },
+  {
+    "instruction": "How to purge a specific URL in Varnish",
+    "output": "<think>\nWe should purge a specific URL in Varnish.\nThe tool for this job is varnishadm — Varnish cache administration.\nCheck the output for errors before proceeding to the next step.\n</think>\nvarnishadm ban req.url == '/path/to/page'"
+  }
+]

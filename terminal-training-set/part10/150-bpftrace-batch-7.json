@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Trace system-wide openat calls with filename",
+    "output": "<think>\nWe're being asked to trace system-wide openat calls with filename.\nFirst, let me understand what's needed here.\nBest tool here is bpftrace — bpftrace operations.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_openat { printf(\"%s %s\\n\", comm, str(args->filename)); }'"
+  },
+  {
+    "instruction": "Count all process context switches",
+    "output": "<think>\nThe user wants to count all process context switches.\nLet me think about the best approach.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'tracepoint:sched:sched_switch { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Monitor new thread creation",
+    "output": "<think>\nThe task requires us to monitor new thread creation.\nLet me think through this step by step.\nBest tool here is bpftrace — bpftrace operations.\n</think>\nbpftrace -e 'tracepoint:sched:sched_process_fork { printf(\"fork: %s -> %d\\n\", comm, args->child_pid); }'"
+  },
+  {
+    "instruction": "Track process exit codes",
+    "output": "<think>\nSo the request is to track process exit codes.\nLet me break this down.\nFor this, bpftrace is the right tool — bpftrace operations.\nI've added -e to edit or executable — this controls how the output is formatted.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'tracepoint:sched:sched_process_exit { printf(\"exit: %s code=%d\\n\", comm, args->exit_code); }'"
+  },
+  {
+    "instruction": "Monitor process state changes",
+    "output": "<think>\nThe user wants to monitor process state changes.\nLet me think about the best approach.\nBest tool here is bpftrace — bpftrace operations.\n</think>\nbpftrace -e 'tracepoint:sched:sched_process_hang { printf(\"hung: %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Trace when processes get stuck in D state",
+    "output": "<think>\nThe goal is to trace when processes get stuck in D state.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nbpftrace -e 'tracepoint:sched:sched_process_wait { printf(\"wait: %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Monitor CPU migrations",
+    "output": "<think>\nThe task requires us to monitor CPU migrations.\nI'll reach for bpftrace here because bpftrace operations.\nWhy -e? Edit or executable. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'tracepoint:sched:sched_migrate_task { printf(\"migrate: %s from %d to %d\\n\", args->comm, args->orig_cpu, args->dest_cpu); }'"
+  },
+  {
+    "instruction": "Track process preemption",
+    "output": "<think>\nSo we need to track process preemption.\nLet me break this down.\nFor this, bpftrace is the right tool — bpftrace operations.\nWhy -e? Edit or executable. important to get the expected behavior.\n</think>\nbpftrace -e 'tracepoint:sched:sched_wakeup_new { printf(\"wakeup new: %s\\n\", args->comm); }'"
+  },
+  {
+    "instruction": "Monitor numa page migrations",
+    "output": "<think>\nSo we need to monitor numa page migrations.\nLet me think about the best approach.\nThis calls for bpftrace. Bpftrace operations.\nWhy -e? Edit or executable. without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nbpftrace -e 'tracepoint:migrate:mm_migrate_pages { printf(\"page migration by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Trace compaction events",
+    "output": "<think>\nThis is asking us to trace compaction events.\nLet me think through this step by step.\nbpftrace is what we need — bpftrace operations.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'tracepoint:compaction:mm_compaction_begin { printf(\"compaction started\\n\"); }'"
+  },
+  {
+    "instruction": "Monitor writeback events",
+    "output": "<think>\nWe're being asked to monitor writeback events.\nThe tool for this job is bpftrace — bpftrace operations.\nI've added -e to edit or executable — without it the command won't work as we need.\n</think>\nbpftrace -e 'tracepoint:writeback:writeback_start { printf(\"writeback started for %s\\n\", str(args->bdi)); }'"
+  },
+  {
+    "instruction": "Track dirty page ratio",
+    "output": "<think>\nSo we need to track dirty page ratio.\nBest tool here is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\n</think>\nbpftrace -e 'tracepoint:balance_dirty_pages:balance_dirty_pages { printf(\"dirty pages balanced\\n\"); }'"
+  },
+  {
+    "instruction": "Monitor vmscan activity",
+    "output": "<think>\nSo the request is to monitor vmscan activity.\nLet me think about the best approach.\nbpftrace is what we need — bpftrace operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nbpftrace -e 'tracepoint:vmscan:mm_vmscan_kswapd_wake { printf(\"kswapd woken\\n\"); }'"
+  },
+  {
+    "instruction": "Track page allocation failures",
+    "output": "<think>\nNeed to track page allocation failures.\nI'll reach for bpftrace here because bpftrace operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:page_alloc:page_alloc_retry { printf(\"page alloc retry\\n\"); }'"
+  },
+  {
+    "instruction": "Monitor THP allocations",
+    "output": "<think>\nThis is asking us to monitor THP allocations.\nThis calls for bpftrace. Bpftrace operations.\nWhy -e? Edit or executable. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'tracepoint:khugepaged:khugepaged_collapse_file { printf(\"THP collapse\\n\"); }'"
+  },
+  {
+    "instruction": "Trace mmap calls",
+    "output": "<think>\nSo the request is to trace mmap calls.\nI'll reach for bpftrace here because bpftrace operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_mmap { printf(\"mmap by %s size=%d\\n\", comm, args->len); }'"
+  },
+  {
+    "instruction": "Monitor brk/sbrk heap changes",
+    "output": "<think>\nThis is asking us to monitor brk/sbrk heap changes.\nFor this, bpftrace is the right tool — bpftrace operations.\nWhy -e? Edit or executable. this controls how the output is formatted.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_brk { printf(\"brk by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Trace mprotect calls",
+    "output": "<think>\nThis is asking us to trace mprotect calls.\nBest tool here is bpftrace — bpftrace operations.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_mprotect { printf(\"mprotect by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Monitor mlock operations",
+    "output": "<think>\nSo the request is to monitor mlock operations.\nFirst, let me understand what's needed here.\nI'd use bpftrace for this — bpftrace operations.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_mlock { printf(\"mlock by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Track munmap calls",
+    "output": "<think>\nWe're being asked to track munmap calls.\nFirst, let me understand what's needed here.\nI'll reach for bpftrace here because bpftrace operations.\nWhy -e? Edit or executable. important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_munmap { printf(\"munmap by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Monitor remap_file_pages",
+    "output": "<think>\nWe should monitor remap_file_pages.\nLet me reason through this.\nI'll reach for bpftrace here because bpftrace operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_remap_file_pages { printf(\"remap_file_pages by %s\\n\", comm); }'"
+  }
+]

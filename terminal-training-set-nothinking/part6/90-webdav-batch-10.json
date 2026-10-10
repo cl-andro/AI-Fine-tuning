@@ -1,0 +1,22 @@
+[
+  {"instruction": "Create WebDAV user with davfs2 secrets and mount as normal user", "output": "echo 'http://localhost/webdav alice secret123' > ~/.davfs2/secrets && chmod 600 ~/.davfs2/secrets && mount.davfs http://localhost/webdav ~/webdav"},
+  {"instruction": "Configure davfs2 to not use locks", "output": "echo 'use_locks 0' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "Set davfs2 cache size", "output": "echo 'cache_size 100' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "Enable davfs2 debug logging", "output": "echo 'debug 1' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "Set davfs2 table size for large directories", "output": "echo 'table_size 4096' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "Set davfs2 timeout for slow connections", "output": "echo 'timeout 300' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "Disable davfs2 if_match header", "output": "echo 'if_match_bug_workaround 1' >> ~/.davfs2/davfs2.conf"},
+  {"instruction": "List all WebDAV methods supported with curl OPTIONS", "output": "curl -X OPTIONS http://localhost/webdav/ --user alice:secretpass -I 2>&1 | grep -i '^Allow:' | tr ',' '\\n'"},
+  {"instruction": "Create and lock a file on WebDAV, then unlock in sequence", "output": "echo 'Content' > /tmp/test.txt && curl -X PUT http://localhost/webdav/test.txt --data-binary @/tmp/test.txt --user alice:secretpass && LOCK_TOKEN=$(curl -X LOCK http://localhost/webdav/test.txt --user alice:secretpass -H 'Content-Type: text/xml' -d '<D:lockinfo xmlns:D=\"DAV:\"><D:lockscope><D:exclusive/></D:lockscope><D:locktype><D:write/></D:locktype></D:lockinfo>' -D - 2>/dev/null | grep -i 'Lock-Token' | tr -d '\\r') && curl -X UNLOCK http://localhost/webdav/test.txt --user alice:secretpass -H \"Lock-Token: $LOCK_TOKEN\""},
+  {"instruction": "Set Apache DAVMinProp directive globally", "output": "echo 'DAVMinPropTimeOut 120' | sudo tee /etc/apache2/conf-available/dav-minprop-global.conf && sudo a2enconf dav-minprop-global && sudo systemctl reload apache2"},
+  {"instruction": "Run ownCloud occ command to update app from marketplace", "output": "sudo -u www-data php /var/www/owncloud/occ app:install calendar"},
+  {"instruction": "Remove ownCloud app via occ", "output": "sudo -u www-data php /var/www/owncloud/occ app:remove calendar"},
+  {"instruction": "Configure ownCloud email via occ", "output": "sudo -u www-data php /var/www/owncloud/occ config:system:set mail_domain --value=example.com && sudo -u www-data php /var/www/owncloud/occ config:system:set mail_from_address --value=noreply"},
+  {"instruction": "Test ownCloud email via occ", "output": "sudo -u www-data php /var/www/owncloud/occ notification:test-push alice"},
+  {"instruction": "Enable Nextcloud app with occ", "output": "sudo -u www-data nextcloud.occ app:enable files_pdfviewer"},
+  {"instruction": "Disable Nextcloud app with occ", "output": "sudo -u www-data nextcloud.occ app:disable files_pdfviewer"},
+  {"instruction": "List enabled Nextcloud apps", "output": "sudo -u www-data nextcloud.occ app:list --enabled"},
+  {"instruction": "List disabled Nextcloud apps", "output": "sudo -u www-data nextcloud.occ app:list --disabled"},
+  {"instruction": "Get occ command help for files:scan", "output": "sudo -u www-data nextcloud.occ help files:scan"},
+  {"instruction": "Get occ command help for user:add", "output": "sudo -u www-data php /var/www/owncloud/occ help user:add"}
+]

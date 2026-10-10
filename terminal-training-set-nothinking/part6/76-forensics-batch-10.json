@@ -1,0 +1,23 @@
+[
+  {"instruction": "Convert raw image to EWF (E01)", "output": "ewfacquire /dev/sdb -t evidence -u"},
+  {"instruction": "Acquire with compression level", "output": "ewfacquire /dev/sdb -t evidence -c fast -u"},
+  {"instruction": "Acquire with case number", "output": "ewfacquire /dev/sdb -t evidence -C 'CASE-001' -e 'Examiner' -u"},
+  {"instruction": "Acquire with segment size", "output": "ewfacquire /dev/sdb -t evidence -S 2GiB -u"},
+  {"instruction": "Verify EWF image integrity", "output": "ewfverify evidence.E01"},
+  {"instruction": "Verify with full integrity check", "output": "ewfverify -f encase6 -d sha256 evidence.E01"},
+  {"instruction": "Mount EWF image as raw device", "output": "ewfmount evidence.E01 /mnt/ewf"},
+  {"instruction": "Export EWF to raw format", "output": "ewfexport evidence.E01 -t image.dd"},
+  {"instruction": "Export first segment only", "output": "ewfexport evidence.E01 -t part1 -S 2GiB -b 64"},
+  {"instruction": "Info about EWF file", "output": "ewfinfo evidence.E01"},
+  {"instruction": "Info with hash values", "output": "ewfinfo -H evidence.E01"},
+  {"instruction": "Extract specific partition from EWF", "output": "ewfexport -X split evidence.E01 -t partition -u"},
+  {"instruction": "Reopen and fix EWF metadata", "output": "ewfacquirestream -t evidence -C 'CASE-001' -N 'Revised Notes'"},
+  {"instruction": "Process a directory with fiwalk", "output": "fiwalk /evidence/images/ -X /output/report.xml"},
+  {"instruction": "Run fiwalk with JSON output", "output": "fiwalk -x /evidence/disk.dd -O /output/report.json"},
+  {"instruction": "Recover deleted files from image", "output": "fiwalk -d /evidence/disk.dd -o /recovered/"},
+  {"instruction": "Generate DFXML report from image", "output": "fiwalk -f /evidence/disk.dd -X /output/meta.xml"},
+  {"instruction": "Mount EWF and list files", "output": "ewfmount evidence.E01 /mnt/e01 && ls /mnt/e01/"},
+  {"instruction": "Compute hash of EWF segments", "output": "for f in evidence.E01 evidence.E02; do sha256sum $f; done"},
+  {"instruction": "Convert multiple raw to EWF", "output": "for f in *.raw; do ewfacquire $f -t ${f%.raw}; done"},
+  {"instruction": "List all forensic tools available", "output": "dpkg -l | grep -E '(sleuthkit|bulk-extractor|volatility|afflib|ewftools)'"}
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up a TLS certificate in 389 DS",
+    "output": "<think>\nThe goal is to set up a TLS certificate in 389 DS.\nI'll reach for dsconf here because dsconf operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ndsconf localhost security certificate add --name serverCert --file /etc/dirsrv/slapd-localhost/server.crt --primary-cert"
+  },
+  {
+    "instruction": "Set 389 DS TLS to require client certificates",
+    "output": "<think>\nThe goal is to set 389 DS TLS to require client certificates.\nLet me break this down.\nI'll reach for dsconf here because dsconf operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ndsconf localhost security set --require-client-cert on"
+  },
+  {
+    "instruction": "Check 389 DS replication status for all agreements",
+    "output": "<think>\nAlright, we need to check 389 DS replication status for all agreements.\nLet me reason through this.\nThis calls for dsconf. Dsconf operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndsconf localhost repl-agmt list --suffix dc=example,dc=com"
+  },
+  {
+    "instruction": "Set 389 DS replication bind credentials",
+    "output": "<think>\nWe should set 389 DS replication bind credentials.\nBest tool here is dsconf — dsconf operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ndsconf localhost repl-agmt set 'cn=myAgmt,cn=replica,cn=dc=example\\2Cdc=com,cn=mapping tree,cn=config' --bind-passwd newpass"
+  },
+  {
+    "instruction": "Delete a 389 DS replication agreement",
+    "output": "<think>\nThis is asking us to delete a 389 DS replication agreement.\nHere's how I'd approach this.\nThe tool for this job is dsconf — dsconf operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ndsconf localhost repl-agmt delete --suffix dc=example,dc=com --agmt-name myAgmt"
+  },
+  {
+    "instruction": "Set up 389 DS winsync (AD sync) agreement",
+    "output": "<think>\nThis is asking us to set up 389 DS winsync (AD sync) agreement.\nBest tool here is dsconf — dsconf operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ndsconf localhost winsync add --suffix dc=example,dc=com --ad-host ad.example.com --ad-port 389 --ad-bind-dn cn=sync,cn=users,dc=ad,dc=example,dc=com --ad-bind-passwd secret --sync-direction multi"
+  },
+  {
+    "instruction": "Show 389 DS winsync status",
+    "output": "<think>\nWe're being asked to show 389 DS winsync status.\ndsconf is what we need — dsconf operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndsconf localhost winsync status"
+  },
+  {
+    "instruction": "Create a 389 DS certificate database",
+    "output": "<think>\nWe're being asked to create a 389 DS certificate database.\nBest tool here is dsctl — dsctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndsctl localhost tls generate-server-cert-ca"
+  },
+  {
+    "instruction": "Set 389 DS password storage scheme",
+    "output": "<think>\nWe're being asked to set 389 DS password storage scheme.\nLet me consider what makes sense here.\nThe tool for this job is dsconf — dsconf operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ndsconf localhost config replace nsslapd-rootpwstoragescheme=SSHA512"
+  },
+  {
+    "instruction": "Set 389 DS minimum password length",
+    "output": "<think>\nThe user wants to set 389 DS minimum password length.\nThis calls for dsconf. Dsconf operations.\nLet me verify afterward that it worked correctly.\n</think>\ndsconf localhost pwpolicy set --minlen 12 --history-count 10 --lockout-duration 3600 --maxfailure 5"
+  },
+  {
+    "instruction": "Check 389 DS disk space monitoring",
+    "output": "<think>\nThe goal is to check 389 DS disk space monitoring.\nLet me consider what makes sense here.\nI'll reach for dsconf here because dsconf operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\ndsconf localhost monitor disk"
+  },
+  {
+    "instruction": "List all 389 DS logged errors currently",
+    "output": "<think>\nThe user wants to list all 389 DS logged errors currently.\nFor this, dsctl is the right tool — dsctl operations.\n</think>\ndsctl localhost get-errors-log"
+  },
+  {
+    "instruction": "Enable 389 DS access log buffering",
+    "output": "<think>\nSo the request is to enable 389 DS access log buffering.\nThe tool for this job is dsconf — dsconf operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndsconf localhost config replace nsslapd-accesslog-buffering=on"
+  },
+  {
+    "instruction": "Set 389 DS maximum log size",
+    "output": "<think>\nSo the request is to set 389 DS maximum log size.\nLet me think about the best approach.\nThe tool for this job is dsconf — dsconf operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\ndsconf localhost config replace nsslapd-errorlog-maxlogs-per-dir=10 nsslapd-errorlog-maxlogsize=100"
+  },
+  {
+    "instruction": "Verify an LDIF file syntax before importing",
+    "output": "<think>\nAlright, we need to verify an LDIF file syntax before importing.\nLet me break this down.\nFor this, slaptest is the right tool — slaptest operations.\nI've added -u to show or sort by access time — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nslaptest -u -F /etc/ldap/slapd.d"
+  },
+  {
+    "instruction": "Add a new LDAP index from config file",
+    "output": "<think>\nThe user wants to add a new LDAP index from config file.\nThis calls for ldapmodify. Ldapmodify operations.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nadd: olcDbIndex\nolcDbIndex: member eq,sub'"
+  },
+  {
+    "instruction": "Remove an LDAP index",
+    "output": "<think>\nNeed to remove an LDAP index.\nFirst, let me understand what's needed here.\nThis calls for ldapmodify. Ldapmodify operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\ndelete: olcDbIndex\nolcDbIndex: uidNumber eq'"
+  },
+  {
+    "instruction": "Set LDAP index with approximate matching",
+    "output": "<think>\nSo we need to set LDAP index with approximate matching.\nLet me consider what makes sense here.\nThis calls for ldapmodify. Ldapmodify operations.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nadd: olcDbIndex\nolcDbIndex: cn pres,eq,approx,sub'"
+  },
+  {
+    "instruction": "Create a sub-DN in LDAP for a department",
+    "output": "<think>\nWe should create a sub-DN in LDAP for a department.\nFor this, ldapadd is the right tool — ldapadd operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nldapadd -x -D cn=admin,dc=example,dc=com -W <<< 'dn: ou=engineering,dc=example,dc=com\nobjectClass: organizationalUnit\nou: engineering'"
+  },
+  {
+    "instruction": "Rename an LDAP entry from old OU to new OU",
+    "output": "<think>\nNeed to rename an LDAP entry from old OU to new OU.\nLet me think about the best approach.\nFor this, ldapmodrdn is the right tool — ldapmodrdn operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nldapmodrdn -x -D cn=admin,dc=example,dc=com -W 'uid=jdoe,ou=engineering,dc=example,dc=com' 'uid=jdoe,ou=marketing,dc=example,dc=com'"
+  },
+  {
+    "instruction": "Perform an LDAP extended operation for password modify",
+    "output": "<think>\nWe're being asked to perform an LDAP extended operation for password modify.\nThis calls for ldappasswd. Ldappasswd operations.\nAfter running, I'll confirm the result looks right.\n</think>\nldappasswd -x -H ldap://localhost -D cn=admin,dc=example,dc=com -W -S"
+  },
+  {
+    "instruction": "Compare a DN's attribute in LDAP to verify a value",
+    "output": "<think>\nThe goal is to compare a DN's attribute in LDAP to verify a value.\nFirst, let me understand what's needed here.\nldapcompare is what we need — ldapcompare operations.\nThe -H flag handles follow symlinks on command line only. Important because important to get the expected behavior.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nldapcompare -x -H ldap://localhost 'uid=jdoe,dc=example,dc=com' 'uid:jdoe'"
+  },
+  {
+    "instruction": "Search LDAP with attribute subentry",
+    "output": "<think>\nThe goal is to search LDAP with attribute subentry.\nI'd use ldapsearch for this — ldapsearch operations.\nI've added -b to brief output — standard practice for this kind of operation.\nThe -E flag means extended regex, which matters here because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com -E subentries '(objectClass=*)'"
+  },
+  {
+    "instruction": "Search LDAP for operational attributes (creatorsName, createTimestamp)",
+    "output": "<think>\nSo we need to search LDAP for operational attributes (creatorsName, createTimestamp).\nFirst, let me understand what's needed here.\nThis calls for ldapsearch. Ldapsearch operations.\nThe -b flag handles brief output. Important because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nldapsearch -x -b dc=example,dc=com '(uid=jdoe)' '+'"
+  },
+  {
+    "instruction": "Search LDAP with all user and operational attributes",
+    "output": "<think>\nNeed to search LDAP with all user and operational attributes.\nI'd use ldapsearch for this — ldapsearch operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapsearch -x -b dc=example,dc=com '(uid=jdoe)' '*' '+'"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use rsyslog to skip messages older than 10 seconds",
+    "output": "<think>\nWe're being asked to use rsyslog to skip messages older than 10 seconds.\nLet me think about the best approach.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\necho 'module(load=\"mmtimestamp\")' > /etc/rsyslog.d/timestamp_check.conf && echo 'action(type=\"mmtimestamp\" maxDelta=\"10\")' >> /etc/rsyslog.d/timestamp_check.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter for JSON structured data",
+    "output": "<think>\nNeed to create syslog-ng filter for JSON structured data.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'filter f_json { match(\"{.*}\" value(\"MSG\") flags(utf8)); };' >> /etc/syslog-ng/conf.d/json_filter.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to rate-limit per remote sender",
+    "output": "<think>\nWe're being asked to set up rsyslog to rate-limit per remote sender.\nOne command does the job. Simple is better.\n</think>\necho 'input(type=\"imudp\" port=\"514\" RateLimit.Interval=\"10\" RateLimit.Burst=\"200\")' > /etc/rsyslog.d/ratelimit_remote.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to forward via Kafka",
+    "output": "<think>\nThis is asking us to configure syslog-ng to forward via Kafka.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'destination d_kafka { kafka(topic(\"syslog\") bootstrap_servers(\"localhost:9092\")); };' >> /etc/syslog-ng/conf.d/kafka.conf"
+  },
+  {
+    "instruction": "Use rsyslog to add hostname as a prefix to messages",
+    "output": "<think>\nNeed to use rsyslog to add hostname as a prefix to messages.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'template(name=\"WithHost\" type=\"string\" string=\"%HOSTNAME%: %msg%\\n\")' > /etc/rsyslog.d/host_prefix.conf && echo '*.* action(type=\"omfile\" template=\"WithHost\")' >> /etc/rsyslog.d/host_prefix.conf"
+  },
+  {
+    "instruction": "Create syslog-ng source for TCP with TLS and client auth",
+    "output": "<think>\nThe user wants to create syslog-ng source for TCP with TLS and client auth.\nLet me reason through this.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'source s_tls_client { tcp(ip(\"0.0.0.0\") port(6514) tls(key_file(\"/etc/ssl/private/syslog.key\") cert_file(\"/etc/ssl/certs/syslog.crt\") peer_verify(\"optional-untrusted\") ca_dir(\"/etc/ssl/certs\"))); };' >> /etc/syslog-ng/conf.d/tls_client.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to use the mmexternal module",
+    "output": "<think>\nWe're being asked to set up rsyslog to use the mmexternal module.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'module(load=\"mmexternal\")' > /etc/rsyslog.d/external.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to filter messages with regular expression",
+    "output": "<think>\nSo the request is to configure syslog-ng to filter messages with regular expression.\nLet me consider what makes sense here.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\necho 'filter f_regex { match(\"ERROR|FATAL\" value(\"MSG\")); };' >> /etc/syslog-ng/conf.d/regex_filter.conf"
+  },
+  {
+    "instruction": "Use rsyslog to write logs to multiple files at once",
+    "output": "<think>\nAlright, we need to use rsyslog to write logs to multiple files at once.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'action(type=\"omfile\" file=\"/var/log/all.log\")' > /etc/rsyslog.d/multi_file.conf && echo 'action(type=\"omfile\" file=\"/var/log/archive.log\")' >> /etc/rsyslog.d/multi_file.conf"
+  },
+  {
+    "instruction": "Create syslog-ng log path with fallback destination",
+    "output": "<think>\nThe user wants to create syslog-ng log path with fallback destination.\nLet me reason through this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'destination d_primary { tcp(\"192.168.1.100\" port(514)); };' >> /etc/syslog-ng/conf.d/fallback.conf && echo 'destination d_fallback { file(\"/var/log/local_buffer\"); };' >> /etc/syslog-ng/conf.d/fallback.conf && echo 'log { source(s_sys); destination(d_primary); destination(d_fallback); flags(fallback); };' >> /etc/syslog-ng/conf.d/fallback.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to convert syslog to GELF format",
+    "output": "<think>\nThe task requires us to set up rsyslog to convert syslog to GELF format.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'template(name=\"GELF\" type=\"list\") { constant(value=\"{\\\"version\\\":\\\"1.1\\\",\\\"host\\\":\\\"\") property(name=\"hostname\") constant(value=\"\\\",\\\"short_message\\\":\\\"\") property(name=\"msg\") constant(value=\"\\\"}\\n\"); };' > /etc/rsyslog.d/gelf.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to use a Redis list for queuing",
+    "output": "<think>\nThe user wants to configure syslog-ng to use a Redis list for queuing.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'destination d_redis_queue { redis(host(\"localhost\") port(6379) command(\"RPUSH\" \"syslog_queue\" \"${MSG}\")); };' >> /etc/syslog-ng/conf.d/redis_queue.conf"
+  },
+  {
+    "instruction": "Use rsyslog to run a script on every log message",
+    "output": "<think>\nThe goal is to use rsyslog to run a script on every log message.\nLet me reason through this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'module(load=\"omprog\")' > /etc/rsyslog.d/prog_action.conf && echo 'action(type=\"omprog\" binary=\"/usr/local/bin/log_processor.sh\")' >> /etc/rsyslog.d/prog_action.conf"
+  },
+  {
+    "instruction": "Create syslog-ng source for RELP protocol",
+    "output": "<think>\nAlright, we need to create syslog-ng source for RELP protocol.\nLet me think about the best approach.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'source s_relp { relp(port(20514)); };' >> /etc/syslog-ng/conf.d/relp_source.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to log to both remote and local",
+    "output": "<think>\nThe user wants to set up rsyslog to log to both remote and local.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '*.* @192.168.1.100:514' > /etc/rsyslog.d/both.conf && echo '*.* /var/log/all_messages.log' >> /etc/rsyslog.d/both.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to use GeoIP for enrichment",
+    "output": "<think>\nSo the request is to configure syslog-ng to use GeoIP for enrichment.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'rewrite r_geoip { set(\"${GEOIP.COUNTRY_NAME}\" value(\".geoip.country\")); };' >> /etc/syslog-ng/conf.d/geoip.conf"
+  },
+  {
+    "instruction": "Use rsyslog to filter messages by structured data",
+    "output": "<think>\nThis is asking us to use rsyslog to filter messages by structured data.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho ':structured-data, contains, \"exampleSDID@32473\" /var/log/sd.log' >> /etc/rsyslog.d/structured_data.conf"
+  },
+  {
+    "instruction": "Create syslog-ng source for arbitrary file reading",
+    "output": "<think>\nThe task requires us to create syslog-ng source for arbitrary file reading.\nLet me reason through this.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'source s_file { file(\"/var/log/other.log\" follow-freq(1)); };' >> /etc/syslog-ng/conf.d/file_source.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to mark periodic timestamps in logs",
+    "output": "<think>\nWe should set up rsyslog to mark periodic timestamps in logs.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 'module(load=\"immark\")' > /etc/rsyslog.d/mark.conf && echo 'input(type=\"immark\" interval=\"1200\")' >> /etc/rsyslog.d/mark.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to write to stdout for containers",
+    "output": "<think>\nThis is asking us to configure syslog-ng to write to stdout for containers.\nLet me reason through this.\nOne command does the job. Simple is better.\n</think>\necho 'destination d_stdout { pipe(\"/dev/stdout\" template(t_standard)); };' >> /etc/syslog-ng/conf.d/stdout_dest.conf"
+  },
+  {
+    "instruction": "Use rsyslog to remove private data from logs",
+    "output": "<think>\nThis is asking us to use rsyslog to remove private data from logs.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho 'module(load=\"mmanon\")' > /etc/rsyslog.d/anonymize_ip.conf && echo 'action(type=\"mmanon\" ipv4.anon=\"replace\")' >> /etc/rsyslog.d/anonymize_ip.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter for specific facility and priority",
+    "output": "<think>\nWe should create syslog-ng filter for specific facility and priority.\nLet me consider what makes sense here.\nLet me verify afterward that it worked correctly.\n</think>\necho 'filter f_auth_crit { facility(auth) and level(crit..emerg); };' >> /etc/syslog-ng/conf.d/facility_priority_filter.conf"
+  },
+  {
+    "instruction": "Set up rsyslog with journald import and forward",
+    "output": "<think>\nSo we need to set up rsyslog with journald import and forward.\nLet me break this down.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'module(load=\"imjournal\")' > /etc/rsyslog.d/journal_forward.conf && echo 'input(type=\"imjournal\")' >> /etc/rsyslog.d/journal_forward.conf && echo '*.* @192.168.1.100:514' >> /etc/rsyslog.d/journal_forward.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to use memory buffering",
+    "output": "<think>\nAlright, we need to configure syslog-ng to use memory buffering.\nLet me consider what makes sense here.\nLet me verify afterward that it worked correctly.\n</think>\necho 'options { flush_lines(0); };' >> /etc/syslog-ng/conf.d/mem_buf.conf"
+  },
+  {
+    "instruction": "Use rsyslog to ignore messages with specific priority",
+    "output": "<think>\nThe user wants to use rsyslog to ignore messages with specific priority.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '*.info;*.notice;*.warn /var/log/messages' >> /etc/rsyslog.d/priority_ignore.conf"
+  }
+]

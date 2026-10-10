@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Set hostname in new UTS namespace",
+    "output": "<think>\nWe're being asked to set hostname in new UTS namespace.\nLet me consider what makes sense here.\nBest tool here is unshare — unshare operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nunshare --uts bash -c 'hostname mycontainer && hostname'"
+  },
+  {
+    "instruction": "Change hostname without affecting host",
+    "output": "<think>\nSo we need to change hostname without affecting host.\nThis calls for unshare. Unshare operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nunshare --uts hostname isolated-host && hostname"
+  },
+  {
+    "instruction": "Check domainname in UTS namespace",
+    "output": "<think>\nNeed to check domainname in UTS namespace.\nHere's how I'd approach this.\nunshare is what we need — unshare operations.\nI'm using -c for count or create — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nunshare --uts bash -c 'domainname mydomain && domainname'"
+  },
+  {
+    "instruction": "Set NIS domainname in new ns",
+    "output": "<think>\nSo the request is to set NIS domainname in new ns.\nThis calls for unshare. Unshare operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nunshare --uts bash -c 'domainname test-nis && domainname'"
+  },
+  {
+    "instruction": "Verify hostname is isolated",
+    "output": "<think>\nSo the request is to verify hostname is isolated.\nFor this, unshare is the right tool — unshare operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nunshare --uts bash -c 'hostname container && hostname && readlink /proc/self/ns/uts'"
+  },
+  {
+    "instruction": "Check IPC namespace isolation",
+    "output": "<think>\nNeed to check IPC namespace isolation.\nHere's how I'd approach this.\nBest tool here is unshare — unshare operations.\nThe -c flag handles count or create. Important because needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\nunshare --ipc bash -c 'ipcs -q; ipcs -s; ipcs -m'"
+  },
+  {
+    "instruction": "Create shared memory in IPC namespace",
+    "output": "<think>\nSo the request is to create shared memory in IPC namespace.\nHere's how I'd approach this.\nunshare is what we need — unshare operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nunshare --ipc bash -c 'ipcmk -M 1024 && ipcs -m'"
+  },
+  {
+    "instruction": "Check IPC semaphore in namespace",
+    "output": "<think>\nWe should check IPC semaphore in namespace.\nLet me break this down.\nunshare is what we need — unshare operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nunshare --ipc bash -c 'ipcmk -S 1 && ipcs -s'"
+  },
+  {
+    "instruction": "Check message queue in namespace",
+    "output": "<think>\nAlright, we need to check message queue in namespace.\nBest tool here is unshare — unshare operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare --ipc bash -c 'ipcmk -Q && ipcs -q'"
+  },
+  {
+    "instruction": "Remove System V IPC in namespace",
+    "output": "<think>\nSo we need to remove System V IPC in namespace.\nI'll reach for unshare here because unshare operations.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nWhy -M? Display mount targets in df. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nunshare --ipc bash -c 'ipcrm -M shmid'"
+  },
+  {
+    "instruction": "Create cgroup namespace and see own cgroup",
+    "output": "<think>\nThis is asking us to create cgroup namespace and see own cgroup.\nunshare is what we need — unshare operations.\n</think>\nunshare --cgroup bash -c 'cat /proc/self/cgroup'"
+  },
+  {
+    "instruction": "Check cgroup controllers in namespace",
+    "output": "<think>\nThe goal is to check cgroup controllers in namespace.\nLet me break this down.\nBest tool here is unshare — unshare operations.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nunshare --cgroup bash -c 'cat /sys/fs/cgroup/cgroup.controllers 2>/dev/null || echo no cgroup'"
+  },
+  {
+    "instruction": "Run with cgroup namespace only",
+    "output": "<think>\nThe goal is to run with cgroup namespace only.\nLet me consider what makes sense here.\nunshare is what we need — unshare operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nunshare --cgroup /bin/bash -c 'echo cgroup ns created'"
+  },
+  {
+    "instruction": "Create time namespace with offset",
+    "output": "<think>\nThis is asking us to create time namespace with offset.\nHere's how I'd approach this.\nThis calls for unshare. Unshare operations.\nI'm using -c for count or create — this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\n</think>\nunshare --time bash -c 'echo time ns created'"
+  },
+  {
+    "instruction": "Set boot time offset in time namespace",
+    "output": "<think>\nThe goal is to set boot time offset in time namespace.\nLet me reason through this.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'boottime 0 3600' > /proc/self/ns/timens_offset 2>/dev/null || echo 'Requires kernel support'"
+  },
+  {
+    "instruction": "Check monotonic clock in time ns",
+    "output": "<think>\nAlright, we need to check monotonic clock in time ns.\nFor this, unshare is the right tool — unshare operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare --time bash -c 'cat /proc/self/ns/time_for_children'"
+  },
+  {
+    "instruction": "Run with all namespace isolation",
+    "output": "<think>\nAlright, we need to run with all namespace isolation.\nI'll reach for unshare here because unshare operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare --mount --uts --ipc --net --pid --fork --mount-proc /bin/bash"
+  },
+  {
+    "instruction": "Check current user namespace mapping",
+    "output": "<think>\nAlright, we need to check current user namespace mapping.\nLet me break this down.\nI'll reach for cat here because cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncat /proc/self/uid_map"
+  },
+  {
+    "instruction": "Check current group namespace mapping",
+    "output": "<think>\nAlright, we need to check current group namespace mapping.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/self/gid_map"
+  },
+  {
+    "instruction": "Map user inside user namespace",
+    "output": "<think>\nSo we need to map user inside user namespace.\nBest tool here is unshare — unshare operations.\nWhy -U? Use full user name instead of UID. this controls how the output is formatted.\nI've added -c to count or create — without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nunshare -U bash -c 'echo \"0 1000 1\" > /proc/self/uid_map' 2>/dev/null || echo 'Cannot map'"
+  },
+  {
+    "instruction": "Check capabilities inside user namespace",
+    "output": "<think>\nThe user wants to check capabilities inside user namespace.\nLet me break this down.\nFor this, unshare is the right tool — unshare operations.\nWhy -r? Recursive operation (descend into subdirectories). without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nunshare -r capsh --print"
+  },
+  {
+    "instruction": "Create user namespace and map users",
+    "output": "<think>\nSo we need to create user namespace and map users.\nHere's how I'd approach this.\nI'd use unshare for this — unshare operations.\nI'm using -U for use full user name instead of UID — important to get the expected behavior.\nWhy -c? Count or create. standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\nunshare -U bash -c 'echo deny > /proc/self/setgroups 2>/dev/null; echo \"0 1000 1\" > /proc/self/uid_map 2>/dev/null; id'"
+  }
+]

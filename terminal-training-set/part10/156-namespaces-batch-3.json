@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Start a container with all namespaces",
+    "output": "<think>\nWe're being asked to start a container with all namespaces.\nHere's how I'd approach this.\nThe tool for this job is unshare — unshare operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nunshare --mount --uts --ipc --net --pid --fork --mount-proc -- /bin/bash"
+  },
+  {
+    "instruction": "Create PID namespace and see pid 1",
+    "output": "<think>\nThis is asking us to create PID namespace and see pid 1.\nThe tool for this job is unshare — unshare operations.\nI'm using -c for count or create — standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunshare --pid --fork --mount-proc /bin/bash -c 'echo PID 1 is: $$; sleep 10 & echo PID of sleep: $!'"
+  },
+  {
+    "instruction": "Show pid namespace nesting",
+    "output": "<think>\nSo we need to show pid namespace nesting.\nThe tool for this job is cat — cat operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ncat /proc/self/status | grep NSpid"
+  },
+  {
+    "instruction": "Check /proc in PID namespace",
+    "output": "<think>\nSo we need to check /proc in PID namespace.\nFirst, let me understand what's needed here.\nI'll reach for unshare here because unshare operations.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\nunshare --pid --fork --mount-proc /bin/bash -c 'ps aux'"
+  },
+  {
+    "instruction": "Signal init from PID namespace",
+    "output": "<think>\nAlright, we need to signal init from PID namespace.\nThe tool for this job is unshare — unshare operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nunshare --pid --fork --mount-proc /bin/bash -c 'kill -TERM 1'"
+  },
+  {
+    "instruction": "Mount /proc inside PID namespace",
+    "output": "<think>\nSo we need to mount /proc inside PID namespace.\nLet me consider what makes sense here.\nThis calls for unshare. Unshare operations.\nI've added -c to count or create — standard practice for this kind of operation.\nI've added -t to sort by modification time — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nunshare --pid --fork bash -c 'mount -t proc none /proc && ps aux'"
+  },
+  {
+    "instruction": "Create chroot with mount namespace",
+    "output": "<think>\nThe goal is to create chroot with mount namespace.\nLet me think through this step by step.\nunshare is what we need — unshare operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nunshare --mount bash -c 'mount --bind /mnt/chroot /mnt/chroot && chroot /mnt/chroot /bin/bash'"
+  },
+  {
+    "instruction": "Private mount namespace example",
+    "output": "<think>\nSo we need to private mount namespace example.\nHere's how I'd approach this.\nThe tool for this job is unshare — unshare operations.\nI'm using -c for count or create — needed for this specific use case.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nunshare --mount bash -c 'mount -t tmpfs tmpfs /mnt; df /mnt'"
+  },
+  {
+    "instruction": "Create slave mount namespace",
+    "output": "<think>\nThe task requires us to create slave mount namespace.\nLet me reason through this.\nThis calls for unshare. Unshare operations.\nI'm using -c for count or create — without it the command won't work as we need.\nThe -t flag handles sort by modification time. Important because this controls how the output is formatted.\n</think>\nunshare --mount --propagation slave bash -c 'mount -t tmpfs tmpfs /mnt; df /mnt'"
+  },
+  {
+    "instruction": "Check mount propagation type",
+    "output": "<think>\nSo the request is to check mount propagation type.\nHere's how I'd approach this.\ncat is what we need — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /proc/self/mountinfo | grep '/' | head -5"
+  },
+  {
+    "instruction": "Set shared mount propagation",
+    "output": "<think>\nThe task requires us to set shared mount propagation.\nThe tool for this job is mount — filesystem mounting.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nmount --make-shared /mnt"
+  },
+  {
+    "instruction": "Set slave mount propagation",
+    "output": "<think>\nWe should set slave mount propagation.\nI'll reach for mount here because filesystem mounting.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nmount --make-slave /mnt"
+  },
+  {
+    "instruction": "Set private mount propagation",
+    "output": "<think>\nNeed to set private mount propagation.\nHere's how I'd approach this.\nI'd use mount for this — filesystem mounting.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nmount --make-private /mnt"
+  },
+  {
+    "instruction": "Create bind mount inside namespace",
+    "output": "<think>\nAlright, we need to create bind mount inside namespace.\nLet me break this down.\nBest tool here is unshare — unshare operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nunshare --mount bash -c 'mount --bind /path /mnt && ls /mnt'"
+  },
+  {
+    "instruction": "Mount tmpfs for /tmp in namespace",
+    "output": "<think>\nWe should mount tmpfs for /tmp in namespace.\nI'd use unshare for this — unshare operations.\nQuick verification after execution to be safe.\n</think>\nunshare --mount bash -c 'mount -t tmpfs -o size=100M tmpfs /tmp; df -h /tmp'"
+  },
+  {
+    "instruction": "Unshare mount and pivot root",
+    "output": "<think>\nThe task requires us to unshare mount and pivot root.\nThe tool for this job is unshare — unshare operations.\nI'm using -c for count or create — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nunshare --mount bash -c 'pivot_root /newroot /newroot/oldroot && exec chroot . /bin/bash'"
+  },
+  {
+    "instruction": "Check which namespaces you are in",
+    "output": "<think>\nSo the request is to check which namespaces you are in.\nThe tool for this job is for — for operations.\nThe -n flag means dry-run, no changes, which matters here because needed for this specific use case.\n</think>\nfor ns in mnt uts ipc pid net user cgroup time; do echo -n \"$ns: \"; readlink /proc/self/ns/$ns; done"
+  },
+  {
+    "instruction": "Compare namespaces between two processes",
+    "output": "<think>\nThis is asking us to compare namespaces between two processes.\ndiff is what we need — diff operations.\nThe -la flag handles detailed listing including hidden files. Important because important to get the expected behavior.\nThe -la flag means detailed listing including hidden files, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndiff <(ls -la /proc/1/ns/) <(ls -la /proc/$$/ns/)"
+  },
+  {
+    "instruction": "Show namespace inode numbers",
+    "output": "<think>\nAlright, we need to show namespace inode numbers.\nHere's how I'd approach this.\nBest tool here is stat — stat operations.\nI've added -c to count or create — this controls how the output is formatted.\nQuick verification after execution to be safe.\n</think>\nstat -c '%i' /proc/self/ns/net"
+  },
+  {
+    "instruction": "Determine if two processes share net ns",
+    "output": "<think>\nThe goal is to determine if two processes share net ns.\nLet me think about the best approach.\nI'm using -c for count or create — without it the command won't work as we need.\nI'm using -c for count or create — standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\n[ $(stat -c '%i' /proc/1234/ns/net) = $(stat -c '%i' /proc/5678/ns/net) ] && echo 'same' || echo 'different'"
+  },
+  {
+    "instruction": "List all network namespace inodes",
+    "output": "<think>\nSo the request is to list all network namespace inodes.\nls is what we need — ls operations.\nI've added -l to long format with details — needed for this specific use case.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nls -l /proc/*/ns/net 2>/dev/null | awk '{print $11}' | sort -u"
+  },
+  {
+    "instruction": "Count unique PID namespaces",
+    "output": "<think>\nThe task requires us to count unique PID namespaces.\nHere's how I'd approach this.\nFor this, ls is the right tool — ls operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nls -l /proc/*/ns/pid 2>/dev/null | awk '{print $11}' | sort -u | wc -l"
+  }
+]

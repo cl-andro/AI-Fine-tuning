@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Terraform module for EC2 instance",
+    "output": "mkdir -p modules/ec2 && echo 'resource \"aws_instance\" \"this\" { ami = var.ami instance_type = var.type }' > modules/ec2/main.tf"
+  },
+  {
+    "instruction": "Add variables to the EC2 module",
+    "output": "echo 'variable \"ami\" { type = string } variable \"type\" { type = string default = \"t3.micro\" }' > modules/ec2/variables.tf"
+  },
+  {
+    "instruction": "Add outputs to the EC2 module",
+    "output": "echo 'output \"instance_id\" { value = aws_instance.this.id } output \"public_ip\" { value = aws_instance.this.public_ip }' > modules/ec2/outputs.tf"
+  },
+  {
+    "instruction": "Use the EC2 module in root config",
+    "output": "echo 'module \"web\" { source = \"./modules/ec2\" ami = \"ami-1234\" type = \"t3.small\" }' > main.tf"
+  },
+  {
+    "instruction": "Create a multi-region provider configuration",
+    "output": "echo 'provider \"aws\" { region = \"us-east-1\" } provider \"aws\" { alias = \"eu\" region = \"eu-west-1\" }' > providers.tf"
+  },
+  {
+    "instruction": "Create resources in multiple regions",
+    "output": "echo 'resource \"aws_instance\" \"us\" { ami = \"ami-1234\" } resource \"aws_instance\" \"eu\" { provider = aws.eu ami = \"ami-5678\" }' > main.tf"
+  },
+  {
+    "instruction": "Use terraform_data to trigger replacement on every apply",
+    "output": "echo 'resource \"terraform_data\" \"force_new\" { input = uuid() }' > trigger.tf"
+  },
+  {
+    "instruction": "Create an S3 bucket with a lifecycle rule",
+    "output": "echo 'resource \"aws_s3_bucket\" \"log\" { bucket = \"app-logs\" lifecycle_rule { enabled = true expiration { days = 90 } } }' > s3.tf"
+  },
+  {
+    "instruction": "Set an S3 bucket policy with jsonencode",
+    "output": "echo 'resource \"aws_s3_bucket_policy\" \"p\" { bucket = aws_s3_bucket.log.id policy = jsonencode({ Version = \"2012-10-17\" Statement = [{ Effect = \"Allow\" Principal = \"*\" Action = \"s3:GetObject\" Resource = \"${aws_s3_bucket.log.arn}/*\" }] }) }' > s3-policy.tf"
+  },
+  {
+    "instruction": "Set up S3 bucket website hosting",
+    "output": "echo 'resource \"aws_s3_bucket_website_configuration\" \"web\" { bucket = aws_s3_bucket.site.id index_document { suffix = \"index.html\" } error_document { key = \"error.html\" } }' > s3.tf"
+  },
+  {
+    "instruction": "Create an IAM role for EC2 with Terraform",
+    "output": "echo 'resource \"aws_iam_role\" \"ec2\" { name = \"ec2-role\" assume_role_policy = jsonencode({ Version = \"2012-10-17\" Statement = [{ Effect = \"Allow\" Principal = { Service = \"ec2.amazonaws.com\" } Action = \"sts:AssumeRole\" }] }) }' > iam-role.tf"
+  },
+  {
+    "instruction": "Attach a managed policy to IAM role",
+    "output": "echo 'resource \"aws_iam_role_policy_attachment\" \"s3\" { role = aws_iam_role.ec2.name policy_arn = \"arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess\" }' > iam-attach.tf"
+  },
+  {
+    "instruction": "Create an IAM instance profile for EC2",
+    "output": "echo 'resource \"aws_iam_instance_profile\" \"ec2\" { name = \"ec2-profile\" role = aws_iam_role.ec2.name }' > iam-profile.tf"
+  },
+  {
+    "instruction": "Create a security group with ingress rules",
+    "output": "echo 'resource \"aws_security_group\" \"web\" { name = \"web-sg\" ingress { from_port = 80 to_port = 80 protocol = \"tcp\" cidr_blocks = [\"0.0.0.0/0\"] } }' > sg.tf"
+  },
+  {
+    "instruction": "Create an auto-scaling group with launch template",
+    "output": "echo 'resource \"aws_autoscaling_group\" \"web\" { name = \"web-asg\" launch_template { id = aws_launch_template.web.id version = \"\\$Latest\" } min_size = 2 max_size = 10 desired_capacity = 2 }' > asg.tf"
+  },
+  {
+    "instruction": "Create a target group for load balancer",
+    "output": "echo 'resource \"aws_lb_target_group\" \"web\" { name = \"web-tg\" port = 80 protocol = \"HTTP\" vpc_id = data.aws_vpc.main.id }' > alb.tf"
+  },
+  {
+    "instruction": "Create an ALB listener with redirect",
+    "output": "echo 'resource \"aws_lb_listener\" \"http\" { load_balancer_arn = aws_lb.web.arn port = 80 protocol = \"HTTP\" default_action { type = \"redirect\" redirect { port = \"443\" protocol = \"HTTPS\" status_code = \"HTTP_301\" } } }' > alb.tf"
+  },
+  {
+    "instruction": "Create a Route53 record",
+    "output": "echo 'resource \"aws_route53_record\" \"www\" { zone_id = data.aws_route53_zone.main.zone_id name = \"www.example.com\" type = \"A\" alias { name = aws_lb.web.dns_name zone_id = aws_lb.web.zone_id evaluate_target_health = true } }' > route53.tf"
+  },
+  {
+    "instruction": "Create an ACM certificate via Terraform",
+    "output": "echo 'resource \"aws_acm_certificate\" \"www\" { domain_name = \"example.com\" validation_method = \"DNS\" }' > acm.tf"
+  },
+  {
+    "instruction": "Validate ACM via Route53 DNS record",
+    "output": "echo 'resource \"aws_route53_record\" \"cert\" { for_each = { for dvo in aws_acm_certificate.www.domain_validation_options : dvo.domain_name => { name = dvo.resource_record_name type = dvo.resource_record_type value = dvo.resource_record_value } } name = each.value.name type = each.value.type records = [each.value.value] zone_id = data.aws_route53_zone.main.zone_id ttl = 60 }' > acm-validate.tf"
+  },
+  {
+    "instruction": "Create a CloudFront distribution with S3 origin",
+    "output": "echo 'resource \"aws_cloudfront_distribution\" \"cdn\" { origin { domain_name = aws_s3_bucket.site.bucket_regional_domain_name origin_id = \"S3-site\" } enabled = true default_cache_behavior { target_origin_id = \"S3-site\" viewer_protocol_policy = \"redirect-to-https\" allowed_methods = [\"GET\", \"HEAD\"] cached_methods = [\"GET\", \"HEAD\"] } viewer_certificate { cloudfront_default_certificate = true } }' > cloudfront.tf"
+  },
+  {
+    "instruction": "Create an ECS cluster with Fargate",
+    "output": "echo 'resource \"aws_ecs_cluster\" \"main\" { name = \"prod-cluster\" } resource \"aws_ecs_task_definition\" \"app\" { family = \"app\" network_mode = \"awsvpc\" requires_compatibilities = [\"FARGATE\"] cpu = \"256\" memory = \"512\" container_definitions = jsonencode([{ name = \"app\" image = \"nginx:latest\" essential = true }]) }' > ecs.tf"
+  },
+  {
+    "instruction": "Create an ECS service behind ALB",
+    "output": "echo 'resource \"aws_ecs_service\" \"app\" { name = \"app-svc\" cluster = aws_ecs_cluster.main.arn task_definition = aws_ecs_task_definition.app.arn desired_count = 2 launch_type = \"FARGATE\" network_configuration { subnets = data.aws_subnets.private.ids security_groups = [aws_security_group.ecs.id] } load_balancer { target_group_arn = aws_lb_target_group.web.arn container_name = \"app\" container_port = 80 } }' > ecs-service.tf"
+  },
+  {
+    "instruction": "Create an RDS instance",
+    "output": "echo 'resource \"aws_db_instance\" \"main\" { allocated_storage = 20 engine = \"postgres\" engine_version = \"16\" instance_class = \"db.t3.micro\" db_name = \"myapp\" username = \"admin\" password = var.db_password skip_final_snapshot = true }' > rds.tf"
+  },
+  {
+    "instruction": "Create an ElastiCache Redis cluster",
+    "output": "echo 'resource \"aws_elasticache_cluster\" \"cache\" { cluster_id = \"app-cache\" engine = \"redis\" node_type = \"cache.t3.micro\" num_cache_nodes = 1 parameter_group_name = \"default.redis7\" }' > elasticache.tf"
+  }
+]

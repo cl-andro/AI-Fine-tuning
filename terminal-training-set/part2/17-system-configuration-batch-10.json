@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Mask a systemd service to prevent any startup",
+    "output": "<think>\nAlright, we need to mask a systemd service to prevent any startup.\nLet me think about the best approach.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl mask apache2"
+  },
+  {
+    "instruction": "Unmask a systemd service",
+    "output": "<think>\nNeed to unmask a systemd service.\nFor this, systemctl is the right tool — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl unmask apache2"
+  },
+  {
+    "instruction": "Show a unit's full dependency tree",
+    "output": "<think>\nSo we need to show a unit's full dependency tree.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-dependencies sshd"
+  },
+  {
+    "instruction": "Edit a systemd unit's drop-in override",
+    "output": "<think>\nThe goal is to edit a systemd unit's drop-in override.\nFirst, let me understand what's needed here.\nFor this, systemctl is the right tool — managing systemd services.\n</think>\nsystemctl edit nginx"
+  },
+  {
+    "instruction": "Show journald logs for a specific unit",
+    "output": "<think>\nThe goal is to show journald logs for a specific unit.\nThe tool for this job is journalctl — checking systemd logs.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\nLet me verify afterward that it worked correctly.\n</think>\njournalctl -u nginx.service"
+  },
+  {
+    "instruction": "Follow new journal entries in real-time",
+    "output": "<think>\nThe goal is to follow new journal entries in real-time.\nLet me think through this step by step.\nThe tool for this job is journalctl — checking systemd logs.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -f"
+  },
+  {
+    "instruction": "Show journal logs since last boot",
+    "output": "<think>\nAlright, we need to show journal logs since last boot.\nLet me break this down.\nBest tool here is journalctl — checking systemd logs.\nWhy -b? Brief output. important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -b"
+  },
+  {
+    "instruction": "Show journal logs within a time range",
+    "output": "<think>\nWe're being asked to show journal logs within a time range.\nLet me break this down.\nFor this, journalctl is the right tool — checking systemd logs.\nA single command handles this cleanly — no need to overcomplicate it.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl --since '2026-07-20 00:00:00' --until '2026-07-21 00:00:00'"
+  },
+  {
+    "instruction": "Show journal logs with JSON output",
+    "output": "<think>\nWe're being asked to show journal logs with JSON output.\nFirst, let me understand what's needed here.\nFor this, journalctl is the right tool — checking systemd logs.\nI'm using -o for output to file, OR operator in find — important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\nQuick verification after execution to be safe.\n</think>\njournalctl -o json-pretty -u sshd"
+  },
+  {
+    "instruction": "Show disk usage of journald logs",
+    "output": "<think>\nSo the request is to show disk usage of journald logs.\nThis calls for journalctl. Checking systemd logs.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl --disk-usage"
+  },
+  {
+    "instruction": "Rotate journald log files manually",
+    "output": "<think>\nWe should rotate journald log files manually.\nThe tool for this job is journalctl — checking systemd logs.\nOld logs can be large — add --since to limit the range and avoid huge output.\nI'll check the output to make sure it did what we expected.\n</think>\njournalctl --rotate"
+  },
+  {
+    "instruction": "Vacuum journald logs older than 7 days",
+    "output": "<think>\nWe should vacuum journald logs older than 7 days.\nI'll reach for journalctl here because checking systemd logs.\nA single command handles this cleanly — no need to overcomplicate it.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl --vacuum-time=7d"
+  },
+  {
+    "instruction": "Force logrotate to run immediately for a specific log",
+    "output": "<think>\nSo the request is to force logrotate to run immediately for a specific log.\nThe tool for this job is logrotate — logrotate operations.\nWhy -f? Force, suppress errors. important to get the expected behavior.\n</think>\nlogrotate -f /etc/logrotate.d/nginx"
+  },
+  {
+    "instruction": "Debug logrotate configuration",
+    "output": "<think>\nWe're being asked to debug logrotate configuration.\nLet me reason through this.\nFor this, logrotate is the right tool — logrotate operations.\nWhy -d? Directory listing, don't descend. standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\n</think>\nlogrotate -d /etc/logrotate.d/nginx"
+  },
+  {
+    "instruction": "Configure logrotate with postrotate script",
+    "output": "<think>\nWe're being asked to configure logrotate with postrotate script.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/logrotate.d/custom << 'EOF'\n/var/log/myapp/*.log {\n  weekly\n  rotate 4\n  compress\n  delaycompress\n  missingok\n  notifempty\n  sharedscripts\n  postrotate\n    systemctl reload myapp > /dev/null 2>&1 || true\n  endscript\n}\nEOF"
+  },
+  {
+    "instruction": "Install anacron for non-continuous systems",
+    "output": "<think>\nThe user wants to install anacron for non-continuous systems.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y anacron && systemctl enable --now anacron"
+  },
+  {
+    "instruction": "Add a daily cron job to run at 2:30 AM",
+    "output": "<think>\nWe're being asked to add a daily cron job to run at 2:30 AM.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\necho '30 2 * * * root /usr/local/bin/backup.sh' > /etc/cron.d/daily-backup"
+  },
+  {
+    "instruction": "Add a cron job that runs every 5 minutes",
+    "output": "<think>\nThe task requires us to add a cron job that runs every 5 minutes.\nLet me reason through this.\nLet me verify afterward that it worked correctly.\n</think>\necho '*/5 * * * * root /usr/local/bin/healthcheck.sh' > /etc/cron.d/healthcheck"
+  },
+  {
+    "instruction": "Configure rsyslog with a custom template",
+    "output": "<think>\nThe task requires us to configure rsyslog with a custom template.\nLet me reason through this.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'template(name=\"CustomFormat\" type=\"string\" string=\"%TIMESTAMP% %HOSTNAME% %syslogtag% %msg%\\n\")' > /etc/rsyslog.d/custom-template.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Create a udev rule to symlink a device by serial",
+    "output": "<think>\nSo the request is to create a udev rule to symlink a device by serial.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 'SUBSYSTEM==\"block\", ATTRS{serial}==\"ABC123\", SYMLINK+=\"mydisk\"' > /etc/udev/rules.d/99-disk.rules && udevadm control --reload-rules && udevadm trigger"
+  },
+  {
+    "instruction": "Monitor udev events in real-time",
+    "output": "<think>\nThis is asking us to monitor udev events in real-time.\nLet me reason through this.\nFor this, udevadm is the right tool — device manager control.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nudevadm monitor"
+  },
+  {
+    "instruction": "Query udev database for a device",
+    "output": "<think>\nThis is asking us to query udev database for a device.\nLet me think through this step by step.\nudevadm is what we need — device manager control.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nudevadm info --query=all --name=/dev/sda"
+  },
+  {
+    "instruction": "Send a dbus message to restart a systemd service",
+    "output": "<think>\nSo the request is to send a dbus message to restart a systemd service.\nLet me think through this step by step.\nThe tool for this job is gdbus — gdbus operations.\n</think>\ngdbus call --system --dest org.freedesktop.systemd1 --object-path /org/freedesktop/systemd1 --method org.freedesktop.systemd1.Manager.RestartUnit 'nginx.service' 'replace'"
+  },
+  {
+    "instruction": "List all dbus services on the system bus",
+    "output": "<think>\nSo the request is to list all dbus services on the system bus.\nLet me consider what makes sense here.\nFor this, busctl is the right tool — D-Bus introspection.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nbusctl list"
+  },
+  {
+    "instruction": "Configure /etc/host.conf for name resolution order",
+    "output": "<think>\nThe goal is to configure /etc/host.conf for name resolution order.\nLet me consider what makes sense here.\nWhy -e? Edit or executable. important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e 'order hosts,bind\\nmulti on' > /etc/host.conf"
+  },
+  {
+    "instruction": "Configure TCP wrappers to allow SSH from a subnet",
+    "output": "<think>\nAlright, we need to configure TCP wrappers to allow SSH from a subnet.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'sshd: 192.168.1.0/24' >> /etc/hosts.allow && echo 'ALL: ALL' >> /etc/hosts.deny"
+  }
+]

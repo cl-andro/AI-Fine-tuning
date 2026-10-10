@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show the CPU model and architecture for the host",
+    "output": "<think>\nSo the request is to show the CPU model and architecture for the host.\nFirst, let me understand what's needed here.\nlscpu is what we need — lscpu operations.\nThe -E flag handles extended regex. Important because important to get the expected behavior.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nlscpu | grep -E 'Model name|Architecture|CPU\\(s\\)'"
+  },
+  {
+    "instruction": "Show number of CPU cores and threads",
+    "output": "<think>\nSo we need to show number of CPU cores and threads.\nLet me break this down.\nFor this, nproc is the right tool — nproc operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nnproc && lscpu | grep Thread"
+  },
+  {
+    "instruction": "Show the amount of installed RAM",
+    "output": "<think>\nThe goal is to show the amount of installed RAM.\nLet me reason through this.\nFor this, free is the right tool — memory usage checking.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nfree -h | grep Mem | awk '{print $2}'"
+  },
+  {
+    "instruction": "Show detailed memory info per NUMA node",
+    "output": "<think>\nWe should show detailed memory info per NUMA node.\nBest tool here is numactl — numactl operations.\n</think>\nnumactl --hardware"
+  },
+  {
+    "instruction": "List all PCI devices in a tree view",
+    "output": "<think>\nWe should list all PCI devices in a tree view.\nBest tool here is lspci — lspci operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nlspci -tv"
+  },
+  {
+    "instruction": "List USB devices with details",
+    "output": "<think>\nThe user wants to list USB devices with details.\nLet me consider what makes sense here.\nBest tool here is lsusb — lsusb operations.\nWhy -v? Verbose output. important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nlsusb -v | head -50"
+  },
+  {
+    "instruction": "Show DMI/BIOS information",
+    "output": "<think>\nWe should show DMI/BIOS information.\nFirst, let me understand what's needed here.\nBest tool here is dmidecode — dmidecode operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ndmidecode -t bios"
+  },
+  {
+    "instruction": "Show system serial number and hardware UUID",
+    "output": "<think>\nThe goal is to show system serial number and hardware UUID.\nLet me break this down.\nI'd use dmidecode for this — dmidecode operations.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ndmidecode -t system | grep -E 'Serial|UUID'"
+  },
+  {
+    "instruction": "Show all hardware information in one command",
+    "output": "<think>\nWe're being asked to show all hardware information in one command.\nLet me reason through this.\nThe tool for this job is lshw — lshw operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nlshw -short | head -30"
+  },
+  {
+    "instruction": "Show ACPI battery status (for laptops)",
+    "output": "<think>\nThe goal is to show ACPI battery status (for laptops).\nBest tool here is acpi — acpi operations.\n</think>\nacpi -V"
+  },
+  {
+    "instruction": "Show all thermal zones and temperatures",
+    "output": "<think>\nThe user wants to show all thermal zones and temperatures.\nBest tool here is cat — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /sys/class/thermal/thermal_zone*/temp 2>/dev/null"
+  },
+  {
+    "instruction": "Check system power consumption (RAPL)",
+    "output": "<think>\nThe user wants to check system power consumption (RAPL).\nFirst, let me understand what's needed here.\nThe tool for this job is turbostat — turbostat operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nturbostat --show PkgWatt 2>/dev/null || cat /sys/class/powercap/*/energy_uj 2>/dev/null"
+  },
+  {
+    "instruction": "Display S.M.A.R.T. status of a disk",
+    "output": "<think>\nAlright, we need to display S.M.A.R.T. status of a disk.\nFor this, smartctl is the right tool — smartctl operations.\nI've added -a to AND operator in find — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nsmartctl -a /dev/sda"
+  },
+  {
+    "instruction": "Run a short S.M.A.R.T. self-test on a disk",
+    "output": "<think>\nSo we need to run a short S.M.A.R.T. self-test on a disk.\nLet me reason through this.\nThe tool for this job is smartctl — smartctl operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nsmartctl -t short /dev/sda"
+  },
+  {
+    "instruction": "Show S.M.A.R.T. test results",
+    "output": "<think>\nThe task requires us to show S.M.A.R.T. test results.\nLet me reason through this.\nBest tool here is smartctl — smartctl operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\n</think>\nsmartctl -l selftest /dev/sda"
+  },
+  {
+    "instruction": "Benchmark disk read speed",
+    "output": "<think>\nSo the request is to benchmark disk read speed.\nI'll reach for hdparm here because hdparm operations.\nAfter running, I'll confirm the result looks right.\n</think>\nhdparm -Tt /dev/sda"
+  },
+  {
+    "instruction": "Show disk geometry and partition table",
+    "output": "<think>\nThis is asking us to show disk geometry and partition table.\nHere's how I'd approach this.\nI'll reach for fdisk here because disk management.\nWhy -l? Long format with details. without it the command won't work as we need.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\nLet me verify afterward that it worked correctly.\n</think>\nfdisk -l /dev/sda"
+  },
+  {
+    "instruction": "List all block devices with filesystem info",
+    "output": "<think>\nSo we need to list all block devices with filesystem info.\nLet me consider what makes sense here.\nlsblk is what we need — block device listing.\nWhy -f? Force, suppress errors. needed for this specific use case.\n</think>\nlsblk -f"
+  },
+  {
+    "instruction": "Show disk UUIDs and labels",
+    "output": "<think>\nThe goal is to show disk UUIDs and labels.\nHere's how I'd approach this.\nFor this, blkid is the right tool — block device attribute lookup.\nQuick verification after execution to be safe.\n</think>\nblkid"
+  },
+  {
+    "instruction": "Check disk partition alignment",
+    "output": "<think>\nWe're being asked to check disk partition alignment.\nBest tool here is fdisk — disk management.\nThe -l flag handles long format with details. Important because standard practice for this kind of operation.\nI'm using -E for extended regex — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\nLet me verify afterward that it worked correctly.\n</think>\nfdisk -l /dev/sda | grep -E 'Sector size|start|End'"
+  },
+  {
+    "instruction": "Rescan SCSI bus for new disks",
+    "output": "<think>\nThe task requires us to rescan SCSI bus for new disks.\nLet me reason through this.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\necho \"- - -\" > /sys/class/scsi_host/host0/scan"
+  },
+  {
+    "instruction": "Check if TRIM is supported on an SSD",
+    "output": "<think>\nThe task requires us to check if TRIM is supported on an SSD.\nlsblk is what we need — block device listing.\n</think>\nlsblk -D /dev/sda"
+  },
+  {
+    "instruction": "Run fstrim on all mounted SSDs",
+    "output": "<think>\nThis is asking us to run fstrim on all mounted SSDs.\nLet me think about the best approach.\nThe tool for this job is fstrim — fstrim operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nfstrim -av"
+  },
+  {
+    "instruction": "Show IO scheduler for each disk",
+    "output": "<think>\nThe task requires us to show IO scheduler for each disk.\nLet me think through this step by step.\nI'll reach for cat here because cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/block/*/queue/scheduler"
+  },
+  {
+    "instruction": "Change IO scheduler to noop for a disk",
+    "output": "<think>\nSo the request is to change IO scheduler to noop for a disk.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho noop > /sys/block/sda/queue/scheduler"
+  }
+]

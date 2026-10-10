@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Test an IP address in CIDR with cidrhost function",
+    "output": "<think>\nThe user wants to test an IP address in CIDR with cidrhost function.\nHere's how I'd approach this.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'cidrhost(\"10.0.0.0/24\", 10)' | terraform console"
+  },
+  {
+    "instruction": "Calculate subnet with cidrsubnets function",
+    "output": "<think>\nSo the request is to calculate subnet with cidrsubnets function.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'cidrsubnets(\"10.0.0.0/16\", 4, 4, 8)' | terraform console"
+  },
+  {
+    "instruction": "Create a VPC with Terraform",
+    "output": "<think>\nWe're being asked to create a VPC with Terraform.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'resource \"aws_vpc\" \"main\" { cidr_block = \"10.0.0.0/16\" enable_dns_support = true enable_dns_hostnames = true }' > vpc.tf"
+  },
+  {
+    "instruction": "Create public and private subnets",
+    "output": "<think>\nThis is asking us to create public and private subnets.\n</think>\necho 'resource \"aws_subnet\" \"public\" { count = 2 vpc_id = aws_vpc.main.id cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index) map_public_ip_on_launch = true } resource \"aws_subnet\" \"private\" { count = 2 vpc_id = aws_vpc.main.id cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 10) }' > subnets.tf"
+  },
+  {
+    "instruction": "Create an Internet Gateway",
+    "output": "<think>\nSo the request is to create an Internet Gateway.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\necho 'resource \"aws_internet_gateway\" \"gw\" { vpc_id = aws_vpc.main.id }' > igw.tf"
+  },
+  {
+    "instruction": "Create a NAT Gateway in a public subnet",
+    "output": "<think>\nSo we need to create a NAT Gateway in a public subnet.\nLet me break this down.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'resource \"aws_nat_gateway\" \"nat\" { allocation_id = aws_eip.nat.id subnet_id = aws_subnet.public[0].id } resource \"aws_eip\" \"nat\" { domain = \"vpc\" }' > nat.tf"
+  },
+  {
+    "instruction": "Create a public route table with default route",
+    "output": "<think>\nAlright, we need to create a public route table with default route.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'resource \"aws_route_table\" \"public\" { vpc_id = aws_vpc.main.id route { cidr_block = \"0.0.0.0/0\" gateway_id = aws_internet_gateway.gw.id } } resource \"aws_route_table_association\" \"public\" { count = 2 subnet_id = aws_subnet.public[count.index].id route_table_id = aws_route_table.public.id }' > routes.tf"
+  },
+  {
+    "instruction": "Create a VPC flow log",
+    "output": "<think>\nSo we need to create a VPC flow log.\nQuick verification after execution to be safe.\n</think>\necho 'resource \"aws_flow_log\" \"vpc\" { log_destination = aws_s3_bucket.logs.arn traffic_type = \"ALL\" vpc_id = aws_vpc.main.id }' > flowlog.tf"
+  },
+  {
+    "instruction": "Create a VPC endpoint for S3",
+    "output": "<think>\nThis is asking us to create a VPC endpoint for S3.\nLet me reason through this.\n</think>\necho 'resource \"aws_vpc_endpoint\" \"s3\" { vpc_id = aws_vpc.main.id service_name = \"com.amazonaws.${var.region}.s3\" route_table_ids = [aws_route_table.private.id] }' > vpc-endpoint.tf"
+  },
+  {
+    "instruction": "Create a VPN connection",
+    "output": "<think>\nWe're being asked to create a VPN connection.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'resource \"aws_vpn_gateway\" \"vgw\" { vpc_id = aws_vpc.main.id } resource \"aws_customer_gateway\" \"cgw\" { bgp_asn = 65000 ip_address = \"203.0.113.1\" type = \"ipsec.1\" } resource \"aws_vpn_connection\" \"conn\" { vpn_gateway_id = aws_vpn_gateway.vgw.id customer_gateway_id = aws_customer_gateway.cgw.id type = \"ipsec.1\" }' > vpn.tf"
+  },
+  {
+    "instruction": "Create an EC2 instance with user data",
+    "output": "<think>\nWe should create an EC2 instance with user data.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'resource \"aws_instance\" \"web\" { ami = data.aws_ami.ubuntu.id instance_type = \"t3.micro\" user_data = base64encode(templatefile(\"init.sh\", { hostname = \"web01\" })) }' > ec2-userdata.tf"
+  },
+  {
+    "instruction": "Create an EBS snapshot policy",
+    "output": "<think>\nAlright, we need to create an EBS snapshot policy.\nLet me break this down.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'resource \"aws_ebs_snapshot_copy\" \"backup\" { source_region = \"us-east-1\" source_snapshot_id = aws_ebs_snapshot.daily.id }' > ebs.tf"
+  },
+  {
+    "instruction": "Create a Lambda function with Terraform",
+    "output": "<think>\nThe user wants to create a Lambda function with Terraform.\nLet me consider what makes sense here.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'resource \"aws_lambda_function\" \"fn\" { filename = \"lambda.zip\" function_name = \"my-function\" role = aws_iam_role.lambda.arn handler = \"index.handler\" runtime = \"python3.12\" }' > lambda.tf"
+  },
+  {
+    "instruction": "Create a Lambda function URL",
+    "output": "<think>\nWe should create a Lambda function URL.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'resource \"aws_lambda_function_url\" \"url\" { function_name = aws_lambda_function.fn.function_name authorization_type = \"NONE\" }' > lambda-url.tf"
+  },
+  {
+    "instruction": "Create an EventBridge rule for Lambda trigger",
+    "output": "<think>\nWe're being asked to create an EventBridge rule for Lambda trigger.\nLet me think through this step by step.\n</think>\necho 'resource \"aws_cloudwatch_event_rule\" \"schedule\" { schedule_expression = \"rate(1 hour)\" } resource \"aws_cloudwatch_event_target\" \"fn\" { rule = aws_cloudwatch_event_rule.schedule.name arn = aws_lambda_function.fn.arn }' > eventbridge.tf"
+  },
+  {
+    "instruction": "Create an SQS queue",
+    "output": "<think>\nAlright, we need to create an SQS queue.\nLet me think about the best approach.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_sqs_queue\" \"queue\" { name = \"app-queue\" visibility_timeout_seconds = 60 }' > sqs.tf"
+  },
+  {
+    "instruction": "Create an SNS topic with subscription",
+    "output": "<think>\nThe goal is to create an SNS topic with subscription.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_sns_topic\" \"alerts\" { name = \"infra-alerts\" } resource \"aws_sns_topic_subscription\" \"email\" { topic_arn = aws_sns_topic.alerts.arn protocol = \"email\" endpoint = \"team@example.com\" }' > sns.tf"
+  },
+  {
+    "instruction": "Create a DynamoDB table with auto-scaling",
+    "output": "<think>\nSo we need to create a DynamoDB table with auto-scaling.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_dynamodb_table\" \"table\" { name = \"app-data\" billing_mode = \"PROVISIONED\" hash_key = \"id\" read_capacity = 5 write_capacity = 5 attribute { name = \"id\" type = \"S\" } }' > dynamodb.tf"
+  },
+  {
+    "instruction": "Create an ECR repository",
+    "output": "<think>\nThe user wants to create an ECR repository.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'resource \"aws_ecr_repository\" \"app\" { name = \"my-app\" image_scanning_configuration { scan_on_push = true } }' > ecr.tf"
+  },
+  {
+    "instruction": "Create an EKS cluster with node group",
+    "output": "<think>\nSo the request is to create an EKS cluster with node group.\n</think>\necho 'resource \"aws_eks_cluster\" \"main\" { name = \"prod-eks\" role_arn = aws_iam_role.eks.arn vpc_config { subnet_ids = data.aws_subnets.private.ids } } resource \"aws_eks_node_group\" \"workers\" { cluster_name = aws_eks_cluster.main.name node_role_arn = aws_iam_role.node.arn subnet_ids = data.aws_subnets.private.ids scaling_config { desired_size = 3 max_size = 10 min_size = 2 } instance_types = [\"t3.medium\"] }' > eks.tf"
+  },
+  {
+    "instruction": "Create a KMS key for encryption",
+    "output": "<think>\nSo the request is to create a KMS key for encryption.\nLet me reason through this.\n</think>\necho 'resource \"aws_kms_key\" \"main\" { description = \"App encryption key\" enable_key_rotation = true deletion_window_in_days = 7 }' > kms.tf"
+  },
+  {
+    "instruction": "Create a Secrets Manager secret",
+    "output": "<think>\nThe task requires us to create a Secrets Manager secret.\nLet me consider what makes sense here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_secretsmanager_secret\" \"db\" { name = \"prod/db/password\" } resource \"aws_secretsmanager_secret_version\" \"db\" { secret_id = aws_secretsmanager_secret.db.id secret_string = var.db_password }' > secrets.tf"
+  },
+  {
+    "instruction": "Create an SSM Parameter Store parameter",
+    "output": "<think>\nThis is asking us to create an SSM Parameter Store parameter.\nFirst, let me understand what's needed here.\n</think>\necho 'resource \"aws_ssm_parameter\" \"config\" { name = \"/app/config/url\" type = \"String\" value = \"https://api.example.com\" }' > ssm.tf"
+  },
+  {
+    "instruction": "Run Terraform destroy with auto-approve and parallelism",
+    "output": "<think>\nSo we need to run Terraform destroy with auto-approve and parallelism.\nFor this, terraform is the right tool — infrastructure provisioning.\nAlways run terraform plan before apply. Review the diff carefully.\nI'll check the output to make sure it did what we expected.\n</think>\nterraform destroy -auto-approve -parallelism=3"
+  },
+  {
+    "instruction": "Generate execution plan with out file and apply it in one shot",
+    "output": "<think>\nThe task requires us to generate execution plan with out file and apply it in one shot.\nLet me break this down.\nFor this, terraform is the right tool — infrastructure provisioning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways run terraform plan before apply. Review the diff carefully.\nI'll check the output to make sure it did what we expected.\n</think>\nterraform plan -out=plan.out && terraform apply plan.out"
+  }
+]

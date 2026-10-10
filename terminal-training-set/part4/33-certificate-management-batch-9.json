@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Generate a certificate signing request and private key using cfssl",
+    "output": "<think>\nThe task requires us to generate a certificate signing request and private key using cfssl.\nThis calls for cfssl. Cfssl operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ncfssl genkey csr.json | cfssljson -bare server"
+  },
+  {
+    "instruction": "Sign a CSR with cfssl using a configuration profile",
+    "output": "<think>\nSo the request is to sign a CSR with cfssl using a configuration profile.\nFirst, let me understand what's needed here.\nI'd use cfssl for this — cfssl operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ncfssl sign -ca ca.pem -ca-key ca-key.pem -config ca-config.json -profile www server.csr | cfssljson -bare server"
+  },
+  {
+    "instruction": "Create a CA certificate and key using cfssl self-signing",
+    "output": "<think>\nAlright, we need to create a CA certificate and key using cfssl self-signing.\nLet me think about the best approach.\nFor this, cfssl is the right tool — cfssl operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ncfssl selfsign -config ca-config.json -profile ca \"Example CA\" ca-csr.json | cfssljson -bare ca"
+  },
+  {
+    "instruction": "Bundle a certificate with its intermediate and root CA using cfssl",
+    "output": "<think>\nSo the request is to bundle a certificate with its intermediate and root CA using cfssl.\nFor this, cfssl is the right tool — cfssl operations.\n</think>\ncfssl bundle -cert server.pem -ca-bundle ca-bundle.crt -int-bundle int-bundle.crt"
+  },
+  {
+    "instruction": "Start the cfssl API server on port 8888 with a specified CA",
+    "output": "<think>\nSo the request is to start the cfssl API server on port 8888 with a specified CA.\nThis calls for cfssl. Cfssl operations.\n</think>\ncfssl serve -address 0.0.0.0 -port 8888 -ca ca.pem -ca-key ca-key.pem -config ca-config.json"
+  },
+  {
+    "instruction": "Query the cfssl API server for certificate information by serial",
+    "output": "<think>\nThis is asking us to query the cfssl API server for certificate information by serial.\nThis calls for cfssl. Cfssl operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncfssl info -host http://localhost:8888 -domain example.com"
+  },
+  {
+    "instruction": "Refresh an OCSP response from the cfssl OCSP responder",
+    "output": "<think>\nWe're being asked to refresh an OCSP response from the cfssl OCSP responder.\nLet me consider what makes sense here.\nThis calls for cfssl. Cfssl operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\ncfssl ocsprefresh -ca ca.pem -responder responder.crt -responder-key responder.key -db-config db.conf"
+  },
+  {
+    "instruction": "Scan a TLS server for certificate and cipher vulnerabilities using cfssl",
+    "output": "<think>\nNeed to scan a TLS server for certificate and cipher vulnerabilities using cfssl.\nThe tool for this job is cfssl — cfssl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncfssl scan -host example.com:443"
+  },
+  {
+    "instruction": "Print cfssl version and build information",
+    "output": "<think>\nThe goal is to print cfssl version and build information.\nBest tool here is cfssl — cfssl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\ncfssl version"
+  },
+  {
+    "instruction": "Create a local root CA using mkcert for development",
+    "output": "<think>\nSo the request is to create a local root CA using mkcert for development.\nLet me think through this step by step.\nmkcert is what we need — mkcert operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nmkcert -install"
+  },
+  {
+    "instruction": "Generate a locally-trusted certificate for a specific domain using mkcert",
+    "output": "<think>\nSo we need to generate a locally-trusted certificate for a specific domain using mkcert.\nLet me think about the best approach.\nI'd use mkcert for this — mkcert operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nmkcert example.com \"*.example.com\" localhost 127.0.0.1 ::1"
+  },
+  {
+    "instruction": "Generate a certificate with mkcert and specify output file names",
+    "output": "<think>\nSo the request is to generate a certificate with mkcert and specify output file names.\nLet me think about the best approach.\nI'd use mkcert for this — mkcert operations.\n</think>\nmkcert -cert-file mycert.pem -key-file mykey.pem example.com"
+  },
+  {
+    "instruction": "Show mkcert's CA root location and certificate details",
+    "output": "<think>\nAlright, we need to show mkcert's CA root location and certificate details.\nBest tool here is mkcert — mkcert operations.\nLet me verify afterward that it worked correctly.\n</think>\nmkcert -CAROOT"
+  },
+  {
+    "instruction": "Build the Easy-RSA CA infrastructure (initialize PKI directory)",
+    "output": "<think>\nThis is asking us to build the Easy-RSA CA infrastructure (initialize PKI directory).\nI'll reach for easyrsa here because easyrsa operations.\nAfter running, I'll confirm the result looks right.\n</think>\neasyrsa init-pki"
+  },
+  {
+    "instruction": "Build the Easy-RSA Certificate Authority",
+    "output": "<think>\nThis is asking us to build the Easy-RSA Certificate Authority.\nLet me consider what makes sense here.\nFor this, easyrsa is the right tool — easyrsa operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\neasyrsa build-ca nopass"
+  },
+  {
+    "instruction": "Generate a server certificate request using Easy-RSA",
+    "output": "<think>\nSo the request is to generate a server certificate request using Easy-RSA.\nLet me reason through this.\nI'll reach for easyrsa here because easyrsa operations.\nLet me verify afterward that it worked correctly.\n</think>\neasyrsa gen-req server.example.com nopass"
+  },
+  {
+    "instruction": "Sign a server certificate request with Easy-RSA",
+    "output": "<think>\nThis is asking us to sign a server certificate request with Easy-RSA.\nLet me think through this step by step.\nI'll reach for easyrsa here because easyrsa operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\neasyrsa sign-req server server.example.com"
+  },
+  {
+    "instruction": "Generate Diffie-Hellman parameters using Easy-RSA",
+    "output": "<think>\nWe should generate Diffie-Hellman parameters using Easy-RSA.\nLet me reason through this.\nThis calls for easyrsa. Easyrsa operations.\nAfter running, I'll confirm the result looks right.\n</think>\neasyrsa build-dh"
+  },
+  {
+    "instruction": "Generate a Certificate Revocation List using Easy-RSA",
+    "output": "<think>\nWe should generate a Certificate Revocation List using Easy-RSA.\nBest tool here is easyrsa — easyrsa operations.\nAfter running, I'll confirm the result looks right.\n</think>\neasyrsa gen-crl"
+  },
+  {
+    "instruction": "Revoke a certificate and generate a new CRL with Easy-RSA",
+    "output": "<think>\nThe user wants to revoke a certificate and generate a new CRL with Easy-RSA.\nThe tool for this job is easyrsa — easyrsa operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\neasyrsa revoke server.example.com && easyrsa gen-crl"
+  },
+  {
+    "instruction": "Revoke a certificate with a specific reason using Easy-RSA",
+    "output": "<think>\nNeed to revoke a certificate with a specific reason using Easy-RSA.\nFor this, easyrsa is the right tool — easyrsa operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\neasyrsa revoke server.example.com --reason=keyCompromise"
+  },
+  {
+    "instruction": "Create a client certificate using Easy-RSA",
+    "output": "<think>\nThis is asking us to create a client certificate using Easy-RSA.\nLet me think about the best approach.\nThe tool for this job is easyrsa — easyrsa operations.\nOne command does the job. Simple is better.\n</think>\neasyrsa build-client-full client.example.com nopass"
+  },
+  {
+    "instruction": "Show the Easy-RSA certificate database and status of all issued certs",
+    "output": "<think>\nNeed to show the Easy-RSA certificate database and status of all issued certs.\nLet me think about the best approach.\nI'll reach for cat here because cat operations.\n</think>\ncat pki/index.txt"
+  },
+  {
+    "instruction": "Set Easy-RSA certificate expiration to 365 days in vars file",
+    "output": "<think>\nSo we need to set Easy-RSA certificate expiration to 365 days in vars file.\nLet me break this down.\n</think>\necho 'set_var EASYRSA_CERT_EXPIRE 365' >> pki/vars"
+  }
+]

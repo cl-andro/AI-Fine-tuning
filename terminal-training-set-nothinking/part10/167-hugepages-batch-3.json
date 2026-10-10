@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Set number of hugepages to 512",
+    "output": "echo 512 | sudo tee /proc/sys/vm/nr_hugepages"
+  },
+  {
+    "instruction": "List all hugepage filesystem mounts",
+    "output": "mount -t hugetlbfs"
+  },
+  {
+    "instruction": "Set NUMA node 0 hugepages to 64",
+    "output": "echo 64 | sudo tee /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Set hugetlb SHM group to GID 1000",
+    "output": "echo 1000 | sudo tee /proc/sys/vm/hugetlb_shm_group"
+  },
+  {
+    "instruction": "View THP khugepaged full scans counter",
+    "output": "cat /sys/kernel/mm/transparent_hugepage/khugepaged/full_scans"
+  },
+  {
+    "instruction": "Check hugepage pool maximum setting",
+    "output": "cat /proc/sys/vm/hugetlb_pool_max 2>/dev/null; echo '(may not exist)'"
+  },
+  {
+    "instruction": "Enable transparent hugepages always",
+    "output": "echo always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Check HugePages_Total value",
+    "output": "grep HugePages_Total /proc/meminfo"
+  },
+  {
+    "instruction": "View all hugepage nr_hugepages values per size",
+    "output": "find /sys/kernel/mm/hugepages -name nr_hugepages -exec sh -c 'echo \"$1: $(cat $1)\"' _ {} \\;"
+  },
+  {
+    "instruction": "Check THP max_ptes_none value",
+    "output": "cat /sys/kernel/mm/transparent_hugepage/khugepaged/max_ptes_none"
+  },
+  {
+    "instruction": "Check nr_overcommit_hugepages current value",
+    "output": "cat /proc/sys/vm/nr_overcommit_hugepages"
+  },
+  {
+    "instruction": "Check free hugepages count",
+    "output": "grep HugePages_Free /proc/meminfo"
+  },
+  {
+    "instruction": "Display memory info for huge and total fields",
+    "output": "cat /proc/meminfo | grep -E '^(MemTotal|MemFree|Huge)'"
+  },
+  {
+    "instruction": "Check hugepage and THP vmstat counters",
+    "output": "cat /proc/vmstat | grep -E 'huge|thp'"
+  },
+  {
+    "instruction": "Check overcommit hugepages value",
+    "output": "cat /proc/sys/vm/nr_overcommit_hugepages"
+  },
+  {
+    "instruction": "View THP allocation statistics from vmstat",
+    "output": "grep thp_ /proc/vmstat"
+  },
+  {
+    "instruction": "List available hugepage sizes",
+    "output": "ls /sys/kernel/mm/hugepages/"
+  },
+  {
+    "instruction": "Check hugetlbfs mount details",
+    "output": "mount | grep hugetlbfs"
+  },
+  {
+    "instruction": "Check available hugepage sizes from hstates directory",
+    "output": "ls /sys/kernel/mm/hugepages/"
+  },
+  {
+    "instruction": "List all processes that currently use hugepages",
+    "output": "grep -l HugePages /proc/*/smaps 2>/dev/null"
+  },
+  {
+    "instruction": "Calculate hugepage usage percentage",
+    "output": "awk '/HugePages_Total/{t=$2} /HugePages_Free/{f=$2} END {printf \"Usage: %.1f%%\\n\", (1-f/t)*100}' /proc/meminfo"
+  }
+]

@@ -1,0 +1,60 @@
+# ==============================================================
+# Training configuration - QLoRA fine-tune of a 7B instruction model
+# Precedence:  CLI args  >  .env overrides  >  this file
+# ==============================================================
+
+# --- Base model ---------------------------------------------------
+# Any Hugging Face model id (or local path). Ungated + fits a single
+# T4 16GB with QLoRA. Alternatives:
+#   mistralai/Mistral-7B-Instruct-v0.2
+#   meta-llama/Llama-3.1-8B-Instruct   (gated: accept license + HF_TOKEN)
+#   microsoft/Phi-3.5-mini-instruct     (smaller/faster)
+model_name: Qwen/Qwen2.5-7B-Instruct
+model_revision: main
+# Load a previously trained adapter on top of the base model (optional)
+resume_adapter_path: null
+
+# --- Data ---------------------------------------------------------
+train_dataset_path: data/raw          # raw custom training set (file or folder)
+processed_dir: data/processed         # prepared chat-format JSONL goes here
+val_split: 0.05
+seed: 42
+system_prompt: >-
+  You are a helpful, concise and accurate assistant.
+max_seq_length: 1024
+
+# --- QLoRA --------------------------------------------------------
+use_4bit: true                        # bitsandbytes 4-bit (QLoRA)
+bnb_4bit_quant_type: nf4
+bnb_4bit_use_double_quant: true
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+# null = auto-detect attention/MLP projection layers; set train_lm_head: true to also tune the head
+lora_target_modules: null
+train_lm_head: false
+
+# --- Training -----------------------------------------------------
+output_dir: outputs
+num_train_epochs: 3
+max_steps: -1                         # set e.g. 100 for a quick smoke test
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 4
+learning_rate: 2.0e-4
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.001
+bf16: auto                            # auto | true | false  (T4 -> fp16, A100/L4 -> bf16)
+fp16: auto
+gradient_checkpointing: true
+logging_steps: 5
+eval_strategy: epoch                  # epoch | steps | no
+save_strategy: epoch
+save_total_limit: 2
+resume_from_checkpoint: true          # auto-resume latest checkpoint in output_dir
+report_to: auto                       # auto -> wandb if WANDB_API_KEY set, else none
+
+# --- Post-training ------------------------------------------------
+merge_and_save: false                 # true = also write merged 16-bit model (slow, ~14GB)
+push_to_hub: false                    # true = push adapter to HF_MODEL_REPO (.env)

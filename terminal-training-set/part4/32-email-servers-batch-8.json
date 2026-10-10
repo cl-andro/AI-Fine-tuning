@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a basic procmail recipe to filter emails from a specific sender into a folder",
+    "output": "<think>\nNeed to create a basic procmail recipe to filter emails from a specific sender into a folder.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho ':0\n* ^From:.*spammer@example.com\nSpam/' > ~/.procmailrc"
+  },
+  {
+    "instruction": "Forward all emails from a specific domain to another address using procmail",
+    "output": "<think>\nWe're being asked to forward all emails from a specific domain to another address using procmail.\nLet me think about the best approach.\nFor this, printf is the right tool — printf operations.\n</think>\nprintf ':0\\n* ^From:.*@example.com\\n! forward@otherdomain.com\\n' >> ~/.procmailrc"
+  },
+  {
+    "instruction": "Install a procmail rule to pipe incoming emails to a script for processing",
+    "output": "<think>\nThe goal is to install a procmail rule to pipe incoming emails to a script for processing.\nLet me consider what makes sense here.\nThe tool for this job is printf — printf operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\nprintf ':0\\n* ^Subject:.*Ticket.*\\n| /usr/local/bin/ticket-processor.sh\\n' >> ~/.procmailrc"
+  },
+  {
+    "instruction": "Set up procmail to save a copy of all emails before further processing",
+    "output": "<think>\nThis is asking us to set up procmail to save a copy of all emails before further processing.\nLet me break this down.\nI'd use printf for this — printf operations.\n</think>\nprintf ':0 c\\n/home/user/mail-archive/' >> ~/.procmailrc"
+  },
+  {
+    "instruction": "Create a maildrop mailfilter to sort emails by mailing list into separate folders",
+    "output": "<think>\nSo we need to create a maildrop mailfilter to sort emails by mailing list into separate folders.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'if (/^Delivered-To:.*list@example.com/)\n    to $DEFAULT/.Lists/example.com/' > ~/.mailfilter"
+  },
+  {
+    "instruction": "Write a maildrop recipe that rejects messages over 10 MB",
+    "output": "<think>\nThe goal is to write a maildrop recipe that rejects messages over 10 MB.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'if ($SIZE > 10485760)\n    exception {\n        to /dev/null\n    }' > ~/.mailfilter"
+  },
+  {
+    "instruction": "Implement a vacation auto-reply message using the vacation command",
+    "output": "<think>\nWe should implement a vacation auto-reply message using the vacation command.\nFor this, vacation is the right tool — vacation operations.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nI'm using -a for AND operator in find — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nvacation -i && vacation -a user@example.com -f ~/.vacation.msg"
+  },
+  {
+    "instruction": "Create the vacation message file for automatic out-of-office replies",
+    "output": "<think>\nWe should create the vacation message file for automatic out-of-office replies.\nFirst, let me understand what's needed here.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'I am out of office until July 15. - User' > ~/.vacation.msg"
+  },
+  {
+    "instruction": "Enable vacation auto-reply with a custom return address",
+    "output": "<think>\nWe should enable vacation auto-reply with a custom return address.\nFirst, let me understand what's needed here.\nI'll reach for vacation here because vacation operations.\nI'm using -a for AND operator in find — standard practice for this kind of operation.\nThe -r flag handles recursive operation (descend into subdirectories). Important because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nvacation -a user@example.com -r sender@external.com -t 14"
+  },
+  {
+    "instruction": "Test a Sieve script syntax without deploying it",
+    "output": "<think>\nAlright, we need to test a Sieve script syntax without deploying it.\nLet me think about the best approach.\nBest tool here is sievec — sievec operations.\nI'm using -t for sort by modification time — needed for this specific use case.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nsievec -t /etc/dovecot/sieve/before.d/spam.sieve"
+  },
+  {
+    "instruction": "Compile a Dovecot Sieve script for production use",
+    "output": "<think>\nAlright, we need to compile a Dovecot Sieve script for production use.\nLet me consider what makes sense here.\nThe tool for this job is sievec — sievec operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nsievec /etc/dovecot/sieve/managesieve/global.sieve"
+  },
+  {
+    "instruction": "Create a Sieve filter rule to move mailing list messages to a subfolder",
+    "output": "<think>\nWe should create a Sieve filter rule to move mailing list messages to a subfolder.\nLet me think through this step by step.\nQuick verification after execution to be safe.\n</think>\necho 'require \"fileinto\";\nif header :contains \"List-Id\" \"list.example.com\" {\n    fileinto \"INBOX.Lists\";\n    stop;\n}' > ~/.dovecot.sieve"
+  },
+  {
+    "instruction": "Set up a Sieve vacation/auto-reply rule with a specific interval",
+    "output": "<think>\nThis is asking us to set up a Sieve vacation/auto-reply rule with a specific interval.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'require \"vacation\";\nvacation :days 7 :subject \"Out of Office\" \"I am away.\";' > ~/.dovecot.sieve"
+  },
+  {
+    "instruction": "Apply a Sieve rule to reject mail from a specific domain with a custom reason",
+    "output": "<think>\nThe user wants to apply a Sieve rule to reject mail from a specific domain with a custom reason.\nLet me verify afterward that it worked correctly.\n</think>\necho 'require \"reject\";\nif address :domain :contains \"From\" \"spamdomain.com\" {\n    reject \"Not accepted\";\n    stop;\n}' >> ~/.dovecot.sieve"
+  },
+  {
+    "instruction": "Use procmail to log all incoming email headers for debugging",
+    "output": "<think>\nSo we need to use procmail to log all incoming email headers for debugging.\nFirst, let me understand what's needed here.\nI'll reach for printf here because printf operations.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nprintf ':0 c\\n| formail -X \"From:\" -X \"Subject:\" >> /tmp/mail-headers.log\\n' >> ~/.procmailrc"
+  },
+  {
+    "instruction": "Create a maildrop rule to limit incoming messages per day from a sender",
+    "output": "<think>\nThe task requires us to create a maildrop rule to limit incoming messages per day from a sender.\nFirst, let me understand what's needed here.\n</think>\necho 'if (/^From:.*annoying@example.com/)\n    if (/^$/ ? (++$ANN_COUNT > 3 : 0))\n        to /dev/null' > ~/.mailfilter"
+  },
+  {
+    "instruction": "Set up global Sieve scripts for Dovecot from the config directory",
+    "output": "<think>\nThe goal is to set up global Sieve scripts for Dovecot from the config directory.\nFirst, let me understand what's needed here.\nThe tool for this job is ls — ls operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nls /etc/dovecot/sieve/global/"
+  },
+  {
+    "instruction": "Test a maildrop filter with a sample email file",
+    "output": "<think>\nAlright, we need to test a maildrop filter with a sample email file.\nLet me think through this step by step.\nBest tool here is maildrop — maildrop operations.\nI've added -f to force, suppress errors — needed for this specific use case.\nAfter running, I'll confirm the result looks right.\n</think>\nmaildrop -f sample@example.com < /tmp/test-email.txt"
+  },
+  {
+    "instruction": "Dovecot Sieve: redirect all emails from a specific sender to another address",
+    "output": "<think>\nWe should dovecot Sieve: redirect all emails from a specific sender to another address.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'require \"redirect\";\nif address :contains \"From\" \"boss@example.com\" {\n    redirect \"personal@gmail.com\";\n    stop;\n}' >> ~/.dovecot.sieve"
+  },
+  {
+    "instruction": "Create a procmail recipe that discards messages with specific spam keywords",
+    "output": "<think>\nWe should create a procmail recipe that discards messages with specific spam keywords.\nLet me think about the best approach.\nI'd use printf for this — printf operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nprintf ':0 D\\n* ^Subject:.*\\\\b(viagra|casino|lottery)\\\\b\\n/dev/null\\n' >> ~/.procmailrc"
+  },
+  {
+    "instruction": "Display the active Sieve script for a Dovecot user",
+    "output": "<think>\nAlright, we need to display the active Sieve script for a Dovecot user.\ndoveadm is what we need — doveadm operations.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ndoveadm sieve get -u user@example.com"
+  },
+  {
+    "instruction": "List all compiled Sieve scripts available system-wide",
+    "output": "<think>\nWe should list all compiled Sieve scripts available system-wide.\nLet me think about the best approach.\nI'd use ls for this — ls operations.\nThe -la flag handles detailed listing including hidden files. Important because standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nls -la /var/lib/dovecot/sieve/"
+  }
+]

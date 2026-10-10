@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Set log_statement for current session",
+    "output": "psql -c \"SET log_statement = 'all'\""
+  },
+  {
+    "instruction": "Show current server encoding",
+    "output": "psql -c \"SHOW server_encoding\""
+  },
+  {
+    "instruction": "List all installed extensions",
+    "output": "psql -c \"SELECT * FROM pg_extension\""
+  },
+  {
+    "instruction": "Create a new login role",
+    "output": "psql -c \"CREATE ROLE appuser LOGIN PASSWORD 'password'\""
+  },
+  {
+    "instruction": "Grant schema usage and create",
+    "output": "psql -c \"GRANT USAGE, CREATE ON SCHEMA public TO appuser\""
+  },
+  {
+    "instruction": "Grant all table privileges",
+    "output": "psql -c \"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO appuser\""
+  },
+  {
+    "instruction": "Create a foreign data wrapper",
+    "output": "psql -c \"CREATE FOREIGN DATA WRAPPER postgres_fdw\""
+  },
+  {
+    "instruction": "Create a foreign server",
+    "output": "psql -c \"CREATE SERVER foreign_server FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'remote', dbname 'other')\""
+  },
+  {
+    "instruction": "Create a foreign table",
+    "output": "psql -c \"CREATE FOREIGN TABLE foreign_table (id INT, name TEXT) SERVER foreign_server OPTIONS (schema_name 'public', table_name 'source')\""
+  },
+  {
+    "instruction": "Show table and schema sizes",
+    "output": "psql -c \"SELECT schema_name, ROUND(SUM(total_size)::numeric, 2) FROM (SELECT schema_name, pg_total_relation_size(schema_name||'.'||table_name) AS total_size FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema')) AS sizes GROUP BY schema_name\""
+  },
+  {
+    "instruction": "Show current transaction isolation level",
+    "output": "psql -c \"SHOW transaction_isolation\""
+  },
+  {
+    "instruction": "Create a publication for logical replication",
+    "output": "psql -c \"CREATE PUBLICATION mypub FOR TABLE users, orders\""
+  },
+  {
+    "instruction": "Create a subscription for logical replication",
+    "output": "psql -c \"CREATE SUBSCRIPTION mysub CONNECTION 'host=remote dbname=mydb' PUBLICATION mypub\""
+  },
+  {
+    "instruction": "Show table access statistics",
+    "output": "psql -c \"SELECT relname, seq_scan, seq_tup_read, idx_scan, idx_tup_fetch FROM pg_stat_user_tables ORDER BY seq_scan DESC\""
+  },
+  {
+    "instruction": "Show the database system identifier",
+    "output": "psql -c \"SELECT system_identifier FROM pg_control_system()\""
+  },
+  {
+    "instruction": "Show current WAL flush location",
+    "output": "psql -c \"SELECT pg_current_wal_flush_lsn()\""
+  },
+  {
+    "instruction": "Set a configuration parameter at database level",
+    "output": "psql -c \"ALTER DATABASE mydb SET work_mem = '128MB'\""
+  },
+  {
+    "instruction": "Reset a database-level configuration",
+    "output": "psql -c \"ALTER DATABASE mydb RESET work_mem\""
+  },
+  {
+    "instruction": "Show database connection limits",
+    "output": "psql -c \"SELECT datname, datconnlimit FROM pg_database\""
+  },
+  {
+    "instruction": "Create a replication role",
+    "output": "psql -c \"CREATE ROLE repluser WITH REPLICATION LOGIN PASSWORD 'replpass'\""
+  },
+  {
+    "instruction": "Show table owners",
+    "output": "psql -c \"SELECT schemaname, tablename, tableowner FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename\""
+  },
+  {
+    "instruction": "Show checkpoint statistics",
+    "output": "psql -c \"SELECT * FROM pg_stat_bgwriter\""
+  }
+]

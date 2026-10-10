@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Use Drone with build parameters for matrix",
+    "output": "drone build queue owner/repo --param GO_VERSION=1.21 --param NODE_VERSION=20"
+  },
+  {
+    "instruction": "Use Woodpecker with environment variable matrix",
+    "output": "echo 'matrix: NODE: - 18 - 20 GO: - 1.21 - 1.22 pipeline: test: image: golang:${GO} commands: - go test environment: - NODE_VERSION=${NODE}' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with skip_clone setting",
+    "output": "echo 'skip_clone: true pipeline: info: image: alpine:latest commands: - echo no clone' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with network_mode",
+    "output": "echo 'steps: - name: curl image: alpine network_mode: host commands: - curl http://localhost:8080' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with DNS settings",
+    "output": "echo 'steps: - name: dns image: alpine dns: - 8.8.8.8 commands: - nslookup example.com' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with CPU count limit",
+    "output": "echo 'steps: - name: test image: golang cpu: 2 commands: - go test -parallel 2' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with memory limit",
+    "output": "echo 'steps: - name: build image: golang memory: 1024 commands: - go build' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone with pipeline user namespace",
+    "output": "echo 'steps: - name: safe image: alpine user: 1000:1000 commands: - whoami' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone with secrets masked in logs",
+    "output": "echo 'steps: - name: deploy image: alpine secrets: - my_secret commands: - echo $my_secret' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with masked secrets",
+    "output": "echo 'pipeline: deploy: image: alpine:latest secrets: - db_password commands: - echo $db_password' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Configure Woodpecker agent for multiple platforms",
+    "output": "export WOODPECKER_PLATFORM=linux/amd64,linux/arm64 && woodpecker-agent"
+  },
+  {
+    "instruction": "Configure Drone runner for specific image whitelist",
+    "output": "export DRONE_RUNNER_PRIVILEGED_IMAGES=golang:*,node:* && export DRONE_RUNNER_LABELS=type:privileged"
+  },
+  {
+    "instruction": "Use Drone with build cancellation on PR close",
+    "output": "drone repo update owner/repo --build-cancel-pull-requests"
+  },
+  {
+    "instruction": "Use Woodpecker to list all pipelines in a file",
+    "output": "woodpecker-cli build ls owner/repo --event push --limit 5"
+  },
+  {
+    "instruction": "Use Woodpecker build number in deploy script",
+    "output": "echo 'pipeline: tag: image: alpine:latest commands: - echo v${CI_PIPELINE_NUMBER}' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Drone to deploy with Docker Compose",
+    "output": "echo 'steps: - name: deploy image: alpine commands: - scp docker-compose.yml deploy@host:~ - ssh deploy@host \"docker compose up -d\"' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Woodpecker to deploy via kubectl",
+    "output": "echo 'pipeline: deploy: image: alpine:latest commands: - kubectl set image deployment/app app=registry.example.com/app:${CI_COMMIT_SHA}' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Drone to notify via Matrix (chat)",
+    "output": "echo 'steps: - name: notify image: plugins/matrix settings: homeserver: matrix.example.com room: '!room:example.com' username: dronebot password: pass' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with Telegram notification",
+    "output": "echo 'pipeline: notify: image: appleboy/drone-telegram settings: token: 123:abc to: - chat_id' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Drone with custom webhook notification",
+    "output": "echo 'steps: - name: webhook image: alpine commands: - curl -X POST -H \"Content-Type: application/json\" -d '{\"status\": \"done\"}' https://hooks.example.com/ci' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with multi-arch Docker build",
+    "output": "echo 'pipeline: build: image: plugins/docker-buildx settings: platforms: - linux/amd64 - linux/arm64 repo: owner/app tags: latest' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with Docker layer caching",
+    "output": "echo 'pipeline: build: image: plugins/docker settings: repo: owner/app cache_from: - owner/app:cache' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with registry mirror",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build environment: - REGISTRY_MIRROR=http://mirror:5000' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with step timeout for long builds",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build timeout: 600' > .woodpecker.yml"
+  }
+]

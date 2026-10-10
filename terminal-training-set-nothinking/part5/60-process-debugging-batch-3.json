@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'watch x' -ex 'continue' -ex 'print x' ./watch_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file watch_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at watch_demo.c:12\n12\t    int x = 42;\nHardware watchpoint 2: x\nHardware watchpoint 2: x\n\nOld value = 42\nNew value = 100\nmain () at watch_demo.c:20\n20\t    printf(\"x = %d\\n\", x);\n$1 = 100"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'rwatch x' -ex 'continue' ./watch_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file watch_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at watch_demo.c:12\n12\t    int x = 42;\nHardware read watchpoint 2: x\nHardware read watchpoint 2: x\n\nValue = 42\nmain () at watch_demo.c:18\n18\t    printf(\"reading x: %d\\n\", x);"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'awatch x' -ex 'continue' ./watch_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file watch_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at watch_demo.c:12\n12\t    int x = 42;\nHardware access (read/write) watchpoint 2: x\nHardware access (read/write) watchpoint 2: x\n\nValue = 42\nmain () at watch_demo.c:18\n18\t    printf(\"reading x: %d\\n\", x);"
+  },
+  {
+    "instruction": "gdb -batch -ex 'catch syscall write' -ex 'run' -ex 'print $rsi' -ex 'continue' ./write_demo 2>&1",
+    "output": "Catchpoint 1 (syscall 'write' [1])\nCatchpoint 1 (call to syscall write), 0x00007ffff7af9f2f in __GI___libc_write (fd=1, buf=0x402010, nbytes=14) at ../sysdeps/unix/sysv/linux/write.c:24\n$1 = 0x402010"
+  },
+  {
+    "instruction": "gdb -batch -ex 'catch syscall' -ex 'run' -ex 'finish' ./syscall_demo 2>&1",
+    "output": "Catchpoint 1 (any syscall)\nCatchpoint 1 (call to syscall write), 0x00007ffff7af9f2f in __GI___libc_write (fd=1, buf=0x402010, nbytes=14) at ../sysdeps/unix/sysv/linux/write.c:24\nRun till exit from"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main if argc > 1 && argc < 4' -ex 'run' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=2, argv=0x7fffffffe5a8) at app.c:12\n12\t    int x = 42;"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break 18' -ex 'ignore 1 10' -ex 'run' -ex 'print iteration' ./loop_counter 2>&1",
+    "output": "Breakpoint 1 at 0x4011c8: file loop_counter.c, line 18.\nWill ignore next 10 crossings of breakpoint 1.\nBreakpoint 1, main () at loop_counter.c:18\n18\t        process(iteration);\n$1 = 10"
+  },
+  {
+    "instruction": "gdb -q -ex 'break 18' -ex 'commands' -ex 'silent' -ex 'printf \"iteration %d\\n\", iteration' -ex 'continue' -ex 'end' -ex 'run' -ex 'quit' ./loop_counter 2>&1",
+    "output": "Breakpoint 1 at 0x4011c8: file loop_counter.c, line 18.\nEnd with a line saying just \"end\".\n>silent\n>printf \"iteration %d\\n\", iteration\n>continue\n>end\nBreakpoint 1, main () at loop_counter.c:18\n18\t        process(iteration);\niteration 0\niteration 1\niteration 2\niteration 3\nA debugging session is active.\nQuit anyway? (y or n) [answered Y - input not from terminal]"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break 18' -ex 'commands' -ex 'silent' -ex 'while-stepping' -ex 'step' -ex 'step' -ex 'end' -ex 'printf \"end\\n\"' -ex 'end' -ex 'run' -ex 'quit' ./loop_counter 2>&1",
+    "output": "Breakpoint 1 at 0x4011c8: file loop_counter.c, line 18.\nEnd with a line saying just \"end\".\n>silent\n>while-stepping\n>step\n>step\n>end\n>printf \"end\\n\"\n>end\nA debugging session is active.\nQuit anyway? (y or n) [answered Y - input not from terminal]"
+  },
+  {
+    "instruction": "gdb -batch -ex 'trace main' -ex 'tvariable $x' -ex 'actions' -ex 'collect x' -ex 'end' -ex 'tstart' -ex 'run' -ex 'tstop' -ex 'tfind' -ex 'print x' ./trace_demo 2>&1",
+    "output": "Tracepoint 1 at 0x4011a6: file trace_demo.c, line 12.\nEnd with a line saying just \"end\".\n>collect x\n>end\nTracepoint 1 at 0x4011a6: file trace_demo.c, line 12.\nNot supported on this target.\nTarget does not support tracepoints."
+  },
+  {
+    "instruction": "gdb -batch -ex 'trace main' -ex 'teval $x = x' -ex 'end' -ex 'tstart' -ex 'run' -ex 'tstop' -ex 'tfind frame 0' -ex 'print $x' ./trace_demo 2>&1",
+    "output": "Tracepoint 1 at 0x4011a6: file trace_demo.c, line 12.\nEnd with a line saying just \"end\".\n>teval $x = x\n>end\nTarget does not support tracepoints."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'x/20x $rsp' ./stack_view 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file stack_view.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at stack_view.c:12\n12\t    int x = 42;\n0x7fffffffe4a0:\t0x00000000004011d6\t0x00007ffff7df1d90\n0x7fffffffe4b0:\t0x0000000000000001\t0x00007fffffffe5b8\n0x7fffffffe4c0:\t0x0000000100000000\t0x00000000004011a2\n0x7fffffffe4d0:\t0x0000000000000000\t0x7d5baaa9a8c8b2e4\n0x7fffffffe4e0:\t0x00000000004011a2\t0x00007ffff7d8c740"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'x/s $rdi' ./string_print 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file string_print.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at string_print.c:12\n12\t    char *msg = \"Hello, World!\";\n0x7fffffffe5b8:\t\"/home/user/string_print\""
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'find /b 0x601000, 0x601040, 0x41, 0x42, 0x43' ./find_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file find_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at find_demo.c:12\n12\t    char buf[] = \"ABCdef\";\n0x601030\n0x601034\n2 patterns found."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'search printf' ./search_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file search_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at search_demo.c:12\n12\t    printf(\"hello\\n\");\n// no source lines matching \"printf\"\nDid you mean:\n  /usr/include/stdio.h:318:  extern int printf (const char *__restrict __format, ...);"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'reverse-search strlen' ./search_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file search_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at search_demo.c:12\n12\t    printf(\"hello\\n\");\n// no source lines matching \"strlen\"\nDid you mean:\n  /usr/include/string.h:66:  extern size_t strlen (const char *__s)"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'bt full' ./crash_app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file crash_app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at crash_app.c:12\n12\t    int *p = NULL;"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'up' -ex 'up' -ex 'down' -ex 'frame' -ex 'select-frame 0' ./crash_app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file crash_app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at crash_app.c:12\n12\t    int *p = NULL;"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'info line main' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nLine 12 of \"app.c\" starts at address 0x4011a6 <main+4> and ends at 0x4011ad <main+11>."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'info scope main' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nScope for main:\nSymbol x is a variable in scope at ./app.c:12.\nSymbol argv is a variable in scope at ./app.c:12.\nSymbol argc is a variable in scope at ./app.c:12."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'print/x $rax' -ex 'print/t $rbx' -ex 'print/d $rcx' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\n$1 = 0x4011a6\n$2 = 0x7fffffffe5b8\n$3 = 4199864"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'info proc mappings' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\nMapped address spaces:\n\n          Start Addr           End Addr       Size     Offset  Perms  objfile\n      0x401000             0x402000        0x1000        0x0  r--p   /home/user/app\n      0x402000             0x403000        0x1000        0x1000  r-xp   /home/user/app\n      0x403000             0x404000        0x1000        0x2000  r--p   /home/user/app\n      0x404000             0x405000        0x1000        0x2000  r--p   /home/user/app\n      0x405000             0x406000        0x1000        0x3000  rw-p   /home/user/app\n      0x7ffff7a3d000       0x7ffff7bd4000   0x1bd7000        0x0  r--p   /usr/lib/x86_64-linux-gnu/libc.so.6\n      0x7ffff7bd4000       0x7ffff7d58000   0x184000        0x1bd7000  r-xp   /usr/lib/x86_64-linux-gnu/libc.so.6"
+  }
+]

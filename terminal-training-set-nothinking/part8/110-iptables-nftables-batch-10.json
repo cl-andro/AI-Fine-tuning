@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create nftables table",
+    "output": "nft add table inet filter"
+  },
+  {
+    "instruction": "Delete nftables table",
+    "output": "nft delete table inet filter"
+  },
+  {
+    "instruction": "Create nftables chain input",
+    "output": "nft add chain inet filter input '{ type filter hook input priority 0; policy accept; }'"
+  },
+  {
+    "instruction": "Add nftables rule allow SSH",
+    "output": "nft add rule inet filter input tcp dport 22 accept"
+  },
+  {
+    "instruction": "Add nftables rule allow HTTP/S",
+    "output": "nft add rule inet filter input tcp dport {80, 443} accept"
+  },
+  {
+    "instruction": "Add nftables rule drop IP",
+    "output": "nft add rule inet filter input ip saddr 10.0.0.5 drop"
+  },
+  {
+    "instruction": "Add nftables rule established",
+    "output": "nft add rule inet filter input ct state established,related accept"
+  },
+  {
+    "instruction": "Create nftables set",
+    "output": "nft add set inet filter allowed_hosts '{ type ipv4_addr; flags interval; }'"
+  },
+  {
+    "instruction": "Add element to nftables set",
+    "output": "nft add element inet filter allowed_hosts { 192.168.1.0/24 }"
+  },
+  {
+    "instruction": "Create nftables map",
+    "output": "nft add map inet filter port_map '{ type inet_service: verdict; }'"
+  },
+  {
+    "instruction": "Add element to nftables map",
+    "output": "nft add element inet filter port_map { 22 : accept, 80 : accept }"
+  },
+  {
+    "instruction": "Add rule using nftables set",
+    "output": "nft add rule inet filter input ip saddr @allowed_hosts accept"
+  },
+  {
+    "instruction": "Flush nftables ruleset",
+    "output": "nft flush ruleset"
+  },
+  {
+    "instruction": "Replace nftables rule by handle",
+    "output": "nft replace rule inet filter input handle 3 tcp dport 443 accept"
+  },
+  {
+    "instruction": "Delete nftables rule by handle",
+    "output": "nft delete rule inet filter input handle 5"
+  },
+  {
+    "instruction": "Create forward chain nftables",
+    "output": "nft add chain inet filter forward '{ type filter hook forward priority 0; policy drop; }'"
+  },
+  {
+    "instruction": "Add NAT masquerade nftables",
+    "output": "nft add rule nat postrouting masquerade"
+  },
+  {
+    "instruction": "Add iptables rule for port forward",
+    "output": "iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080"
+  },
+  {
+    "instruction": "List NAT table",
+    "output": "iptables -t nat -L -n -v"
+  },
+  {
+    "instruction": "Allow specific port range",
+    "output": "iptables -A INPUT -p tcp --dport 3000:4000 -j ACCEPT"
+  },
+  {
+    "instruction": "Limit connection rate",
+    "output": "iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -m limit --limit 3/min -j ACCEPT"
+  },
+  {
+    "instruction": "Log dropped packets",
+    "output": "iptables -A INPUT -j LOG --log-prefix 'iptables-drop: ' --log-level 4"
+  }
+]

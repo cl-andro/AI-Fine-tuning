@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Trace system calls of a program with strace",
+    "output": "<think>\nThe task requires us to trace system calls of a program with strace.\nFirst, let me understand what's needed here.\nThe tool for this job is strace — system call tracing.\nWhy -c? Count or create. needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nstrace -c -f -o strace.log ./myapp && cat strace.log"
+  },
+  {
+    "instruction": "Trace library calls of a program with ltrace",
+    "output": "<think>\nWe're being asked to trace library calls of a program with ltrace.\nLet me consider what makes sense here.\nI'd use ltrace for this — ltrace operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nltrace -c -o ltrace.log ./myapp && cat ltrace.log"
+  },
+  {
+    "instruction": "Filter strace to only show file operations",
+    "output": "<think>\nThe user wants to filter strace to only show file operations.\nLet me think about the best approach.\nFor this, strace is the right tool — system call tracing.\nWhy -e? Edit or executable. important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nstrace -e trace=open,openat,read,write -p 1234 -o file_trace.log"
+  },
+  {
+    "instruction": "Use strace to show timestamps per syscall",
+    "output": "<think>\nNeed to use strace to show timestamps per syscall.\nThis calls for strace. System call tracing.\nThe -T flag handles print filesystem type in df. Important because standard practice for this kind of operation.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\nstrace -ttt -T -p 1234 2>&1 | head -20"
+  },
+  {
+    "instruction": "Check for memory leaks with valgrind memcheck",
+    "output": "<think>\nThis is asking us to check for memory leaks with valgrind memcheck.\nI'll reach for valgrind here because memory debugging.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nvalgrind --leak-check=full --show-leak-kinds=all ./myapp 2>&1 | tail -30"
+  },
+  {
+    "instruction": "Profile CPU cache usage with valgrind cachegrind",
+    "output": "<think>\nThe goal is to profile CPU cache usage with valgrind cachegrind.\nThis calls for valgrind. Memory debugging.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nvalgrind --tool=cachegrind ./myapp && cg_annotate cachegrind.out.* | head -30"
+  },
+  {
+    "instruction": "Profile call graph with valgrind callgrind",
+    "output": "<think>\nWe're being asked to profile call graph with valgrind callgrind.\nLet me think through this step by step.\nvalgrind is what we need — memory debugging.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nvalgrind --tool=callgrind ./myapp && callgrind_annotate callgrind.out.* | head -30"
+  },
+  {
+    "instruction": "Profile heap memory with valgrind massif",
+    "output": "<think>\nAlright, we need to profile heap memory with valgrind massif.\nHere's how I'd approach this.\nFor this, valgrind is the right tool — memory debugging.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nvalgrind --tool=massif ./myapp && ms_print massif.out.* | head -50"
+  },
+  {
+    "instruction": "Check for thread data races with valgrind helgrind",
+    "output": "<think>\nWe're being asked to check for thread data races with valgrind helgrind.\nLet me reason through this.\nvalgrind is what we need — memory debugging.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nvalgrind --tool=helgrind ./myapp 2>&1 | head -30"
+  },
+  {
+    "instruction": "Debug a running process with gdb",
+    "output": "<think>\nNeed to debug a running process with gdb.\nLet me think through this step by step.\nThis calls for gdb. Debugging and analysis.\nThe -p flag handles create parent directories as needed. Important because this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ngdb -p 1234 -batch -ex 'thread apply all bt' 2>&1 | head -50"
+  },
+  {
+    "instruction": "Attach gdb and capture stack traces every 1 second",
+    "output": "<think>\nThe goal is to attach gdb and capture stack traces every 1 second.\nLet me think through this step by step.\nBest tool here is gdb — debugging and analysis.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngdb -p 1234 -batch -ex 'while 1' -ex 'thread apply all bt' -ex 'sleep 1' -ex 'end' 2>&1 | head -100"
+  },
+  {
+    "instruction": "Run a low-priority backup job with nice",
+    "output": "<think>\nWe're being asked to run a low-priority backup job with nice.\nThis calls for nice. Nice operations.\nThe -n flag handles dry-run, no changes. Important because important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\nnice -n 19 tar czf /backup/archive.tar.gz /home"
+  },
+  {
+    "instruction": "Change priority of a running process with renice",
+    "output": "<think>\nAlright, we need to change priority of a running process with renice.\nI'll reach for renice here because renice operations.\nWhy -n? Dry-run, no changes. important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nrenice -n -10 -p 1234"
+  },
+  {
+    "instruction": "Set I/O priority to idle for a background task",
+    "output": "<think>\nWe should set I/O priority to idle for a background task.\nLet me consider what makes sense here.\nionice is what we need — ionice operations.\n</think>\nionice -c 3 -p 1234"
+  },
+  {
+    "instruction": "Run a background task with best-effort I/O priority",
+    "output": "<think>\nAlright, we need to run a background task with best-effort I/O priority.\nThis calls for ionice. Ionice operations.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nI've added -n to dry-run, no changes — important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\n</think>\nionice -c 2 -n 7 dd if=/dev/zero of=/tmp/large bs=1M count=1024"
+  },
+  {
+    "instruction": "Set real-time scheduling policy with chrt",
+    "output": "<think>\nSo we need to set real-time scheduling policy with chrt.\nThe tool for this job is chrt — chrt operations.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\n</think>\nchrt -f 50 ./myapp"
+  },
+  {
+    "instruction": "Check scheduling policy of a process",
+    "output": "<think>\nThis is asking us to check scheduling policy of a process.\nFirst, let me understand what's needed here.\nThe tool for this job is chrt — chrt operations.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\n</think>\nchrt -p 1234"
+  },
+  {
+    "instruction": "Set round-robin scheduling for a process",
+    "output": "<think>\nWe should set round-robin scheduling for a process.\nI'll reach for chrt here because chrt operations.\nI'm using -r for recursive operation (descend into subdirectories) — without it the command won't work as we need.\nOne command does the job. Simple is better.\n</think>\nchrt -r 99 ./myapp"
+  },
+  {
+    "instruction": "Allocate 2 MB hugepages for an application",
+    "output": "<think>\nThe goal is to allocate 2 MB hugepages for an application.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 512 > /proc/sys/vm/nr_hugepages && grep HugePages /proc/meminfo"
+  },
+  {
+    "instruction": "Mount a hugetlbfs filesystem for hugepage-backed files",
+    "output": "<think>\nThe goal is to mount a hugetlbfs filesystem for hugepage-backed files.\nLet me think about the best approach.\nmount is what we need — filesystem mounting.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nmount -t hugetlbfs hugetlbfs /dev/hugepages && grep hugetlbfs /proc/mounts"
+  },
+  {
+    "instruction": "Drop all filesystem caches to test cold-cache performance",
+    "output": "<think>\nThe task requires us to drop all filesystem caches to test cold-cache performance.\nHere's how I'd approach this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho 3 > /proc/sys/vm/drop_caches && sync"
+  },
+  {
+    "instruction": "Drop dentries and inodes only from cache",
+    "output": "<think>\nWe should drop dentries and inodes only from cache.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 2 > /proc/sys/vm/drop_caches"
+  },
+  {
+    "instruction": "View swappiness value and explain it",
+    "output": "<think>\nThe goal is to view swappiness value and explain it.\nLet me think about the best approach.\nI'd use cat for this — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/sys/vm/swappiness && echo 'Lower = less swapping, higher = more aggressive swap'"
+  },
+  {
+    "instruction": "Check kernel ring buffer for performance errors",
+    "output": "<think>\nNeed to check kernel ring buffer for performance errors.\nFirst, let me understand what's needed here.\nThe tool for this job is dmesg — kernel ring buffer inspection.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndmesg --level=err,warn | grep -iE 'cpu|irq|timer|acpi|pci' | tail -20"
+  }
+]

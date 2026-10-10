@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a PodDisruptionBudget",
+    "output": "<think>\nSo we need to create a PodDisruptionBudget.\nLet me break this down.\nThis calls for cat. Cat operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat > pdb.yaml << 'EOF'\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: myapp-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: myapp\nEOF\nkubectl apply -f pdb.yaml"
+  },
+  {
+    "instruction": "Create a PriorityClass",
+    "output": "<think>\nSo we need to create a PriorityClass.\nLet me break this down.\nFor this, cat is the right tool — cat operations.\n</think>\ncat > priority.yaml << 'EOF'\napiVersion: scheduling.k8s.io/v1\nkind: PriorityClass\nmetadata:\n  name: high-priority\nvalue: 1000\nglobalDefault: false\ndescription: High priority pods\nEOF\nkubectl apply -f priority.yaml"
+  },
+  {
+    "instruction": "Use a PersistentVolumeClaim in a pod",
+    "output": "<think>\nWe should use a PersistentVolumeClaim in a pod.\nLet me break this down.\nI'll reach for cat here because cat operations.\n</think>\ncat > pvc-pod.yaml << 'EOF'\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: myapp\n    image: nginx\n    volumeMounts:\n    - name: data\n      mountPath: /data\n  volumes:\n  - name: data\n    persistentVolumeClaim:\n      claimName: mypvc\nEOF\nkubectl apply -f pvc-pod.yaml"
+  },
+  {
+    "instruction": "Create a StorageClass",
+    "output": "<think>\nThe user wants to create a StorageClass.\nThis calls for cat. Cat operations.\nQuick verification after execution to be safe.\n</think>\ncat > storageclass.yaml << 'EOF'\napiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: fast-store\nprovisioner: kubernetes.io/aws-ebs\nparameters:\n  type: gp3\nreclaimPolicy: Retain\nEOF\nkubectl apply -f storageclass.yaml"
+  },
+  {
+    "instruction": "List StorageClasses",
+    "output": "<think>\nThe goal is to list StorageClasses.\nThe tool for this job is kubectl — Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl get storageclass"
+  },
+  {
+    "instruction": "Expand a PVC (if supported)",
+    "output": "<think>\nThe user wants to expand a PVC (if supported).\nFirst, let me understand what's needed here.\nBest tool here is kubectl — Kubernetes cluster management.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl patch pvc mypvc -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"20Gi\"}}}}'"
+  },
+  {
+    "instruction": "Create a ConfigMap from a directory",
+    "output": "<think>\nThe task requires us to create a ConfigMap from a directory.\nI'd use kubectl for this — Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl create configmap myconfig --from-file=./configs/"
+  },
+  {
+    "instruction": "Create a ConfigMap from env file",
+    "output": "<think>\nThis is asking us to create a ConfigMap from env file.\nLet me consider what makes sense here.\nThis calls for kubectl. Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nkubectl create configmap app-env --from-env-file=.env"
+  },
+  {
+    "instruction": "Create a Secret from a file",
+    "output": "<think>\nWe're being asked to create a Secret from a file.\nLet me think about the best approach.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl create secret generic tls-secret --from-file=tls.crt=server.crt --from-file=tls.key=server.key"
+  },
+  {
+    "instruction": "Decode a Secret value",
+    "output": "<think>\nSo the request is to decode a Secret value.\nLet me break this down.\nThis calls for kubectl. Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl get secret mysecret -o jsonpath='{.data.password}' | base64 -d"
+  },
+  {
+    "instruction": "Create a Service of type NodePort",
+    "output": "<think>\nThe user wants to create a Service of type NodePort.\nLet me think through this step by step.\nBest tool here is kubectl — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl expose deployment myapp --type=NodePort --port=80"
+  },
+  {
+    "instruction": "Create a Service of type LoadBalancer",
+    "output": "<think>\nWe should create a Service of type LoadBalancer.\nFirst, let me understand what's needed here.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl expose deployment myapp --type=LoadBalancer --port=80 --target-port=80"
+  },
+  {
+    "instruction": "Create a ClusterIP service (internal only)",
+    "output": "<think>\nThis is asking us to create a ClusterIP service (internal only).\nThe tool for this job is kubectl — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nkubectl create service clusterip myapp --tcp=80:80"
+  },
+  {
+    "instruction": "Create an ExternalName service",
+    "output": "<think>\nSo we need to create an ExternalName service.\nHere's how I'd approach this.\nkubectl is what we need — Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl create service externalname mydb --external-name=database.example.com"
+  },
+  {
+    "instruction": "Get endpoints of a service",
+    "output": "<think>\nWe're being asked to get endpoints of a service.\nLet me think through this step by step.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl get endpoints myapp"
+  },
+  {
+    "instruction": "Check service DNS resolution",
+    "output": "<think>\nSo we need to check service DNS resolution.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl run test-dns --image=busybox -it --rm -- nslookup myapp.default.svc.cluster.local"
+  },
+  {
+    "instruction": "Create an IPv6 service",
+    "output": "<think>\nAlright, we need to create an IPv6 service.\nThe tool for this job is cat — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat > ipv6-svc.yaml << 'EOF'\napiVersion: v1\nkind: Service\nmetadata:\n  name: ipv6-svc\nspec:\n  ipFamilyPolicy: PreferDualStack\n  clusterIP: ::1\n  ports:\n  - port: 80\n  selector:\n    app: myapp\nEOF\nkubectl apply -f ipv6-svc.yaml"
+  },
+  {
+    "instruction": "Check Service Mesh (istio) injection",
+    "output": "<think>\nThe user wants to check Service Mesh (istio) injection.\nThis calls for kubectl. Kubernetes cluster management.\nWhy -l? Long format with details. without it the command won't work as we need.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nkubectl get pods -l app=myapp -o yaml | grep -q 'sidecar.istio.io/inject: true' && echo injected || echo not injected"
+  },
+  {
+    "instruction": "Install Istio",
+    "output": "<think>\nWe're being asked to install Istio.\nI'll reach for curl here because making HTTP requests.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -fsL https://istio.io/downloadIstio | bash && cd istio-* && export PATH=$PWD/bin:$PATH && istioctl install -y"
+  },
+  {
+    "instruction": "Enable Istio sidecar injection for namespace",
+    "output": "<think>\nNeed to enable Istio sidecar injection for namespace.\nLet me think about the best approach.\nkubectl is what we need — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl label namespace default istio-injection=enabled"
+  },
+  {
+    "instruction": "Check Istio proxy status",
+    "output": "<think>\nWe're being asked to check Istio proxy status.\nLet me consider what makes sense here.\nThis calls for istioctl. Istioctl operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nistioctl proxy-status"
+  },
+  {
+    "instruction": "Get Istio virtual services",
+    "output": "<think>\nSo the request is to get Istio virtual services.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get virtualservices"
+  },
+  {
+    "instruction": "Create an Istio VirtualService",
+    "output": "<think>\nThis is asking us to create an Istio VirtualService.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > vs.yaml << 'EOF'\napiVersion: networking.istio.io/v1beta1\nkind: VirtualService\nmetadata:\n  name: myapp-vs\nspec:\n  hosts:\n  - myapp\n  http:\n  - route:\n    - destination:\n        host: myapp\n        subset: v1\nEOF\nkubectl apply -f vs.yaml"
+  },
+  {
+    "instruction": "Create an Istio DestinationRule",
+    "output": "<think>\nSo we need to create an Istio DestinationRule.\nI'll reach for kubectl here because Kubernetes cluster management.\nI've added -f to force, suppress errors — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - << 'EOF'\napiVersion: networking.istio.io/v1beta1\nkind: DestinationRule\nmetadata:\n  name: myapp-dr\nspec:\n  host: myapp\n  subsets:\n  - name: v1\n    labels:\n      version: v1\n  - name: v2\n    labels:\n      version: v2\nEOF"
+  },
+  {
+    "instruction": "Create a Gateway (Istio)",
+    "output": "<think>\nWe should create a Gateway (Istio).\nFirst, let me understand what's needed here.\nThis calls for kubectl. Kubernetes cluster management.\nWhy -f? Force, suppress errors. important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - << 'EOF'\napiVersion: networking.istio.io/v1beta1\nkind: Gateway\nmetadata:\n  name: mygateway\nspec:\n  selector:\n    istio: ingressgateway\n  servers:\n  - port:\n      number: 80\n      name: http\n      protocol: HTTP\n    hosts:\n    - \"*\"\nEOF"
+  }
+]

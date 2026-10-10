@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to install OpenVPN on Debian 12",
+    "output": "<think>\nSo the request is to install OpenVPN on Debian 12.\nLet me think about the best approach.\nI'd use apt for this — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install openvpn easy-rsa"
+  },
+  {
+    "instruction": "How to copy EasyRSA to OpenVPN config directory",
+    "output": "<think>\nThe goal is to copy EasyRSA to OpenVPN config directory.\nLet me reason through this.\nI'd use cp for this — file copying.\nNo need for complex pipelines here — one command is sufficient.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp -r /usr/share/easy-rsa /etc/openvpn/easy-rsa"
+  },
+  {
+    "instruction": "How to set up variables for EasyRSA",
+    "output": "<think>\nNeed to set up variables for EasyRSA.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'set_var EASYRSA_REQ_COUNTRY \"US\"\nset_var EASYRSA_REQ_PROVINCE \"CA\"\nset_var EASYRSA_REQ_CITY \"SanFrancisco\"\nset_var EASYRSA_REQ_ORG \"ExampleOrg\"\nset_var EASYRSA_REQ_EMAIL \"admin@example.com\"\nset_var EASYRSA_REQ_OU \"IT\"' > /etc/openvpn/easy-rsa/vars"
+  },
+  {
+    "instruction": "How to create a server.conf from scratch for typical VPN",
+    "output": "<think>\nAlright, we need to create a server.conf from scratch for typical VPN.\nThe tool for this job is cat — cat operations.\n</think>\ncat > /etc/openvpn/server.conf <<EOF\nport 1194\nproto udp\ndev tun\nca ca.crt\ncert server.crt\nkey server.key\ndh dh.pem\ntls-crypt tc.key\nserver 10.8.0.0 255.255.255.0\nifconfig-pool-persist ipp.txt\npush \"dhcp-option DNS 8.8.8.8\"\nkeepalive 10 120\ncipher AES-256-CBC\nauth SHA256\nuser nobody\ngroup nogroup\npersist-key\npersist-tun\nstatus openvpn-status.log\nverb 3\nexplicit-exit-notify 1\nEOF"
+  },
+  {
+    "instruction": "How to create the client.ovpn template",
+    "output": "<think>\nThe task requires us to create the client.ovpn template.\nHere's how I'd approach this.\nI'll reach for cat here because cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat > /etc/openvpn/client.template <<EOF\nclient\ndev tun\nproto udp\nremote SERVER_IP 1194\nresolv-retry infinite\nnobind\npersist-key\npersist-tun\nca ca.crt\ncert CLIENT.crt\nkey CLIENT.key\nauth SHA256\ncipher AES-256-CBC\nverb 3\nEOF"
+  },
+  {
+    "instruction": "How to generate client ovpn with embedded certs",
+    "output": "<think>\nNeed to generate client ovpn with embedded certs.\nFor this, cd is the right tool — cd operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncd /etc/openvpn && cat <(echo -e 'client\ndev tun\nproto udp\nremote 192.168.1.10 1194\nresolv-retry infinite\nnobind\npersist-key\npersist-tun\nkey-direction 1\n<auth-user-pass>\n<ca>') ca.crt <(echo -e '</ca>\n<cert>') client1.crt <(echo -e '</cert>\n<key>') client1.key <(echo -e '</key>\n<tls-crypt>') tc.key <(echo -e '</tls-crypt>') > client1.ovpn"
+  },
+  {
+    "instruction": "How to generate a client config with inline credentials",
+    "output": "<think>\nThe task requires us to generate a client config with inline credentials.\nFirst, let me understand what's needed here.\nThe tool for this job is cd — cd operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncd /etc/openvpn && cat client.template | sed 's/SERVER_IP/192.168.1.10/' | sed 's/CLIENT/client1/' > client1.ovpn && echo '<ca>' >> client1.ovpn && cat ca.crt >> client1.ovpn && echo '</ca>' >> client1.ovpn"
+  },
+  {
+    "instruction": "How to generate a QR code for OpenVPN config",
+    "output": "<think>\nSo the request is to generate a QR code for OpenVPN config.\nI'd use apt for this — apt operations.\nI've added -t to sort by modification time — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install qrencode && qrencode -t ansiutf8 < client1.ovpn"
+  },
+  {
+    "instruction": "How to generate a preshared PSK for OpenVPN",
+    "output": "<think>\nNeed to generate a preshared PSK for OpenVPN.\nFor this, openvpn is the right tool — OpenVPN client/server management.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nopenvpn --genkey secret /etc/openvpn/psk.key"
+  },
+  {
+    "instruction": "How to change OpenVPN MTU for better performance",
+    "output": "<think>\nSo the request is to change OpenVPN MTU for better performance.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'tun-mtu 1500\nfragment 0\nmssfix 0' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set the txqueuelen on tun for OpenVPN",
+    "output": "<think>\nThe task requires us to set the txqueuelen on tun for OpenVPN.\nLet me reason through this.\nThe tool for this job is ip — network interface configuration.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nip link set dev tun0 txqueuelen 10000"
+  },
+  {
+    "instruction": "How to optimize OpenVPN with lzo compression",
+    "output": "<think>\nWe're being asked to optimize OpenVPN with lzo compression.\nLet me think through this step by step.\n</think>\necho 'comp-lzo adapt' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to use UDP with a TCP backup in OpenVPN",
+    "output": "<think>\nSo the request is to use UDP with a TCP backup in OpenVPN.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho 'remote 192.168.1.10 1194 udp\nremote 192.168.1.10 443 tcp' >> /etc/openvpn/client.ovpn"
+  },
+  {
+    "instruction": "How to configure OpenVPN for port forward",
+    "output": "<think>\nNeed to configure OpenVPN for port forward.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'port 11940' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set OpenVPN mssfix to avoid fragmentation",
+    "output": "<think>\nThe goal is to set OpenVPN mssfix to avoid fragmentation.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'mssfix 1400' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set the max-packet-size in OpenVPN",
+    "output": "<think>\nThe user wants to set the max-packet-size in OpenVPN.\nI'm using -size for filter by file size — this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'max-packet-size 1450' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to log the bytes sent/received per client",
+    "output": "<think>\nWe should log the bytes sent/received per client.\nLet me break this down.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'status /var/log/openvpn/status.log 10' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to check OpenVPN status log for client stats",
+    "output": "<think>\nSo we need to check OpenVPN status log for client stats.\nThe tool for this job is tail — tail operations.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ntail -f /var/log/openvpn/status.log"
+  },
+  {
+    "instruction": "How to write a client connect script for OpenVPN",
+    "output": "<think>\nAlright, we need to write a client connect script for OpenVPN.\nLet me break this down.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho '#!/bin/bash\necho \"$common_name connected at $(date)\" >> /var/log/openvpn/connections.log' > /etc/openvpn/client-connect.sh && chmod +x /etc/openvpn/client-connect.sh"
+  },
+  {
+    "instruction": "How to set script security level for connect scripts",
+    "output": "<think>\nWe should set script security level for connect scripts.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'script-security 3' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to pass client environment variables to scripts",
+    "output": "<think>\nNeed to pass client environment variables to scripts.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'push-peer-info' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to automatically generate client certificates",
+    "output": "<think>\nThe task requires us to automatically generate client certificates.\nBest tool here is cd — cd operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ncd /etc/openvpn/easy-rsa && ./easyrsa gen-req ${1} nopass && ./easyrsa sign-req client ${1}"
+  },
+  {
+    "instruction": "How to make a script to add a new OpenVPN user",
+    "output": "<think>\nNeed to make a script to add a new OpenVPN user.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '#!/bin/bash\ncd /etc/openvpn/easy-rsa\n./easyrsa gen-req $1 nopass\n./easyrsa sign-req client $1\ncp pki/issued/$1.crt /etc/openvpn/ccd/\ncp pki/private/$1.key /etc/openvpn/ccd/' > /usr/local/bin/add-vpn-user"
+  },
+  {
+    "instruction": "How to check OpenVPN secret key strength",
+    "output": "<think>\nWe're being asked to check OpenVPN secret key strength.\nFirst, let me understand what's needed here.\nThis calls for openssl. Cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl rsa -in /etc/openvpn/server.key -check -noout"
+  }
+]

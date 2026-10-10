@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Watch a directory and list new files as they appear",
+    "output": "<think>\nSo we need to watch a directory and list new files as they appear.\nLet me think about the best approach.\nThis calls for watch. Watch operations.\n</think>\nwatch -n 1 ls -la"
+  },
+  {
+    "instruction": "Show file descriptor usage for a running process",
+    "output": "<think>\nThe goal is to show file descriptor usage for a running process.\nLet me reason through this.\nI'd use ls for this — ls operations.\nI've added -la to detailed listing including hidden files — without it the command won't work as we need.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nls -la /proc/$(pgrep -x nginx)/fd/"
+  },
+  {
+    "instruction": "Show the size of each subdirectory in the current dir",
+    "output": "<think>\nAlright, we need to show the size of each subdirectory in the current dir.\nLet me reason through this.\nThis calls for du. Disk usage analysis.\nI've added -h to human-readable format — without it the command won't work as we need.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nAfter running, I'll confirm the result looks right.\n</think>\ndu -h --max-depth=1 | sort -rh"
+  },
+  {
+    "instruction": "Find and list files with multiple extensions",
+    "output": "<think>\nWe should find and list files with multiple extensions.\nThis calls for find. File searching.\nThe -name flag handles filter by filename pattern. Important because standard practice for this kind of operation.\nThe -o flag handles output to file, OR operator in find. Important because this controls how the output is formatted.\nOne command does the job. Simple is better.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nI'll check the output to make sure it did what we expected.\n</think>\nfind . -name \"*.tar.gz\" -o -name \"*.tar.xz\""
+  },
+  {
+    "instruction": "Move all .tmp files older than 7 days to trash",
+    "output": "<think>\nThe task requires us to move all .tmp files older than 7 days to trash.\nThis calls for find. File searching.\nI'm using -name for filter by filename pattern — without it the command won't work as we need.\nThe -mtime flag handles filter by modification time. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind . -name \"*.tmp\" -mtime +7 -exec mv {} ~/.local/share/Trash/files/ \\;"
+  },
+  {
+    "instruction": "Copy only files that have changed (rsync dry-run)",
+    "output": "<think>\nAlright, we need to copy only files that have changed (rsync dry-run).\nI'll reach for rsync here because efficient file synchronization.\nA single command handles this cleanly — no need to overcomplicate it.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -av --dry-run src/ dest/"
+  },
+  {
+    "instruction": "Sync two directories efficiently with progress",
+    "output": "<think>\nThe user wants to sync two directories efficiently with progress.\nBest tool here is rsync — efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avh --progress src/ dest/"
+  },
+  {
+    "instruction": "Delete files matching a pattern except the newest 3",
+    "output": "<think>\nThe task requires us to delete files matching a pattern except the newest 3.\nLet me think about the best approach.\nFor this, ls is the right tool — ls operations.\nI've added -t to sort by modification time — needed for this specific use case.\nI'm using -n for dry-run, no changes — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nls -t *.log | tail -n +4 | xargs rm"
+  },
+  {
+    "instruction": "Flush file system buffers (sync all pending writes)",
+    "output": "<think>\nWe should flush file system buffers (sync all pending writes).\nThe tool for this job is sync — sync operations.\nI'll check the output to make sure it did what we expected.\n</think>\nsync"
+  },
+  {
+    "instruction": "Check whether a file or directory exists",
+    "output": "<think>\nThis is asking us to check whether a file or directory exists.\nLet me think through this step by step.\nBest tool here is test — test operations.\nWhy -f? Force, suppress errors. this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ntest -f file.txt && echo exists"
+  },
+  {
+    "instruction": "Test if a path is a directory",
+    "output": "<think>\nSo we need to test if a path is a directory.\nLet me break this down.\nThis calls for test. Test operations.\nThe -d flag handles directory listing, don't descend. Important because without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\ntest -d /tmp && echo is_dir"
+  },
+  {
+    "instruction": "Create multiple directories from a list",
+    "output": "<think>\nWe're being asked to create multiple directories from a list.\nThe tool for this job is mkdir — directory creation.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nmkdir -p {a,b,c}/{x,y,z}"
+  },
+  {
+    "instruction": "Generate numbered files for testing",
+    "output": "<think>\nThe goal is to generate numbered files for testing.\nFirst, let me understand what's needed here.\nI'd use touch for this — touch operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\ntouch file{01..20}.txt"
+  },
+  {
+    "instruction": "Generate nested directory structure for testing",
+    "output": "<think>\nWe should generate nested directory structure for testing.\nLet me consider what makes sense here.\nThe tool for this job is mkdir — directory creation.\n</think>\nmkdir -p test/{alpha,beta,gamma}/{1,2,3}"
+  },
+  {
+    "instruction": "Find files by exact size (e.g., exactly 1024 bytes)",
+    "output": "<think>\nThe user wants to find files by exact size (e.g., exactly 1024 bytes).\nI'd use find for this — file searching.\nI've added -type to filter by file type — standard practice for this kind of operation.\nWhy -size? Filter by file size. important to get the expected behavior.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nLet me verify afterward that it worked correctly.\n</think>\nfind . -type f -size 1024c"
+  },
+  {
+    "instruction": "Find files between size range",
+    "output": "<think>\nWe're being asked to find files between size range.\nfind is what we need — file searching.\nNo need for complex pipelines here — one command is sufficient.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nLet me verify afterward that it worked correctly.\n</think>\nfind . -type f -size +10k -size -1M"
+  },
+  {
+    "instruction": "List the inode usage across filesystems",
+    "output": "<think>\nThis is asking us to list the inode usage across filesystems.\nLet me think about the best approach.\nI'd use df for this — disk space checking.\nWhy -h? Human-readable format. without it the command won't work as we need.\n</think>\ndf -h --total"
+  },
+  {
+    "instruction": "Find which process is using a specific file",
+    "output": "<think>\nThe user wants to find which process is using a specific file.\nI'll reach for fuser here because fuser operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nfuser file.txt"
+  },
+  {
+    "instruction": "Kill any process accessing a specific file",
+    "output": "<think>\nThis is asking us to kill any process accessing a specific file.\nFirst, let me understand what's needed here.\nI'd use fuser for this — fuser operations.\nQuick verification after execution to be safe.\n</think>\nfuser -k /path/to/file"
+  },
+  {
+    "instruction": "Watch file changes with auditd rule",
+    "output": "<think>\nSo the request is to watch file changes with auditd rule.\nLet me consider what makes sense here.\nThis calls for auditctl. Auditctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\nauditctl -w /etc/passwd -p wa -k passwd_watch"
+  },
+  {
+    "instruction": "Remove all files except one",
+    "output": "<think>\nSo we need to remove all files except one.\nFor this, rm is the right tool — file deletion.\nThe -v flag means verbose output, which matters here because this controls how the output is formatted.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\n</think>\nrm -v !(\"keep.txt\")"
+  },
+  {
+    "instruction": "Copy a file and preserve all attributes",
+    "output": "<think>\nAlright, we need to copy a file and preserve all attributes.\nLet me think about the best approach.\nThe tool for this job is cp — file copying.\nOne command does the job. Simple is better.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp -p source.txt dest.txt"
+  },
+  {
+    "instruction": "Move only hidden files to another directory",
+    "output": "<think>\nNeed to move only hidden files to another directory.\nBest tool here is mv — file moving/renaming.\nmv is atomic but can overwrite existing files — check the destination first.\nLet me verify afterward that it worked correctly.\n</think>\nmv .* ~/backup/"
+  },
+  {
+    "instruction": "Show total size of all files matching a pattern",
+    "output": "<think>\nWe should show total size of all files matching a pattern.\nLet me reason through this.\nI'd use du for this — disk usage analysis.\nEach pipe stage handles one transformation, keeping the logic composable.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nLet me verify afterward that it worked correctly.\n</think>\ndu -ch *.log | tail -1"
+  },
+  {
+    "instruction": "Count total files recursively in a directory",
+    "output": "<think>\nThe task requires us to count total files recursively in a directory.\nThe tool for this job is find — file searching.\nThe -type flag handles filter by file type. Important because this controls how the output is formatted.\nThe -l flag means long format with details, which matters here because needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind . -type f | wc -l"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Configure ID mapping domain in idmapd.conf",
+    "output": "<think>\nAlright, we need to configure ID mapping domain in idmapd.conf.\nLet me think through this step by step.\nBest tool here is sed — text stream editing.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nsed -i 's/.*Domain =.*/Domain = example.com/' /etc/idmapd.conf"
+  },
+  {
+    "instruction": "Set ID mapping method to nsswitch",
+    "output": "<think>\nNeed to set ID mapping method to nsswitch.\nLet me consider what makes sense here.\nThis calls for sed. Text stream editing.\nI'm using -i for interactive, prompt before action — important to get the expected behavior.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsed -i 's/.*Method =.*/Method = nsswitch/' /etc/idmapd.conf"
+  },
+  {
+    "instruction": "Restart idmapd service",
+    "output": "<think>\nThe task requires us to restart idmapd service.\nHere's how I'd approach this.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart nfs-idmapd"
+  },
+  {
+    "instruction": "Test idmapd resolution for a user",
+    "output": "<think>\nNeed to test idmapd resolution for a user.\nI'll reach for nfsidmap here because nfsidmap operations.\n</think>\nnfsidmap -u 1000 -d example.com"
+  },
+  {
+    "instruction": "Set ID mapping verbosity",
+    "output": "<think>\nThe user wants to set ID mapping verbosity.\nThis calls for sed. Text stream editing.\nWhy -i? Interactive, prompt before action. without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsed -i 's/.*Verbosity =.*/Verbosity = 2/' /etc/idmapd.conf && systemctl restart nfs-idmapd"
+  },
+  {
+    "instruction": "Check NFS server version",
+    "output": "<think>\nAlright, we need to check NFS server version.\nBest tool here is nfsstat — nfsstat operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnfsstat -4 -s | grep -i 'nfs v4'"
+  },
+  {
+    "instruction": "Show nfs-utils version",
+    "output": "<think>\nAlright, we need to show nfs-utils version.\nLet me think through this step by step.\nBest tool here is dpkg — dpkg operations.\nThe -l flag handles long format with details. Important because without it the command won't work as we need.\nThe --version flag handles show version info. Important because important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndpkg -l | grep nfs-utils || echo 'use statd --version' && statd --version"
+  },
+  {
+    "instruction": "List all NFS-related packages installed",
+    "output": "<think>\nWe're being asked to list all NFS-related packages installed.\nLet me think about the best approach.\nI'd use dpkg for this — dpkg operations.\nI've added -l to long format with details — standard practice for this kind of operation.\nThe -E flag handles extended regex. Important because important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\n</think>\ndpkg -l | grep -E '(nfs|rpcbind|nfs-common)'"
+  },
+  {
+    "instruction": "Check NFS server status",
+    "output": "<think>\nThe user wants to check NFS server status.\nLet me consider what makes sense here.\nBest tool here is systemctl — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status nfs-server"
+  },
+  {
+    "instruction": "Enable NFS server on boot",
+    "output": "<think>\nWe should enable NFS server on boot.\nHere's how I'd approach this.\nThe tool for this job is systemctl — managing systemd services.\nQuick verification after execution to be safe.\n</think>\nsystemctl enable nfs-server"
+  },
+  {
+    "instruction": "Start rpcbind manually",
+    "output": "<think>\nThis is asking us to start rpcbind manually.\nLet me reason through this.\nI'd use systemctl for this — managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl start rpcbind && systemctl status rpcbind"
+  },
+  {
+    "instruction": "Check NFS service dependencies",
+    "output": "<think>\nWe should check NFS service dependencies.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-dependencies nfs-server"
+  },
+  {
+    "instruction": "Show NFS kernel module info",
+    "output": "<think>\nSo we need to show NFS kernel module info.\nLet me reason through this.\nThe tool for this job is modinfo — modinfo operations.\nI'm using -E for extended regex — needed for this specific use case.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nmodinfo nfs | grep -E '(version|description|author)'"
+  },
+  {
+    "instruction": "List NFS kernel parameters",
+    "output": "<think>\nThis is asking us to list NFS kernel parameters.\nLet me think about the best approach.\nThis calls for ls. Ls operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nls /sys/module/nfs/parameters/"
+  },
+  {
+    "instruction": "Check NFSD kernel module parameters",
+    "output": "<think>\nThe user wants to check NFSD kernel module parameters.\nLet me break this down.\nThis calls for ls. Ls operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nls /sys/module/nfsd/parameters/"
+  },
+  {
+    "instruction": "Show NFS client cache stats",
+    "output": "<think>\nThe user wants to show NFS client cache stats.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/net/rpc/nfsd/rc"
+  },
+  {
+    "instruction": "Clean NFS client directory cache",
+    "output": "<think>\nWe should clean NFS client directory cache.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 0 > /proc/sys/vm/drop_caches"
+  },
+  {
+    "instruction": "Check NFS TCP connections",
+    "output": "<think>\nSo the request is to check NFS TCP connections.\nLet me consider what makes sense here.\nss is what we need — socket diagnostics.\nThe -t flag means sort by modification time, which matters here because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nss -t sport = :2049 or dport = :2049"
+  },
+  {
+    "instruction": "Trace NFS operations with rpcdebug",
+    "output": "<think>\nNeed to trace NFS operations with rpcdebug.\nLet me think through this step by step.\nI'd use rpcdebug for this — rpcdebug operations.\nI've added -s to summarize or silent mode — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nrpcdebug -m nfsd -s all"
+  },
+  {
+    "instruction": "Clear NFS debug flags",
+    "output": "<think>\nWe're being asked to clear NFS debug flags.\nLet me think through this step by step.\nI'll reach for rpcdebug here because rpcdebug operations.\nI've added -c to count or create — this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nrpcdebug -m nfsd -c all"
+  }
+]

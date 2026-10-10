@@ -1,0 +1,23 @@
+[
+  {"instruction": "Install logcli via snap", "output": "snap install logcli"},
+  {"instruction": "Query Loki for log streams count", "output": "logcli series '{job=\"nginx\"}' 2>&1 | wc -l"},
+  {"instruction": "Analyze log labels cardinality", "output": "logcli series '{job=~\".+\"}' --analyze-labels 2>&1"},
+  {"instruction": "Get all distinct values for a label", "output": "logcli labels job 2>&1"},
+  {"instruction": "Export Loki metrics to Prometheus format", "output": "curl http://localhost:3100/metrics > loki-metrics.txt"},
+  {"instruction": "Query top log producers by volume", "output": "logcli query 'topk(10, sum by (job) (bytes_over_time({job=~\".+\"}[1h])))'"},
+  {"instruction": "Check log ingress rate to Loki", "output": "logcli query 'sum(rate({job=~\".+\"}[5m]))'"},
+  {"instruction": "Create alert rule for high error rate", "output": "cat > /etc/loki/rules/alert.yaml << 'EOF'\ngroups:\n- name: error-rate-alert\n  rules:\n  - alert: HighErrorRate\n    expr: sum(rate({job=\"nginx\"} |= \"error\" [5m])) / sum(rate({job=\"nginx\"}[5m])) > 0.05\n    for: 5m\n    annotations:\n      summary: High error rate detected on nginx\nEOF"},
+  {"instruction": "Create recording rule for error ratio", "output": "cat > /etc/loki/rules/recording.yaml << 'EOF'\ngroups:\n- name: recording-rules\n  rules:\n  - record: job:nginx:error_ratio:5m\n    expr: sum(rate({job=\"nginx\"} |= \"error\" [5m])) / sum(rate({job=\"nginx\"}[5m]))\nEOF"},
+  {"instruction": "Test Loki alert rules", "output": "curl -X POST 'http://localhost:3100/ruler/rule' -H 'Content-Type: application/yaml' --data-binary @/etc/loki/rules/alert.yaml"},
+  {"instruction": "List installed ruler rules", "output": "curl http://localhost:3100/ruler/rule"},
+  {"instruction": "Delete a Loki ruler rule", "output": "curl -X DELETE 'http://localhost:3100/ruler/rule/error-rate-alert'"},
+  {"instruction": "Reload Loki configuration without restart", "output": "kill -HUP $(cat /var/run/loki/loki.pid 2>/dev/null || systemctl show -p MainPID loki | cut -d= -f2)"},
+  {"instruction": "Add Loki autoscaling config", "output": "cat >> /etc/loki/config.yml << 'EOF'\nindex_gateway:\n  mode: simple\n  replicas: 2\nEOF"},
+  {"instruction": "Configure Loki for high availability", "output": "cat >> /etc/loki/config.yml << 'EOF'\nfrontend_worker:\n  frontend_address: loki-query-frontend:9095\nEOF"},
+  {"instruction": "Add tail proxy for logcli", "output": "cat > /etc/loki/config.yml << 'EOF'\nqueryrange:\n  parallelise_shardable_queries: true\n  cache_results: true\nEOF"},
+  {"instruction": "Check Loki module health", "output": "curl http://localhost:3100/health"},
+  {"instruction": "View Loki built-in dashboard", "output": "wget -O - http://localhost:3100/ 2>/dev/null || echo 'No web UI available'"},
+  {"instruction": "Enable Loki multi-tenancy", "output": "cat >> /etc/loki/config.yml << 'EOF'\nmulti_tenant_mode: true\nEOF"},
+  {"instruction": "Set tenant ID in logcli query", "output": "logcli --org-id=tenant1 query '{job=\"nginx\"}'"},
+  {"instruction": "Query across multiple tenants", "output": "logcli --org-id=tenant1 --org-id=tenant2 query '{job=\"nginx\"}'"}
+]

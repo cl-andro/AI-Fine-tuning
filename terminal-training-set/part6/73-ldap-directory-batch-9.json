@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Initialize an LDAP directory with a base domain entry",
+    "output": "<think>\nThis is asking us to initialize an LDAP directory with a base domain entry.\nThe tool for this job is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat > /tmp/base.ldif << 'EOF'\ndn: dc=example,dc=com\nobjectClass: dcObject\nobjectClass: organization\nobjectClass: top\ndc: example\no: Example Inc.\nEOF\nldapadd -x -D cn=admin,cn=config -w secret -f /tmp/base.ldif"
+  },
+  {
+    "instruction": "Create an organizational unit for users in LDAP",
+    "output": "<think>\nThe goal is to create an organizational unit for users in LDAP.\nFirst, let me understand what's needed here.\nThis calls for cat. Cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /tmp/ou.ldif << 'EOF'\ndn: ou=people,dc=example,dc=com\nobjectClass: organizationalUnit\nou: people\nEOF\nldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /tmp/ou.ldif"
+  },
+  {
+    "instruction": "Create a typical LDAP posixAccount and inetOrgPerson entry",
+    "output": "<think>\nNeed to create a typical LDAP posixAccount and inetOrgPerson entry.\nLet me reason through this.\nBest tool here is cat — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /tmp/user.ldif << 'EOF'\ndn: uid=jdoe,ou=people,dc=example,dc=com\nobjectClass: top\nobjectClass: person\nobjectClass: organizationalPerson\nobjectClass: inetOrgPerson\nobjectClass: posixAccount\ncn: John Doe\nsn: Doe\nuid: jdoe\nuidNumber: 1001\ngidNumber: 1001\nhomeDirectory: /home/jdoe\nloginShell: /bin/bash\nmail: jdoe@example.com\nuserPassword: {SSHA}hash\nEOF\nldapadd -x -D cn=admin,dc=example,dc=com -W -f /tmp/user.ldif"
+  },
+  {
+    "instruction": "Set up an LDAP replica with an updated referral",
+    "output": "<think>\nWe're being asked to set up an LDAP replica with an updated referral.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcUpdateref\nolcUpdateref: ldap://master.example.com'"
+  },
+  {
+    "instruction": "Configure OpenLDAP to use LMDB instead of MDB",
+    "output": "<think>\nNeed to configure OpenLDAP to use LMDB instead of MDB.\nThis calls for ldapmodify. Ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcDatabase\nolcDatabase: {1}ldif'"
+  },
+  {
+    "instruction": "Change the MDB database environment flags",
+    "output": "<think>\nWe're being asked to change the MDB database environment flags.\nLet me think about the best approach.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because standard practice for this kind of operation.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcDbEnvFlags\nolcDbEnvFlags: nometasync'"
+  },
+  {
+    "instruction": "Set the MDB map size",
+    "output": "<think>\nSo we need to set the MDB map size.\nldapmodify is what we need — ldapmodify operations.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcDbMaxSize\nolcDbMaxSize: 1073741824'"
+  },
+  {
+    "instruction": "Set MDB database to use 256MB of cache",
+    "output": "<think>\nThis is asking us to set MDB database to use 256MB of cache.\nHere's how I'd approach this.\nI'll reach for ldapmodify here because ldapmodify operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcDbCacheSize\nolcDbCacheSize: 268435456'"
+  },
+  {
+    "instruction": "Set the number of MDB database reader slots",
+    "output": "<think>\nWe should set the number of MDB database reader slots.\nLet me reason through this.\nldapmodify is what we need — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because needed for this specific use case.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcDbMaxReaders\nolcDbMaxReaders: 256'"
+  },
+  {
+    "instruction": "Check MDB database reader status",
+    "output": "<think>\nThe user wants to check MDB database reader status.\nHere's how I'd approach this.\nBest tool here is mdb_stat — mdb_stat operations.\nI'll check the output to make sure it did what we expected.\n</think>\nmdb_stat -f /var/lib/ldap"
+  },
+  {
+    "instruction": "Dump MDB database statistics",
+    "output": "<think>\nWe're being asked to dump MDB database statistics.\nFirst, let me understand what's needed here.\nThe tool for this job is mdb_stat — mdb_stat operations.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nmdb_stat -e /var/lib/ldap"
+  },
+  {
+    "instruction": "Re-index the entire MDB database offline",
+    "output": "<think>\nThe user wants to re-index the entire MDB database offline.\nLet me think through this step by step.\nI'd use slapindex for this — slapindex operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nslapindex -F /etc/ldap/slapd.d"
+  },
+  {
+    "instruction": "Start slapd with minimal config to test",
+    "output": "<think>\nSo the request is to start slapd with minimal config to test.\nFor this, slapd is the right tool — slapd operations.\nI'm using -T for print filesystem type in df — this controls how the output is formatted.\nI've added -f to force, suppress errors — important to get the expected behavior.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nslapd -T test -f /etc/ldap/slapd.conf"
+  },
+  {
+    "instruction": "Check the OpenLDAP slapd default config file path",
+    "output": "<think>\nWe should check the OpenLDAP slapd default config file path.\nBest tool here is slapd — slapd operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nslapd -V"
+  },
+  {
+    "instruction": "Run slapd in foreground mode for testing",
+    "output": "<think>\nThe user wants to run slapd in foreground mode for testing.\nFor this, slapd is the right tool — slapd operations.\nWhy -u? Show or sort by access time. needed for this specific use case.\nWhy -h? Human-readable format. this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\nslapd -u openldap -g openldap -h ldap:/// ldapi:///"
+  },
+  {
+    "instruction": "Set LDAP URI via environment variable for tools",
+    "output": "<think>\nSo we need to set LDAP URI via environment variable for tools.\nHere's how I'd approach this.\nBest tool here is export — export operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nexport LDAPURI=ldap://localhost:389"
+  },
+  {
+    "instruction": "Set LDAP base DN via environment variable",
+    "output": "<think>\nThe task requires us to set LDAP base DN via environment variable.\nThe tool for this job is export — export operations.\nAfter running, I'll confirm the result looks right.\n</think>\nexport LDAPBASE=dc=example,dc=com"
+  },
+  {
+    "instruction": "Set LDAP bind DN via environment variable",
+    "output": "<think>\nThe user wants to set LDAP bind DN via environment variable.\nI'd use export for this — export operations.\n</think>\nexport BINDDN=cn=admin,dc=example,dc=com"
+  },
+  {
+    "instruction": "Set LDAP password via environment variable",
+    "output": "<think>\nWe should set LDAP password via environment variable.\nFor this, export is the right tool — export operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nexport BINDPW=secret"
+  },
+  {
+    "instruction": "Enable LDAP logging for replication debugging",
+    "output": "<think>\nThis is asking us to enable LDAP logging for replication debugging.\nLet me consider what makes sense here.\nI'll reach for ldapmodify here because ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcLogLevel\nolcLogLevel: sync'"
+  },
+  {
+    "instruction": "Enable LDAP logging for ACL debugging",
+    "output": "<think>\nSo the request is to enable LDAP logging for ACL debugging.\nFirst, let me understand what's needed here.\nBest tool here is ldapmodify — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcLogLevel\nolcLogLevel: acl'"
+  },
+  {
+    "instruction": "Enable comprehensive LDAP logging",
+    "output": "<think>\nThe user wants to enable comprehensive LDAP logging.\nldapmodify is what we need — ldapmodify operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcLogLevel\nolcLogLevel: -1'"
+  },
+  {
+    "instruction": "Tail the LDAP log file in real time",
+    "output": "<think>\nThis is asking us to tail the LDAP log file in real time.\nLet me break this down.\nThe tool for this job is tail — tail operations.\nI've added -f to force, suppress errors — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ntail -f /var/log/slapd.log"
+  },
+  {
+    "instruction": "Restart OpenLDAP slapd service",
+    "output": "<think>\nAlright, we need to restart OpenLDAP slapd service.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl restart slapd"
+  },
+  {
+    "instruction": "Check OpenLDAP slapd service status",
+    "output": "<think>\nThe task requires us to check OpenLDAP slapd service status.\nLet me consider what makes sense here.\nThe tool for this job is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status slapd"
+  }
+]

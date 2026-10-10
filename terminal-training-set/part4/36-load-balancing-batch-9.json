@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "glb-director-cli --help",
+    "output": "<think>\nThe task requires us to glb-director-cli --help.\nLet me think about the best approach.\nUsage is what we need — Usage operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nUsage: glb-director-cli [OPTIONS] <COMMAND>\nCommands:\n  health-check  Run health checks\n  state         Show director state\n  table         Manipulate forwarding table\n  stats         Show statistics\nOptions:\n  -s, --socket <PATH>  Unix socket path [default: /var/run/glb-director.sock]\n  -h, --help           Print help"
+  },
+  {
+    "instruction": "glb-director-cli state",
+    "output": "<think>\nSo we need to glb-director-cli state.\nState is what we need — State operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nState: RUNNING\nForwarding table:\n  10.0.0.10:8080 -> weight 1, health UP, last check 2s ago\n  10.0.0.11:8080 -> weight 1, health UP, last check 2s ago\n  10.0.0.12:8080 -> weight 0, health DOWN, last check 2s ago (failed: connect timeout)"
+  },
+  {
+    "instruction": "glb-director-cli health-check",
+    "output": "<think>\nSo the request is to glb-director-cli health-check.\nI'd use Forwarding for this — Forwarding operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nForwarding table rebalanced: 2 active hosts up"
+  },
+  {
+    "instruction": "glb-director-cli stats",
+    "output": "<think>\nNeed to glb-director-cli stats.\nLet me consider what makes sense here.\nI'll reach for Total here because Total operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nTotal connections: 123456\nActive connections: 45\nForwarding table updates: 12\nHealth checks performed: 5678\nLast rebalance: 5s ago"
+  },
+  {
+    "instruction": "asl status",
+    "output": "<think>\nSo we need to asl status.\nHere's how I'd approach this.\nAerospike is what we need — Aerospike operations.\n</think>\nAerospike Load Balancer v1.5.2\nStatus: RUNNING\nUpstream clusters: 2\nActive connections: 123\nTLS: enabled\nPolicies: 3 configured"
+  },
+  {
+    "instruction": "asl upstream list",
+    "output": "<think>\nWe're being asked to asl upstream list.\nName is what we need — Name operations.\nLet me verify afterward that it worked correctly.\n</think>\nName       Type     Targets            Policy\nprod-cluster aerospike 10.0.0.10:3000,10.0.0.11:3000  read-local\ndr-cluster   aerospike 10.0.0.20:3000,10.0.0.21:3000  round-robin"
+  },
+  {
+    "instruction": "named-checkzone example.com /etc/bind/db.example.com",
+    "output": "<think>\nWe're being asked to named-checkzone example.com /etc/bind/db.example.com.\nThis calls for zone. Zone operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nzone example.com/IN: loaded serial 2026072501\nOK"
+  },
+  {
+    "instruction": "cat /etc/bind/named.conf.options | grep -A 10 'view'",
+    "output": "<think>\nAlright, we need to cat /etc/bind/named.conf.options | grep -A 10 'view'.\nLet me think about the best approach.\nI'd use view for this — view operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nview \"internal\" {\n    match-clients { 10.0.0.0/8; 172.16.0.0/12; };\n    recursion yes;\n    zone \"example.com\" {\n        type master;\n        file \"/etc/bind/db.example.com.internal\";\n    };\n};\nview \"external\" {\n    match-clients { any; };\n    recursion no;\n    zone \"example.com\" {\n        type master;\n        file \"/etc/bind/db.example.com.external\";\n    };\n};"
+  },
+  {
+    "instruction": "rndc reload",
+    "output": "<think>\nThis is asking us to rndc reload.\nLet me consider what makes sense here.\nI'll reach for server here because server operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nserver reload successful"
+  },
+  {
+    "instruction": "rndc status",
+    "output": "<think>\nThe goal is to rndc status.\nI'll reach for version here because version operations.\n</think>\nversion: BIND 9.18.28-1~deb12u1 (Debian)\nrunning on: debian\nrunning since: Sat Jul 25 10:00:00 2026\nlast reload: Sat Jul 25 10:05:00 2026\nboot time: Sat Jul 25 10:00:00 2026\nnumber of zones: 12\nserver is up and running"
+  },
+  {
+    "instruction": "dig @localhost example.com A +short",
+    "output": "<think>\nAlright, we need to dig @localhost example.com A +short.\nFirst, let me understand what's needed here.\nAfter running, confirm it worked as expected before moving on.\n</think>\n10.0.0.100"
+  },
+  {
+    "instruction": "dig @localhost -b 10.0.0.1 example.com A +short",
+    "output": "<think>\nSo the request is to dig @localhost -b 10.0.0.1 example.com A +short.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\n10.0.0.10"
+  },
+  {
+    "instruction": "nslookup example.com 127.0.0.1 2>&1",
+    "output": "<think>\nThis is asking us to nslookup example.com 127.0.0.1 2>&1.\nLet me consider what makes sense here.\nServer is what we need — Server operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nServer:    127.0.0.1\nAddress:    127.0.0.1"
+  },
+  {
+    "instruction": "cat /etc/bind/db.example.com.internal",
+    "output": "<think>\nSo the request is to cat /etc/bind/db.example.com.internal.\nHere's how I'd approach this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\n$TTL    3600\n@    IN    SOA    ns1.example.com. admin.example.com. (\n                    2026072501 ; Serial\n                    3600       ; Refresh\n                    900        ; Retry\n                    86400      ; Expire\n                    3600 )     ; Negative Cache TTL\n@       IN    NS    ns1.example.com.\n@       IN    A     10.0.0.10\nwww     IN    A     10.0.0.10\napi     IN    A     10.0.0.10\nstatic  IN    CNAME www"
+  },
+  {
+    "instruction": "cat /etc/bind/db.example.com.external",
+    "output": "<think>\nWe're being asked to cat /etc/bind/db.example.com.external.\nLet me consider what makes sense here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\n$TTL    3600\n@    IN    SOA    ns1.example.com. admin.example.com. (\n                    2026072501 ; Serial\n                    3600       ; Refresh\n                    900        ; Retry\n                    86400      ; Expire\n                    3600 )     ; Negative Cache TTL\n@       IN    NS    ns1.example.com.\n@       IN    A     203.0.113.10\nwww     IN    A     203.0.113.10\napi     IN    A     203.0.113.10"
+  },
+  {
+    "instruction": "geoip-bin -f /usr/share/GeoIP/GeoIP.dat 10.0.0.1",
+    "output": "<think>\nThis is asking us to geoip-bin -f /usr/share/GeoIP/GeoIP.dat 10.0.0.1.\nLet me break this down.\nThe tool for this job is IP — IP operations.\nQuick verification after execution to be safe.\n</think>\nIP: 10.0.0.1\nCountry: United States (US)\nCity: New York\nLatitude: 40.7128\nLongitude: -74.0060\nISP: Example ISP"
+  },
+  {
+    "instruction": "cat /etc/bind/named.conf | grep -A 10 'geoip'",
+    "output": "<think>\nThis is asking us to cat /etc/bind/named.conf | grep -A 10 'geoip'.\nLet me break this down.\nThis calls for geoip. Geoip operations.\nQuick verification after execution to be safe.\n</think>\ngeoip GeoIP {\n    database \"/usr/share/GeoIP/GeoIP.dat\";\n};\nview \"us-east\" {\n    match-geoip us-east;\n    zone \"example.com\" {\n        type master;\n        file \"/etc/bind/db.example.com.us-east\";\n    };\n};\nview \"eu-west\" {\n    match-geoip eu-west;\n    zone \"example.com\" {\n        type master;\n        file \"/etc/bind/db.example.com.eu-west\";\n    };\n};"
+  },
+  {
+    "instruction": "dig @192.0.2.1 example.com A +short",
+    "output": "<think>\nWe should dig @192.0.2.1 example.com A +short.\nFirst, let me understand what's needed here.\n</think>\n10.0.0.100"
+  },
+  {
+    "instruction": "dig @203.0.113.1 example.com A +short",
+    "output": "<think>\nThe task requires us to dig @203.0.113.1 example.com A +short.\nA quick sanity check afterward saves debugging time later.\n</think>\n198.51.100.10"
+  },
+  {
+    "instruction": "rndc zonestatus example.com",
+    "output": "<think>\nThe goal is to rndc zonestatus example.com.\nLet me break this down.\nBest tool here is zone — zone operations.\n</think>\nzone: example.com (view internal)\ntype: master\nserial: 2026072501\nnext refresh: never\nlast loaded: Sat Jul 25 10:05:00 2026\nsecure: no\n"
+  },
+  {
+    "instruction": "dnsreplay -d 10.0.0.100 -p 53 pcaps/dns.pcap",
+    "output": "<think>\nSo the request is to dnsreplay -d 10.0.0.100 -p 53 pcaps/dns.pcap.\nLet me break this down.\nBest tool here is Replaying — Replaying operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nReplaying 1000 queries...\n1000 sent, 1000 received, 0 timed out\nAverage response time: 12.3ms"
+  }
+]

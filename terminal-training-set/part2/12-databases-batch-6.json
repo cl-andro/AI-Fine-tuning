@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install and configure CouchDB",
+    "output": "<think>\nWe're being asked to install and configure CouchDB.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y couchdb && curl http://127.0.0.1:5984/"
+  },
+  {
+    "instruction": "Create a CouchDB database",
+    "output": "<think>\nWe should create a CouchDB database.\nLet me consider what makes sense here.\ncurl is what we need — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X PUT http://localhost:5984/mydb"
+  },
+  {
+    "instruction": "Insert a document in CouchDB",
+    "output": "<think>\nSo we need to insert a document in CouchDB.\nLet me think through this step by step.\nFor this, curl is the right tool — making HTTP requests.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nThe -d flag handles directory listing, don't descend. Important because important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"John\"}' http://localhost:5984/mydb"
+  },
+  {
+    "instruction": "Query all documents in CouchDB",
+    "output": "<think>\nSo the request is to query all documents in CouchDB.\nLet me break this down.\nI'd use curl for this — making HTTP requests.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncurl -s http://localhost:5984/mydb/_all_docs | jq '.'"
+  },
+  {
+    "instruction": "Install CockroachDB",
+    "output": "<think>\nWe're being asked to install CockroachDB.\nLet me reason through this.\nI'll reach for wget here because downloading files.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -qO- https://binaries.cockroachdb.com/cockroach-v23.2.0.linux-amd64.tgz | tar xz && mv cockroach-v23.2.0.linux-amd64/cockroach /usr/local/bin/ && cockroach start-single-node --insecure &"
+  },
+  {
+    "instruction": "Create a CockroachDB database",
+    "output": "<think>\nSo we need to create a CockroachDB database.\nI'd use cockroach for this — cockroach operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncockroach sql --insecure -e 'CREATE DATABASE mydb;'"
+  },
+  {
+    "instruction": "Run a query in CockroachDB",
+    "output": "<think>\nThe goal is to run a query in CockroachDB.\nBest tool here is cockroach — cockroach operations.\nI've added -d to directory listing, don't descend — important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ncockroach sql --insecure -d mydb -e 'CREATE TABLE users (id INT PRIMARY KEY, name STRING);'"
+  },
+  {
+    "instruction": "Install ClickHouse",
+    "output": "<think>\nNeed to install ClickHouse.\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y clickhouse-server clickhouse-client && systemctl start clickhouse-server"
+  },
+  {
+    "instruction": "Create a ClickHouse database",
+    "output": "<think>\nSo the request is to create a ClickHouse database.\nLet me reason through this.\nI'll reach for clickhouse-client here because clickhouse-client operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nclickhouse-client --query 'CREATE DATABASE mydb'"
+  },
+  {
+    "instruction": "Run a query in ClickHouse",
+    "output": "<think>\nThe goal is to run a query in ClickHouse.\nHere's how I'd approach this.\nBest tool here is clickhouse-client — clickhouse-client operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nclickhouse-client --query 'SELECT version()'"
+  },
+  {
+    "instruction": "Install Neo4j graph database",
+    "output": "<think>\nNeed to install Neo4j graph database.\nLet me consider what makes sense here.\nThe tool for this job is wget — downloading files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nwget -O neo4j.deb https://neo4j.com/artifact.php?name=neo4j-community-5.15.0-unix.tar.gz && tar xzf neo4j.deb && neo4j-community-5.15.0/bin/neo4j start"
+  },
+  {
+    "instruction": "Check Neo4j status",
+    "output": "<think>\nThe task requires us to check Neo4j status.\nHere's how I'd approach this.\nI'll reach for curl here because making HTTP requests.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s http://localhost:7474/ | head -5"
+  },
+  {
+    "instruction": "Install and configure InfluxDB",
+    "output": "<think>\nThe user wants to install and configure InfluxDB.\nLet me break this down.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y influxdb && influxd &"
+  },
+  {
+    "instruction": "Create an InfluxDB bucket",
+    "output": "<think>\nThe user wants to create an InfluxDB bucket.\nLet me break this down.\nFor this, influx is the right tool — influx operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ninflux bucket create --name mybucket --org myorg --retention 30d"
+  },
+  {
+    "instruction": "Write data to InfluxDB",
+    "output": "<think>\nWe should write data to InfluxDB.\nLet me think through this step by step.\nThe tool for this job is influx — influx operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ninflux write --bucket mybucket --precision s 'measurement,host=server1 value=1.0 1717200000'"
+  },
+  {
+    "instruction": "Query InfluxDB",
+    "output": "<think>\nAlright, we need to query InfluxDB.\nLet me think about the best approach.\ninflux is what we need — influx operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ninflux query 'from(bucket:\"mybucket\") |> range(start: -1h)'"
+  },
+  {
+    "instruction": "Install TimescaleDB (PostgreSQL extension)",
+    "output": "<think>\nNeed to install TimescaleDB (PostgreSQL extension).\nLet me think about the best approach.\nBest tool here is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\napt install -y timescaledb-2-postgresql-16 && timescaledb-tune --yes && systemctl restart postgresql"
+  },
+  {
+    "instruction": "Create a TimescaleDB hypertable",
+    "output": "<think>\nWe're being asked to create a TimescaleDB hypertable.\nFor this, psql is the right tool — PostgreSQL database queries.\nI'm using -U for use full user name instead of UID — important to get the expected behavior.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -U postgres mydb -c \"CREATE EXTENSION IF NOT EXISTS timescaledb; CREATE TABLE conditions (time TIMESTAMPTZ, location TEXT, temperature FLOAT); SELECT create_hypertable('conditions', 'time');\""
+  },
+  {
+    "instruction": "Install MariaDB (MySQL fork)",
+    "output": "<think>\nSo we need to install MariaDB (MySQL fork).\nLet me consider what makes sense here.\nThe tool for this job is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y mariadb-server && mysql_secure_installation"
+  },
+  {
+    "instruction": "Check MariaDB version",
+    "output": "<think>\nAlright, we need to check MariaDB version.\nFirst, let me understand what's needed here.\nI'd use mariadb for this — mariadb operations.\nThe --version flag handles show version info. Important because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmariadb --version"
+  },
+  {
+    "instruction": "Install Percona Server for MySQL",
+    "output": "<think>\nThe user wants to install Percona Server for MySQL.\nwget is what we need — downloading files.\nThe -i flag handles interactive, prompt before action. Important because important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget https://repo.percona.com/apt/percona-release_latest.generic_all.deb && dpkg -i percona-release_latest.generic_all.deb && apt update && apt install -y percona-server-server"
+  },
+  {
+    "instruction": "Install and configure DBeaver (universal DB client)",
+    "output": "<think>\nThis is asking us to install and configure DBeaver (universal DB client).\nI'll reach for snap here because Snap package management.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\nAfter running, I'll confirm the result looks right.\n</think>\nsnap install dbeaver-ce"
+  },
+  {
+    "instruction": "Install TablePlus (DB GUI)",
+    "output": "<think>\nNeed to install TablePlus (DB GUI).\nLet me think through this step by step.\nThis calls for wget. Downloading files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -O tableplus.deb https://tableplus.com/release/linux/tableplus_latest_amd64.deb && dpkg -i tableplus.deb"
+  },
+  {
+    "instruction": "Install Beekeeper Studio (DB GUI)",
+    "output": "<think>\nNeed to install Beekeeper Studio (DB GUI).\nLet me reason through this.\nsnap is what we need — Snap package management.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\n</think>\nsnap install beekeeper-studio"
+  },
+  {
+    "instruction": "Run a benchmark on MySQL with sysbench",
+    "output": "<think>\nWe should run a benchmark on MySQL with sysbench.\nLet me reason through this.\nThe tool for this job is sysbench — sysbench operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysbench oltp_read_write --table-size=1000000 --mysql-db=test --mysql-user=root prepare && sysbench oltp_read_write --table-size=1000000 --mysql-db=test --mysql-user=root run && sysbench oltp_read_write --table-size=1000000 --mysql-db=test --mysql-user=root cleanup"
+  }
+]

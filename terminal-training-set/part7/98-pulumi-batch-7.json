@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an S3 bucket with server-side encryption",
+    "output": "<think>\nWe're being asked to create an S3 bucket with server-side encryption.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'bucket = aws.s3.Bucket(\"secure\", server_side_encryption_configuration=aws.s3.BucketServerSideEncryptionConfigurationArgs(rule=aws.s3.BucketServerSideEncryptionConfigurationRuleArgs(apply_server_side_encryption_by_default=aws.s3.BucketServerSideEncryptionConfigurationRuleApplyServerSideEncryptionByDefaultArgs(sse_algorithm=\"AES256\"))))' > s3-encrypt.py"
+  },
+  {
+    "instruction": "Set S3 bucket public access block",
+    "output": "<think>\nThe goal is to set S3 bucket public access block.\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'block = aws.s3.BucketPublicAccessBlock(\"block\", bucket=bucket.id, block_public_acls=True, block_public_policy=True, ignore_public_acls=True, restrict_public_buckets=True)' > s3-security.py"
+  },
+  {
+    "instruction": "Create an IAM instance profile with roles",
+    "output": "<think>\nAlright, we need to create an IAM instance profile with roles.\nLet me reason through this.\n</think>\necho 'profile = aws.iam.InstanceProfile(\"ec2\", role=role.name)' > profile.py"
+  },
+  {
+    "instruction": "Create a security group with computed ingress from another SG",
+    "output": "<think>\nThe goal is to create a security group with computed ingress from another SG.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'sg_app = aws.ec2.SecurityGroup(\"app\", vpc_id=vpc.id, ingress=[aws.ec2.SecurityGroupIngressArgs(from_port=443, to_port=443, protocol=\"tcp\", security_groups=[sg_lb.id])])' > sg-advanced.py"
+  },
+  {
+    "instruction": "Create a VPC endpoint for SSM",
+    "output": "<think>\nNeed to create a VPC endpoint for SSM.\n</think>\necho 'ssm_endpoint = aws.ec2.VpcEndpoint(\"ssm\", vpc_id=vpc.id, service_name=f\"com.amazonaws.{region}.ssm\", subnet_ids=private_subnet_ids, security_group_ids=[sg_vpc_endpoint.id])' > vpc-endpoint.py"
+  },
+  {
+    "instruction": "Create a transitive gateway attachment",
+    "output": "<think>\nThis is asking us to create a transitive gateway attachment.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'tgw = aws.ec2transitgateway.TransitGateway(\"main\"); attachment = aws.ec2transitgateway.VpcAttachment(\"attach\", subnet_ids=subnet_ids, transit_gateway_id=tgw.id, vpc_id=vpc.id)' > tgw.py"
+  },
+  {
+    "instruction": "Mount an EFS filesystem on EC2 user-data",
+    "output": "<think>\nThe goal is to mount an EFS filesystem on EC2 user-data.\nLet me reason through this.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nWhy -t? Sort by modification time. important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'instance = aws.ec2.Instance(\"app\", user_data=f\"#!/bin/bash\\nmkdir -p /mnt/efs\\nmount -t nfs4 {fs.dns_name}:/ /mnt/efs\\necho \\\"{fs.dns_name}:/ /mnt/efs nfs4 defaults,_netdev 0 0\\\" >> /etc/fstab\")' > efs-mount.py"
+  },
+  {
+    "instruction": "Create a CloudWatch log group with retention",
+    "output": "<think>\nThis is asking us to create a CloudWatch log group with retention.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'log_group = aws.cloudwatch.LogGroup(\"app\", name=\"/aws/lambda/my-function\", retention_in_days=30)' > logs.py"
+  },
+  {
+    "instruction": "Create a CloudWatch log subscription to Lambda",
+    "output": "<think>\nAlright, we need to create a CloudWatch log subscription to Lambda.\nFirst, let me understand what's needed here.\n</think>\necho 'sub = aws.cloudwatch.LogSubscriptionFilter(\"filter\", log_group=log_group.name, destination_arn=fn.arn, filter_pattern=\"ERROR\")' > log-sub.py"
+  },
+  {
+    "instruction": "Add a CloudWatch metric filter to log group",
+    "output": "<think>\nSo the request is to add a CloudWatch metric filter to log group.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'filter = aws.cloudwatch.LogMetricFilter(\"errors\", log_group_name=log_group.name, pattern=\"ERROR\", metric_transformation=aws.cloudwatch.LogMetricFilterMetricTransformationArgs(name=\"ErrorCount\", namespace=\"App\", value=\"1\"))' > metric-filter.py"
+  },
+  {
+    "instruction": "Set a budget alert in Pulumi",
+    "output": "<think>\nThe goal is to set a budget alert in Pulumi.\nLet me break this down.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'budget = aws.budgets.Budget(\"monthly\", budget_type=\"COST\", limit_amount=\"500\", limit_unit=\"USD\", time_period_start=\"2025-01-01_00:00\", time_unit=\"MONTHLY\", notification=[aws.budgets.BudgetNotificationArgs(comparison_operator=\"GREATER_THAN\", threshold=80, threshold_type=\"PERCENTAGE\", notification_type=\"ACTUAL\", subscriber_email_addresses=[\"team@example.com\"])])' > budget.py"
+  },
+  {
+    "instruction": "Output filtered tags in pulumi stack export",
+    "output": "<think>\nThe user wants to output filtered tags in pulumi stack export.\nThe tool for this job is pulumi — pulumi operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\npulumi stack export --file state.json && jq '.checkpoint.latest.resources[] | select(.type | startswith(\"aws\")) | .urn' state.json"
+  },
+  {
+    "instruction": "Find all resources of a specific type in state",
+    "output": "<think>\nSo the request is to find all resources of a specific type in state.\npulumi is what we need — pulumi operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\npulumi stack export | jq '.checkpoint.latest.resources[] | select(.type == \"aws:s3/bucket:Bucket\")'"
+  },
+  {
+    "instruction": "Debug a stack's configuration from exported JSON",
+    "output": "<think>\nAlright, we need to debug a stack's configuration from exported JSON.\nLet me think through this step by step.\nThis calls for pulumi. Pulumi operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\npulumi stack export | jq '.checkpoint.latest.config'"
+  },
+  {
+    "instruction": "Create a Pulumi YAML program with an S3 bucket",
+    "output": "<think>\nThe goal is to create a Pulumi YAML program with an S3 bucket.\nLet me think through this step by step.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'name: infra\nruntime: yaml\nresources:\n  my-bucket:\n    type: aws:s3/bucket:Bucket' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Add a security group to the Pulumi YAML program",
+    "output": "<think>\nThe goal is to add a security group to the Pulumi YAML program.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho '  web-sg:\n    type: aws:ec2/securityGroup:SecurityGroup\n    properties:\n      ingress:\n        - protocol: tcp\n          fromPort: 80\n          toPort: 80\n          cidrBlocks: [\"0.0.0.0/0\"]' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Add stack outputs in Pulumi YAML",
+    "output": "<think>\nSo the request is to add stack outputs in Pulumi YAML.\nLet me think about the best approach.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'outputs:\n  bucketName: ${my-bucket.id}' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Use Pulumi YAML template function",
+    "output": "<think>\nSo the request is to use Pulumi YAML template function.\nAfter running, I'll confirm the result looks right.\n</think>\necho '  config:\n    env:\n      type: String\n      default: prod' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Create an EC2 instance in Pulumi YAML",
+    "output": "<think>\nNeed to create an EC2 instance in Pulumi YAML.\nI'll check the output to make sure it did what we expected.\n</think>\necho '  web:\n    type: aws:ec2/instance:Instance\n    properties:\n      ami: ami-1234\n      instanceType: t3.micro' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Export a stack output in Pulumi YAML",
+    "output": "<think>\nSo we need to export a stack output in Pulumi YAML.\nHere's how I'd approach this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'outputs:\n  publicIp: ${web.publicIp}' >> Pulumi.yaml"
+  },
+  {
+    "instruction": "Set a variable in Pulumi YAML",
+    "output": "<think>\nThe task requires us to set a variable in Pulumi YAML.\nLet me think about the best approach.\nQuick verification after execution to be safe.\n</think>\necho 'variables:\n  vpcId:\n    fn::invoke:\n      function: aws:ec2/getVpc:getVpc\n      arguments:\n        default: true' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Use conditionals in Pulumi YAML with fn::if",
+    "output": "<think>\nSo the request is to use conditionals in Pulumi YAML with fn::if.\nLet me think about the best approach.\nI'll check the output to make sure it did what we expected.\n</think>\necho '  count:\n    fn::if:\n      - ${env == \"prod\"}\n      - 3\n      - 1' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Install Pulumi CLI via script",
+    "output": "<think>\nNeed to install Pulumi CLI via script.\nLet me consider what makes sense here.\nI'll reach for curl here because making HTTP requests.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -fsSL https://get.pulumi.com | sh"
+  },
+  {
+    "instruction": "Install a specific version of Pulumi",
+    "output": "<think>\nWe should install a specific version of Pulumi.\ncurl is what we need — making HTTP requests.\nWhy -s? Summarize or silent mode. needed for this specific use case.\nI've added --version to show version info — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -fsSL https://get.pulumi.com/ | sh -s -- --version 3.120.0"
+  },
+  {
+    "instruction": "Upgrade Pulumi CLI to latest",
+    "output": "<think>\nAlright, we need to upgrade Pulumi CLI to latest.\nLet me think about the best approach.\nThe tool for this job is pulumi — pulumi operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\npulumi version && pulumi plugin ls"
+  }
+]

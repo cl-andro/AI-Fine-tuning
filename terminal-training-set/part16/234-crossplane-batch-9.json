@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to set up Crossplane with AWS provider for S3",
+    "output": "<think>\nThe task requires us to set up Crossplane with AWS provider for S3.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f provider-aws-s3.yaml"
+  },
+  {
+    "instruction": "How to create a Crossplane S3 bucket with versioning",
+    "output": "<think>\nThis is asking us to create a Crossplane S3 bucket with versioning.\nHere's how I'd approach this.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f - <<< 'apiVersion: s3.aws.crossplane.io/v1beta1\nkind: Bucket\nmetadata:\n  name: my-versioned-bucket\nspec:\n  forProvider:\n    region: us-east-1\n    versioningConfiguration:\n      status: Enabled\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane S3 bucket with encryption",
+    "output": "<think>\nNeed to create a Crossplane S3 bucket with encryption.\nLet me think through this step by step.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because standard practice for this kind of operation.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f - <<< 'apiVersion: s3.aws.crossplane.io/v1beta1\nkind: Bucket\nmetadata:\n  name: my-encrypted-bucket\nspec:\n  forProvider:\n    region: us-east-1\n    serverSideEncryptionConfiguration:\n      rules:\n      - applyServerSideEncryptionByDefault:\n          sseAlgorithm: AES256\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane S3 bucket with public access block",
+    "output": "<think>\nThis is asking us to create a Crossplane S3 bucket with public access block.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: s3.aws.crossplane.io/v1beta1\nkind: Bucket\nmetadata:\n  name: my-secure-bucket\nspec:\n  forProvider:\n    region: us-east-1\n    publicAccessBlockConfiguration:\n      blockPublicAcls: true\n      blockPublicPolicy: true\n      ignorePublicAcls: true\n      restrictPublicBuckets: true\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane RDS instance with PostgreSQL",
+    "output": "<think>\nNeed to create a Crossplane RDS instance with PostgreSQL.\nLet me think through this step by step.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nThe -f flag means force, suppress errors, which matters here because without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: rds.aws.crossplane.io/v1beta1\nkind: DBInstance\nmetadata:\n  name: my-postgres\nspec:\n  forProvider:\n    region: us-east-1\n    dbInstanceClass: db.t3.micro\n    masterUsername: admin\n    masterUserPasswordSecretRef:\n      name: rds-pass\n      namespace: default\n      key: password\n    engine: postgres\n    engineVersion: \"14\"\n    allocatedStorage: 20\n    skipFinalSnapshot: true\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane RDS instance with MySQL",
+    "output": "<think>\nThe user wants to create a Crossplane RDS instance with MySQL.\nLet me think through this step by step.\nkubectl is what we need — Kubernetes cluster management.\nI'm using -f for force, suppress errors — needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: rds.aws.crossplane.io/v1beta1\nkind: DBInstance\nmetadata:\n  name: my-mysql\nspec:\n  forProvider:\n    region: us-east-1\n    dbInstanceClass: db.t3.micro\n    masterUsername: admin\n    masterUserPasswordSecretRef:\n      name: rds-pass\n      namespace: default\n      key: password\n    engine: mysql\n    engineVersion: \"8.0\"\n    allocatedStorage: 20\n    skipFinalSnapshot: true\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane IAM user",
+    "output": "<think>\nThe task requires us to create a Crossplane IAM user.\nThis calls for kubectl. Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nkubectl apply -f - <<< 'apiVersion: iam.aws.crossplane.io/v1beta1\nkind: IAMUser\nmetadata:\n  name: my-user\nspec:\n  forProvider:\n    path: /system/\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane IAM access key",
+    "output": "<think>\nAlright, we need to create a Crossplane IAM access key.\nHere's how I'd approach this.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because this controls how the output is formatted.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: iam.aws.crossplane.io/v1beta1\nkind: IAMAccessKey\nmetadata:\n  name: my-access-key\nspec:\n  forProvider:\n    userNameRef:\n      name: my-user\n  writeConnectionSecretToRef:\n    name: my-user-creds\n    namespace: default\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane IAM policy",
+    "output": "<think>\nThe user wants to create a Crossplane IAM policy.\nLet me reason through this.\nBest tool here is kubectl — Kubernetes cluster management.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - <<< 'apiVersion: iam.aws.crossplane.io/v1beta1\nkind: IAMPolicy\nmetadata:\n  name: my-policy\nspec:\n  forProvider:\n    name: my-policy\n    description: My custom policy\n    policyDocument: |\n      {\n        \"Version\": \"2012-10-17\",\n        \"Statement\": [{\n          \"Effect\": \"Allow\",\n          \"Action\": \"s3:GetObject\",\n          \"Resource\": \"*\"\n        }]\n      }\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane IAM role",
+    "output": "<think>\nThis is asking us to create a Crossplane IAM role.\nBest tool here is kubectl — Kubernetes cluster management.\nI'm using -f for force, suppress errors — needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl apply -f - <<< 'apiVersion: iam.aws.crossplane.io/v1beta1\nkind: IAMRole\nmetadata:\n  name: my-role\nspec:\n  forProvider:\n    name: my-role\n    assumeRolePolicyDocument: |\n      {\n        \"Version\": \"2012-10-17\",\n        \"Statement\": [{\n          \"Effect\": \"Allow\",\n          \"Principal\": {\"Service\": \"ec2.amazonaws.com\"},\n          \"Action\": \"sts:AssumeRole\"\n        }]\n      }\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane VPC",
+    "output": "<think>\nWe should create a Crossplane VPC.\nThis calls for kubectl. Kubernetes cluster management.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: ec2.aws.crossplane.io/v1beta1\nkind: VPC\nmetadata:\n  name: my-vpc\nspec:\n  forProvider:\n    region: us-east-1\n    cidrBlock: 10.0.0.0/16\n    enableDnsSupport: true\n    enableDnsHostnames: true\n    instanceTenancy: default\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane subnet",
+    "output": "<think>\nThe user wants to create a Crossplane subnet.\nHere's how I'd approach this.\nI'd use kubectl for this — Kubernetes cluster management.\nI'm using -f for force, suppress errors — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: ec2.aws.crossplane.io/v1beta1\nkind: Subnet\nmetadata:\n  name: my-subnet\nspec:\n  forProvider:\n    region: us-east-1\n    availabilityZone: us-east-1a\n    cidrBlock: 10.0.1.0/24\n    vpcIdRef:\n      name: my-vpc\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane security group",
+    "output": "<think>\nSo the request is to create a Crossplane security group.\nHere's how I'd approach this.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nI'm using -f for force, suppress errors — this controls how the output is formatted.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - <<< 'apiVersion: ec2.aws.crossplane.io/v1beta1\nkind: SecurityGroup\nmetadata:\n  name: my-sg\nspec:\n  forProvider:\n    region: us-east-1\n    groupName: my-sg\n    description: My security group\n    vpcIdRef:\n      name: my-vpc\n    ingress:\n    - fromPort: 443\n      toPort: 443\n      ipProtocol: tcp\n      ipRanges:\n      - cidrIp: 0.0.0.0/0\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane EKS cluster",
+    "output": "<think>\nWe're being asked to create a Crossplane EKS cluster.\nHere's how I'd approach this.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f - <<< 'apiVersion: eks.aws.crossplane.io/v1beta1\nkind: Cluster\nmetadata:\n  name: my-eks\nspec:\n  forProvider:\n    region: us-east-1\n    name: my-eks-cluster\n    roleArnRef:\n      name: eks-role\n    resourcesVpcConfig:\n      subnetIdRefs:\n      - name: my-subnet-1\n      - name: my-subnet-2\n      endpointPublicAccess: true\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane EKS node group",
+    "output": "<think>\nWe're being asked to create a Crossplane EKS node group.\nLet me break this down.\nThis calls for kubectl. Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: eks.aws.crossplane.io/v1beta1\nkind: NodeGroup\nmetadata:\n  name: my-nodegroup\nspec:\n  forProvider:\n    region: us-east-1\n    clusterNameRef:\n      name: my-eks\n    nodeRoleArnRef:\n      name: node-role\n    scalingConfig:\n      minSize: 2\n      maxSize: 5\n      desiredSize: 2\n    subnetIdRefs:\n    - name: my-subnet-1\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane IAM instance profile",
+    "output": "<think>\nWe should create a Crossplane IAM instance profile.\nLet me think through this step by step.\nThe tool for this job is kubectl — Kubernetes cluster management.\nI'm using -f for force, suppress errors — needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl apply -f - <<< 'apiVersion: iam.aws.crossplane.io/v1beta1\nkind: InstanceProfile\nmetadata:\n  name: my-instance-profile\nspec:\n  forProvider:\n    name: my-instance-profile\n    path: /\n    roles:\n    - roleName: my-role\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane ECR repository",
+    "output": "<think>\nThe task requires us to create a Crossplane ECR repository.\nThe tool for this job is kubectl — Kubernetes cluster management.\nI'm using -f for force, suppress errors — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl apply -f - <<< 'apiVersion: ecr.aws.crossplane.io/v1beta1\nkind: Repository\nmetadata:\n  name: my-ecr-repo\nspec:\n  forProvider:\n    repositoryName: my-app\n    imageTagMutability: MUTABLE\n    imageScanningConfiguration:\n      scanOnPush: true\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane CloudWatch log group",
+    "output": "<think>\nThis is asking us to create a Crossplane CloudWatch log group.\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - <<< 'apiVersion: cloudwatch.aws.crossplane.io/v1beta1\nkind: LogGroup\nmetadata:\n  name: my-log-group\nspec:\n  forProvider:\n    logGroupName: /aws/my-app\n    retentionInDays: 30\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane SNS topic",
+    "output": "<think>\nSo the request is to create a Crossplane SNS topic.\nThis calls for kubectl. Kubernetes cluster management.\nI've added -f to force, suppress errors — important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: sns.aws.crossplane.io/v1beta1\nkind: Topic\nmetadata:\n  name: my-topic\nspec:\n  forProvider:\n    topicName: my-app-alerts\n    region: us-east-1\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane SQS queue",
+    "output": "<think>\nThe user wants to create a Crossplane SQS queue.\nHere's how I'd approach this.\nThe tool for this job is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - <<< 'apiVersion: sqs.aws.crossplane.io/v1beta1\nkind: Queue\nmetadata:\n  name: my-queue\nspec:\n  forProvider:\n    queueName: my-app-queue\n    region: us-east-1\n    visibilityTimeout: 30\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crosspose DynamoDB table",
+    "output": "<think>\nWe should create a Crosspose DynamoDB table.\nLet me consider what makes sense here.\nThe tool for this job is kubectl — Kubernetes cluster management.\nI'm using -f for force, suppress errors — important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl apply -f - <<< 'apiVersion: dynamodb.aws.crossplane.io/v1beta1\nkind: Table\nmetadata:\n  name: my-table\nspec:\n  forProvider:\n    tableName: my-app-table\n    attributeDefinitions:\n    - attributeName: id\n      attributeType: S\n    keySchema:\n    - attributeName: id\n      keyType: HASH\n    billingMode: PAY_PER_REQUEST\n    region: us-east-1\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane Lambda function",
+    "output": "<think>\nAlright, we need to create a Crossplane Lambda function.\nLet me break this down.\nI'll reach for kubectl here because Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl apply -f - <<< 'apiVersion: lambda.aws.crossplane.io/v1beta1\nkind: Function\nmetadata:\n  name: my-function\nspec:\n  forProvider:\n    functionName: my-app-function\n    runtime: python3.9\n    handler: index.handler\n    role: arn:aws:iam::123456789:role/lambda-role\n    code:\n      s3Bucket: my-code-bucket\n      s3Key: function.zip\n    region: us-east-1\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane ElastiCache cluster",
+    "output": "<think>\nWe're being asked to create a Crossplane ElastiCache cluster.\nLet me break this down.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nI've added -f to force, suppress errors — needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f - <<< 'apiVersion: elasticache.aws.crossplane.io/v1beta1\nkind: CacheCluster\nmetadata:\n  name: my-cache\nspec:\n  forProvider:\n    cacheClusterId: my-redis\n    cacheNodeType: cache.t3.micro\n    engine: redis\n    numCacheNodes: 1\n    engineVersion: \"7.0\"\n    region: us-east-1\n  providerConfigRef:\n    name: aws-provider'"
+  },
+  {
+    "instruction": "How to create a Crossplane Route53 hosted zone",
+    "output": "<think>\nSo the request is to create a Crossplane Route53 hosted zone.\nFirst, let me understand what's needed here.\nI'll reach for kubectl here because Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f - <<< 'apiVersion: route53.aws.crossplane.io/v1beta1\nkind: HostedZone\nmetadata:\n  name: my-zone\nspec:\n  forProvider:\n    name: example.com\n    callerReference: my-ref\n    region: us-east-1\n  providerConfigRef:\n    name: aws-provider'"
+  }
+]

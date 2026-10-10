@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "View the default Docker seccomp profile with less",
+    "output": "less /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Check kernel seccomp support",
+    "output": "zgrep SECCOMP /proc/config.gz"
+  },
+  {
+    "instruction": "Install golang-seccomp library",
+    "output": "go get github.com/seccomp/libseccomp-golang"
+  },
+  {
+    "instruction": "Build libseccomp from source",
+    "output": "git clone https://github.com/seccomp/libseccomp.git && cd libseccomp && ./autogen.sh && ./configure && make && sudo make install"
+  },
+  {
+    "instruction": "Show seccomp actions_avail",
+    "output": "cat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "List all Docker seccomp profiles available",
+    "output": "ls /usr/share/docker/ | grep seccomp"
+  },
+  {
+    "instruction": "Filter Docker seccomp for allowed syscalls",
+    "output": "jq '.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Run strace with IPC syscalls",
+    "output": "strace -e trace=ipc ./myapp"
+  },
+  {
+    "instruction": "Run strace with time syscalls only",
+    "output": "strace -e trace=time ./myapp"
+  },
+  {
+    "instruction": "Generate seccomp profile from strace log",
+    "output": "strace -f -e trace=all -o /tmp/trace.log ./myapp && cat /tmp/trace.log | awk '{print $2}' | sed 's/(.*//' | sort -u"
+  },
+  {
+    "instruction": "Use scmp_bpf_dispatcher to inspect BPF",
+    "output": "scmp_bpf_dispatcher -p $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "Trace process creation with strace",
+    "output": "strace -f -e trace=clone,execve ./myapp"
+  },
+  {
+    "instruction": "Trace syscalls with summary grouped by name",
+    "output": "strace -c -f -S name ./myapp 2>&1"
+  },
+  {
+    "instruction": "List all syscalls in Docker default profile",
+    "output": "jq '.syscalls[].names[]' /usr/share/docker/default-seccomp.json | sort -u"
+  },
+  {
+    "instruction": "Check if seccomp is enabled in the kernel",
+    "output": "cat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run strace with only network syscalls",
+    "output": "strace -e trace=network -f ./myapp"
+  },
+  {
+    "instruction": "List available Docker profiles",
+    "output": "ls -la /usr/share/docker/"
+  },
+  {
+    "instruction": "Trace all syscalls of a program",
+    "output": "strace -f -o /tmp/all.log ./myapp"
+  },
+  {
+    "instruction": "Build strace from source",
+    "output": "git clone https://github.com/strace/strace.git && cd strace && ./bootstrap && ./configure && make -j$(nproc)"
+  },
+  {
+    "instruction": "Dump seccomp for nginx",
+    "output": "seccomp-tools dump $(pgrep -f nginx)"
+  },
+  {
+    "instruction": "Find seccomp profile path",
+    "output": "find / -name 'default-seccomp.json' 2>/dev/null"
+  }
+]

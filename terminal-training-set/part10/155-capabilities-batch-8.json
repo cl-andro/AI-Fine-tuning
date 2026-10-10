@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Check effective capabilities for PID 1",
+    "output": "<think>\nAlright, we need to check effective capabilities for PID 1.\nLet me think through this step by step.\nThe tool for this job is getpcaps — getpcaps operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ngetpcaps 1"
+  },
+  {
+    "instruction": "Show current capabilities for a user process",
+    "output": "<think>\nSo we need to show current capabilities for a user process.\nLet me reason through this.\nFor this, getpcaps is the right tool — getpcaps operations.\n</think>\ngetpcaps $$"
+  },
+  {
+    "instruction": "Run getpcaps for all processes",
+    "output": "<think>\nThis is asking us to run getpcaps for all processes.\nFirst, let me understand what's needed here.\nThe tool for this job is for — for operations.\nI've added -E to extended regex — this controls how the output is formatted.\nThe -n flag handles dry-run, no changes. Important because this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nfor pid in $(ls /proc | grep -E '^[0-9]+$'); do echo -n \"PID $pid: \"; getpcaps $pid 2>/dev/null; done"
+  },
+  {
+    "instruction": "List processes with CAP_NET_ADMIN capability",
+    "output": "<think>\nWe're being asked to list processes with CAP_NET_ADMIN capability.\nFirst, let me understand what's needed here.\nBest tool here is for — for operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nfor pid in $(ls /proc | grep -E '^[0-9]+$'); do cap=$(grep CapEff /proc/$pid/status 2>/dev/null | awk '{print $2}'); if [ \"$cap\" ] && capsh --decode=$cap 2>/dev/null | grep -q cap_net_admin; then echo \"PID $pid: $(cat /proc/$pid/comm 2>/dev/null)\"; fi; done"
+  },
+  {
+    "instruction": "Find processes with CAP_SYS_ADMIN",
+    "output": "<think>\nSo the request is to find processes with CAP_SYS_ADMIN.\nI'd use for for this — for operations.\nThe -E flag means extended regex, which matters here because needed for this specific use case.\nI'm using -q for quiet mode, minimal output — standard practice for this kind of operation.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\nfor pid in $(ls /proc | grep -E '^[0-9]+$'); do cap=$(grep CapEff /proc/$pid/status 2>/dev/null | awk '{print $2}'); [ \"$cap\" ] && capsh --decode=$cap 2>/dev/null | grep -q cap_sys_admin && echo \"PID $pid: $(cat /proc/$pid/comm 2>/dev/null)\"; done"
+  },
+  {
+    "instruction": "Check capabilities for current shell process",
+    "output": "<think>\nThis is asking us to check capabilities for current shell process.\nLet me break this down.\ngetpcalls is what we need — getpcalls operations.\nI'll check the output to make sure it did what we expected.\n</think>\ngetpcalls $$"
+  },
+  {
+    "instruction": "Compare capabilities of two processes",
+    "output": "<think>\nWe're being asked to compare capabilities of two processes.\nThe tool for this job is diff — diff operations.\nLet me verify afterward that it worked correctly.\n</think>\ndiff <(grep Cap /proc/1/status) <(grep Cap /proc/$$/status)"
+  },
+  {
+    "instruction": "Show capability evolution in process tree",
+    "output": "<think>\nAlright, we need to show capability evolution in process tree.\nLet me reason through this.\nI'd use for for this — for operations.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nfor pid in $(pstree -p $$ | grep -oP '\\d+'); do echo \"PID $pid: $(grep CapEff /proc/$pid/status 2>/dev/null)\"; done"
+  },
+  {
+    "instruction": "Read capabilities from /proc/PID/task/TID",
+    "output": "<think>\nAlright, we need to read capabilities from /proc/PID/task/TID.\nI'll reach for cat here because cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/1234/task/1234/status | grep Cap"
+  },
+  {
+    "instruction": "Show all thread capabilities in process",
+    "output": "<think>\nWe should show all thread capabilities in process.\nfor is what we need — for operations.\nOne command does the job. Simple is better.\n</think>\nfor tid in /proc/1234/task/*; do echo \"TID $(basename $tid): $(grep CapEff $tid/status 2>/dev/null)\"; done"
+  },
+  {
+    "instruction": "Change capabilities of a running process",
+    "output": "<think>\nThis is asking us to change capabilities of a running process.\nLet me think about the best approach.\nThe tool for this job is capsh — capsh operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncapsh --pid=1234 --drop=cap_sys_admin 2>/dev/null || echo 'Cannot change runtime caps'"
+  },
+  {
+    "instruction": "Obtain capability info via dbus",
+    "output": "<think>\nWe should obtain capability info via dbus.\nThe tool for this job is busctl — D-Bus introspection.\nI've added -i to interactive, prompt before action — without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\nbusctl introspect org.freedesktop.DBus /org/freedesktop/DBus 2>/dev/null | grep -i cap || echo 'No D-Bus capability info'"
+  },
+  {
+    "instruction": "Getcap on all shell interpreters",
+    "output": "<think>\nWe should getcap on all shell interpreters.\nLet me think through this step by step.\nThis calls for getcap. Getcap operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ngetcap /bin/bash /bin/sh /bin/dash /bin/zsh 2>/dev/null"
+  },
+  {
+    "instruction": "Set capability on linker for LD_PRELOAD",
+    "output": "<think>\nThe task requires us to set capability on linker for LD_PRELOAD.\nFirst, let me understand what's needed here.\nI'll reach for setcap here because setcap operations.\n</think>\nsetcap cap_sys_ptrace+ep /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+  },
+  {
+    "instruction": "Grant to a shared library for injection",
+    "output": "<think>\nThe user wants to grant to a shared library for injection.\nLet me reason through this.\nThe tool for this job is setcap — setcap operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsetcap cap_sys_ptrace+ep /usr/lib/libinject.so"
+  },
+  {
+    "instruction": "Check capabilities of interpreter scripts",
+    "output": "<think>\nNeed to check capabilities of interpreter scripts.\nLet me reason through this.\ngetcap is what we need — getcap operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ngetcap /usr/bin/python3 /usr/bin/perl /usr/bin/ruby 2>/dev/null"
+  },
+  {
+    "instruction": "Deny specific capability system-wide",
+    "output": "<think>\nThe task requires us to deny specific capability system-wide.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1 > /proc/sys/kernel/cap_deny_write"
+  },
+  {
+    "instruction": "Check overall cap policy with sysctl",
+    "output": "<think>\nThe user wants to check overall cap policy with sysctl.\nLet me break this down.\nI'd use sysctl for this — kernel parameter tuning.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl kernel.cap_deny_write kernel.cap_last_cap 2>/dev/null"
+  },
+  {
+    "instruction": "Enable file caps check in LSM",
+    "output": "<think>\nNeed to enable file caps check in LSM.\nLet me consider what makes sense here.\nI'll reach for sysctl here because kernel parameter tuning.\nQuick verification after execution to be safe.\n</think>\nsysctl -w kernel.cap_deny_write=1"
+  },
+  {
+    "instruction": "Show system capability flags",
+    "output": "<think>\nWe should show system capability flags.\nLet me consider what makes sense here.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/sys/kernel/cap_deny_write"
+  },
+  {
+    "instruction": "Set securebits via /proc",
+    "output": "<think>\nSo we need to set securebits via /proc.\nFirst, let me understand what's needed here.\nBest tool here is cat — cat operations.\nWhy -i? Interactive, prompt before action. without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ncat /proc/self/status | grep -i 'securebits'"
+  },
+  {
+    "instruction": "View inheritable caps for login session",
+    "output": "<think>\nSo the request is to view inheritable caps for login session.\nI'd use cat for this — cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /proc/self/status | grep CapInh"
+  }
+]

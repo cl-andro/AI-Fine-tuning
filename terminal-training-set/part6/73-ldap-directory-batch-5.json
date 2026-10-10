@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an LDIF file for a new person entry",
+    "output": "<think>\nWe should create an LDIF file for a new person entry.\nThe tool for this job is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat > /tmp/newperson.ldif << 'EOF'\ndn: uid=asmith,dc=example,dc=com\nobjectClass: inetOrgPerson\ncn: Alice Smith\nsn: Smith\nuid: asmith\nmail: asmith@example.com\nEOF"
+  },
+  {
+    "instruction": "Create an LDIF file for an organizational unit",
+    "output": "<think>\nWe're being asked to create an LDIF file for an organizational unit.\nFor this, cat is the right tool — cat operations.\n</think>\ncat > /tmp/ou.ldif << 'EOF'\ndn: ou=people,dc=example,dc=com\nobjectClass: organizationalUnit\nou: people\nEOF"
+  },
+  {
+    "instruction": "Create an LDIF for adding multiple attributes to a group",
+    "output": "<think>\nNeed to create an LDIF for adding multiple attributes to a group.\nLet me reason through this.\nBest tool here is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat > /tmp/group.ldif << 'EOF'\ndn: cn=developers,ou=groups,dc=example,dc=com\nobjectClass: groupOfNames\ncn: developers\nmember: uid=jdoe,dc=example,dc=com\nmember: uid=asmith,dc=example,dc=com\nEOF"
+  },
+  {
+    "instruction": "Modify an LDAP entry using LDIF format",
+    "output": "<think>\nSo we need to modify an LDAP entry using LDIF format.\nI'll reach for cat here because cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /tmp/modify.ldif << 'EOF'\ndn: uid=jdoe,dc=example,dc=com\nchangetype: modify\nreplace: mail\nmail: jdoe@new.org\n-\nadd: title\ntitle: Senior Engineer\nEOF"
+  },
+  {
+    "instruction": "Perform a LDAP search with SASL EXTERNAL bind",
+    "output": "<think>\nThe user wants to perform a LDAP search with SASL EXTERNAL bind.\nFor this, ldapsearch is the right tool — ldapsearch operations.\nWhy -H? Follow symlinks on command line only. without it the command won't work as we need.\nThe -b flag handles brief output. Important because without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b cn=config"
+  },
+  {
+    "instruction": "Search LDAP with a specific LDAP URL",
+    "output": "<think>\nSo the request is to search LDAP with a specific LDAP URL.\nLet me reason through this.\nI'll reach for ldapsearch here because ldapsearch operations.\nWhy -H? Follow symlinks on command line only. important to get the expected behavior.\nOne command does the job. Simple is better.\n</think>\nldapsearch -H ldap://ldap.example.com:389 -x -b dc=example,dc=com '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Search LDAP over SSL on port 636",
+    "output": "<think>\nWe're being asked to search LDAP over SSL on port 636.\nFor this, ldapsearch is the right tool — ldapsearch operations.\nWhy -H? Follow symlinks on command line only. important to get the expected behavior.\nWhy -b? Brief output. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -H ldaps://ldap.example.com:636 -x -b dc=example,dc=com '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Search LDAP with StartTLS",
+    "output": "<think>\nAlright, we need to search LDAP with StartTLS.\nldapsearch is what we need — ldapsearch operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nldapsearch -H ldap://ldap.example.com -Z -x -b dc=example,dc=com '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Search LDAP with StartTLS and require cert validation",
+    "output": "<think>\nWe're being asked to search LDAP with StartTLS and require cert validation.\nLet me consider what makes sense here.\nI'd use ldapsearch for this — ldapsearch operations.\nWhy -H? Follow symlinks on command line only. without it the command won't work as we need.\nThe -b flag means brief output, which matters here because without it the command won't work as we need.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nldapsearch -H ldap://ldap.example.com -ZZ -x -b dc=example,dc=com '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Bulk load entries from a multi-entry LDIF file",
+    "output": "<think>\nThis is asking us to bulk load entries from a multi-entry LDIF file.\nLet me consider what makes sense here.\nBest tool here is ldapadd — ldapadd operations.\nI've added -f to force, suppress errors — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nldapadd -x -D cn=admin,dc=example,dc=com -w secret -f /tmp/bulk.ldif"
+  },
+  {
+    "instruction": "Export the entire LDAP directory with slapcat to a compressed file",
+    "output": "<think>\nThe goal is to export the entire LDAP directory with slapcat to a compressed file.\nFor this, slapcat is the right tool — slapcat operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nslapcat -l /tmp/backup.ldif && gzip /tmp/backup.ldif"
+  },
+  {
+    "instruction": "Count entries in the LDAP directory",
+    "output": "<think>\nThe task requires us to count entries in the LDAP directory.\nBest tool here is ldapsearch — ldapsearch operations.\nWhy -b? Brief output. without it the command won't work as we need.\nThe -l flag handles long format with details. Important because standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com '(objectClass=*)' dn | grep '^dn:' | wc -l"
+  },
+  {
+    "instruction": "Search LDAP for entries modified after a specific date",
+    "output": "<think>\nWe're being asked to search LDAP for entries modified after a specific date.\nLet me consider what makes sense here.\nldapsearch is what we need — ldapsearch operations.\nWhy -b? Brief output. important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com '(&(objectClass=person)(modifyTimestamp>=20250101000000Z))' dn modifyTimestamp"
+  },
+  {
+    "instruction": "Search LDAP with a filter for a specific group membership",
+    "output": "<think>\nThe goal is to search LDAP with a filter for a specific group membership.\nLet me think about the best approach.\nI'd use ldapsearch for this — ldapsearch operations.\nThe -b flag handles brief output. Important because standard practice for this kind of operation.\n</think>\nldapsearch -x -b dc=example,dc=com '(&(objectClass=person)(memberOf=cn=developers,ou=groups,dc=example,dc=com))' cn"
+  },
+  {
+    "instruction": "Search LDAP with attribute presence filter",
+    "output": "<think>\nThe task requires us to search LDAP with attribute presence filter.\nFirst, let me understand what's needed here.\nThe tool for this job is ldapsearch — ldapsearch operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nldapsearch -x -b dc=example,dc=com '(mail=*)' dn mail"
+  },
+  {
+    "instruction": "Search LDAP with bitwise filter using extensible match",
+    "output": "<think>\nThe task requires us to search LDAP with bitwise filter using extensible match.\nLet me reason through this.\nThis calls for ldapsearch. Ldapsearch operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nldapsearch -x -b dc=example,dc=com '(userAccountControl:1.2.840.113556.1.4.804:=2)' dn"
+  },
+  {
+    "instruction": "Search LDAP with a time range filter",
+    "output": "<think>\nThe task requires us to search LDAP with a time range filter.\nFor this, ldapsearch is the right tool — ldapsearch operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nldapsearch -x -b dc=example,dc=com '(&(objectClass=person)(createTimestamp<=20250101000000Z))' dn createTimestamp"
+  },
+  {
+    "instruction": "Use ldapsearch with deref alias",
+    "output": "<think>\nThe task requires us to use ldapsearch with deref alias.\nLet me reason through this.\nThe tool for this job is ldapsearch — ldapsearch operations.\nThe -b flag handles brief output. Important because important to get the expected behavior.\nThe -a flag means AND operator in find, which matters here because needed for this specific use case.\n</think>\nldapsearch -x -b dc=example,dc=com -a never '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Use ldapsearch with sizelimit and timelimit",
+    "output": "<think>\nWe're being asked to use ldapsearch with sizelimit and timelimit.\nldapsearch is what we need — ldapsearch operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nldapsearch -x -b dc=example,dc=com -l 10 -z 100 '(objectClass=person)'"
+  },
+  {
+    "instruction": "Use ldapsearch with sort attribute",
+    "output": "<think>\nAlright, we need to use ldapsearch with sort attribute.\nI'd use ldapsearch for this — ldapsearch operations.\nI've added -b to brief output — without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nldapsearch -x -b dc=example,dc=com -S cn '(objectClass=person)' cn mail"
+  },
+  {
+    "instruction": "Use ldapsearch with reverse sort",
+    "output": "<think>\nNeed to use ldapsearch with reverse sort.\nLet me break this down.\nBest tool here is ldapsearch — ldapsearch operations.\nThe -b flag means brief output, which matters here because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapsearch -x -b dc=example,dc=com -S -cn '(objectClass=person)' cn"
+  },
+  {
+    "instruction": "Use ldapsearch with manageDSAit control",
+    "output": "<think>\nAlright, we need to use ldapsearch with manageDSAit control.\nThe tool for this job is ldapsearch — ldapsearch operations.\nI've added -b to brief output — this controls how the output is formatted.\nThe -E flag handles extended regex. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapsearch -x -b dc=example,dc=com -E manageDSAit '(objectClass=*)'"
+  },
+  {
+    "instruction": "Use ldapsearch with subentries control",
+    "output": "<think>\nThis is asking us to use ldapsearch with subentries control.\nLet me consider what makes sense here.\nldapsearch is what we need — ldapsearch operations.\nWhy -b? Brief output. without it the command won't work as we need.\nThe -E flag handles extended regex. Important because standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com -E subentries '(objectClass=*)'"
+  },
+  {
+    "instruction": "Use ldapsearch with attribute only (no values)",
+    "output": "<think>\nAlright, we need to use ldapsearch with attribute only (no values).\nHere's how I'd approach this.\nI'd use ldapsearch for this — ldapsearch operations.\nI'm using -b for brief output — needed for this specific use case.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com -A '(uid=jdoe)' cn"
+  },
+  {
+    "instruction": "Use ldapsearch to return only attribute names",
+    "output": "<think>\nThe task requires us to use ldapsearch to return only attribute names.\nThis calls for ldapsearch. Ldapsearch operations.\n</think>\nldapsearch -x -b dc=example,dc=com -A '(uid=jdoe)'"
+  }
+]

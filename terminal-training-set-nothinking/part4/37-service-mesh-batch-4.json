@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "linkerd check",
+    "output": "Linkerd core checks\n===================\n\u271c kubernetes-api: can initialize the client............................................[ok]\n\u271c kubernetes-version: is running the minimum Kubernetes API version...................[ok]\n\u271c linkerd-existence: control plane namespace exists...................................[ok]\n\u271c linkerd-existence: linkerd-config exists...........................................[ok]\n\u271c linkerd-identity: certificate config is valid......................................[ok]\n\u271c linkerd-identity: trust roots are valid............................................[ok]\n\u271c linkerd-identity: identity controller is running....................................[ok]\n\u271c linkerd-identity: issuer cert is trusted by the roots..............................[ok]\n\u271c linkerd-web: linkerd-web is running................................................[ok]\n\u271c linkerd-web: linkerd-web is healthy................................................[ok]\n\nStatus check results are \u2713"
+  },
+  {
+    "instruction": "linkerd check --pre",
+    "output": "linkerd check --pre"
+  },
+  {
+    "instruction": "linkerd install | kubectl apply -f -",
+    "output": "namespace/linkerd created\nserviceaccount/linkerd-identity created\nclusterrole.rbac.authorization.k8s.io/linkerd-identity created\nclusterrolebinding.rbac.authorization.k8s.io/linkerd-identity created\nservice/linkerd-identity created\ndeployment.apps/linkerd-identity created\n...\n\u271c Linkerd installed successfully"
+  },
+  {
+    "instruction": "linkerd viz install | kubectl apply -f -",
+    "output": "namespace/linkerd-viz created\ndeployment.apps/linkerd-viz created\nservice/linkerd-viz created\n...\n\u271c Linkerd viz installed successfully"
+  },
+  {
+    "instruction": "linkerd inject deployment.yml | kubectl apply -f -",
+    "output": "deployment \"httpbin\" injected\n  \"linkerd.io/inject: enabled\" annotation added to deployment/httpbin\ndeployment.apps/httpbin configured"
+  },
+  {
+    "instruction": "linkerd uninject deployment.yml | kubectl apply -f -",
+    "output": "deployment \"httpbin\" uninjected\n  \"linkerd.io/inject: enabled\" annotation removed from deployment/httpbin\ndeployment.apps/httpbin configured"
+  },
+  {
+    "instruction": "linkerd profile -n default --template httpbin > httpbin-profile.yaml",
+    "output": "linkerd profile -n default --template httpbin > httpbin-profile.yaml"
+  },
+  {
+    "instruction": "cat httpbin-profile.yaml",
+    "output": "###\n### Service profile for httpbin.default\n###\n### After installing this profile, linkerd adds per-route metrics for the httpbin\n### service.\n###\napiVersion: linkerd.io/v1alpha2\nkind: ServiceProfile\nmetadata:\n  name: httpbin.default\n  namespace: default\nspec:\n  routes:\n  - name: GET /\n    condition:\n      method: GET\n      pathRegex: /\n    responses:\n    - condition:\n        statusRange:\n          min: 200\n          max: 299"
+  },
+  {
+    "instruction": "kubectl apply -f httpbin-profile.yaml",
+    "output": "serviceprofile.linkerd.io/httpbin.default created"
+  },
+  {
+    "instruction": "linkerd -n default profile --open-api /tmp/swagger.json svc-name",
+    "output": "Service profile generated from OpenAPI spec for svc-name.default\nProfile written to stdout"
+  },
+  {
+    "instruction": "linkerd check --proxy",
+    "output": "Linkerd proxy checks\n====================\n\u271c linkerd-identity: proxy certificates are valid..............................[ok]\n\u271c linkerd-identity: proxy identity is correctly configured....................[ok]\n\u271c linkerd-proxy: proxies are up-to-date.......................................[ok]\n\u271c linkerd-proxy: proxies are healthy.........................................[ok]\n\u271c linkerd-proxy: proxies are ready...........................................[ok]\n\nStatus check results are \u2713"
+  },
+  {
+    "instruction": "linkerd -n default stat deploy",
+    "output": "NAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2\nsleep        1/1   100.00%   1.2rps           3ms           10ms           20ms          1"
+  },
+  {
+    "instruction": "linkerd -n default stat deploy/httpbin",
+    "output": "NAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2"
+  },
+  {
+    "instruction": "linkerd -n default stat svc",
+    "output": "NAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2\nsleep        1/1   100.00%   1.2rps           3ms           10ms           20ms          1"
+  },
+  {
+    "instruction": "linkerd -n default tap deploy/httpbin -o wide",
+    "output": "req id=0:0 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :method=GET :authority=httpbin.default:80 :path=/get\nrsp id=0:0 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :status=200 latency=1234\u00b5s"
+  },
+  {
+    "instruction": "linkerd -n default edges deploy",
+    "output": "SRC     DST                       SVC                         CONTROL\nhttpbin sleep.default:80          sleep.default:80            default\nsleep   httpbin.default:80        httpbin.default:80          default"
+  },
+  {
+    "instruction": "linkerd -n default top deploy",
+    "output": "SOURCE                                 DESTINATION                        SUCCESS      RPS   LATENCY_P50   LATENCY_P95\npod/sleep-6c9f78b8d6-abc12             pod/httpbin-5c5944c88c-v9q5k       100.00%   2.5rps           5ms           12ms\npod/httpbin-5c5944c88c-v9q5k           pod/sleep-6c9f78b8d6-abc12         100.00%   1.2rps           3ms           10ms"
+  },
+  {
+    "instruction": "linkerd version",
+    "output": "Client version: stable-2.15.0\nServer version: stable-2.15.0"
+  },
+  {
+    "instruction": "linkerd viz uninstall",
+    "output": "\u271c Viz extension uninstalled"
+  },
+  {
+    "instruction": "linkerd uninstall | kubectl delete -f -",
+    "output": "namespace \"linkerd\" deleted\n...\n\u271c Linkerd uninstalled"
+  },
+  {
+    "instruction": "linkerd -n default tap deploy/httpbin --to deploy/sleep -o json",
+    "output": "{\"source\":{\"namespace\":\"default\",\"pod\":\"httpbin-5c5944c88c-v9q5k\"},\"destination\":{\"namespace\":\"default\",\"pod\":\"sleep-6c9f78b8d6-abc12\"},\"method\":\"GET\",\"path\":\"/get\",\"status\":200,\"latency\":\"1234\u00b5s\"}"
+  }
+]

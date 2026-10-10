@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Publish MQTT message with payload format indicator as UTF-8",
+    "output": "mosquitto_pub --topic 'text/msg' --message 'hello' -V 5 -D publish payload-format-indicator '1'"
+  },
+  {
+    "instruction": "Publish binary data via MQTT with format indicator as bytes",
+    "output": "mosquitto_pub --topic 'binary/data' --message '\\x00\\x01\\x02' -V 5 -D publish payload-format-indicator '0'"
+  },
+  {
+    "instruction": "Subscribe with no retained messages in MQTT v5",
+    "output": "mosquitto_sub --topic 'retained/"
+  },
+  {
+    "instruction": "Set Mosquitto max QoS and max topic alias",
+    "output": "echo 'max_qos 2\nmax_topic_alias 100' | sudo tee /etc/mosquitto/conf.d/mqtt5.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "EdgeX CLI: create new device",
+    "output": "sudo edgex-cli device add --name Sensor1 --profile Random-Device --service device-random --protocols '{\"mqtt\":{\"Address\":\"192.168.1.100\",\"Port\":1883,\"Topic\":\"sensor/data\"}}'"
+  },
+  {
+    "instruction": "EdgeX CLI: list all subscriptions",
+    "output": "sudo edgex-cli subscription list"
+  },
+  {
+    "instruction": "EdgeX CLI: create new subscription",
+    "output": "sudo edgex-cli subscription add --name EmailAlert --channels '{\"type\":\"EMAIL\",\"mailAddresses\":[\"admin@example.com\"]}' --categories '{\"events\":true}' --label SensorAlert"
+  },
+  {
+    "instruction": "Kanto CLI: get container logs with timestamp",
+    "output": "sudo kanto-cm logs --timestamps my-container"
+  },
+  {
+    "instruction": "Kanto CLI: inspect container details",
+    "output": "sudo kanto-cm inspect my-container"
+  },
+  {
+    "instruction": "Kanto CLI: container stats",
+    "output": "sudo kanto-cm stats my-container"
+  },
+  {
+    "instruction": "Kanto CLI: create container from image",
+    "output": "sudo kanto-cm create --name my-iot -i eclipse-mosquitto --port-mappings '1883:1883'"
+  },
+  {
+    "instruction": "Kanto CLI: start existing container",
+    "output": "sudo kanto-cm start my-iot"
+  },
+  {
+    "instruction": "Mosquitto pub with very long expiration (7 days)",
+    "output": "mosquitto_pub --topic 'ota/firmware' --file firmware.bin --expiry 604800"
+  },
+  {
+    "instruction": "Mosquitto sub with clean session disabled",
+    "output": "mosquitto_sub --topic 'persistent/"
+  },
+  {
+    "instruction": "Mosquitto pub with multiple security options combined",
+    "output": "mosquitto_pub -h mqtt.secure.com -p 8883 --topic 'data' --message 'secure' --cafile /etc/ssl/certs/DST_Root_CA_X3.pem --tls-version tlsv1.2 --username 'device1' --pw-file /etc/mosquitto/device.pw -d"
+  },
+  {
+    "instruction": "Create Mosquitto dynamic security config",
+    "output": "echo 'per_listener_settings false\n\nlistener 1883\nallow_anonymous false\npassword_file /etc/mosquitto/passwd\n\nlistener 9001\nprotocol websockets\nallow_anonymous true' | sudo tee /etc/mosquitto/conf.d/dynamic.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto rate limiting",
+    "output": "echo 'connection_messages true\nmax_keepalive 65535\nmax_packet_size 268435456' | sudo tee /etc/mosquitto/conf.d/ratelimit.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Mosquitto: ACL with pattern subscriptions",
+    "output": "echo 'pattern read sensor/%u/"
+  },
+  {
+    "instruction": "Mosquitto: run broker in foreground for debug",
+    "output": "sudo mosquitto -c /etc/mosquitto/mosquitto.conf -v"
+  },
+  {
+    "instruction": "Check if Mosquitto is listening on all interfaces",
+    "output": "sudo ss -tlnp | grep 1883"
+  },
+  {
+    "instruction": "Test MQTT with 1 million messages using shell loop",
+    "output": "for i in $(seq 1 1000000); do mosquitto_pub --topic 'benchmark' --message \"$i\" -q 0; done"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Convert JSON to YAML and edit a field in one pipeline",
+    "output": "<think>\nSo we need to convert JSON to YAML and edit a field in one pipeline.\nLet me think about the best approach.\nThe tool for this job is jq — jq operations.\nWhy -i? Interactive, prompt before action. standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\njq '.service' config.json | yq eval -P - | yq eval -i '.port = 9000' -"
+  },
+  {
+    "instruction": "Extract data from XML, convert to JSON, and filter with jq",
+    "output": "<think>\nThis is asking us to extract data from XML, convert to JSON, and filter with jq.\nHere's how I'd approach this.\nBest tool here is xmlstarlet — xmlstarlet operations.\nThe -t flag handles sort by modification time. Important because without it the command won't work as we need.\nI've added -v to verbose output — this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nxmlstarlet sel -t -v '//item' data.xml | jq -R -s 'split(\"\\n\") | map(select(length>0))'"
+  },
+  {
+    "instruction": "Parse CSV with csvkit and convert to JSON array",
+    "output": "<think>\nAlright, we need to parse CSV with csvkit and convert to JSON array.\nLet me reason through this.\nBest tool here is csvformat — csvformat operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ncsvformat -j data.csv | jq '.[] | {name, email}'"
+  },
+  {
+    "instruction": "Use gron to find all keys containing 'secret' in JSON",
+    "output": "<think>\nThe task requires us to use gron to find all keys containing 'secret' in JSON.\nFirst, let me understand what's needed here.\nThis calls for gron. Gron operations.\nI'm using -i for interactive, prompt before action — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngron config.json | grep -i secret | gron --ungron"
+  },
+  {
+    "instruction": "Convert protobuf binary to JSON via flatbuffers schema",
+    "output": "<think>\nSo we need to convert protobuf binary to JSON via flatbuffers schema.\nFirst, let me understand what's needed here.\nThe tool for this job is flatc — flatc operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nflatc --raw-binary schema.fbs -- data.bin | jq '.items'"
+  },
+  {
+    "instruction": "Recursively extract all string values from nested JSON",
+    "output": "<think>\nThe user wants to recursively extract all string values from nested JSON.\nLet me think about the best approach.\njq is what we need — jq operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\njq '[recurse(..) | select(type == \"string\")]' data.json"
+  },
+  {
+    "instruction": "Convert Avro to Parquet via JSON intermediate",
+    "output": "<think>\nThe user wants to convert Avro to Parquet via JSON intermediate.\nI'd use avro for this — avro operations.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\navro cat data.avro | jq -c '.' > data.jsonl"
+  },
+  {
+    "instruction": "Merge YAML files using yq and validate with xmllint equivalent",
+    "output": "<think>\nSo the request is to merge YAML files using yq and validate with xmllint equivalent.\nLet me reason through this.\nI'd use yq for this — yq operations.\nI'll check the output to make sure it did what we expected.\n</think>\nyq eval-all 'select(fi==0) * select(fi==1)' a.yaml b.yaml > merged.yaml"
+  },
+  {
+    "instruction": "Format XML in-place and validate against schema",
+    "output": "<think>\nSo the request is to format XML in-place and validate against schema.\nLet me break this down.\nI'd use xmllint for this — xmllint operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nxmllint --format input.xml --output input.xml && xmllint --schema schema.xsd input.xml"
+  },
+  {
+    "instruction": "Convert CSV to TOML via JSON pipeline",
+    "output": "<think>\nWe're being asked to convert CSV to TOML via JSON pipeline.\nI'll reach for csvformat here because csvformat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncsvformat -j data.csv | remarshal -if json -of toml > config.toml"
+  },
+  {
+    "instruction": "Use dasel to read and convert a nested TOML config",
+    "output": "<think>\nThis is asking us to use dasel to read and convert a nested TOML config.\nLet me think about the best approach.\nThis calls for dasel. Dasel operations.\nThe -f flag means force, suppress errors, which matters here because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ndasel -f config.toml -w json '.server.database'"
+  },
+  {
+    "instruction": "Stream-edit XML with xmlstarlet and validate",
+    "output": "<think>\nWe're being asked to stream-edit XML with xmlstarlet and validate.\nLet me reason through this.\nThe tool for this job is xmlstarlet — xmlstarlet operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nxmlstarlet ed -u '//@version' -v '2.0' pom.xml | xmllint --format -"
+  },
+  {
+    "instruction": "Extract all email addresses from JSON using jq regex",
+    "output": "<think>\nSo the request is to extract all email addresses from JSON using jq regex.\nThis calls for jq. Jq operations.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\njq '[.. | .email? | select(. != null)]' data.json"
+  },
+  {
+    "instruction": "Convert JSON to YAML, sort keys, and format",
+    "output": "<think>\nSo the request is to convert JSON to YAML, sort keys, and format.\nLet me break this down.\nI'll reach for jq here because jq operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\njq '.spec' resource.json | yq eval -P 'sortKeys(.)' - > resource.yaml"
+  },
+  {
+    "instruction": "Encode a JSON payload as MessagePack and base64 wrap",
+    "output": "<think>\nSo we need to encode a JSON payload as MessagePack and base64 wrap.\nLet me break this down.\nFor this, msgpack-cli is the right tool — msgpack-cli operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nmsgpack-cli encode data.json | base64 > payload.b64"
+  },
+  {
+    "instruction": "Decode CBOR, filter with jq, re-encode as CBOR",
+    "output": "<think>\nThe task requires us to decode CBOR, filter with jq, re-encode as CBOR.\nHere's how I'd approach this.\ncbor-diag is what we need — cbor-diag operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\ncbor-diag --to-json data.cbor | jq '.[] | select(.active)' | cbor-diag --from-json > filtered.cbor"
+  },
+  {
+    "instruction": "Use gron to diff two JSON files",
+    "output": "<think>\nWe're being asked to use gron to diff two JSON files.\nLet me think about the best approach.\ndiff is what we need — diff operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndiff <(gron data-v1.json) <(gron data-v2.json)"
+  },
+  {
+    "instruction": "Convert XML to JSON using xmlstarlet and jq",
+    "output": "<think>\nThe task requires us to convert XML to JSON using xmlstarlet and jq.\nI'll reach for xmlstarlet here because xmlstarlet operations.\nThe -T flag means print filesystem type in df, which matters here because important to get the expected behavior.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nxmlstarlet sel -T -t -m '//item' -o '{' -t -v 'concat(\"\\\"name\\\":\\\"\",name,\"\\\"\")' -o '}' data.xml | jq -s '.'"
+  },
+  {
+    "instruction": "Read JSON secret from Vault-style env and parse with jq",
+    "output": "<think>\nWe should read JSON secret from Vault-style env and parse with jq.\nLet me consider what makes sense here.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\necho $VAULT_SECRET | jq -r '.data.password'"
+  },
+  {
+    "instruction": "Batch process JSON files, adding a timestamp field",
+    "output": "<think>\nAlright, we need to batch process JSON files, adding a timestamp field.\nLet me reason through this.\nI'd use for for this — for operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nfor f in *.json; do jq --arg ts \"$(date -Iseconds)\" '.timestamp = $ts' \"$f\" > tmp && mv tmp \"$f\"; done"
+  },
+  {
+    "instruction": "Extract keys from YAML and check for required fields",
+    "output": "<think>\nThe goal is to extract keys from YAML and check for required fields.\nBest tool here is yq — yq operations.\nI've added -R to recursive operation — without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nyq eval 'keys' config.yaml | jq -R 'fromjson?' | jq 'contains([\"name\",\"version\"])'"
+  },
+  {
+    "instruction": "Convert nested YAML to flat dot-notation keys",
+    "output": "<think>\nThis is asking us to convert nested YAML to flat dot-notation keys.\nLet me break this down.\nI'll reach for yq here because yq operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nyq eval '.. | path | join(\".\")' config.yaml | sort"
+  },
+  {
+    "instruction": "Validate a CSV has expected columns using csvcut and diff",
+    "output": "<think>\nThis is asking us to validate a CSV has expected columns using csvcut and diff.\nFirst, let me understand what's needed here.\nThe tool for this job is csvcut — csvcut operations.\nI'm using -n for dry-run, no changes — needed for this specific use case.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ncsvcut -n data.csv | cut -d: -f2 | tr -d ' ' | sort > /tmp/cols.txt"
+  },
+  {
+    "instruction": "Use jsonnet to generate config with external env vars",
+    "output": "<think>\nWe should use jsonnet to generate config with external env vars.\nLet me break this down.\nI'd use jsonnet for this — jsonnet operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\njsonnet --ext-str tag=\"$(git rev-parse HEAD)\" deploy.jsonnet | jq '.spec'"
+  },
+  {
+    "instruction": "Decode base64 protobuf from API response",
+    "output": "<think>\nNeed to decode base64 protobuf from API response.\nHere's how I'd approach this.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\necho 'CgVhZG1pbhIIbXlwYXNzd29yZA==' | base64 -d | protoc --decode=LoginRequest auth.proto"
+  }
+]

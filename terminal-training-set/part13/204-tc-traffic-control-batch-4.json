@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to add a basic filter with ematch",
+    "output": "<think>\nSo the request is to add a basic filter with ematch.\nLet me reason through this.\nFor this, tc is the right tool — tc operations.\n</think>\ntc filter add dev eth0 parent 1: basic match 'cmp(u16 at 2 layer ip eq 2048)' action drop"
+  },
+  {
+    "instruction": "How to add a u32 filter with src/dst IP and port",
+    "output": "<think>\nSo we need to add a u32 filter with src/dst IP and port.\nHere's how I'd approach this.\ntc is what we need — tc operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.0/24 match ip dport 80 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter with TCP flags",
+    "output": "<think>\nAlright, we need to add a u32 filter with TCP flags.\nBest tool here is tc — tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match tcp flags 0x02 0xff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter with offset",
+    "output": "<think>\nSo the request is to add a u32 filter with offset.\nHere's how I'd approach this.\ntc is what we need — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip sport 0 0xffff at 0 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter for ICMP type",
+    "output": "<think>\nThe goal is to add a u32 filter for ICMP type.\nLet me think through this step by step.\nFor this, tc is the right tool — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 1 0xff match u8 8 at 20 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a filter to set pkt mark for QoS",
+    "output": "<think>\nNeed to add a filter to set pkt mark for QoS.\nFor this, tc is the right tool — tc operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 10.0.0.1 action skbedit mark 1"
+  },
+  {
+    "instruction": "How to add a tc filter that mirrors traffic",
+    "output": "<think>\nThis is asking us to add a tc filter that mirrors traffic.\nHere's how I'd approach this.\nThis calls for tc. Tc operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 action mirred egress mirror dev eth1"
+  },
+  {
+    "instruction": "How to add a tc filter that redirects traffic",
+    "output": "<think>\nNeed to add a tc filter that redirects traffic.\nI'll reach for tc here because tc operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 action mirred egress redirect dev eth1"
+  },
+  {
+    "instruction": "How to set up a CBQ (Class Based Queueing) qdisc",
+    "output": "<think>\nThis is asking us to set up a CBQ (Class Based Queueing) qdisc.\nBest tool here is tc — tc operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntc qdisc add dev eth0 root handle 1: cbq bandwidth 100mbit avpkt 1000 cell 8"
+  },
+  {
+    "instruction": "How to add a CBQ class",
+    "output": "<think>\nNeed to add a CBQ class.\nLet me think about the best approach.\nI'll reach for tc here because tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ntc class add dev eth0 parent 1: classid 1:10 cbq bandwidth 100mbit rate 10mbit weight 1mbit allot 1514 prio 5 maxburst 20 avpkt 1000"
+  },
+  {
+    "instruction": "How to add a HFSC (Hierarchical Fair Service Curve) qdisc",
+    "output": "<think>\nWe're being asked to add a HFSC (Hierarchical Fair Service Curve) qdisc.\nLet me break this down.\ntc is what we need — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev eth0 root handle 1: hfsc default 30"
+  },
+  {
+    "instruction": "How to add an HFSC class",
+    "output": "<think>\nThe goal is to add an HFSC class.\nLet me think through this step by step.\ntc is what we need — tc operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ntc class add dev eth0 parent 1: classid 1:10 hfsc sc mtu 1500 rate 10mbit ul mtu 1500 rate 10mbit"
+  },
+  {
+    "instruction": "How to add a DSMARK qdisc",
+    "output": "<think>\nThis is asking us to add a DSMARK qdisc.\nLet me break this down.\nThis calls for tc. Tc operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc qdisc add dev eth0 root handle 1: dsmark indices 64 default_index 1"
+  },
+  {
+    "instruction": "How to set a DSMARK value",
+    "output": "<think>\nWe should set a DSMARK value.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc class change dev eth0 classid 1:1 dsmark mask 0xfc value 0x10"
+  },
+  {
+    "instruction": "How to add a choke qdisc",
+    "output": "<think>\nWe should add a choke qdisc.\nI'd use tc for this — tc operations.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root choke limit 30000 min 5000 max 15000 probability 0.02 avpkt 1000 bandwidth 10mbit ecn"
+  },
+  {
+    "instruction": "How to add a codel qdisc",
+    "output": "<think>\nThe goal is to add a codel qdisc.\nBest tool here is tc — tc operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root codel limit 1000 target 5ms interval 100ms"
+  },
+  {
+    "instruction": "How to add a pie qdisc",
+    "output": "<think>\nWe should add a pie qdisc.\nLet me think about the best approach.\nBest tool here is tc — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root pie limit 1000 target 15ms tupdate 30ms alpha 2 beta 20"
+  },
+  {
+    "instruction": "How to add a fq (Fair Queue) qdisc",
+    "output": "<think>\nThe user wants to add a fq (Fair Queue) qdisc.\nFor this, tc is the right tool — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev eth0 root fq limit 10000 flow_limit 100 quantum 3000"
+  },
+  {
+    "instruction": "How to set the default qdisc for all interfaces",
+    "output": "<think>\nThis is asking us to set the default qdisc for all interfaces.\nThe tool for this job is sysctl — kernel parameter tuning.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.core.default_qdisc=fq_codel"
+  },
+  {
+    "instruction": "How to check the current default qdisc",
+    "output": "<think>\nThe goal is to check the current default qdisc.\nLet me think about the best approach.\nBest tool here is sysctl — kernel parameter tuning.\n</think>\nsysctl net.core.default_qdisc"
+  },
+  {
+    "instruction": "How to show all tc qdisc parameters for eth0",
+    "output": "<think>\nThe goal is to show all tc qdisc parameters for eth0.\nThe tool for this job is tc — tc operations.\nThe -d flag handles directory listing, don't descend. Important because important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntc -d qdisc show dev eth0"
+  },
+  {
+    "instruction": "How to show all class traffic stats",
+    "output": "<think>\nThis is asking us to show all class traffic stats.\nHere's how I'd approach this.\ntc is what we need — tc operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ntc -s class show dev eth0"
+  },
+  {
+    "instruction": "How to reset tc statistics",
+    "output": "<think>\nThe user wants to reset tc statistics.\nLet me break this down.\nThis calls for tc. Tc operations.\nThe -s flag handles summarize or silent mode. Important because needed for this specific use case.\nThe -s flag means summarize or silent mode, which matters here because without it the command won't work as we need.\n</think>\ntc -s -s qdisc show dev eth0"
+  },
+  {
+    "instruction": "How to add a qdisc on a child interface",
+    "output": "<think>\nThe user wants to add a qdisc on a child interface.\nHere's how I'd approach this.\nThis calls for tc. Tc operations.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0.100 root fq_codel"
+  },
+  {
+    "instruction": "How to show tc qdisc for all interfaces",
+    "output": "<think>\nThe task requires us to show tc qdisc for all interfaces.\nHere's how I'd approach this.\nBest tool here is tc — tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc show"
+  }
+]

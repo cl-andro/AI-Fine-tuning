@@ -1,0 +1,94 @@
+[
+  {
+    "instruction": "consul connect proxy -sidecar-for web -token $(cat /consul/config/token)",
+    "output": "2026-07-25T10:00:01.000Z [INFO]  agent.client: member joined: cluster=consul server_addr=10.0.0.1:8301\n2026-07-25T10:00:01.001Z [INFO]  connect proxy: proxy started: sidecar_for=web bind=:20000\n2026-07-25T10:00:01.002Z [INFO]  connect proxy: proxying upstream: upstream=db backend_type=consul static_addr=10.0.0.20:5432"
+  },
+  {
+    "instruction": "consul connect envoy -sidecar-for web -admin-bind 0.0.0.0:19000",
+    "output": "2026-07-25T10:00:01.000Z [INFO] Starting envoy with bootstrap config\n2026-07-25T10:00:01.123Z [INFO] Envoy admin interface available at 0.0.0.0:19000\n2026-07-25T10:00:01.456Z [INFO] Envoy proxy started: sidecar_for=web"
+  },
+  {
+    "instruction": "consul connect envoy -gateway=mesh -register -address 10.0.0.1:443 -wan-address 203.0.113.1:443",
+    "output": "2026-07-25T10:00:01.000Z [INFO] Starting mesh gateway envoy\n2026-07-25T10:00:01.123Z [INFO] Mesh gateway registered: address=10.0.0.1:443 wan_address=203.0.113.1:443"
+  },
+  {
+    "instruction": "consul connect envoy -expose-servers -admin-bind 0.0.0.0:19001 -bootstrap > /tmp/envoy-bootstrap.json",
+    "output": "consul connect envoy -expose-servers -admin-bind 0.0.0.0:19001 -bootstrap > /tmp/envoy-bootstrap.json"
+  },
+  {
+    "instruction": "cat /tmp/envoy-bootstrap.json | python3 -m json.tool | head -25",
+    "output": "{\n    \"admin\": {\n        \"access_log_path\": \"/dev/null\",\n        \"address\": {\n            \"socket_address\": {\n                \"address\": \"0.0.0.0\",\n                \"port_value\": 19001\n            }\n        }\n    },\n    \"static_resources\": {\n        \"clusters\": [\n            {\n                \"name\": \"local_agent\",\n                \"connect_timeout\": \"5s\",\n                \"type\": \"STATIC\",\n                \"lb_policy\": \"ROUND_ROBIN\",\n                \"load_assignment\": {\n                    \"cluster_name\": \"local_agent\",\n                    \"endpoints\": [\n                        {\n                            \"lb_endpoints\": [\n                                {\n                                    \"endpoint\": {\n                                        \"address\": {\n                                            \"socket_address\": {\n                                                \"address\": \"127.0.0.1\",\n                                                \"port_value\": 8502\n                                            }\n                                        }\n                                    }\n                                }\n                            ]\n                        }\n                    ]\n                }\n            }\n        ]\n    }\n}"
+  },
+  {
+    "instruction": "consul services register /tmp/svc-web.json",
+    "output": "Registered service: web"
+  },
+  {
+    "instruction": "consul services deregister -id web-1",
+    "output": "Deregistered service: web-1"
+  },
+  {
+    "instruction": "consul catalog services",
+    "output": "consul\ndb\nweb\napi\nfrontend"
+  },
+  {
+    "instruction": "consul catalog nodes -service web",
+    "output": "Node         ID        Address      Version\nweb-1        12345678  10.0.0.10    1.19.0\nweb-2        23456789  10.0.0.11    1.19.0"
+  },
+  {
+    "instruction": "consul catalog datacenters",
+    "output": "dc1\ndc2\ndc3"
+  },
+  {
+    "instruction": "consul intention check web db",
+    "output": "Allowed: true\n  Matched intention: web -> db (allow)"
+  },
+  {
+    "instruction": "consul intention check api db",
+    "output": "Allowed: false\n  Matched intention: api -> db (deny)"
+  },
+  {
+    "instruction": "consul intention create -name web -action allow -name db",
+    "output": "Intention created: web -> db (allow)"
+  },
+  {
+    "instruction": "consul intention create -name api -action deny -name db",
+    "output": "Intention created: api -> db (deny)"
+  },
+  {
+    "instruction": "consul intention list",
+    "output": "SourceNS       SourceName   DestinationNS  DestinationName  Action  Precedence\ndefault        web          default        db               allow   9\ndefault        api          default        db               deny    9\ndefault        frontend     default        api              allow   9"
+  },
+  {
+    "instruction": "consul intention get web db",
+    "output": "SourceNS:     default\nSourceName:   web\nDestinationNS: default\nDestinationName: db\nAction:       allow\nPrecedence:   9\nDescription:  \nMeta:         map[]\nCreatedAt:    2026-07-20T10:00:00Z\nUpdatedAt:    2026-07-20T10:00:00Z"
+  },
+  {
+    "instruction": "consul intention update -name web -action deny -name db",
+    "output": "Intention updated: web -> db (deny)"
+  },
+  {
+    "instruction": "consul intention delete web db",
+    "output": "Intention deleted: web -> db"
+  },
+  {
+    "instruction": "consul intention match web",
+    "output": "Matched intentions for 'web':\n  default web -> default db (allow)\n  default web -> default api (allow)"
+  },
+  {
+    "instruction": "consul intention check -replace web db",
+    "output": "Source 'web' -> Destination 'db' intention: allow\nReplaced intention: web -> db (allow)"
+  },
+  {
+    "instruction": "consul connect proxy -sidecar-for web -upstream db:10.0.0.20:5432 &",
+    "output": "[1] 12345\n2026-07-25T10:00:01.000Z [INFO] connect proxy: proxying upstream: upstream=db backend_type=consul static_addr=10.0.0.20:5432"
+  },
+  {
+    "instruction": "consul connect ca set-config -config-file /tmp/ca-config.json",
+    "output": "CA config updated successfully"
+  },
+  {
+    "instruction": "consul connect ca get-config",
+    "output": "{\n  \"Provider\": \"consul\",\n  \"Config\": {\n    \"PrivateKeyType\": \"ec\",\n    \"RootCertTTL\": \"87600h\",\n    \"IntermediateCertTTL\": \"4320h\"\n  },\n  \"State\": \"running\"\n}"
+  }
+]

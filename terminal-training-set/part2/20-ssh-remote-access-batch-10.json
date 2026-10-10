@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Disable root SSH login entirely in sshd_config",
+    "output": "<think>\nAlright, we need to disable root SSH login entirely in sshd_config.\nThe tool for this job is sed — text stream editing.\nThe -i flag means interactive, prompt before action, which matters here because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Enable only Ed25519 and ED25519-SK host keys for SSH",
+    "output": "<think>\nWe should enable only Ed25519 and ED25519-SK host keys for SSH.\nI'd use sed for this — text stream editing.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^HostKey.*/"
+  },
+  {
+    "instruction": "Restrict SSH access to only the 'admin' and 'devops' groups using AllowGroups",
+    "output": "<think>\nNeed to restrict SSH access to only the 'admin' and 'devops' groups using AllowGroups.\nFirst, let me understand what's needed here.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'AllowGroups admin devops' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Whitelist specific users for SSH access with AllowUsers",
+    "output": "<think>\nAlright, we need to whitelist specific users for SSH access with AllowUsers.\nI'm using -a for AND operator in find — important to get the expected behavior.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'AllowUsers alice bob charlie' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable password authentication entirely for SSH",
+    "output": "<think>\nNeed to disable password authentication entirely for SSH.\nLet me consider what makes sense here.\nI'd use sed for this — text stream editing.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Only allow key-based public key authentication",
+    "output": "<think>\nWe're being asked to only allow key-based public key authentication.\nLet me break this down.\nThis calls for sed. Text stream editing.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set a custom AuthorizedKeysFile pointing to a centralized location",
+    "output": "<think>\nThe user wants to set a custom AuthorizedKeysFile pointing to a centralized location.\nThe -a flag handles AND operator in find. Important because this controls how the output is formatted.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'AuthorizedKeysFile /etc/ssh/authorized_keys/%u' | sudo tee -a /etc/ssh/sshd_config && sudo mkdir -p /etc/ssh/authorized_keys && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Use a Match block to apply different settings for users from a specific address",
+    "output": "<think>\nThe task requires us to use a Match block to apply different settings for users from a specific address.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nThe -a flag handles AND operator in find. Important because this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch Address 10.0.0.0/8\n  PasswordAuthentication yes\n  AllowUsers backup-robot\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Chroot a SFTP-only user to their home directory",
+    "output": "<think>\nWe should chroot a SFTP-only user to their home directory.\nI'd use useradd for this — user account creation and management.\nI've added -s to summarize or silent mode — needed for this specific use case.\nThe -user flag means filter by owner, which matters here because standard practice for this kind of operation.\nI've added -p to create parent directories as needed — needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo useradd -m -s /usr/sbin/nologin sftp-user && sudo mkdir -p /home/sftp-user/uploads && sudo chown root:root /home/sftp-user && sudo chmod 755 /home/sftp-user && cat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch User sftp-user\n  ChrootDirectory /home/sftp-user\n  ForceCommand internal-sftp\n  X11Forwarding no\n  AllowTcpForwarding no\n  PermitTTY no\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "ForceCommand to run a script when a specific user logs in",
+    "output": "<think>\nAlright, we need to forceCommand to run a script when a specific user logs in.\nLet me break this down.\nThe tool for this job is cat — cat operations.\nThe -a flag means AND operator in find, which matters here because standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ncat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch User monitor\n  ForceCommand /usr/local/bin/run-monitor.sh\n  PermitTTY yes\n  X11Forwarding no\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable X11 forwarding globally in sshd_config",
+    "output": "<think>\nSo the request is to disable X11 forwarding globally in sshd_config.\nsed is what we need — text stream editing.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Disable TCP port forwarding globally",
+    "output": "<think>\nWe should disable TCP port forwarding globally.\nLet me think through this step by step.\nI'll reach for sed here because text stream editing.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Limit SSH to protocol version 2 only",
+    "output": "<think>\nWe're being asked to limit SSH to protocol version 2 only.\nFirst, let me understand what's needed here.\nThe -a flag handles AND operator in find. Important because needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'Protocol 2' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Reduce the login grace time and max auth tries",
+    "output": "<think>\nNeed to reduce the login grace time and max auth tries.\nLet me reason through this.\nThis calls for sed. Text stream editing.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set MaxSessions and MaxStartups to prevent connection flooding",
+    "output": "<think>\nThe goal is to set MaxSessions and MaxStartups to prevent connection flooding.\nFirst, let me understand what's needed here.\nThe tool for this job is sed — text stream editing.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Change the SSH listening port to 2222",
+    "output": "<think>\nThe goal is to change the SSH listening port to 2222.\nLet me reason through this.\nI'll reach for sed here because text stream editing.\nI'm using -i for interactive, prompt before action — standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Bind SSH to a specific IP address only",
+    "output": "<think>\nAlright, we need to bind SSH to a specific IP address only.\nWhy -a? AND operator in find. without it the command won't work as we need.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'ListenAddress 192.168.1.10' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Enable verbose SSH logging and send logs to authpriv",
+    "output": "<think>\nNeed to enable verbose SSH logging and send logs to authpriv.\nFor this, sed is the right tool — text stream editing.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/^"
+  },
+  {
+    "instruction": "Enable two-factor authentication with libpam-google-authenticator",
+    "output": "<think>\nAlright, we need to enable two-factor authentication with libpam-google-authenticator.\nThe tool for this job is apt-get — apt-get operations.\nI've added -t to sort by modification time — without it the command won't work as we need.\nI'm using -d for directory listing, don't descend — without it the command won't work as we need.\nThe -f flag handles force, suppress errors. Important because without it the command won't work as we need.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt-get install -y libpam-google-authenticator && google-authenticator -t -d -f -r 3 -R 30 -w 3 && echo 'auth required pam_google_authenticator.so' | sudo tee -a /etc/pam.d/sshd && sudo sed -i 's/^"
+  },
+  {
+    "instruction": "Set a banner message displayed before SSH login",
+    "output": "<think>\nWe should set a banner message displayed before SSH login.\nLet me break this down.\nThe -a flag means AND operator in find, which matters here because needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'Authorized access only. All activity is logged.' | sudo tee /etc/ssh/banner && echo 'Banner /etc/ssh/banner' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Use a Match block to restrict a user group to a specific source IP",
+    "output": "<think>\nSo we need to use a Match block to restrict a user group to a specific source IP.\nFirst, let me understand what's needed here.\nBest tool here is cat — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nMatch Group developers Address 192.168.1.0/24\n  PasswordAuthentication no\n  PubkeyAuthentication yes\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Deny a specific user (john) from SSH access with a DenyUsers directive",
+    "output": "<think>\nThe task requires us to deny a specific user (john) from SSH access with a DenyUsers directive.\nFirst, let me understand what's needed here.\nThe -a flag means AND operator in find, which matters here because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'DenyUsers john' | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Permit root login only with key-based authentication from a specific subnet",
+    "output": "<think>\nAlright, we need to permit root login only with key-based authentication from a specific subnet.\ncat is what we need — cat operations.\nI'm using -a for AND operator in find — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\ncat | sudo tee -a /etc/ssh/sshd_config << 'EOF'\nPermitRootLogin prohibit-password\nMatch Address 10.10.0.0/16\n  PermitRootLogin yes\nEOF\nsudo systemctl restart sshd"
+  },
+  {
+    "instruction": "Test the sshd_config for syntax errors before restarting",
+    "output": "<think>\nSo we need to test the sshd_config for syntax errors before restarting.\nFirst, let me understand what's needed here.\nFor this, sshd is the right tool — sshd operations.\nI'm using -t for sort by modification time — this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sshd -t"
+  },
+  {
+    "instruction": "Reload sshd configuration without dropping active connections",
+    "output": "<think>\nSo we need to reload sshd configuration without dropping active connections.\nLet me think about the best approach.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl reload sshd"
+  },
+  {
+    "instruction": "Display current SSH server configuration with all active settings",
+    "output": "<think>\nThis is asking us to display current SSH server configuration with all active settings.\nsshd is what we need — sshd operations.\nThe -T flag handles print filesystem type in df. Important because standard practice for this kind of operation.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo sshd -T | less"
+  }
+]

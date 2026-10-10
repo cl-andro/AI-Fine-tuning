@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Check NUMA node memory allocation for a process",
+    "output": "<think>\nNeed to check NUMA node memory allocation for a process.\nFirst, let me understand what's needed here.\nBest tool here is numastat — numastat operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nnumastat -p 1234"
+  },
+  {
+    "instruction": "Check memory usage of a process (RSS/HWM)",
+    "output": "<think>\nWe're being asked to check memory usage of a process (RSS/HWM).\nBest tool here is ps — process listing.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nps -o pid,rss,vsz,%mem,cmd -p 1234"
+  },
+  {
+    "instruction": "Check top memory consumers",
+    "output": "<think>\nThe task requires us to check top memory consumers.\nBest tool here is ps — process listing.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nps aux --sort=-%mem | awk 'NR>1{print $4 \"% \" $11}' | head -15"
+  },
+  {
+    "instruction": "Check virtual memory statistics",
+    "output": "<think>\nWe're being asked to check virtual memory statistics.\nLet me think through this step by step.\nThis calls for vmstat. System performance monitoring.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nvmstat 1 5 | tail -5"
+  },
+  {
+    "instruction": "Check page faults per process",
+    "output": "<think>\nThe task requires us to check page faults per process.\nps is what we need — process listing.\n</think>\nps -o min_flt,maj_flt,cmd -p 1234"
+  },
+  {
+    "instruction": "Check TLB (Translation Lookaside Buffer) stats",
+    "output": "<think>\nThe task requires us to check TLB (Translation Lookaside Buffer) stats.\nI'd use cat for this — cat operations.\nWhy -E? Extended regex. standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ncat /proc/1234/status | grep -E 'VmPin|VmRSS|VmPTE'"
+  },
+  {
+    "instruction": "Check memory fragmentation",
+    "output": "<think>\nThe user wants to check memory fragmentation.\nThis calls for cat. Cat operations.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/buddyinfo | head -5"
+  },
+  {
+    "instruction": "Check slab cache usage",
+    "output": "<think>\nAlright, we need to check slab cache usage.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /proc/slabinfo | head -20"
+  },
+  {
+    "instruction": "Check zoneinfo for memory allocation details",
+    "output": "<think>\nSo the request is to check zoneinfo for memory allocation details.\nThis calls for cat. Cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /proc/zoneinfo | grep -A 5 'Node 0, zone'"
+  },
+  {
+    "instruction": "Show memory mapping of a process",
+    "output": "<think>\nSo we need to show memory mapping of a process.\nFirst, let me understand what's needed here.\nThis calls for pmap. Pmap operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\npmap -x 1234 | head -20"
+  },
+  {
+    "instruction": "Check the largest memory mappings of a process",
+    "output": "<think>\nThe task requires us to check the largest memory mappings of a process.\npmap is what we need — pmap operations.\nThe -n flag handles dry-run, no changes. Important because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\npmap -x 1234 | tail -n +3 | sort -k3 -rh | head -10"
+  },
+  {
+    "instruction": "Check memory reclaim behavior",
+    "output": "<think>\nAlright, we need to check memory reclaim behavior.\nHere's how I'd approach this.\ncat is what we need — cat operations.\nThe -E flag handles extended regex. Important because needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /proc/vmstat | grep -E 'pgsteal|pgscan'"
+  },
+  {
+    "instruction": "Check kernel same-page merging (KSM) usage",
+    "output": "<think>\nNeed to check kernel same-page merging (KSM) usage.\nLet me think about the best approach.\nI'll reach for cat here because cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/kernel/mm/ksm/pages_shared"
+  },
+  {
+    "instruction": "Enable KSM for memory deduplication",
+    "output": "<think>\nWe should enable KSM for memory deduplication.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 1 > /sys/kernel/mm/ksm/run && echo 100 > /sys/kernel/mm/ksm/sleep_millisecs"
+  },
+  {
+    "instruction": "Check kernel SLUB allocator debugging",
+    "output": "<think>\nThe goal is to check kernel SLUB allocator debugging.\nLet me think through this step by step.\nBest tool here is cat — cat operations.\n</think>\ncat /proc/sys/vm/slab_debug"
+  },
+  {
+    "instruction": "Tune dirty page ratios for write-heavy workloads",
+    "output": "<think>\nThe goal is to tune dirty page ratios for write-heavy workloads.\nThis calls for sysctl. Kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysctl -w vm.dirty_ratio=40 && sysctl -w vm.dirty_background_ratio=10"
+  },
+  {
+    "instruction": "Tune dirty page expiration",
+    "output": "<think>\nWe're being asked to tune dirty page expiration.\nFirst, let me understand what's needed here.\nI'd use sysctl for this — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\nsysctl -w vm.dirty_expire_centisecs=3000 && sysctl -w vm.dirty_writeback_centisecs=500"
+  },
+  {
+    "instruction": "Set overcommit memory policy",
+    "output": "<think>\nWe should set overcommit memory policy.\nI'll reach for sysctl here because kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w vm.overcommit_memory=1 && sysctl -w vm.overcommit_ratio=80"
+  },
+  {
+    "instruction": "Disable OOM killer for a critical process",
+    "output": "<think>\nSo the request is to disable OOM killer for a critical process.\nLet me break this down.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho -17 > /proc/1234/oom_adj"
+  },
+  {
+    "instruction": "Check OOM killer score for a process",
+    "output": "<think>\nAlright, we need to check OOM killer score for a process.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/1234/oom_score"
+  },
+  {
+    "instruction": "Check network socket memory usage",
+    "output": "<think>\nSo we need to check network socket memory usage.\nThe tool for this job is cat — cat operations.\n</think>\ncat /proc/net/sockstat"
+  },
+  {
+    "instruction": "Check network buffer usage",
+    "output": "<think>\nNeed to check network buffer usage.\nThe tool for this job is sysctl — kernel parameter tuning.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl net.ipv4.tcp_mem"
+  },
+  {
+    "instruction": "Tune network buffer size for high bandwidth",
+    "output": "<think>\nSo the request is to tune network buffer size for high bandwidth.\nFor this, sysctl is the right tool — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w net.core.rmem_max=16777216 && sysctl -w net.core.wmem_max=16777216 && sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' && sysctl -w net.ipv4.tcp_wmem='4096 65536 16777216'"
+  },
+  {
+    "instruction": "Enable TCP window scaling",
+    "output": "<think>\nSo we need to enable TCP window scaling.\nThe tool for this job is sysctl — kernel parameter tuning.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w net.ipv4.tcp_window_scaling=1"
+  },
+  {
+    "instruction": "Enable TCP selective ACK",
+    "output": "<think>\nThis is asking us to enable TCP selective ACK.\nHere's how I'd approach this.\nThe tool for this job is sysctl — kernel parameter tuning.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.ipv4.tcp_sack=1"
+  }
+]

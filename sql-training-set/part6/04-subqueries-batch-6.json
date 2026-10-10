@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows where hours is above the average",
+    "output": "SELECT * FROM tasks WHERE hours > (SELECT AVG(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRow with the highest hours",
+    "output": "SELECT * FROM tasks WHERE hours = (SELECT MAX(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRow with the lowest hours",
+    "output": "SELECT * FROM tasks WHERE hours = (SELECT MIN(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows where id is in a subquery from tasks",
+    "output": "SELECT * FROM tasks WHERE id IN (SELECT DISTINCT id FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows where id is not in the set of values 1 and 2",
+    "output": "SELECT * FROM tasks WHERE id NOT IN (1, 2);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nUse EXISTS to find rows where a id appears more than once",
+    "output": "SELECT * FROM tasks t WHERE EXISTS (SELECT 1 FROM tasks t2 WHERE t2.id = t.id GROUP BY t2.id HAVING COUNT(*) > 1);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery in SELECT returning count per id",
+    "output": "SELECT t.*, (SELECT COUNT(*) FROM tasks t2 WHERE t2.id = t.id) AS cnt FROM tasks t;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows where hours > the maximum of project_id plus 100 in subquery",
+    "output": "SELECT * FROM tasks WHERE hours > ((SELECT MAX(hours) FROM tasks) + 100);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSecond highest hours using subquery",
+    "output": "SELECT MAX(hours) FROM tasks WHERE hours < (SELECT MAX(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nCorrelated subquery: rows whose hours is above the avg of their id",
+    "output": "SELECT * FROM tasks t WHERE hours > (SELECT AVG(hours) FROM tasks t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nColumns where hours is greater than average in their group",
+    "output": "SELECT * FROM tasks t WHERE hours >= (SELECT AVG(hours) FROM tasks t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nDerived table returning count per id",
+    "output": "SELECT sub.id, sub.cnt FROM (SELECT id, COUNT(*) AS cnt FROM tasks GROUP BY id) sub WHERE sub.cnt > 2;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery filtering rows with ANY operator",
+    "output": "SELECT * FROM tasks WHERE hours = ANY (SELECT hours FROM tasks WHERE hours < 50);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery filtering rows with ALL operator",
+    "output": "SELECT * FROM tasks WHERE hours > ALL (SELECT AVG(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nScalar subquery for a single value",
+    "output": "SELECT (SELECT AVG(hours) FROM tasks) AS avg_val;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows matching set from a subquery using IN",
+    "output": "SELECT * FROM tasks WHERE id IN (SELECT id FROM tasks GROUP BY id HAVING COUNT(*) >= 3);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nLargest value strictly less than the global maximum",
+    "output": "SELECT hours FROM tasks ORDER BY hours DESC LIMIT 1 OFFSET 1;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nNested subquery: top values per group based on derived ranking",
+    "output": "SELECT t.* FROM tasks t WHERE t.hours = (SELECT MAX(hours) FROM tasks t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nRows where project_id not present in a sub table",
+    "output": "SELECT * FROM tasks WHERE project_id NOT IN (SELECT project_id FROM tasks WHERE hours > 90);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery used to compare against the overall total",
+    "output": "SELECT id, SUM(hours) AS part FROM tasks GROUP BY id HAVING SUM(hours) > (SELECT AVG(hours) FROM tasks);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nUse a subquery to compute rolling reference count",
+    "output": "SELECT t.id, (SELECT COUNT(*) FROM tasks t2 WHERE t2.id <= t.id) AS running FROM tasks t;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nEXISTS correlated check to its own table values",
+    "output": "SELECT * FROM tasks t WHERE EXISTS (SELECT 1 FROM tasks t2 WHERE t2.id = t.id AND t2.hours > t.hours);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery comparing to the minimum plus a constant",
+    "output": "SELECT * FROM tasks WHERE hours > (SELECT MIN(hours) FROM tasks) + 10;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery returning rows for a top slice group",
+    "output": "SELECT * FROM tasks WHERE hours IN (SELECT hours FROM tasks ORDER BY hours DESC LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, hours)\nSubquery joining a derived aggregate",
+    "output": "SELECT t.* FROM tasks t JOIN (SELECT id, MAX(hours) mx FROM tasks GROUP BY id) a ON a.id = t.id AND a.mx = t.hours;"
+  }
+]

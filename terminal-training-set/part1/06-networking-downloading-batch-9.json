@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Send an email via SMTP with netcat",
+    "output": "<think>\nThe task requires us to send an email via SMTP with netcat.\nFirst, let me understand what's needed here.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\necho -e \"EHLO example.com\\nMAIL FROM:<me@example.com>\\nRCPT TO:<you@example.com>\\nDATA\\nSubject: Test\\n\\nBody text\\n.\\nQUIT\" | nc smtp.example.com 25"
+  },
+  {
+    "instruction": "Send a test email with sendmail",
+    "output": "<think>\nNeed to send a test email with sendmail.\nI've added -e to edit or executable — this controls how the output is formatted.\nWhy -v? Verbose output. needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e \"Subject: Test\\n\\nHello World\" | sendmail -v recipient@example.com"
+  },
+  {
+    "instruction": "Check local mail queue",
+    "output": "<think>\nThis is asking us to check local mail queue.\nLet me reason through this.\nThe tool for this job is mailq — mailq operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nmailq"
+  },
+  {
+    "instruction": "Flush the mail queue",
+    "output": "<think>\nThe goal is to flush the mail queue.\nLet me consider what makes sense here.\nThe tool for this job is postqueue — postqueue operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\npostqueue -f"
+  },
+  {
+    "instruction": "List all available network interfaces with index",
+    "output": "<think>\nWe should list all available network interfaces with index.\nLet me consider what makes sense here.\nI'll reach for ip here because network interface configuration.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nip link show"
+  },
+  {
+    "instruction": "Show the index number of an interface",
+    "output": "<think>\nNeed to show the index number of an interface.\nFor this, cat is the right tool — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/class/net/eth0/ifindex"
+  },
+  {
+    "instruction": "Show network interface capabilities (features)",
+    "output": "<think>\nThe user wants to show network interface capabilities (features).\nethtool is what we need — ethtool operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nethtool -k eth0"
+  },
+  {
+    "instruction": "Check if a network cable is plugged in",
+    "output": "<think>\nThis is asking us to check if a network cable is plugged in.\nFirst, let me understand what's needed here.\nI'll reach for cat here because cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /sys/class/net/eth0/carrier"
+  },
+  {
+    "instruction": "Show network interface speed",
+    "output": "<think>\nThe goal is to show network interface speed.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/class/net/eth0/speed"
+  },
+  {
+    "instruction": "Show network interface duplex mode",
+    "output": "<think>\nThe goal is to show network interface duplex mode.\nI'll reach for cat here because cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /sys/class/net/eth0/duplex"
+  },
+  {
+    "instruction": "Check interface statistics for dropped packets",
+    "output": "<think>\nWe're being asked to check interface statistics for dropped packets.\nLet me break this down.\nI'd use ip for this — network interface configuration.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nThe -E flag means extended regex, which matters here because without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nip -s link show eth0 | grep -E 'RX|dropped'"
+  },
+  {
+    "instruction": "Check for errors on an interface",
+    "output": "<think>\nAlright, we need to check for errors on an interface.\nLet me break this down.\nThis calls for ip. Network interface configuration.\nI've added -s to summarize or silent mode — important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nip -s link show eth0 | grep errors"
+  },
+  {
+    "instruction": "Check for overruns on an interface",
+    "output": "<think>\nThe task requires us to check for overruns on an interface.\nLet me think through this step by step.\nThe tool for this job is ip — network interface configuration.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nip -s link show eth0 | grep over"
+  },
+  {
+    "instruction": "Show the number of packets per queue",
+    "output": "<think>\nSo we need to show the number of packets per queue.\nFor this, cat is the right tool — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/interrupts | grep eth"
+  },
+  {
+    "instruction": "Check RSS (Receive Side Scaling) queues",
+    "output": "<think>\nThe task requires us to check RSS (Receive Side Scaling) queues.\nLet me think through this step by step.\nls is what we need — ls operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nls /sys/class/net/eth0/queues/rx-*"
+  },
+  {
+    "instruction": "Show the current socket listen backlog",
+    "output": "<think>\nThe task requires us to show the current socket listen backlog.\nLet me consider what makes sense here.\nI'd use sysctl for this — kernel parameter tuning.\n</think>\nsysctl net.core.somaxconn"
+  },
+  {
+    "instruction": "Increase socket listen backlog",
+    "output": "<think>\nSo we need to increase socket listen backlog.\nsysctl is what we need — kernel parameter tuning.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysctl -w net.core.somaxconn=65535"
+  },
+  {
+    "instruction": "Show available TCP port range for ephemeral ports",
+    "output": "<think>\nThe goal is to show available TCP port range for ephemeral ports.\nThe tool for this job is cat — cat operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/sys/net/ipv4/ip_local_port_range"
+  },
+  {
+    "instruction": "Expand the ephemeral port range",
+    "output": "<think>\nWe should expand the ephemeral port range.\nLet me consider what makes sense here.\nI'll reach for sysctl here because kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nsysctl -w net.ipv4.ip_local_port_range=\"1024 65535\""
+  },
+  {
+    "instruction": "Check the number of open sockets",
+    "output": "<think>\nThe task requires us to check the number of open sockets.\nThis calls for cat. Cat operations.\nWhy -s? Summarize or silent mode. this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /proc/sys/net/core/somaxconn && ss -s"
+  },
+  {
+    "instruction": "Show a summary of network statistics",
+    "output": "<think>\nThe task requires us to show a summary of network statistics.\nLet me break this down.\nI'll reach for ss here because socket diagnostics.\nI've added -s to summarize or silent mode — without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\n</think>\nss -s"
+  },
+  {
+    "instruction": "Check for SYN flood attack indicators",
+    "output": "<think>\nWe should check for SYN flood attack indicators.\nLet me reason through this.\nI'd use netstat for this — netstat operations.\nI've added -s to summarize or silent mode — needed for this specific use case.\nI'm using -i for interactive, prompt before action — needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nnetstat -s | grep -i 'SYN'"
+  },
+  {
+    "instruction": "Perform a network loopback test",
+    "output": "<think>\nAlright, we need to perform a network loopback test.\nI'd use ping for this — network connectivity testing.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\n</think>\nping -c 4 127.0.0.1"
+  },
+  {
+    "instruction": "Check if the loopback interface is up",
+    "output": "<think>\nNeed to check if the loopback interface is up.\nHere's how I'd approach this.\nI'll reach for ip here because network interface configuration.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\nip link show lo | grep UP"
+  },
+  {
+    "instruction": "Add a loopback alias IP",
+    "output": "<think>\nNeed to add a loopback alias IP.\nFirst, let me understand what's needed here.\nBest tool here is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nip addr add 127.0.0.2/32 dev lo"
+  }
+]

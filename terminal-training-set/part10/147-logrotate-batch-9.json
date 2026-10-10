@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Compress all rotated logs manually",
+    "output": "<think>\nSo we need to compress all rotated logs manually.\nBest tool here is gzip — file compression.\nOne command does the job. Simple is better.\nAlways verify compressed archives with -t before deleting originals.\n</think>\ngzip /var/log/*.log.*"
+  },
+  {
+    "instruction": "Decompress and view rotated log",
+    "output": "<think>\nWe're being asked to decompress and view rotated log.\nLet me think through this step by step.\nFor this, zcat is the right tool — zcat operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nzcat /var/log/syslog.1.gz | head -50"
+  },
+  {
+    "instruction": "Search compressed rotated logs",
+    "output": "<think>\nThis is asking us to search compressed rotated logs.\nzgrep is what we need — zgrep operations.\nThe -i flag handles interactive, prompt before action. Important because needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nzgrep -i error /var/log/*.gz"
+  },
+  {
+    "instruction": "Count lines in compressed rotated logs",
+    "output": "<think>\nSo we need to count lines in compressed rotated logs.\nLet me consider what makes sense here.\nThis calls for zcat. Zcat operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nzcat /var/log/syslog.2.gz | wc -l"
+  },
+  {
+    "instruction": "List all compressed log files by size",
+    "output": "<think>\nThis is asking us to list all compressed log files by size.\nFor this, ls is the right tool — ls operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nls -lhS /var/log/*.gz"
+  },
+  {
+    "instruction": "Remove old compressed logs",
+    "output": "<think>\nThis is asking us to remove old compressed logs.\nLet me reason through this.\nI'd use find for this — file searching.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nQuick verification after execution to be safe.\n</think>\nfind /var/log -name '*.gz' -mtime +30 -delete"
+  },
+  {
+    "instruction": "Remove rotated logs older than 60 days",
+    "output": "<think>\nThe goal is to remove rotated logs older than 60 days.\nLet me break this down.\nThis calls for find. File searching.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nI'll check the output to make sure it did what we expected.\n</think>\nfind /var/log -name '*.log.*' -mtime +60 -delete"
+  },
+  {
+    "instruction": "Move rotated logs to archive directory",
+    "output": "<think>\nNeed to move rotated logs to archive directory.\nHere's how I'd approach this.\nFor this, mv is the right tool — file moving/renaming.\nNo need for complex pipelines here — one command is sufficient.\nmv is atomic but can overwrite existing files — check the destination first.\nI'll check the output to make sure it did what we expected.\n</think>\nmv /var/log/*.gz /var/log/archive/"
+  },
+  {
+    "instruction": "Restore a rotated log from backup",
+    "output": "<think>\nSo we need to restore a rotated log from backup.\nI'll reach for gunzip here because gunzip operations.\nThe -c flag means count or create, which matters here because needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ngunzip -c /var/log/archive/syslog.20250101.gz > /var/log/syslog-restored"
+  },
+  {
+    "instruction": "Compare sizes before and after rotation",
+    "output": "<think>\nSo we need to compare sizes before and after rotation.\nI'd use du for this — disk usage analysis.\nI'm using -h for human-readable format — standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ndu -sh /var/log/*.log* | sort -h"
+  },
+  {
+    "instruction": "Check disk space used by rotated logs",
+    "output": "<think>\nSo we need to check disk space used by rotated logs.\ndu is what we need — disk usage analysis.\nEach pipe stage handles one transformation, keeping the logic composable.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\n</think>\ndu -sh /var/log/*.gz | awk '{sum+=$1} END {print sum \" total\"}'"
+  },
+  {
+    "instruction": "Find largest rotated log files",
+    "output": "<think>\nAlright, we need to find largest rotated log files.\nThis calls for find. File searching.\nI've added -name to filter by filename pattern — this controls how the output is formatted.\nI've added -exec to execute command on each match — without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\nfind /var/log -name '*.gz' -exec ls -lh {} \\; | sort -k5 -h | tail -10"
+  },
+  {
+    "instruction": "Check how much space rotation will free",
+    "output": "<think>\nNeed to check how much space rotation will free.\nLet me consider what makes sense here.\nBest tool here is du — disk usage analysis.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nQuick verification after execution to be safe.\n</think>\ndu -ch /var/log/*.gz | tail -1"
+  },
+  {
+    "instruction": "View compressed log without decompressing to disk",
+    "output": "<think>\nWe're being asked to view compressed log without decompressing to disk.\nLet me think about the best approach.\nzmore is what we need — zmore operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nzmore /var/log/syslog.1.gz"
+  },
+  {
+    "instruction": "Tail last lines of compressed rotated log",
+    "output": "<think>\nSo we need to tail last lines of compressed rotated log.\nI'll reach for gzcat here because gzcat operations.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ngzcat /var/log/syslog.1.gz | tail -50"
+  },
+  {
+    "instruction": "View list of files in compressed archive",
+    "output": "<think>\nWe should view list of files in compressed archive.\nHere's how I'd approach this.\nI'll reach for tar here because file archiving.\n</think>\ntar -tzf /var/log/archive.tar.gz"
+  },
+  {
+    "instruction": "Create tarball of all rotated logs",
+    "output": "<think>\nNeed to create tarball of all rotated logs.\nLet me consider what makes sense here.\nThis calls for tar. File archiving.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntar -czf /var/log/rotated-archive.tar.gz /var/log/*.gz"
+  },
+  {
+    "instruction": "Extract rotated logs from tarball",
+    "output": "<think>\nSo the request is to extract rotated logs from tarball.\nThe tool for this job is tar — file archiving.\nThe -xzf flag means extract compressed archive, which matters here because without it the command won't work as we need.\nCheck that the target device has enough space before extracting large archives.\nI'll check the output to make sure it did what we expected.\n</think>\ntar -xzf /var/log/rotated-archive.tar.gz -C /tmp/log-restore/"
+  },
+  {
+    "instruction": "Verify compressed log integrity",
+    "output": "<think>\nAlright, we need to verify compressed log integrity.\nLet me consider what makes sense here.\nThe tool for this job is gzip — file compression.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ngzip -t /var/log/syslog.1.gz && echo 'Integrity OK'"
+  },
+  {
+    "instruction": "Check compression ratio of rotated logs",
+    "output": "<think>\nThis is asking us to check compression ratio of rotated logs.\nFor this, gzip is the right tool — file compression.\nAlways verify compressed archives with -t before deleting originals.\nAfter running, I'll confirm the result looks right.\n</think>\ngzip -lv /var/log/syslog.1.gz"
+  }
+]

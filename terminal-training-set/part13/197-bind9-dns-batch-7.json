@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to create multiple views for internal/external DNS",
+    "output": "<think>\nAlright, we need to create multiple views for internal/external DNS.\nLet me reason through this.\n</think>\necho 'view \"internal\" { match-clients { 10.0.0.0/8; }; zone \"example.com\" { type master; file \"/etc/bind/db.example.com.internal\"; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to set up DNS over TLS in BIND",
+    "output": "<think>\nSo we need to set up DNS over TLS in BIND.\nHere's how I'd approach this.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'options { listen-on port 853 tls mytls { any; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to configure query timeouts",
+    "output": "<think>\nWe should configure query timeouts.\nLet me reason through this.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'options { lame-ttl 300; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set up DNS cookies",
+    "output": "<think>\nWe should set up DNS cookies.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'options { answer-cookie yes; query-cookie yes; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to check root hints file",
+    "output": "<think>\nThis is asking us to check root hints file.\nFor this, dig is the right tool — DNS querying.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ndig @a.root-servers.net . NS"
+  },
+  {
+    "instruction": "How to add SPF record to zone",
+    "output": "<think>\nThe goal is to add SPF record to zone.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho '@ IN TXT \"v=spf1 include:_spf.google.com ~all\"' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to create a zone alias",
+    "output": "<think>\nThis is asking us to create a zone alias.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho '$ORIGIN example.com.' >> /etc/bind/db.example.com && echo '$INCLUDE /etc/bind/db.other.zone' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to add DS record for delegation",
+    "output": "<think>\nAlright, we need to add DS record for delegation.\nLet me reason through this.\n</think>\necho 'sub IN DS 12345 8 2 abcdef1234567890' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to restore a zone from journal",
+    "output": "<think>\nWe're being asked to restore a zone from journal.\nFirst, let me understand what's needed here.\nrndc is what we need — BIND9 remote name daemon control.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nrndc reload example.com"
+  },
+  {
+    "instruction": "How to view zone journal files",
+    "output": "<think>\nNeed to view zone journal files.\nHere's how I'd approach this.\nls is what we need — ls operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nls -la /var/cache/bind/*.jnl"
+  },
+  {
+    "instruction": "How to configure named on custom network namespace",
+    "output": "<think>\nSo the request is to configure named on custom network namespace.\nI'll reach for ip here because network interface configuration.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nip netns exec dnsns named -g"
+  },
+  {
+    "instruction": "How to enable extended DNS error codes",
+    "output": "<think>\nSo we need to enable extended DNS error codes.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'options { extended-dns-errors yes; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to list all root servers",
+    "output": "<think>\nWe should list all root servers.\nLet me consider what makes sense here.\nI'll reach for dig here because DNS querying.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ndig . NS"
+  },
+  {
+    "instruction": "How to get BIND to write default config",
+    "output": "<think>\nSo the request is to get BIND to write default config.\nLet me consider what makes sense here.\nThe tool for this job is named — BIND9 DNS server control.\nI've added -c to count or create — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nnamed -c /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to use rndc secroots for DNSSEC trust anchors",
+    "output": "<think>\nSo we need to use rndc secroots for DNSSEC trust anchors.\nFirst, let me understand what's needed here.\nBest tool here is rndc — BIND9 remote name daemon control.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nrndc secroots"
+  },
+  {
+    "instruction": "How to validate an RRSIG record manually",
+    "output": "<think>\nWe're being asked to validate an RRSIG record manually.\nFor this, dig is the right tool — DNS querying.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ndig +dnssec example.com A | grep RRSIG"
+  },
+  {
+    "instruction": "How to remove NSEC3 from signed zone",
+    "output": "<think>\nNeed to remove NSEC3 from signed zone.\nLet me think about the best approach.\nThis calls for dnssec-signzone. Dnssec-signzone operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ndnssec-signzone -A -3 -o example.com /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to set up named as a resolver with dnssec",
+    "output": "<think>\nSo the request is to set up named as a resolver with dnssec.\nLet me think through this step by step.\n</think>\necho 'options { dnssec-validation auto; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to query the version string from a DNS server",
+    "output": "<think>\nSo the request is to query the version string from a DNS server.\nBest tool here is dig — DNS querying.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndig @192.168.1.1 version.bind CHAOS TXT"
+  },
+  {
+    "instruction": "How to query the hostname from a DNS server",
+    "output": "<think>\nSo we need to query the hostname from a DNS server.\nLet me consider what makes sense here.\nBest tool here is dig — DNS querying.\nAfter running, confirm it worked as expected before moving on.\n</think>\ndig @192.168.1.1 hostname.bind CHAOS TXT"
+  },
+  {
+    "instruction": "How to enable forward-first option in BIND",
+    "output": "<think>\nWe're being asked to enable forward-first option in BIND.\nLet me reason through this.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'zone \"example.com\" { type forward; forward first; forwarders { 8.8.8.8; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to allocate more memory for zone data",
+    "output": "<think>\nThe task requires us to allocate more memory for zone data.\n</think>\necho 'options { max-zone-ttl 604800; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to check named listening ports",
+    "output": "<think>\nThis is asking us to check named listening ports.\nFor this, ss is the right tool — socket diagnostics.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\nss -tulpn | grep named"
+  },
+  {
+    "instruction": "How to force BIND to re-read configuration",
+    "output": "<think>\nThe goal is to force BIND to re-read configuration.\nLet me consider what makes sense here.\nrndc is what we need — BIND9 remote name daemon control.\nCheck the output for errors before proceeding to the next step.\n</think>\nrndc reconfig"
+  },
+  {
+    "instruction": "How to check BIND query statistics",
+    "output": "<think>\nNeed to check BIND query statistics.\nFirst, let me understand what's needed here.\nThe tool for this job is rndc — BIND9 remote name daemon control.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nrndc stats && cat /var/log/named/stats"
+  }
+]

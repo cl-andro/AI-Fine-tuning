@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Create full promtail config from scratch",
+    "output": "<think>\nWe're being asked to create full promtail config from scratch.\nThis calls for cat. Cat operations.\n</think>\ncat > /etc/promtail/config.yml << 'EOF'\nserver:\n  http_listen_port: 9080\n  grpc_listen_port: 0\npositions:\n  filename: /var/lib/promtail/positions.yml\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\nscrape_configs:\n- job_name: system\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: varlogs\n      __path__: /var/log/*log\nEOF"
+  },
+  {
+    "instruction": "Debug promtail file discovery",
+    "output": "<think>\nSo we need to debug promtail file discovery.\nFor this, promtail is the right tool — promtail operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\npromtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -iE 'found|reading|position'"
+  },
+  {
+    "instruction": "Check which files promtail is tailing",
+    "output": "<think>\nNeed to check which files promtail is tailing.\nI'll reach for curl here because making HTTP requests.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:9080/targets | python3 -c 'import sys,json; data=json.load(sys.stdin); [print(t[\"labels\"][\"__path__\"]) for t in data if \"__path__\" in t.get(\"labels\",{})]'"
+  },
+  {
+    "instruction": "View number of active promtail streams",
+    "output": "<think>\nNeed to view number of active promtail streams.\nLet me think through this step by step.\nI'll reach for curl here because making HTTP requests.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:9080/metrics | grep 'promtail_read_bytes_total' | head -5"
+  },
+  {
+    "instruction": "Check promtail request latency",
+    "output": "<think>\nAlright, we need to check promtail request latency.\nLet me think about the best approach.\ncurl is what we need — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:9080/metrics | grep 'promtail_request_duration_seconds'"
+  },
+  {
+    "instruction": "Check promtail sent bytes to Loki",
+    "output": "<think>\nWe're being asked to check promtail sent bytes to Loki.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://localhost:9080/metrics | grep 'promtail_sent_bytes_total'"
+  },
+  {
+    "instruction": "Test promtail pipeline on a log line",
+    "output": "<think>\nThe user wants to test promtail pipeline on a log line.\nLet me think about the best approach.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\necho '2025-03-15T10:30:00Z INFO This is a test log message' | promtail -config.file=/etc/promtail/config.yml -dry-run -stdin 2>&1"
+  },
+  {
+    "instruction": "Check pipeline stage processing per file",
+    "output": "<think>\nThe task requires us to check pipeline stage processing per file.\nThe tool for this job is promtail — promtail operations.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\npromtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -i pipeline"
+  },
+  {
+    "instruction": "Verify promtail sends to correct Loki URL",
+    "output": "<think>\nAlright, we need to verify promtail sends to correct Loki URL.\nI'd use promtail for this — promtail operations.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\npromtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -iE 'client|url|loki'"
+  },
+  {
+    "instruction": "List all promtail commands",
+    "output": "<think>\nAlright, we need to list all promtail commands.\nI'll reach for promtail here because promtail operations.\nThe --help flag handles show usage information. Important because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\npromtail --help 2>&1"
+  },
+  {
+    "instruction": "Check promtail systemd service file",
+    "output": "<think>\nThis is asking us to check promtail systemd service file.\nI'd use cat for this — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /lib/systemd/system/promtail.service"
+  },
+  {
+    "instruction": "Edit promtail systemd override",
+    "output": "<think>\nSo the request is to edit promtail systemd override.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl edit promtail"
+  },
+  {
+    "instruction": "View promtail service environment",
+    "output": "<think>\nThe user wants to view promtail service environment.\nI'd use systemctl for this — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show promtail -p Environment"
+  },
+  {
+    "instruction": "Restart promtail with new config",
+    "output": "<think>\nThis is asking us to restart promtail with new config.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl restart promtail"
+  },
+  {
+    "instruction": "Stop promtail",
+    "output": "<think>\nSo we need to stop promtail.\nBest tool here is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsystemctl stop promtail"
+  },
+  {
+    "instruction": "Start promtail manually with debug output",
+    "output": "<think>\nAlright, we need to start promtail manually with debug output.\nThe tool for this job is promtail — promtail operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\npromtail -config.file=/etc/promtail/config.yml -log.level=debug"
+  },
+  {
+    "instruction": "Create promtail config test script",
+    "output": "<think>\nThe user wants to create promtail config test script.\nThis calls for cat. Cat operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /usr/local/bin/promtail-check.sh << 'EOF'\n#!/bin/bash\necho \"Checking promtail config...\"\npromtail -config.file=/etc/promtail/config.yml -check-syntax && echo \"Syntax OK\"\necho \"Checking targets...\"\ncurl -s http://localhost:9080/targets | python3 -m json.tool\necho \"Checking Loki connection...\"\ncurl -s http://localhost:3100/ready\necho \"Done\"\nEOF\nchmod +x /usr/local/bin/promtail-check.sh"
+  },
+  {
+    "instruction": "Performance test Loki query",
+    "output": "<think>\nSo the request is to performance test Loki query.\nLet me break this down.\nThe tool for this job is time — time operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntime logcli query '{job=\"nginx\"}' --from=2025-01-01T00:00:00Z --limit=1000 2>&1"
+  },
+  {
+    "instruction": "Check Loki memory usage",
+    "output": "<think>\nNeed to check Loki memory usage.\nLet me consider what makes sense here.\nBest tool here is ps — process listing.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nps aux | grep loki | awk '{print $6/1024 \" MB\"}'"
+  },
+  {
+    "instruction": "Check Loki disk usage",
+    "output": "<think>\nThe user wants to check Loki disk usage.\nLet me break this down.\nThe tool for this job is du — disk usage analysis.\nA quick sanity check afterward saves debugging time later.\n</think>\ndu -sh /var/lib/loki/"
+  },
+  {
+    "instruction": "Purge Loki data to free disk space",
+    "output": "<think>\nThe user wants to purge Loki data to free disk space.\nLet me think through this step by step.\nThe tool for this job is systemctl — managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl stop loki && rm -rf /var/lib/loki/* && systemctl start loki"
+  }
+]

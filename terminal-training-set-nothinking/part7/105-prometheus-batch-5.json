@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure Prometheus remote write endpoint",
+    "output": "echo 'remote_write: - url: https://thanos.example.com/api/v1/receive basic_auth: username: prom password_file: /etc/prometheus/pass' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure Prometheus remote read endpoint",
+    "output": "echo 'remote_read: - url: https://thanos.example.com/api/v1/read read_recent: true' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add queue config for remote write",
+    "output": "echo 'remote_write: - url: http://remote:8080/write queue_config: capacity: 5000 max_shards: 200 min_shards: 10' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add retry config for remote write",
+    "output": "echo 'remote_write: - url: http://remote:8080/write queue_config: max_retries: 5 min_backoff: 100ms max_backoff: 5s' >> prometheus.yml"
+  },
+  {
+    "instruction": "Enable WAL compression for remote write",
+    "output": "echo 'remote_write: - url: http://remote:8081/write write_relabel_configs: - source_labels: [__name__] regex: \"expensive.*\" action: drop' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add alerting config with Alertmanager",
+    "output": "echo 'alerting: alertmanagers: - static_configs: - targets: - localhost:9093' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add multiple Alertmanagers with relabel",
+    "output": "echo 'alerting: alertmanagers: - scheme: https tls_config: ca_file: ca.crt static_configs: - targets: - alert1:9093 - alert2:9093' >> prometheus.yml"
+  },
+  {
+    "instruction": "Set alertmanager scrape interval",
+    "output": "echo 'alerting: alertmanagers: - static_configs: - targets: - alertmanager:9093 scrape_interval: 30s' >> prometheus.yml"
+  },
+  {
+    "instruction": "Start prometheus with web console templates",
+    "output": "prometheus --config.file prometheus.yml --web.console.templates /etc/prometheus/consoles"
+  },
+  {
+    "instruction": "Start prometheus with web external URL",
+    "output": "prometheus --config.file prometheus.yml --web.external-url https://prom.example.com/"
+  },
+  {
+    "instruction": "Enable admin API in Prometheus",
+    "output": "prometheus --config.file prometheus.yml --web.enable-admin-api"
+  },
+  {
+    "instruction": "Enable lifecycle API for reload",
+    "output": "prometheus --config.file prometheus.yml --web.enable-lifecycle"
+  },
+  {
+    "instruction": "Reload prometheus config via API",
+    "output": "curl -X POST http://localhost:9090/-/reload"
+  },
+  {
+    "instruction": "Query Prometheus via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/query?query=up'"
+  },
+  {
+    "instruction": "Query range via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/query_range?query=rate(http_requests_total[5m])&start=2026-07-25T00:00:00Z&end=2026-07-26T00:00:00Z&step=60s'"
+  },
+  {
+    "instruction": "Query series via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/series?match[]=up&match[]=node_cpu_seconds_total'"
+  },
+  {
+    "instruction": "Get label names via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/labels'"
+  },
+  {
+    "instruction": "Get label values via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/label/job/values'"
+  },
+  {
+    "instruction": "Get metric metadata via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/metadata'"
+  },
+  {
+    "instruction": "Check Prometheus targets via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/targets'"
+  },
+  {
+    "instruction": "Check Prometheus rules via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/rules'"
+  },
+  {
+    "instruction": "Check alertmanagers via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/alertmanagers'"
+  },
+  {
+    "instruction": "Get TSDB stats via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/status/tsdb'"
+  },
+  {
+    "instruction": "Get build info via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/status/buildinfo'"
+  },
+  {
+    "instruction": "Get runtime info via HTTP API",
+    "output": "curl 'http://localhost:9090/api/v1/status/runtimeinfo'"
+  }
+]

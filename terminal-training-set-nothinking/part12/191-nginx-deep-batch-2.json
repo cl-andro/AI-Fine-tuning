@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to enable nginx status page",
+    "output": "echo 'location /nginx_status { stub_status on; access_log off; allow 127.0.0.1; deny all; }' > /etc/nginx/conf.d/status.conf"
+  },
+  {
+    "instruction": "How to configure a geo block for IP allowlisting in nginx",
+    "output": "echo 'geo $trusted_ip { default 0; 10.0.0.0/8 1; 192.168.0.0/16 1; }' > /etc/nginx/conf.d/trusted-geo.conf"
+  },
+  {
+    "instruction": "How to apply connection limiting in nginx",
+    "output": "echo 'location /downloads/ { limit_conn addr 5; }' >> /etc/nginx/conf.d/connlimit.conf"
+  },
+  {
+    "instruction": "How to show active nginx connections on the command line",
+    "output": "curl -s http://127.0.0.1/nginx_status | awk 'NR==3 {print $3}'"
+  },
+  {
+    "instruction": "How to stop nginx immediately",
+    "output": "nginx -s stop"
+  },
+  {
+    "instruction": "How to stop nginx gracefully",
+    "output": "nginx -s quit"
+  },
+  {
+    "instruction": "How to configure nginx to serve static files with caching",
+    "output": "echo 'location /static/ { expires 30d; add_header Cache-Control public; root /var/www/html; }' >> /etc/nginx/conf.d/static.conf"
+  },
+  {
+    "instruction": "How to limit request methods in nginx",
+    "output": "echo 'if ($request_method !~ ^(GET|HEAD|POST)$) { return 405; }' > /etc/nginx/conf.d/methods.conf"
+  },
+  {
+    "instruction": "How to add a health check endpoint in nginix",
+    "output": "echo 'location /health { access_log off; return 200 healthy; add_header Content-Type text/plain; }' > /etc/nginx/conf.d/health.conf"
+  },
+  {
+    "instruction": "How to set up nginx with multiple server blocks on different ports",
+    "output": "echo 'server { listen 8080; server_name api.example.com; location / { proxy_pass http://backend_api; } } server { listen 9090; server_name metrics.example.com; location / { proxy_pass http://backend_metrics; } }' > /etc/nginx/sites-available/multi-port.conf"
+  },
+  {
+    "instruction": "How to check which nginx modules are compiled",
+    "output": "nginx -V 2>&1 | tr -- - '\\n' | grep module"
+  },
+  {
+    "instruction": "How to set up nginx as a reverse proxy with SSL",
+    "output": "echo 'server { listen 443 ssl; server_name app.example.com; ssl_certificate /etc/ssl/certs/example.crt; ssl_certificate_key /etc/ssl/private/example.key; location / { proxy_pass http://backend; } }' > /etc/nginx/sites-available/app.example.com"
+  },
+  {
+    "instruction": "How to reload nginx configuration",
+    "output": "nginx -s reload"
+  },
+  {
+    "instruction": "How to test nginx configuration and show file paths",
+    "output": "nginx -T"
+  },
+  {
+    "instruction": "How to find nginx error log location from config",
+    "output": "nginx -T 2>&1 | grep -m1 'error_log'"
+  },
+  {
+    "instruction": "How to limit request rate per IP in nginx",
+    "output": "echo 'limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;' > /etc/nginx/conf.d/ratelimit.conf"
+  },
+  {
+    "instruction": "How to apply rate limiting to a location in nginx",
+    "output": "echo 'location /login/ { limit_req zone=login burst=5 nodelay; proxy_pass http://backend; }' > /etc/nginx/conf.d/login-limit.conf"
+  },
+  {
+    "instruction": "How to enable gzip compression in nginx",
+    "output": "echo 'gzip on; gzip_types text/plain text/css application/json application/javascript;' > /etc/nginx/conf.d/gzip.conf"
+  },
+  {
+    "instruction": "How to add custom error pages in nginx",
+    "output": "echo 'error_page 404 /404.html; location = /404.html { root /var/www/html; }' >> /etc/nginx/conf.d/errors.conf"
+  },
+  {
+    "instruction": "How to block a specific User-Agent in nginx",
+    "output": "echo 'if ($http_user_agent ~* (bot|crawler)) { return 403; }' > /etc/nginx/conf.d/block-bots.conf"
+  }
+]

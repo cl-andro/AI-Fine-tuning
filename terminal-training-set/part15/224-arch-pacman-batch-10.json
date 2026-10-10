@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to check if the package file is a valid Arch pkg",
+    "output": "<think>\nThe user wants to check if the package file is a valid Arch pkg.\nThe tool for this job is tar — file archiving.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar -tf /path/to/package.pkg.tar.zst | head"
+  },
+  {
+    "instruction": "How to list the Arch system capabilities",
+    "output": "<think>\nSo the request is to list the Arch system capabilities.\nFor this, pacman is the right tool — pacman operations.\nI'm using -u for show or sort by access time — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npacman -Si | grep '^Provides' | sort -u"
+  },
+  {
+    "instruction": "How to use pacdiff to manage .pacnew and .pacsave files",
+    "output": "<think>\nSo the request is to use pacdiff to manage .pacnew and .pacsave files.\nI'll reach for pacdiff here because pacdiff operations.\nQuick verification after execution to be safe.\n</think>\npacdiff"
+  },
+  {
+    "instruction": "How to find out why a package is being installed via pacman",
+    "output": "<think>\nThe goal is to find out why a package is being installed via pacman.\nI'd use pacman for this — pacman operations.\nPipes let me chain these operations efficiently without writing temp files.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nQuick verification after execution to be safe.\n</think>\npacman -Qi nginx | grep 'Install Reason'"
+  },
+  {
+    "instruction": "How to install a list of AUR packages from a text file using yay",
+    "output": "<think>\nThis is asking us to install a list of AUR packages from a text file using yay.\nLet me think about the best approach.\nI'll reach for yay here because yay operations.\nThe -S flag means sort by size, which matters here because important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\nyay -S --needed $(cat /tmp/aur-packages.txt | xargs)"
+  },
+  {
+    "instruction": "How to check the pkgrel of an installed package",
+    "output": "<think>\nSo the request is to check the pkgrel of an installed package.\nLet me consider what makes sense here.\nFor this, pacman is the right tool — pacman operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\n</think>\npacman -Qi nginx | grep Version"
+  },
+  {
+    "instruction": "How to use pacman with the --needed flag",
+    "output": "<think>\nWe're being asked to use pacman with the --needed flag.\nBest tool here is pacman — pacman operations.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nI'll check the output to make sure it did what we expected.\n</think>\npacman -S --needed nginx"
+  },
+  {
+    "instruction": "How to check for broken packages in the database",
+    "output": "<think>\nAlright, we need to check for broken packages in the database.\nLet me think through this step by step.\nI'll reach for pacman here because pacman operations.\nWhy -i? Interactive, prompt before action. important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nI'll check the output to make sure it did what we expected.\n</think>\npacman -Dk 2>&1 | grep -i 'error'"
+  },
+  {
+    "instruction": "How to use pacman to install only the package signature",
+    "output": "<think>\nNeed to use pacman to install only the package signature.\nI'd use pacman for this — pacman operations.\nWhy -S? Sort by size. without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nI'll check the output to make sure it did what we expected.\n</think>\npacman -S --print-format='%s' nginx | xargs pacman -U"
+  },
+  {
+    "instruction": "How to create a unified diff of changed package files",
+    "output": "<think>\nWe're being asked to create a unified diff of changed package files.\nLet me think about the best approach.\nFor this, pacman is the right tool — pacman operations.\nI've added -I to ignore case — standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nQuick verification after execution to be safe.\n</think>\npacman -Qkk nginx 2>&1 | grep 'MODIFIED' | awk '{print $2}' | xargs -I{} diff -u {} <(pacman -Ql nginx | grep {} | head -1)"
+  },
+  {
+    "instruction": "How to list the total size of all installed packages",
+    "output": "<think>\nWe're being asked to list the total size of all installed packages.\nexpac is what we need — expac operations.\nI'm using -H for follow symlinks on command line only — important to get the expected behavior.\nI'm using -h for human-readable format — needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nexpac -H M '%m\\t%n' | sort -h | tail -5"
+  },
+  {
+    "instruction": "How to see the ini file of a repo in pacman.conf",
+    "output": "<think>\nWe're being asked to see the ini file of a repo in pacman.conf.\nLet me break this down.\nThis calls for cat. Cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /etc/pacman.conf"
+  },
+  {
+    "instruction": "How to run pacman with a custom root",
+    "output": "<think>\nWe're being asked to run pacman with a custom root.\nI'll reach for pacman here because pacman operations.\nI've added -r to recursive operation (descend into subdirectories) — needed for this specific use case.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\n</think>\npacman -r /mnt -Syu"
+  },
+  {
+    "instruction": "How to check the available disk space for pacman cache",
+    "output": "<think>\nSo we need to check the available disk space for pacman cache.\ndf is what we need — disk space checking.\nThe -h flag means human-readable format, which matters here because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ndf -h /var/cache/pacman/pkg"
+  },
+  {
+    "instruction": "How to list all pacman hooks",
+    "output": "<think>\nThe task requires us to list all pacman hooks.\nHere's how I'd approach this.\nThis calls for ls. Ls operations.\nI'm using -la for detailed listing including hidden files — important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\n</think>\nls -la /usr/share/libalpm/hooks/"
+  },
+  {
+    "instruction": "How to see the AUR comment section for a package with yay",
+    "output": "<think>\nWe're being asked to see the AUR comment section for a package with yay.\nLet me consider what makes sense here.\nI'd use yay for this — yay operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nyay -S --requesttarget nginx"
+  },
+  {
+    "instruction": "How to check for Arch Linux security announcements",
+    "output": "<think>\nSo the request is to check for Arch Linux security announcements.\npacman is what we need — pacman operations.\nThe -i flag handles interactive, prompt before action. Important because this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npacman -Qu 2>&1 | grep -i 'security'"
+  },
+  {
+    "instruction": "How to use paru to generate a report of outdated packages",
+    "output": "<think>\nThe user wants to use paru to generate a report of outdated packages.\nLet me break this down.\nFor this, paru is the right tool — paru operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nparu -Qua"
+  },
+  {
+    "instruction": "How to see the pacman debug logs",
+    "output": "<think>\nSo the request is to see the pacman debug logs.\nLet me think about the best approach.\nThis calls for tail. Tail operations.\nI've added -f to force, suppress errors — without it the command won't work as we need.\n</think>\ntail -f /var/log/pacman.log"
+  },
+  {
+    "instruction": "How to convert a package list to installable format for pacstrap",
+    "output": "<think>\nThe goal is to convert a package list to installable format for pacstrap.\nHere's how I'd approach this.\nFor this, pacman is the right tool — pacman operations.\nUse -Syu carefully — rolling updates can break things. Check the Arch news before upgrading.\nI'll check the output to make sure it did what we expected.\n</think>\npacman -Sq --print-format='%n %v' base > base-pkgs.txt"
+  }
+]

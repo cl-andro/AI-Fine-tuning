@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Generate a self-signed SSL certificate with OpenSSL",
+    "output": "<think>\nThe goal is to generate a self-signed SSL certificate with OpenSSL.\nHere's how I'd approach this.\nI'll reach for openssl here because cryptographic operations and certificate management.\nNo need for complex pipelines here — one command is sufficient.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt -subj '/CN=example.com'"
+  },
+  {
+    "instruction": "Generate a Certificate Signing Request",
+    "output": "<think>\nThe goal is to generate a Certificate Signing Request.\nLet me reason through this.\nI'll reach for openssl here because cryptographic operations and certificate management.\nNo need for complex pipelines here — one command is sufficient.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nI'll check the output to make sure it did what we expected.\n</think>\nopenssl req -new -newkey rsa:2048 -nodes -keyout domain.key -out domain.csr -subj '/CN=example.com'"
+  },
+  {
+    "instruction": "Verify an SSL certificate matches a private key",
+    "output": "<think>\nSo we need to verify an SSL certificate matches a private key.\nI'll reach for openssl here because cryptographic operations and certificate management.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -noout -modulus -in cert.crt | openssl md5 && openssl rsa -noout -modulus -in key.key | openssl md5"
+  },
+  {
+    "instruction": "Convert PEM certificate to DER",
+    "output": "<think>\nThis is asking us to convert PEM certificate to DER.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nQuick verification after execution to be safe.\n</think>\nopenssl x509 -in cert.pem -outform der -out cert.der"
+  },
+  {
+    "instruction": "Check SSL certificate expiration date",
+    "output": "<think>\nThe task requires us to check SSL certificate expiration date.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -enddate -noout -in cert.pem"
+  },
+  {
+    "instruction": "Encrypt a file with a GPG passphrase",
+    "output": "<think>\nSo we need to encrypt a file with a GPG passphrase.\nHere's how I'd approach this.\nFor this, gpg is the right tool — file encryption, decryption, and signing.\nGPG keys are sensitive — don't expose them in logs or share private keys.\n</think>\ngpg --symmetric --cipher-algo AES256 secret.txt"
+  },
+  {
+    "instruction": "Decrypt a GPG symmetric file",
+    "output": "<think>\nSo we need to decrypt a GPG symmetric file.\nI'll reach for gpg here because file encryption, decryption, and signing.\nGPG keys are sensitive — don't expose them in logs or share private keys.\nQuick verification after execution to be safe.\n</think>\ngpg --decrypt secret.txt.gpg"
+  },
+  {
+    "instruction": "Sign a file with GPG detached signature",
+    "output": "<think>\nWe should sign a file with GPG detached signature.\nLet me consider what makes sense here.\nBest tool here is gpg — file encryption, decryption, and signing.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngpg --detach-sign --armor document.pdf"
+  },
+  {
+    "instruction": "Verify a GPG detached signature",
+    "output": "<think>\nWe're being asked to verify a GPG detached signature.\nI'll reach for gpg here because file encryption, decryption, and signing.\nGPG keys are sensitive — don't expose them in logs or share private keys.\n</think>\ngpg --verify document.pdf.asc document.pdf"
+  },
+  {
+    "instruction": "Export GPG public key to keyserver",
+    "output": "<think>\nThe user wants to export GPG public key to keyserver.\nLet me reason through this.\nI'd use gpg for this — file encryption, decryption, and signing.\nGPG keys are sensitive — don't expose them in logs or share private keys.\nAfter running, I'll confirm the result looks right.\n</think>\ngpg --keyserver keyserver.ubuntu.com --send-key KEY_ID"
+  },
+  {
+    "instruction": "Import GPG key from keyserver",
+    "output": "<think>\nWe're being asked to import GPG key from keyserver.\nBest tool here is gpg — file encryption, decryption, and signing.\nA single command handles this cleanly — no need to overcomplicate it.\nGPG keys are sensitive — don't expose them in logs or share private keys.\n</think>\ngpg --keyserver keyserver.ubuntu.com --recv-key KEY_ID"
+  },
+  {
+    "instruction": "Generate a GPG key revocation certificate",
+    "output": "<think>\nThe goal is to generate a GPG key revocation certificate.\nLet me reason through this.\nBest tool here is gpg — file encryption, decryption, and signing.\nI'll check the output to make sure it did what we expected.\n</think>\ngpg --gen-revoke KEY_ID > revoke.asc"
+  },
+  {
+    "instruction": "Forward port 8080 to 80 with iptables DNAT",
+    "output": "<think>\nSo the request is to forward port 8080 to 80 with iptables DNAT.\nLet me think through this step by step.\nI'd use iptables for this — firewall management.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nI've added -p to create parent directories as needed — this controls how the output is formatted.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 192.168.1.10:80"
+  },
+  {
+    "instruction": "Set up iptables MASQUERADE for NAT",
+    "output": "<think>\nWe're being asked to set up iptables MASQUERADE for NAT.\niptables is what we need — firewall management.\nNo need for complex pipelines here — one command is sufficient.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "Enable IP forwarding for NAT",
+    "output": "<think>\nAlright, we need to enable IP forwarding for NAT.\nLet me consider what makes sense here.\nThe tool for this job is sysctl — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsysctl -w net.ipv4.ip_forward=1 && echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Add nftables rule to drop invalid packets",
+    "output": "<think>\nWe should add nftables rule to drop invalid packets.\nThe tool for this job is nft — nftables firewall management.\nSame as iptables — test rules non-destructively first if possible.\nI'll check the output to make sure it did what we expected.\n</think>\nnft add rule inet filter input ct state invalid drop"
+  },
+  {
+    "instruction": "List nftables table chains and rules",
+    "output": "<think>\nThis is asking us to list nftables table chains and rules.\nBest tool here is nft — nftables firewall management.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nnft list table inet filter"
+  },
+  {
+    "instruction": "Create nftables set for whitelist",
+    "output": "<think>\nNeed to create nftables set for whitelist.\nLet me reason through this.\nFor this, nft is the right tool — nftables firewall management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame as iptables — test rules non-destructively first if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nnft add set inet filter whitelist { type ipv4_addr; } && nft add element inet filter whitelist { 192.168.1.0/24 }"
+  },
+  {
+    "instruction": "Harden SSH configuration",
+    "output": "<think>\nSo we need to harden SSH configuration.\nHere's how I'd approach this.\nI'd use sed for this — text stream editing.\n</think>\nsed -i 's/^"
+  },
+  {
+    "instruction": "Disable SSH protocol 1 and weak ciphers",
+    "output": "<think>\nAlright, we need to disable SSH protocol 1 and weak ciphers.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com\\nKexAlgorithms curve25519-sha256,diffie-hellman-group-exchange-sha256\\nMACs hmac-sha2-512' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Kernel hardening: disable IP spoofing protection",
+    "output": "<think>\nWe're being asked to kernel hardening: disable IP spoofing protection.\nHere's how I'd approach this.\nBest tool here is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsysctl -w net.ipv4.conf.all.rp_filter=1 && echo 'net.ipv4.conf.all.rp_filter=1' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Disable ICMP redirect acceptance",
+    "output": "<think>\nNeed to disable ICMP redirect acceptance.\nLet me reason through this.\nThis calls for sysctl. Kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nsysctl -w net.ipv4.conf.all.accept_redirects=0 && echo 'net.ipv4.conf.all.accept_redirects=0' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Enable ASLR via sysctl",
+    "output": "<think>\nWe're being asked to enable ASLR via sysctl.\nLet me think through this step by step.\nThis calls for sysctl. Kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nsysctl -w kernel.randomize_va_space=2 && echo 'kernel.randomize_va_space=2' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Restrict core dumps via sysctl",
+    "output": "<think>\nWe should restrict core dumps via sysctl.\nLet me think through this step by step.\nFor this, sysctl is the right tool — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsysctl -w fs.suid_dumpable=0 && echo 'fs.suid_dumpable=0' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Apply all sysctl hardening settings",
+    "output": "<think>\nNeed to apply all sysctl hardening settings.\nLet me break this down.\nThis calls for sysctl. Kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsysctl --system"
+  }
+]

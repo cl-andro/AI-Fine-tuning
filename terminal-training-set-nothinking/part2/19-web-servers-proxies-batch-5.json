@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Install and configure HAProxy with automatic failover",
+    "output": "cat > /etc/haproxy/haproxy.cfg << 'EOF'\ndefaults\n  log global\n  option httplog\n  timeout connect 5s\n  timeout client 50s\n  timeout server 50s\nfrontend main\n  bind *:80\n  default_backend app\nbackend app\n  option httpchk GET /health\n  server app1 192.168.1.10:80 check fall 3 rise 2\n  server app2 192.168.1.11:80 check fall 3 rise 2 backup\nEOF && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up HAProxy with ACL-based routing",
+    "output": "cat > /etc/haproxy/haproxy.cfg << 'EOF'\nfrontend http-in\n  bind *:80\n  acl is_api path_beg /api\n  acl is_static path_beg /static\n  use_backend api if is_api\n  use_backend static if is_static\n  default_backend web\nbackend api\n  server api1 127.0.0.1:3000 check\nbackend static\n  server static1 127.0.0.1:8000 check\nbackend web\n  server web1 127.0.0.1:8080 check\nEOF && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up HAProxy with TCP health checks",
+    "output": "echo -e 'backend db\\n  option tcp-check\\n  tcp-check connect\\n  tcp-check send PING\\n  tcp-check expect string +PONG\\n  server db1 192.168.1.10:6379 check inter 3s' >> /etc/haproxy/haproxy.cfg && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Install Keepalived for HAProxy high availability",
+    "output": "apt install -y keepalived && cat > /etc/keepalived/keepalived.conf << 'EOF'\nvrrp_instance VI_1 {\n  interface eth0\n  state MASTER\n  virtual_router_id 51\n  priority 100\n  advert_int 1\n  authentication { auth_type PASS; auth_pass mypass; }\n  virtual_ipaddress { 192.168.1.200/24 dev eth0 }\n}\nEOF && systemctl restart keepalived"
+  },
+  {
+    "instruction": "Check Keepalived status",
+    "output": "ip addr show eth0 | grep 192.168.1.200 && echo VIP up || echo VIP down"
+  },
+  {
+    "instruction": "Install and configure Pound (reverse proxy)",
+    "output": "apt install -y pound && cat > /etc/pound/pound.cfg << 'EOF'\nListenHTTP\n  Address 0.0.0.0\n  Port 80\n  Service\n    BackEnd\n      Address 127.0.0.1\n      Port 8080\n    End\n  End\nEOF && systemctl restart pound"
+  },
+  {
+    "instruction": "Install and configure Pen (load balancer)",
+    "output": "apt install -y pen && pen -l /var/log/pen.log 80 192.168.1.10:80 192.168.1.11:80"
+  },
+  {
+    "instruction": "Install and configure Balance (TCP proxy)",
+    "output": "apt install -y balance && balance -b 80 192.168.1.10:80 192.168.1.11:80"
+  },
+  {
+    "instruction": "Install and configure nginx_ldap_auth for Nginx",
+    "output": "apt install -y nginx-extras && echo -e 'location / {\\n  auth_ldap \"Restricted\";\\n  auth_ldap_servers ldap1;\\n  proxy_pass http://backend;\\n}' >> /etc/nginx/sites-available/default"
+  },
+  {
+    "instruction": "Install and configure Passenger for Nginx (Ruby/Python)",
+    "output": "apt install -y passenger libnginx-mod-http-passenger && echo -e 'passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;\\nserver {\\n  listen 80;\\n  root /var/www/myapp/public;\\n  passenger_enabled on;\\n}' > /etc/nginx/sites-available/passenger && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Nginx with ModSecurity WAF",
+    "output": "apt install -y libnginx-mod-http-modsecurity && sed -i 's/modsecurity on;/modsecurity on;\\nmodsecurity_rules_file /etc/nginx/modsecurity.conf;/' /etc/nginx/nginx.conf && cp /etc/modsecurity/modsecurity.conf-recommended /etc/nginx/modsecurity.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Nginx with fail2ban to block bad requests",
+    "output": "cat > /etc/fail2ban/jail.d/nginx.conf << 'EOF'\n[nginx-http-auth]\nenabled = true\nport = http,https\nlogpath = %(nginx_error_log)s\nmaxretry = 5\nbantime = 3600\nEOF && systemctl restart fail2ban"
+  },
+  {
+    "instruction": "Create an Nginx geoip blocklist",
+    "output": "apt install -y libnginx-mod-http-geoip && echo -e 'geoip_country /usr/share/GeoIP/GeoIP.dat;\\nif ($geoip_country_code ~ (CN|RU|KP)) { return 403; }' >> /etc/nginx/nginx.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Install and configure GoAccess (real-time web log analyzer)",
+    "output": "apt install -y goaccess && goaccess /var/log/nginx/access.log -o /var/www/html/report.html --log-format=COMBINED"
+  },
+  {
+    "instruction": "Generate a GoAccess report for any log format",
+    "output": "goaccess /var/log/nginx/access.log --log-format='%h %^[%d:%t %^] \"%r\" %s %b \"%R\" \"%u\"' -o report.html"
+  },
+  {
+    "instruction": "Analyze Apache logs with GoAccess",
+    "output": "goaccess /var/log/apache2/access.log -o report.html --log-format=COMBINED"
+  },
+  {
+    "instruction": "Install NetData for real-time web server monitoring",
+    "output": "bash <(curl -Ss https://my-netdata.io/kickstart.sh) --non-interactive"
+  },
+  {
+    "instruction": "Set up Nginx to disable directory listing",
+    "output": "echo -e 'location / {\\n  autoindex off;\\n}' >> /etc/nginx/sites-available/default && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Apache to disable directory listing",
+    "output": "sed -i 's/Options Indexes/Options -Indexes/' /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Hide Nginx version string",
+    "output": "sed -i 's/"
+  },
+  {
+    "instruction": "Hide Apache version string",
+    "output": "echo -e 'ServerTokens Prod\\nServerSignature Off' >> /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Set up Nginx to limit request body size for uploads",
+    "output": "echo 'client_max_body_size 50M;' >> /etc/nginx/nginx.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Apache to limit request body size",
+    "output": "echo -e '<Directory /var/www/html>\\n  LimitRequestBody 52428800\\n</Directory>' >> /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Configure Apache with mod_evasive (DoS protection)",
+    "output": "apt install -y libapache2-mod-evasive && mkdir -p /var/log/apache2/mod_evasive && chown www-data:www-data /var/log/apache2/mod_evasive && a2enmod evasive && systemctl restart apache2"
+  }
+]

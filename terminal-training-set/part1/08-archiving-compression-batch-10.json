@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a compressed tar with progress bar",
+    "output": "<think>\nSo the request is to create a compressed tar with progress bar.\nHere's how I'd approach this.\ntar is what we need — file archiving.\nWhy -s? Summarize or silent mode. this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\ntar czf - ./dir/ | pv -s $(du -sb ./dir/ | awk '{print $1}') > archive.tar.gz"
+  },
+  {
+    "instruction": "Extract a tar.gz with progress bar",
+    "output": "<think>\nWe're being asked to extract a tar.gz with progress bar.\nThe tool for this job is pv — pv operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\npv archive.tar.gz | tar xzf - -C /target/"
+  },
+  {
+    "instruction": "Create a tar of many small files with parallel processing",
+    "output": "<think>\nThe user wants to create a tar of many small files with parallel processing.\nBest tool here is find — file searching.\nThe -type flag handles filter by file type. Important because standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind ./dir/ -type f -print0 | parallel -0 --will-cite 'tar rf /tmp/bundle.tar' && gzip /tmp/bundle.tar"
+  },
+  {
+    "instruction": "Use tar with multi-volume support",
+    "output": "<think>\nSo the request is to use tar with multi-volume support.\nFirst, let me understand what's needed here.\nI'll reach for tar here because file archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar -M -L 1G -F 'echo next volume' -cf volume.tar ./dir/"
+  },
+  {
+    "instruction": "Compress a file with ppmd algorithm (7z extreme)",
+    "output": "<think>\nThis is asking us to compress a file with ppmd algorithm (7z extreme).\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\n7z a -m0=PPMd -mx=9 archive.7z file.txt"
+  },
+  {
+    "instruction": "Show the default compression level of gzip",
+    "output": "<think>\nThe task requires us to show the default compression level of gzip.\nI'll reach for gzip here because file compression.\nI've added -b to brief output — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify compressed archives with -t before deleting originals.\n</think>\ngzip --fast --best 2>&1 | head -1 || man gzip | col -b | grep -A2 '-"
+  },
+  {
+    "instruction": "Compress a file with the fastest gzip level (1)",
+    "output": "<think>\nSo the request is to compress a file with the fastest gzip level (1).\nLet me break this down.\ngzip is what we need — file compression.\nOne command does the job. Simple is better.\n</think>\ngzip -1 fastfile.txt"
+  },
+  {
+    "instruction": "Compress a file with level 3 (balanced)",
+    "output": "<think>\nThe goal is to compress a file with level 3 (balanced).\nLet me consider what makes sense here.\nBest tool here is gzip — file compression.\nAlways verify compressed archives with -t before deleting originals.\n</think>\ngzip -3 file.txt"
+  },
+  {
+    "instruction": "Compress a file with level 6 (default)",
+    "output": "<think>\nThis is asking us to compress a file with level 6 (default).\nBest tool here is gzip — file compression.\nWhy -6? Use IPv6 only. this controls how the output is formatted.\nAlways verify compressed archives with -t before deleting originals.\n</think>\ngzip -6 file.txt"
+  },
+  {
+    "instruction": "Compress a file with level 9 (best)",
+    "output": "<think>\nThe user wants to compress a file with level 9 (best).\ngzip is what we need — file compression.\nOne command does the job. Simple is better.\nAlways verify compressed archives with -t before deleting originals.\n</think>\ngzip -9 file.txt"
+  },
+  {
+    "instruction": "Recompress a directory from gz to bz2 (smaller)",
+    "output": "<think>\nWe're being asked to recompress a directory from gz to bz2 (smaller).\nFirst, let me understand what's needed here.\nFor this, for is the right tool — for operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\nfor f in *.tar.gz; do gzip -dc \"$f\" | bzip2 > \"${f%.tar.gz}.tar.bz2\"; done"
+  },
+  {
+    "instruction": "Recompress from bz2 to xz (even smaller)",
+    "output": "<think>\nThe goal is to recompress from bz2 to xz (even smaller).\nLet me think about the best approach.\nI'll reach for for here because for operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\nfor f in *.tar.bz2; do bzip2 -dc \"$f\" | xz > \"${f%.tar.bz2}.tar.xz\"; done"
+  },
+  {
+    "instruction": "Compare sizes of compression algorithms on the same data",
+    "output": "<think>\nWe're being asked to compare sizes of compression algorithms on the same data.\nFirst, let me understand what's needed here.\ntar is what we need — file archiving.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck that the target device has enough space before extracting large archives.\nI'll check the output to make sure it did what we expected.\n</think>\ntar cf /tmp/test.tar ./testdata/ && for algo in gzip bzip2 xz zstd; do time \"$algo\" -c /tmp/test.tar > /tmp/test.tar.\"$algo\" && ls -lh /tmp/test.tar.\"$algo\"; done"
+  },
+  {
+    "instruction": "Create a tar without the directory's parent path",
+    "output": "<think>\nWe should create a tar without the directory's parent path.\nFirst, let me understand what's needed here.\nI'll reach for tar here because file archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf archive.tar.gz -C /full/path/to/dir ."
+  },
+  {
+    "instruction": "Extract a tar removing the top-level directory",
+    "output": "<think>\nThe user wants to extract a tar removing the top-level directory.\nFirst, let me understand what's needed here.\nI'd use tar for this — file archiving.\nCheck that the target device has enough space before extracting large archives.\nLet me verify afterward that it worked correctly.\n</think>\ntar xzf archive.tar.gz --strip-components=1 -C /target/dir/"
+  },
+  {
+    "instruction": "Create a tar with verbose file list",
+    "output": "<think>\nWe're being asked to create a tar with verbose file list.\nLet me consider what makes sense here.\nThis calls for tar. File archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czvf archive.tar.gz ./dir/ > file_list.txt 2>&1"
+  },
+  {
+    "instruction": "Create a tar listing files that would be included (dry-run)",
+    "output": "<think>\nSo we need to create a tar listing files that would be included (dry-run).\nThe tool for this job is tar — file archiving.\nOne command does the job. Simple is better.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czvf - ./dir/ > /dev/null 2>&1; echo done"
+  },
+  {
+    "instruction": "Check if the system supports a compression tool",
+    "output": "<think>\nThe goal is to check if the system supports a compression tool.\nLet me think through this step by step.\nBest tool here is which — which operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nwhich gzip bzip2 xz zstd lz4 2>/dev/null | xargs -n1 basename"
+  },
+  {
+    "instruction": "Install all common archiving tools",
+    "output": "<think>\nSo we need to install all common archiving tools.\nHere's how I'd approach this.\nFor this, apt is the right tool — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y gzip bzip2 xz-utils zstd lz4 p7zip-full unrar zip unzip"
+  },
+  {
+    "instruction": "Install compression development libraries",
+    "output": "<think>\nWe're being asked to install compression development libraries.\nI'll reach for apt here because apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y zlib1g-dev libbz2-dev liblzma-dev libzstd-dev liblz4-dev"
+  },
+  {
+    "instruction": "Compress a file and stream it to S3 (AWS CLI)",
+    "output": "<think>\nThe user wants to compress a file and stream it to S3 (AWS CLI).\nThe tool for this job is tar — file archiving.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - ./dir/ | aws s3 cp - s3://mybucket/backup.tar.gz"
+  },
+  {
+    "instruction": "Compress and upload with gsutil (GCS)",
+    "output": "<think>\nWe're being asked to compress and upload with gsutil (GCS).\nLet me break this down.\nI'd use tar for this — file archiving.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - ./dir/ | gsutil cp - gs://mybucket/backup.tar.gz"
+  },
+  {
+    "instruction": "Create an encrypted backup with age encryption",
+    "output": "<think>\nAlright, we need to create an encrypted backup with age encryption.\nI'll reach for tar here because file archiving.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ntar czf - ./dir/ | age -r age1publickey -o backup.tar.gz.age"
+  },
+  {
+    "instruction": "Decrypt and extract age-encrypted backup",
+    "output": "<think>\nNeed to decrypt and extract age-encrypted backup.\nThe tool for this job is age — age operations.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nage -d backup.tar.gz.age | tar xzf - -C /restore/"
+  },
+  {
+    "instruction": "Create a tar archive with GPG symmetric encryption and compression",
+    "output": "<think>\nNeed to create a tar archive with GPG symmetric encryption and compression.\nHere's how I'd approach this.\nThe tool for this job is tar — file archiving.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar cf - ./dir/ | gpg --symmetric --cipher-algo AES256 --batch --passphrase 'secret' -o encrypted.tar.gz.gpg"
+  }
+]

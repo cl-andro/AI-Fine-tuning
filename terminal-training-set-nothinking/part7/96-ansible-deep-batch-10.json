@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Generate ansible config with all defaults explicitly set",
+    "output": "ansible-config init --disabled > ansible.cfg"
+  },
+  {
+    "instruction": "Dump all ansible configuration as JSON",
+    "output": "ansible-config dump --only-changed --format json"
+  },
+  {
+    "instruction": "Check the default python interpreter for a host",
+    "output": "ansible all -m shell -a 'which python3'"
+  },
+  {
+    "instruction": "Override the python interpreter for a host",
+    "output": "ansible all -e 'ansible_python_interpreter=/usr/bin/python3' -m ping"
+  },
+  {
+    "instruction": "Set ansible_ssh_common_args to use a jump host",
+    "output": "ansible all -e 'ansible_ssh_common_args=\"-J jump.example.com\"' -m ping"
+  },
+  {
+    "instruction": "Run a playbook with custom ansible_managed string",
+    "output": "ansible-playbook site.yml -e 'ansible_managed=\"Managed by Ansible - {{ ansible_date_time.date }}\"'"
+  },
+  {
+    "instruction": "Check if a specific package version is installed",
+    "output": "ansible all -m package_facts -a 'manager=auto' -e 'ansible_package_facts=True'"
+  },
+  {
+    "instruction": "Get the list of available facts about services",
+    "output": "ansible all -m service_facts -a ''"
+  },
+  {
+    "instruction": "Use the datadog_monitor module (community.datadog)",
+    "output": "ansible localhost -m community.datadog.datadog_monitor -a 'name=\"CPU load\" type=\"metric alert\" query=\"avg(last_5m):avg:system.cpu.user{*} > 90\"'"
+  },
+  {
+    "instruction": "Check for pending reboots with ansible",
+    "output": "ansible all -m shell -a '[ -f /var/run/reboot-required ] && echo reboot_needed=true || echo reboot_needed=false'"
+  },
+  {
+    "instruction": "List all ansible internal variables on a host",
+    "output": "ansible localhost -m debug -a 'var=hostvars[\"localhost\"]'"
+  },
+  {
+    "instruction": "Use the postgresql_db module to create a database",
+    "output": "ansible all -m postgresql_db -a 'name=myapp state=present' -b -u postgres"
+  },
+  {
+    "instruction": "Create a Postgres user via ansible",
+    "output": "ansible all -m postgresql_user -a 'db=myapp name=appuser password=secret priv=ALL state=present' -b -u postgres"
+  },
+  {
+    "instruction": "Use the mysql_db module to create a database",
+    "output": "ansible all -m mysql_db -a 'name=myapp state=present' -b"
+  },
+  {
+    "instruction": "Use the mysql_user module to set up privileges",
+    "output": "ansible all -m mysql_user -a 'name=appuser password=secret priv=myapp.*:ALL host=% state=present' -b"
+  },
+  {
+    "instruction": "Use the docker_container module to run a container",
+    "output": "ansible all -m docker_container -a 'name=nginx image=nginx:latest state=started ports=80:80' -b"
+  },
+  {
+    "instruction": "Pull a Docker image with community.docker.docker_image",
+    "output": "ansible all -m docker_image -a 'name=nginx:alpine source=pull' -b"
+  },
+  {
+    "instruction": "Manage a Docker network",
+    "output": "ansible all -m docker_network -a 'name=backend state=present' -b"
+  },
+  {
+    "instruction": "Create a Docker volume",
+    "output": "ansible all -m docker_volume -a 'name=app_data state=present' -b"
+  },
+  {
+    "instruction": "Use the k8s module with kubectl from ansible",
+    "output": "ansible localhost -m kubernetes.core.k8s -a 'api_version=v1 kind=Namespace name=myapp state=present'"
+  },
+  {
+    "instruction": "Debug a complex variable structure with pretty-print",
+    "output": "ansible localhost -m debug -a 'msg=\"{{ hostvars | to_nice_json }}\"'"
+  },
+  {
+    "instruction": "Run a Python script inline via ansible",
+    "output": "ansible all -m script -a '/tmp/health_check.py'"
+  },
+  {
+    "instruction": "Use the raw module to run an unclean SSH command",
+    "output": "ansible all -m raw -a 'cat /etc/os-release'"
+  },
+  {
+    "instruction": "Use the wait_for_connection module to wait for hosts",
+    "output": "ansible all -m wait_for_connection -a 'delay=10 timeout=300'"
+  },
+  {
+    "instruction": "Use the expect module to answer an interactive prompt",
+    "output": "ansible all -m expect -a 'command=ssh-keygen -t rsa -f ~/.ssh/id_rsa -N \"\" responses={\"Overwrite\": \"y\"}'"
+  }
+]

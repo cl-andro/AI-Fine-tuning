@@ -1,0 +1,22 @@
+[
+  {"instruction": "Write bpftrace script for disk I/O tracing", "output": "cat > /tmp/diskio.bt << 'EOF'\n#!/usr/bin/bpftrace\nkprobe:blk_account_io_start\n{\n    @start[tid] = nsecs;\n    @size = args->rq_sectors;\n}\nkprobe:blk_account_io_completion\n/tid in @start/\n{\n    $us = (nsecs - @start[tid]) / 1000;\n    printf(\"disk I/O: %d sectors, %d us\\n\", @size, $us);\n    delete(@start[tid]);\n    delete(@size);\n}\nEOF\nchmod +x /tmp/diskio.bt"},
+  {"instruction": "Write bpftrace script for TCP monitoring", "output": "cat > /tmp/tcpmon.bt << 'EOF'\n#!/usr/bin/bpftrace\nkprobe:tcp_connect\n{\n    printf(\"TCP connect from %s to %s\\n\", ntop(args->sk->__sk_common.skc_saddr), ntop(args->sk->__sk_common.skc_daddr));\n}\nEOF\nchmod +x /tmp/tcpmon.bt"},
+  {"instruction": "Run custom bpftrace script", "output": "bpftrace /tmp/tcpmon.bt"},
+  {"instruction": "Run bpftrace script with USDT probe", "output": "bpftrace -e 'usdt:/usr/sbin/mysqld:mysql:* { printf(\"mysql: %s\\n\", probe); }'"},
+  {"instruction": "Trace Python function calls via USDT", "output": "bpftrace -e 'usdt:/usr/bin/python3:function__entry { printf(\"python func: %s\\n\", str(arg0)); }'"},
+  {"instruction": "Trace Node.js GC events via USDT", "output": "bpftrace -e 'usdt:/usr/bin/node:gc:* { printf(\"GC: %s\\n\", probe); }'"},
+  {"instruction": "Monitor PostgreSQL query start via USDT", "output": "bpftrace -e 'usdt:/usr/lib/postgresql/*/bin/postgres:query__start { printf(\"query: %s\\n\", str(arg0)); }'"},
+  {"instruction": "Count BPF helper function usage", "output": "bpftrace -e 'kprobe:__bpf_trace_run { @ = count(); } interval:s:5 { print(@); clear(@); }'"},
+  {"instruction": "Measure BPF program execution time", "output": "bpftrace -e 'kprobe:bpf_prog_run { @start[tid] = nsecs; } kprobe:bpf_prog_run { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"},
+  {"instruction": "Track MAP update operations in BPF", "output": "bpftrace -e 'kprobe:bpf_map_update_value { printf(\"map update by %s\\n\", comm); }'"},
+  {"instruction": "Monitor BPF verifier activity", "output": "bpftrace -e 'kprobe:bpf_check { printf(\"BPF verifier running for %s\\n\", comm); }'"},
+  {"instruction": "Track loaded BPF programs by name", "output": "bpftrace -e 'kprobe:bpf_prog_load { printf(\"BPF prog loaded: \\n\"); }'"},
+  {"instruction": "Count BPF map lookups", "output": "bpftrace -e 'kprobe:bpf_map_lookup_elem { @[comm] = count(); }'"},
+  {"instruction": "Monitor bpf() syscall usage", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_bpf { printf(\"bpf() by %s cmd=%d\\n\", comm, args->cmd); }'"},
+  {"instruction": "Show BPF program types", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_bpf /args->cmd == 5/ { printf(\"BPF_PROG_LOAD\\n\"); }'"},
+  {"instruction": "Trace ethtool operations", "output": "bpftrace -e 'kprobe:dev_ethtool { printf(\"ethtool op on %s\\n\", args->dev->name); }'"},
+  {"instruction": "Monitor network interface changes", "output": "bpftrace -e 'kprobe:dev_change_flags { printf(\"flags changed on %s\\n\", args->dev->name); }'"},
+  {"instruction": "Track ARP cache operations", "output": "bpftrace -e 'kprobe:neigh_update { printf(\"ARP update for %s\\n\", ntop(args->neigh->primary_key)); }'"},
+  {"instruction": "Monitor routing table changes", "output": "bpftrace -e 'kprobe:fib_table_insert { printf(\"route added: %s\\n\", ntop(args->key->addr)); }'"},
+  {"instruction": "Trace iptables rule matches", "output": "bpftrace -e 'kprobe:ipt_do_table { printf(\"iptables match on %s\\n\", comm); }'"}
+]

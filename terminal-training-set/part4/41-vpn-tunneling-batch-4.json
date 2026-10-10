@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Add an IPsec/Libreswan connection named myvpn to /etc/ipsec.conf",
+    "output": "<think>\nThe user wants to add an IPsec/Libreswan connection named myvpn to /etc/ipsec.conf.\nLet me reason through this.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'conn myvpn\n  left=192.168.1.1\n  leftsubnet=10.0.0.0/24\n  right=203.0.113.5\n  rightsubnet=10.0.1.0/24\n  authby=secret\n  auto=start' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Start the Libreswan IPsec service",
+    "output": "<think>\nAlright, we need to start the Libreswan IPsec service.\nThis calls for systemctl. Managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemctl start ipsec"
+  },
+  {
+    "instruction": "Restart the Libreswan IPsec service after config changes",
+    "output": "<think>\nThe goal is to restart the Libreswan IPsec service after config changes.\nLet me reason through this.\nBest tool here is systemctl — managing systemd services.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemctl restart ipsec"
+  },
+  {
+    "instruction": "Verify the Libreswan IPsec configuration syntax",
+    "output": "<think>\nThe user wants to verify the Libreswan IPsec configuration syntax.\nI'd use ipsec for this — IPsec VPN tunnel management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec verify"
+  },
+  {
+    "instruction": "Add a pre-shared key for Libreswan to /etc/ipsec.secrets",
+    "output": "<think>\nThe task requires us to add a pre-shared key for Libreswan to /etc/ipsec.secrets.\nFirst, let me understand what's needed here.\nWhy -a? AND operator in find. this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '192.168.1.1 203.0.113.5 : PSK \"supersecret\"' | sudo tee -a /etc/ipsec.secrets"
+  },
+  {
+    "instruction": "List all active Libreswan IPsec connections",
+    "output": "<think>\nThis is asking us to list all active Libreswan IPsec connections.\nFirst, let me understand what's needed here.\nI'd use ipsec for this — IPsec VPN tunnel management.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec auto --status | grep conn"
+  },
+  {
+    "instruction": "Initiate a Libreswan IPsec connection named myvpn",
+    "output": "<think>\nThe task requires us to initiate a Libreswan IPsec connection named myvpn.\nLet me consider what makes sense here.\nI'd use ipsec for this — IPsec VPN tunnel management.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec auto --up myvpn"
+  },
+  {
+    "instruction": "Terminate a Libreswan IPsec connection named myvpn",
+    "output": "<think>\nThis is asking us to terminate a Libreswan IPsec connection named myvpn.\nLet me reason through this.\nThe tool for this job is ipsec — IPsec VPN tunnel management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec auto --down myvpn"
+  },
+  {
+    "instruction": "Delete a Libreswan IPsec connection configuration",
+    "output": "<think>\nWe're being asked to delete a Libreswan IPsec connection configuration.\nThis calls for ipsec. IPsec VPN tunnel management.\nThe --delete flag handles remove extraneous files from destination. Important because needed for this specific use case.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec auto --delete myvpn"
+  },
+  {
+    "instruction": "Add a Libreswan IPsec connection with IKEv2",
+    "output": "<think>\nWe should add a Libreswan IPsec connection with IKEv2.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'conn ikev2-vpn\n  ikelifetime=24h\n  ike=aes256-sha2_256;modp2048\n  esp=aes256-sha2_256\n  left=192.168.1.1\n  right=%any\n  keyingtries=3\n  auto=add' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Show the Libreswan IPsec status including tunnel details",
+    "output": "<think>\nThe task requires us to show the Libreswan IPsec status including tunnel details.\nFor this, ipsec is the right tool — IPsec VPN tunnel management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec auto --status"
+  },
+  {
+    "instruction": "List all Libreswan IPsec whack status output",
+    "output": "<think>\nThe task requires us to list all Libreswan IPsec whack status output.\nThe tool for this job is ipsec — IPsec VPN tunnel management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo ipsec whack --status"
+  },
+  {
+    "instruction": "Add a Libreswan IPsec connection with leftcert and leftid",
+    "output": "<think>\nAlright, we need to add a Libreswan IPsec connection with leftcert and leftid.\nLet me break this down.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'conn cert-vpn\n  left=192.168.1.1\n  leftcert=server.crt\n  leftid=@vpn.example.com\n  right=203.0.113.5\n  rightid=@client.example.com\n  auto=add' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Configure Libreswan to use %defaultroute for left",
+    "output": "<think>\nThe task requires us to configure Libreswan to use %defaultroute for left.\nLet me reason through this.\nI'd use sed for this — text stream editing.\nI'm using -i for interactive, prompt before action — standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo sed -i 's/left=192.168.1.1/left=%defaultroute/' /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Add a virtual IP pool for Libreswan modeconfig",
+    "output": "<think>\nAlright, we need to add a virtual IP pool for Libreswan modeconfig.\nFirst, let me understand what's needed here.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'conn pool-vpn\n  left=192.168.1.1\n  leftsubnet=0.0.0.0/0\n  right=%any\n  rightaddresspool=10.10.0.100-10.10.0.200\n  modecfgdns=8.8.8.8\n  auto=add' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Enable Libreswan IPsec forwarding in sysctl",
+    "output": "<think>\nWe're being asked to enable Libreswan IPsec forwarding in sysctl.\nThe tool for this job is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sysctl -w net.ipv4.ip_forward=1 && sudo sysctl -w net.ipv6.conf.all.forwarding=1"
+  },
+  {
+    "instruction": "Add a NAT-traversal (NAT-T) rule for Libreswan",
+    "output": "<think>\nSo we need to add a NAT-traversal (NAT-T) rule for Libreswan.\nThe tool for this job is iptables — firewall management.\nI'm using -t for sort by modification time — important to get the expected behavior.\nThe -s flag handles summarize or silent mode. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\nsudo iptables -t nat -A POSTROUTING -s 10.10.0.0/24 -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "Reload Libreswan configuration without restarting",
+    "output": "<think>\nThis is asking us to reload Libreswan configuration without restarting.\nFirst, let me understand what's needed here.\nipsec is what we need — IPsec VPN tunnel management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo ipsec auto --rereadsecrets && sudo ipsec auto --replace myvpn"
+  },
+  {
+    "instruction": "Add an IPsec connection with IKEv2 EAP authentication",
+    "output": "<think>\nWe're being asked to add an IPsec connection with IKEv2 EAP authentication.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\necho 'conn eap-vpn\n  left=192.168.1.1\n  leftcert=server.crt\n  leftid=@vpn.example.com\n  right=%any\n  rightauth2=eap-tls\n  auto=add' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Set Libreswan authentication to RSA-SHA256",
+    "output": "<think>\nThis is asking us to set Libreswan authentication to RSA-SHA256.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'conn rsa-vpn\n  authby=rsasig\n  leftrsasigkey=%cert\n  rightrsasigkey=%cert\n  auto=add' | sudo tee -a /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Configure Libreswan to log at audit level",
+    "output": "<think>\nThis is asking us to configure Libreswan to log at audit level.\nLet me think through this step by step.\nThe tool for this job is sed — text stream editing.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sed -i 's/plutodebug=none/plutodebug=audit/' /etc/ipsec.conf"
+  },
+  {
+    "instruction": "Check Libreswan IPsec service is enabled on boot",
+    "output": "<think>\nThis is asking us to check Libreswan IPsec service is enabled on boot.\nLet me think through this step by step.\nBest tool here is systemctl — managing systemd services.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemctl is-enabled ipsec"
+  },
+  {
+    "instruction": "Dump the current Libreswan routing table",
+    "output": "<think>\nAlright, we need to dump the current Libreswan routing table.\nLet me think about the best approach.\nThe tool for this job is ipsec — IPsec VPN tunnel management.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ipsec whack --route"
+  },
+  {
+    "instruction": "List all Libreswan IPsec policies in the kernel",
+    "output": "<think>\nThe task requires us to list all Libreswan IPsec policies in the kernel.\nHere's how I'd approach this.\nThe tool for this job is ip — network interface configuration.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo ip xfrm policy list"
+  },
+  {
+    "instruction": "Add a Libreswan IPsec passthrough connection for local traffic",
+    "output": "<think>\nThe task requires us to add a Libreswan IPsec passthrough connection for local traffic.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'conn passthrough\n  left=192.168.1.1\n  right=0.0.0.0\n  leftsubnet=10.0.0.0/24\n  rightsubnet=10.0.0.0/24\n  type=passthrough\n  auto=route' | sudo tee -a /etc/ipsec.conf"
+  }
+]

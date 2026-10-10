@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Run Lynis hardening index scan",
+    "output": "<think>\nThe user wants to run Lynis hardening index scan.\nBest tool here is lynis — lynis operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nlynis audit system --quick"
+  },
+  {
+    "instruction": "Show Lynis hardening details",
+    "output": "<think>\nSo the request is to show Lynis hardening details.\nHere's how I'd approach this.\nThis calls for lynis. Lynis operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nlynis show details"
+  },
+  {
+    "instruction": "Update rkhunter properties and run check",
+    "output": "<think>\nSo we need to update rkhunter properties and run check.\nLet me reason through this.\nThe tool for this job is rkhunter — rkhunter operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nrkhunter --propupd && rkhunter --check --skip-keypress"
+  },
+  {
+    "instruction": "Run chkrootkit in quiet mode",
+    "output": "<think>\nThe user wants to run chkrootkit in quiet mode.\nLet me think about the best approach.\nThe tool for this job is chkrootkit — chkrootkit operations.\nThe -q flag means quiet mode, minimal output, which matters here because this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\n</think>\nchkrootkit -q"
+  },
+  {
+    "instruction": "Scan only /etc with ClamAV recursively",
+    "output": "<think>\nWe're being asked to scan only /etc with ClamAV recursively.\nThe tool for this job is clamscan — clamscan operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because important to get the expected behavior.\n</think>\nclamscan -r /etc --log=clamav-report.log"
+  },
+  {
+    "instruction": "Update ClamAV virus definitions",
+    "output": "<think>\nThe user wants to update ClamAV virus definitions.\nI'll reach for freshclam here because freshclam operations.\n</think>\nfreshclam --stdout"
+  },
+  {
+    "instruction": "Parse and enforce an AppArmor profile",
+    "output": "<think>\nWe should parse and enforce an AppArmor profile.\nThe tool for this job is apparmor_parser — apparmor_parser operations.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\napparmor_parser -r /etc/apparmor.d/usr.bin.nginx"
+  },
+  {
+    "instruction": "List AppArmor processes with profiles",
+    "output": "<think>\nWe're being asked to list AppArmor processes with profiles.\nLet me think through this step by step.\nI'd use aa-status for this — aa-status operations.\nI'm using -v for verbose output — without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\naa-status --enabled && ps auxZ | grep -v '^unconfined' | head -10"
+  },
+  {
+    "instruction": "Generate SELinux policy from audit log",
+    "output": "<think>\nAlright, we need to generate SELinux policy from audit log.\nThis calls for audit2allow. Audit2allow operations.\nI'm using -a for AND operator in find — standard practice for this kind of operation.\nWhy -M? Display mount targets in df. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\naudit2allow -a -M mylocalpolicy && semodule -i mylocalpolicy.pp"
+  },
+  {
+    "instruction": "Check SELinux denial details from audit log",
+    "output": "<think>\nThis is asking us to check SELinux denial details from audit log.\nBest tool here is ausearch — ausearch operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nausearch -m avc --start today | audit2why"
+  },
+  {
+    "instruction": "Create SELinux file context mapping",
+    "output": "<think>\nWe're being asked to create SELinux file context mapping.\nHere's how I'd approach this.\nI'd use semanage for this — semanage operations.\nI've added -a to AND operator in find — important to get the expected behavior.\nI'm using -t for sort by modification time — important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nsemanage fcontext -a -t httpd_sys_content_t '/srv/web(/.*)?' && restorecon -Rv /srv/web"
+  },
+  {
+    "instruction": "Set SELinux boolean persistently",
+    "output": "<think>\nWe're being asked to set SELinux boolean persistently.\nLet me think about the best approach.\nThe tool for this job is setsebool — setsebool operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nsetsebool -P httpd_can_network_connect on"
+  },
+  {
+    "instruction": "Install and configure fail2ban for Apache",
+    "output": "<think>\nThe user wants to install and configure fail2ban for Apache.\nHere's how I'd approach this.\nThe tool for this job is cp — file copying.\nThe -i flag means interactive, prompt before action, which matters here because standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\nQuick verification after execution to be safe.\n</think>\ncp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local && sed -i 's/^"
+  },
+  {
+    "instruction": "Block an IP address with iptables and log it",
+    "output": "<think>\nThe task requires us to block an IP address with iptables and log it.\nThis calls for iptables. Firewall management.\nI'm using -s for summarize or silent mode — needed for this specific use case.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -s 10.0.0.99 -j LOG --log-prefix 'BLOCKED ' && iptables -A INPUT -s 10.0.0.99 -j DROP"
+  },
+  {
+    "instruction": "Set default umask to restrictive value",
+    "output": "<think>\nThis is asking us to set default umask to restrictive value.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'umask 027' >> /etc/profile && source /etc/profile"
+  },
+  {
+    "instruction": "Check current umask value",
+    "output": "<think>\nThe user wants to check current umask value.\nLet me consider what makes sense here.\numask is what we need — umask operations.\nI'm using -S for sort by size — this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\numask -S"
+  },
+  {
+    "instruction": "Set sticky bit on a shared directory",
+    "output": "<think>\nWe're being asked to set sticky bit on a shared directory.\nHere's how I'd approach this.\nBest tool here is chmod — file permission changes.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever chmod 777. Use the most restrictive permissions that still work.\n</think>\nchmod +t /shared && ls -ld /shared"
+  },
+  {
+    "instruction": "Remove write permission from group and others",
+    "output": "<think>\nWe're being asked to remove write permission from group and others.\nchmod is what we need — file permission changes.\nAfter running, I'll confirm the result looks right.\n</think>\nchmod go-w /path/to/protected/file"
+  },
+  {
+    "instruction": "Set SUID bit on a binary",
+    "output": "<think>\nWe should set SUID bit on a binary.\nLet me think about the best approach.\nI'd use chmod for this — file permission changes.\nI'm using -l for long format with details — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever chmod 777. Use the most restrictive permissions that still work.\n</think>\nchmod u+s /usr/bin/program && ls -l /usr/bin/program"
+  },
+  {
+    "instruction": "Remove SUID bit from all files in a directory",
+    "output": "<think>\nThe user wants to remove SUID bit from all files in a directory.\nLet me consider what makes sense here.\nI'd use chmod for this — file permission changes.\nI've added -R to recursive operation — standard practice for this kind of operation.\nNever chmod 777. Use the most restrictive permissions that still work.\nI'll check the output to make sure it did what we expected.\n</think>\nchmod -R u-s /path/to/dir"
+  },
+  {
+    "instruction": "Change file owner and group recursively",
+    "output": "<think>\nSo the request is to change file owner and group recursively.\nLet me think about the best approach.\nThis calls for chown. File ownership changes.\nChanging ownership affects access control. Be precise about user and group.\n</think>\nchown -R www-data:www-data /var/www/html"
+  },
+  {
+    "instruction": "List ACLs for a file",
+    "output": "<think>\nSo we need to list ACLs for a file.\ngetfacl is what we need — getfacl operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ngetfacl /path/to/file"
+  },
+  {
+    "instruction": "Grant read ACL to a specific user",
+    "output": "<think>\nWe're being asked to grant read ACL to a specific user.\nLet me think through this step by step.\nThis calls for setfacl. Setfacl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nsetfacl -m u:john:r /path/to/file"
+  },
+  {
+    "instruction": "Remove a specific user ACL entry",
+    "output": "<think>\nThe task requires us to remove a specific user ACL entry.\nThis calls for setfacl. Setfacl operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nsetfacl -x u:john /path/to/file"
+  },
+  {
+    "instruction": "Grant default ACL for a directory",
+    "output": "<think>\nNeed to grant default ACL for a directory.\nHere's how I'd approach this.\nI'd use setfacl for this — setfacl operations.\nThe -d flag means directory listing, don't descend, which matters here because important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\nsetfacl -d -m u:john:rwx /shared/dir"
+  },
+  {
+    "instruction": "Copy ACLs from one file to another",
+    "output": "<think>\nThis is asking us to copy ACLs from one file to another.\nLet me reason through this.\ngetfacl is what we need — getfacl operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ngetfacl /source/file | setfacl --set-file=- /dest/file"
+  }
+]

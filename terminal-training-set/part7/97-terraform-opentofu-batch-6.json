@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Run TFLint for Terraform best practices",
+    "output": "<think>\nThe user wants to run TFLint for Terraform best practices.\nLet me reason through this.\nI'd use tflint for this — tflint operations.\nWhy --recursive? Descend into subdirectories. this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntflint --recursive"
+  },
+  {
+    "instruction": "Run TFLint with a custom config file",
+    "output": "<think>\nWe should run TFLint with a custom config file.\nHere's how I'd approach this.\ntflint is what we need — tflint operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntflint -c .tflint.hcl"
+  },
+  {
+    "instruction": "Generate a Terragrunt infrastructure-live layout",
+    "output": "<think>\nSo the request is to generate a Terragrunt infrastructure-live layout.\nThis calls for mkdir. Directory creation.\nThe -p flag means create parent directories as needed, which matters here because needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmkdir -p terragrunt/{prod/staging/dev}/{vpc,app,db}"
+  },
+  {
+    "instruction": "Create a remote state locking DynamoDB table with Terraform",
+    "output": "<think>\nThe goal is to create a remote state locking DynamoDB table with Terraform.\nLet me break this down.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_dynamodb_table\" \"lock\" { name = \"tf-lock\" billing_mode = \"PAY_PER_REQUEST\" hash_key = \"LockID\" attribute { name = \"LockID\" type = \"S\" } }' > state.tf"
+  },
+  {
+    "instruction": "Create an S3 bucket for Terraform state",
+    "output": "<think>\nThis is asking us to create an S3 bucket for Terraform state.\nFirst, let me understand what's needed here.\n</think>\necho 'resource \"aws_s3_bucket\" \"state\" { bucket = \"my-org-tf-state-${var.environment}\" }' > state.tf"
+  },
+  {
+    "instruction": "Enable versioning on the state bucket",
+    "output": "<think>\nSo we need to enable versioning on the state bucket.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'resource \"aws_s3_bucket_versioning\" \"v\" { bucket = aws_s3_bucket.state.id versioning_configuration { status = \"Enabled\" } }' > state.tf"
+  },
+  {
+    "instruction": "Encrypt state bucket with KMS",
+    "output": "<think>\nThe goal is to encrypt state bucket with KMS.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'resource \"aws_s3_bucket_server_side_encryption_configuration\" \"enc\" { bucket = aws_s3_bucket.state.id rule { apply_server_side_encryption_by_default { sse_algorithm = \"AES256\" } } }' > state.tf"
+  },
+  {
+    "instruction": "Block public access to state bucket",
+    "output": "<think>\nNeed to block public access to state bucket.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'resource \"aws_s3_bucket_public_access_block\" \"block\" { bucket = aws_s3_bucket.state.id block_public_acls = true block_public_policy = true }' > state.tf"
+  },
+  {
+    "instruction": "Create a Terraform module for VPC with variables",
+    "output": "<think>\nAlright, we need to create a Terraform module for VPC with variables.\nBest tool here is mkdir — directory creation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmkdir -p modules/vpc && echo 'variable \"cidr\" { type = string }' > modules/vpc/variables.tf"
+  },
+  {
+    "instruction": "Output module values in a VPC module",
+    "output": "<think>\nThis is asking us to output module values in a VPC module.\nLet me reason through this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'output \"vpc_id\" { value = aws_vpc.main.id }' > modules/vpc/outputs.tf"
+  },
+  {
+    "instruction": "Use module source from the Terraform Registry",
+    "output": "<think>\nAlright, we need to use module source from the Terraform Registry.\n</think>\necho 'module \"vpc\" { source = \"terraform-aws-modules/vpc/aws\" version = \"5.0.0\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from a Git HTTPS source",
+    "output": "<think>\nSo we need to use module from a Git HTTPS source.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'module \"app\" { source = \"git::https://github.com/org/modules.git//app\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from local path",
+    "output": "<think>\nAlright, we need to use module from local path.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'module \"networking\" { source = \"./modules/networking\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from a Git SSH source with ref",
+    "output": "<think>\nThe user wants to use module from a Git SSH source with ref.\n</think>\necho 'module \"app\" { source = \"git::ssh://git@github.com/org/modules.git//app?ref=v1.2.0\" }' > main.tf"
+  },
+  {
+    "instruction": "Use multiple module sources with count",
+    "output": "<think>\nThe user wants to use multiple module sources with count.\nLet me consider what makes sense here.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'module \"bucket\" { source = \"./modules/s3\" count = length(var.buckets) }' > main.tf"
+  },
+  {
+    "instruction": "Configure a Terraform provider alias",
+    "output": "<think>\nThe user wants to configure a Terraform provider alias.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'provider \"aws\" { alias = \"west\" region = \"us-west-2\" }' > providers.tf"
+  },
+  {
+    "instruction": "Use provider alias in a resource",
+    "output": "<think>\nThe goal is to use provider alias in a resource.\n</think>\necho 'resource \"aws_instance\" \"web\" { provider = aws.west }' > main.tf"
+  },
+  {
+    "instruction": "Use the archive provider to zip a directory",
+    "output": "<think>\nWe should use the archive provider to zip a directory.\nFirst, let me understand what's needed here.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'data \"archive_file\" \"lambda\" { type = \"zip\" source_dir = \"${path.module}/src\" output_path = \"${path.module}/lambda.zip\" }' > lambda.tf"
+  },
+  {
+    "instruction": "Create a null_resource with triggers",
+    "output": "<think>\nThe task requires us to create a null_resource with triggers.\nLet me think about the best approach.\n</think>\necho 'resource \"null_resource\" \"deploy\" { triggers = { hash = filesha1(\"${path.module}/app.zip\") } }' > null.tf"
+  },
+  {
+    "instruction": "Set an environment variable for Terraform in automation",
+    "output": "<think>\nThe goal is to set an environment variable for Terraform in automation.\nLet me think through this step by step.\nThis calls for export. Export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nexport TF_IN_AUTOMATION=true && terraform apply -auto-approve"
+  },
+  {
+    "instruction": "Use partial backend configuration for dynamic values",
+    "output": "<think>\nWe're being asked to use partial backend configuration for dynamic values.\nLet me consider what makes sense here.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'terraform { backend \"s3\" {} }' > backend.tf && terraform init -backend-config='key=prod/terraform.tfstate'"
+  },
+  {
+    "instruction": "Read a JSON file with local data source",
+    "output": "<think>\nWe're being asked to read a JSON file with local data source.\n</think>\necho 'locals { config = jsondecode(file(\"${path.module}/config.json\")) }' > locals.tf"
+  },
+  {
+    "instruction": "Read a YAML file with yamldecode",
+    "output": "<think>\nThe goal is to read a YAML file with yamldecode.\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'locals { config = yamldecode(file(\"${path.module}/config.yml\")) }' > locals.tf"
+  },
+  {
+    "instruction": "Run terraform-bundle to build custom provider bundles",
+    "output": "<think>\nThe user wants to run terraform-bundle to build custom provider bundles.\nLet me think about the best approach.\nThe tool for this job is terraform-bundle — terraform-bundle operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nterraform-bundle package bundle.hcl"
+  },
+  {
+    "instruction": "Use the cloud-init provider for instance config",
+    "output": "<think>\nNeed to use the cloud-init provider for instance config.\nHere's how I'd approach this.\nLet me verify afterward that it worked correctly.\n</think>\necho 'data \"cloudinit_config\" \"user_data\" { part { content_type = \"text/cloud-config\" content = \"#cloud-config\\npackage_update: true\" } }' > cloudinit.tf"
+  }
+]

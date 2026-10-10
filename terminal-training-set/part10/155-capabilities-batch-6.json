@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Install libcap libraries for development",
+    "output": "<think>\nThe user wants to install libcap libraries for development.\nThis calls for apt-get. Apt-get operations.\nA quick sanity check afterward saves debugging time later.\n</think>\napt-get install -y libcap-dev libcap2-bin"
+  },
+  {
+    "instruction": "Write C program to manage capabilities",
+    "output": "<think>\nThe task requires us to write C program to manage capabilities.\nLet me reason through this.\nFor this, cat is the right tool — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /tmp/cap_demo.c << 'EOF'\n#include <stdio.h>\n#include <sys/capability.h>\nint main() {\n    cap_t caps = cap_get_proc();\n    char *txt = cap_to_text(caps, NULL);\n    printf(\"Current caps: %s\\n\", txt);\n    cap_free(txt);\n    cap_free(caps);\n    return 0;\n}\nEOF\ngcc -o /tmp/cap_demo /tmp/cap_demo.c -lcap"
+  },
+  {
+    "instruction": "Compile and run capability demo",
+    "output": "<think>\nThis is asking us to compile and run capability demo.\nLet me break this down.\nThis calls for gcc. Gcc operations.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ngcc -o /tmp/cap_demo /tmp/cap_demo.c -lcap && /tmp/cap_demo"
+  },
+  {
+    "instruction": "Set capability on compiled demo",
+    "output": "<think>\nThe user wants to set capability on compiled demo.\nLet me think through this step by step.\nI'll reach for setcap here because setcap operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nsetcap cap_net_raw+ep /tmp/cap_demo"
+  },
+  {
+    "instruction": "Use cap_from_text to set caps in code",
+    "output": "<think>\nThe goal is to use cap_from_text to set caps in code.\nLet me break this down.\nBest tool here is cat — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /tmp/cap_set.c << 'EOF'\n#include <sys/capability.h>\nint main() {\n    cap_t caps = cap_from_text(\"cap_net_raw+ep\");\n    cap_set_file(\"/tmp/cap_demo\", caps);\n    cap_free(caps);\n    return 0;\n}\nEOF\ngcc -o /tmp/cap_set /tmp/cap_set.c -lcap"
+  },
+  {
+    "instruction": "Check capset syscall with strace",
+    "output": "<think>\nNeed to check capset syscall with strace.\nI'll reach for strace here because system call tracing.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=capset,capget capsh --print 2>&1 | head -20"
+  },
+  {
+    "instruction": "Trace kernel capability checks",
+    "output": "<think>\nAlright, we need to trace kernel capability checks.\nLet me think through this step by step.\nI'd use strace for this — system call tracing.\nThe -e flag means edit or executable, which matters here because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e trace=capget getcap /bin/ping"
+  },
+  {
+    "instruction": "Add capability to user via pam_cap",
+    "output": "<think>\nThe user wants to add capability to user via pam_cap.\nLet me think about the best approach.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'cap_net_raw user1' >> /etc/security/capability.conf"
+  },
+  {
+    "instruction": "Configure PAM for user capabilities",
+    "output": "<think>\nThe task requires us to configure PAM for user capabilities.\nLet me break this down.\nQuick verification after execution to be safe.\n</think>\necho 'auth required pam_cap.so' >> /etc/pam.d/common-auth"
+  },
+  {
+    "instruction": "Use capsh to preserve caps across user switch",
+    "output": "<think>\nNeed to use capsh to preserve caps across user switch.\nLet me consider what makes sense here.\nThis calls for capsh. Capsh operations.\nI'm using -c for count or create — needed for this specific use case.\nI've added -c to count or create — needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\ncapsh --keep=1 --user=nobody --addamb=cap_net_raw -- -c 'ping -c 1 127.0.0.1'"
+  },
+  {
+    "instruction": "Check pam_cap capabilities file",
+    "output": "<think>\nThe user wants to check pam_cap capabilities file.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /etc/security/capability.conf"
+  },
+  {
+    "instruction": "Use systemd service with ambient caps",
+    "output": "<think>\nThe task requires us to use systemd service with ambient caps.\nThe tool for this job is cat — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/systemd/system/mycap.service << 'EOF'\n[Service]\nExecStart=/usr/local/bin/myapp\nAmbientCapabilities=CAP_NET_BIND_SERVICE\nUser=nobody\nEOF"
+  },
+  {
+    "instruction": "Reload and start capability service",
+    "output": "<think>\nThe goal is to reload and start capability service.\nLet me think through this step by step.\nThis calls for systemctl. Managing systemd services.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsystemctl daemon-reload && systemctl start mycap.service"
+  },
+  {
+    "instruction": "Check ambient capabilities for systemd service",
+    "output": "<think>\nSo the request is to check ambient capabilities for systemd service.\nLet me consider what makes sense here.\nI'd use systemctl for this — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl show mycap.service -p AmbientCapabilities"
+  },
+  {
+    "instruction": "Make systemd unit keep capabilities",
+    "output": "<think>\nWe're being asked to make systemd unit keep capabilities.\nThis calls for cat. Cat operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/systemd/system/myapp.service.d/caps.conf << 'EOF'\n[Service]\nCapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_RAW\nAmbientCapabilities=CAP_NET_BIND_SERVICE\nSecureBits=keep-caps\nEOF"
+  },
+  {
+    "instruction": "Set keep-caps securebit for binary",
+    "output": "<think>\nWe should set keep-caps securebit for binary.\nLet me reason through this.\nThis calls for setcap. Setcap operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsetcap cap_net_raw+ep /usr/bin/myapp && chmod u-s /usr/bin/myapp"
+  },
+  {
+    "instruction": "Document securebits flags",
+    "output": "<think>\nNeed to document securebits flags.\nLet me reason through this.\nFor this, cat is the right tool — cat operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/self/status | grep -i 'secure'"
+  },
+  {
+    "instruction": "Check NO_SETUID_FIXUP securebit",
+    "output": "<think>\nThe goal is to check NO_SETUID_FIXUP securebit.\nLet me consider what makes sense here.\nI'll reach for capsh here because capsh operations.\nI'm using -c for count or create — needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\ncapsh --keep=1 --drop=cap_setuid -- -c 'echo \"securebits active\"'"
+  },
+  {
+    "instruction": "Lock capability state with SECBIT_KEEP_CAPS_LOCKED",
+    "output": "<think>\nAlright, we need to lock capability state with SECBIT_KEEP_CAPS_LOCKED.\nLet me think about the best approach.\nThe tool for this job is capsh — capsh operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ncapsh --keep=1 --drop=all --locked -- -c 'echo \"locked\"'"
+  },
+  {
+    "instruction": "Verify no-new-privileges with capsh",
+    "output": "<think>\nThe user wants to verify no-new-privileges with capsh.\nHere's how I'd approach this.\nBest tool here is capsh — capsh operations.\nI'm using -c for count or create — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncapsh --no-new-privs -- -c 'echo \"no new privs\"'"
+  },
+  {
+    "instruction": "Test no_new_privs with exec",
+    "output": "<think>\nThe task requires us to test no_new_privs with exec.\nLet me think about the best approach.\nFor this, capsh is the right tool — capsh operations.\nI've added -c to count or create — this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\ncapsh --no-new-privs -- -c 'cat /proc/self/status | grep NoNew'"
+  },
+  {
+    "instruction": "Set an ambient capability for script",
+    "output": "<think>\nWe should set an ambient capability for script.\nLet me think about the best approach.\nThe tool for this job is capsh — capsh operations.\nI'm using -c for count or create — without it the command won't work as we need.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncapsh --keep=1 --user=nobody --addamb=cap_net_bind_service -- -c 'python3 -m http.server 80'"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a Windows image with IIS installed",
+    "output": "echo 'source \"amazon-ebs\" \"windows\" { communicator = \"winrm\" winrm_username = \"Administrator\" } build { sources = [\"source.amazon-ebs.windows\"] provisioner \"powershell\" { inline = [\"Install-WindowsFeature -Name Web-Server\"] } }' > windows-iis.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Windows feature install with subfeatures",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Install-WindowsFeature -Name Web-WebServer -IncludeAllSubFeature\"] }' > win-features.pkr.hcl"
+  },
+  {
+    "instruction": "Enable Windows Remote Management in Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Enable-PSRemoting -Force\"] }' > win-psremoting.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Windows scheduled task via Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Register-ScheduledTask -TaskName \\\"Cleanup\\\" -Action (New-ScheduledTaskAction -Execute \\\"powershell.exe\\\")\"] }' > win-task.pkr.hcl"
+  },
+  {
+    "instruction": "Set Windows registry values in Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Set-ItemProperty -Path \\\"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\\" -Name fDenyTSConnections -Value 0\"] }' > win-registry.pkr.hcl"
+  },
+  {
+    "instruction": "Download a file via Invoke-WebRequest in a Windows build",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Invoke-WebRequest -Uri https://example.com/installer.exe -OutFile C:\\\\installer.exe\"] }' > win-download.pkr.hcl"
+  },
+  {
+    "instruction": "Install a Windows feature via DISM in Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"dism /online /enable-feature /featurename:IIS-WebServerRole /all\"] }' > win-dism.pkr.hcl"
+  },
+  {
+    "instruction": "Run a Windows MSI installer silently in Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Start-Process msiexec.exe -ArgumentList \\\"/i C:\\\\agent.msi /quiet\\\" -Wait\"] }' > win-msi.pkr.hcl"
+  },
+  {
+    "instruction": "Create a local user account on Windows via Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"New-LocalUser -Name deploy -Password (ConvertTo-SecureString \\\"Pass123!\\\" -AsPlainText -Force)\", \"Add-LocalGroupMember -Group Administrators -Member deploy\"] }' > win-user.pkr.hcl"
+  },
+  {
+    "instruction": "Configure Windows Update settings in Packer",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Set-ItemProperty -Path \\\"HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\\\" -Name NoAutoUpdate -Value 0\"] }' > win-update.pkr.hcl"
+  },
+  {
+    "instruction": "Join a Windows domain during Packer build",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Add-Computer -DomainName example.com -Credential (New-Object System.Management.Automation.PSCredential(\\\"admin\\\", (ConvertTo-SecureString \\\"password\\\" -AsPlainText -Force))) -Restart -Force\"] }' > win-domain.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Windows Shell provisioner for batch commands",
+    "output": "echo 'provisioner \"windows-shell\" { inline = [\"echo %COMPUTERNAME%\"] }' > win-shell.pkr.hcl"
+  },
+  {
+    "instruction": "Upload a file to Windows via WinRM",
+    "output": "echo 'provisioner \"file\" { source = \"app.exe\" destination = \"C:\\\\app\\\\app.exe\" }' > win-file.pkr.hcl"
+  },
+  {
+    "instruction": "Use the packer console for HCL expression testing",
+    "output": "echo 'formatdate(\"YYYY-MM-DD\", timestamp())' | packer console"
+  },
+  {
+    "instruction": "Test variable interpolation in packer console",
+    "output": "echo 'var.region' | packer console -var 'region=us-east-1'"
+  },
+  {
+    "instruction": "Use packer console with a variables file loaded",
+    "output": "echo 'var.instance_type' | packer console -var-file=prod.pkrvars.hcl"
+  },
+  {
+    "instruction": "Test a complex function in packer console",
+    "output": "echo 'cidrhost(\"10.0.0.0/24\", 5)' | packer console"
+  },
+  {
+    "instruction": "Test a condition in packer console",
+    "output": "echo 'true ? \"yes\" : \"no\"' | packer console"
+  },
+  {
+    "instruction": "Use packer console to test templatefile",
+    "output": "echo 'templatefile(\"${path.root}/templates/test.tpl\", {name = \"world\"})' | packer console"
+  },
+  {
+    "instruction": "Test packer string functions in console",
+    "output": "echo 'upper(\"hello\")' | packer console"
+  },
+  {
+    "instruction": "Check the syntax of a complex expression in console",
+    "output": "echo 'merge(map(\"a\", 1), map(\"b\", 2))' | packer console"
+  },
+  {
+    "instruction": "Test file function existence in packer console",
+    "output": "echo 'fileexists(\"template.pkr.hcl\")' | packer console"
+  },
+  {
+    "instruction": "Use hcl2_upgrade to convert from JSON to HCL2",
+    "output": "packer hcl2_upgrade legacy.json"
+  },
+  {
+    "instruction": "See the difference between JSON and HCL templates after upgrade",
+    "output": "diff legacy.json legacy.json.hcl2_upgrade"
+  }
+]

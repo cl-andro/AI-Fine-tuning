@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Check if a portable image is currently attached",
+    "output": "<think>\nThe goal is to check if a portable image is currently attached.\nThis calls for portablectl. Portable service management.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nportablectl list | grep myapp"
+  },
+  {
+    "instruction": "Restart the portable daemon",
+    "output": "<think>\nThe user wants to restart the portable daemon.\nLet me break this down.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart systemd-portabled"
+  },
+  {
+    "instruction": "Create a minimal portable image directory",
+    "output": "<think>\nThe task requires us to create a minimal portable image directory.\nThe tool for this job is mkdir — directory creation.\nCheck the output for errors before proceeding to the next step.\n</think>\nmkdir -p /var/lib/portable/myapp/usr/bin /var/lib/portable/myapp/lib/systemd/system"
+  },
+  {
+    "instruction": "Attach portable with specific env variables",
+    "output": "<think>\nThe user wants to attach portable with specific env variables.\nLet me think through this step by step.\nI'll reach for portablectl here because portable service management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nportablectl attach --property=Environment=FOO=bar /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Force detach portable service",
+    "output": "<think>\nWe're being asked to force detach portable service.\nThis calls for portablectl. Portable service management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nportablectl detach --now myapp"
+  },
+  {
+    "instruction": "Create portable image with os-release",
+    "output": "<think>\nThis is asking us to create portable image with os-release.\nI'd use mkdir for this — directory creation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nmkdir -p /tmp/portable-build/usr/lib && echo 'ID=myapp\nVERSION_ID=1.0' > /tmp/portable-build/usr/lib/os-release && mksquashfs /tmp/portable-build /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Check status of a portable service unit",
+    "output": "<think>\nWe should check status of a portable service unit.\nLet me consider what makes sense here.\nsystemctl is what we need — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status systemd-portabled.service"
+  },
+  {
+    "instruction": "Check status of portable service after attach",
+    "output": "<think>\nSo the request is to check status of portable service after attach.\nLet me reason through this.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status myapp.service"
+  },
+  {
+    "instruction": "Check portable image size",
+    "output": "<think>\nSo we need to check portable image size.\nLet me consider what makes sense here.\nThe tool for this job is ls — ls operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nls -lh /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Verify portable image is valid OS",
+    "output": "<think>\nWe should verify portable image is valid OS.\nBest tool here is test — test operations.\nThe -f flag means force, suppress errors, which matters here because needed for this specific use case.\nI'm using -l for long format with details — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ntest -f /var/lib/portable/myapp.raw && unsquashfs -l /var/lib/portable/myapp.raw usr/lib/os-release 2>/dev/null && echo 'Valid'"
+  },
+  {
+    "instruction": "Reattach portable to refresh units",
+    "output": "<think>\nThe user wants to reattach portable to refresh units.\nThis calls for portablectl. Portable service management.\nAfter running, I'll confirm the result looks right.\n</think>\nportablectl reattach /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Check journal for portable service",
+    "output": "<think>\nWe're being asked to check journal for portable service.\nLet me reason through this.\nI'll reach for journalctl here because checking systemd logs.\nThe -u flag handles show or sort by access time. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u myapp.service"
+  },
+  {
+    "instruction": "Set memory limit on portable service",
+    "output": "<think>\nSo the request is to set memory limit on portable service.\nLet me reason through this.\nsystemctl is what we need — managing systemd services.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl set-property myapp.service MemoryMax=256M"
+  },
+  {
+    "instruction": "Attach portable with read-only root",
+    "output": "<think>\nThe task requires us to attach portable with read-only root.\nFirst, let me understand what's needed here.\nBest tool here is portablectl — portable service management.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nportablectl attach --property=ProtectSystem=yes /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "List only detached portable images",
+    "output": "<think>\nSo we need to list only detached portable images.\nFirst, let me understand what's needed here.\nThe tool for this job is portablectl — portable service management.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nportablectl list --detached"
+  },
+  {
+    "instruction": "Enable and start portable daemon",
+    "output": "<think>\nAlright, we need to enable and start portable daemon.\nLet me think about the best approach.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl enable --now systemd-portabled.service"
+  },
+  {
+    "instruction": "List files in portable image",
+    "output": "<think>\nAlright, we need to list files in portable image.\nLet me think through this step by step.\nThis calls for unsquashfs. Unsquashfs operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nunsquashfs -ll /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Detach portable image by image path",
+    "output": "<think>\nWe should detach portable image by image path.\nportablectl is what we need — portable service management.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nportablectl detach /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Attach portable with network namespace bind",
+    "output": "<think>\nSo we need to attach portable with network namespace bind.\nI'll reach for portablectl here because portable service management.\n</think>\nportablectl attach --property=PrivateNetwork=yes /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Attach multiple portable images at once",
+    "output": "<think>\nAlright, we need to attach multiple portable images at once.\nFirst, let me understand what's needed here.\nI'd use portablectl for this — portable service management.\nI'll check the output to make sure it did what we expected.\n</think>\nportablectl attach /var/lib/portable/app1.raw /var/lib/portable/app2.raw"
+  },
+  {
+    "instruction": "Show portable image OS release info",
+    "output": "<think>\nSo we need to show portable image OS release info.\nBest tool here is unsquashfs — unsquashfs operations.\nWhy -l? Long format with details. needed for this specific use case.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunsquashfs -l /var/lib/portable/myapp.raw etc/os-release 2>/dev/null; echo 'check inside image'"
+  },
+  {
+    "instruction": "Attach portable image with a specific unit name prefix",
+    "output": "<think>\nThe user wants to attach portable image with a specific unit name prefix.\nLet me think through this step by step.\nBest tool here is portablectl — portable service management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nportablectl attach --prefix=/usr/local /var/lib/portable/myapp.raw"
+  }
+]

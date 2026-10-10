@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set OOM score adjustment to protect a critical process",
+    "output": "<think>\nThis is asking us to set OOM score adjustment to protect a critical process.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -1000 > /proc/1234/oom_score_adj"
+  },
+  {
+    "instruction": "Check OOM score adjustment of a process",
+    "output": "<think>\nWe should check OOM score adjustment of a process.\nI'd use cat for this — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/1234/oom_score_adj"
+  },
+  {
+    "instruction": "Disable transparent hugepages for latency-sensitive apps",
+    "output": "<think>\nSo the request is to disable transparent hugepages for latency-sensitive apps.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+  },
+  {
+    "instruction": "Check transparent hugepage status",
+    "output": "<think>\nWe're being asked to check transparent hugepage status.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nOne command does the job. Simple is better.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Enable kernel page allocator coalescing for performance",
+    "output": "<think>\nThe task requires us to enable kernel page allocator coalescing for performance.\nHere's how I'd approach this.\nFor this, sysctl is the right tool — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w vm.compact_memory=1 && echo 1 > /proc/sys/vm/compact_memory"
+  },
+  {
+    "instruction": "Tune NUMA memory allocation strategy",
+    "output": "<think>\nNeed to tune NUMA memory allocation strategy.\nI'll reach for sysctl here because kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w vm.zone_reclaim_mode=1 && sysctl -w kernel.numa_balancing=0"
+  },
+  {
+    "instruction": "Adjust TCP keepalive parameters for faster dead connection detection",
+    "output": "<think>\nNeed to adjust TCP keepalive parameters for faster dead connection detection.\nsysctl is what we need — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysctl -w net.ipv4.tcp_keepalive_time=120 && sysctl -w net.ipv4.tcp_keepalive_intvl=10 && sysctl -w net.ipv4.tcp_keepalive_probes=3"
+  },
+  {
+    "instruction": "Increase PID limit for high-throughput servers",
+    "output": "<think>\nAlright, we need to increase PID limit for high-throughput servers.\nThe tool for this job is sysctl — kernel parameter tuning.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl -w kernel.pid_max=4194304"
+  },
+  {
+    "instruction": "Increase max user processes limit",
+    "output": "<think>\nNeed to increase max user processes limit.\nThe tool for this job is sysctl — kernel parameter tuning.\nI'm using -u for show or sort by access time — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w kernel.threads-max=1200000 && ulimit -u 1200000"
+  },
+  {
+    "instruction": "Disable TCP slow start after idle",
+    "output": "<think>\nThe goal is to disable TCP slow start after idle.\nLet me reason through this.\nFor this, sysctl is the right tool — kernel parameter tuning.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w net.ipv4.tcp_slow_start_after_idle=0"
+  },
+  {
+    "instruction": "Use memlock to pin process memory and prevent swapping",
+    "output": "<think>\nThe user wants to use memlock to pin process memory and prevent swapping.\nBest tool here is ulimit — ulimit operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nulimit -l unlimited && ./myapp"
+  },
+  {
+    "instruction": "Benchmark memory allocation with sysbench memory test",
+    "output": "<think>\nAlright, we need to benchmark memory allocation with sysbench memory test.\nLet me think through this step by step.\nsysbench is what we need — sysbench operations.\nI'll check the output to make sure it did what we expected.\n</think>\nsysbench memory --memory-block-size=1M --memory-total-size=10G --num-threads=$(nproc) run"
+  },
+  {
+    "instruction": "Benchmark mutex performance with sysbench",
+    "output": "<think>\nThe task requires us to benchmark mutex performance with sysbench.\nHere's how I'd approach this.\nBest tool here is sysbench — sysbench operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsysbench mutex --threads=$(nproc) --mutex-num=4096 --mutex-locks=50000 run"
+  },
+  {
+    "instruction": "Benchmark thread creation/destruction with sysbench",
+    "output": "<think>\nThe goal is to benchmark thread creation/destruction with sysbench.\nThe tool for this job is sysbench — sysbench operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysbench threads --threads=$(nproc) --thread-yields=1000 --thread-locks=4 run"
+  },
+  {
+    "instruction": "Run fio sequential read benchmark",
+    "output": "<think>\nWe should run fio sequential read benchmark.\nI'd use fio for this — fio operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nfio --name=seqread --ioengine=libaio --iodepth=64 --rw=read --bs=1M --direct=1 --size=2G --runtime=30 --group_reporting"
+  },
+  {
+    "instruction": "Run fio latency-sensitive single-threaded 4k test",
+    "output": "<think>\nThe user wants to run fio latency-sensitive single-threaded 4k test.\nFirst, let me understand what's needed here.\nI'd use fio for this — fio operations.\nLet me verify afterward that it worked correctly.\n</think>\nfio --name=latency --ioengine=sync --iodepth=1 --rw=randread --bs=4k --direct=1 --size=256M --runtime=10 --lat_percentiles=1 --output-format=json"
+  },
+  {
+    "instruction": "Run fio with mixed sequential workload",
+    "output": "<think>\nWe should run fio with mixed sequential workload.\nFirst, let me understand what's needed here.\nBest tool here is fio — fio operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nfio --name=mixed --ioengine=libaio --iodepth=32 --rw=rw --rwmixread=50 --bs=64k --direct=1 --size=1G --runtime=30 --group_reporting"
+  },
+  {
+    "instruction": "Test disk cache behavior with hdparm",
+    "output": "<think>\nNeed to test disk cache behavior with hdparm.\nLet me think through this step by step.\nFor this, hdparm is the right tool — hdparm operations.\n</think>\nhdparm -Tt /dev/sda"
+  },
+  {
+    "instruction": "Get detailed ATA disk information",
+    "output": "<think>\nThe goal is to get detailed ATA disk information.\nLet me reason through this.\nFor this, hdparm is the right tool — hdparm operations.\nI'm using -I for ignore case — without it the command won't work as we need.\nI'm using -E for extended regex — standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nhdparm -I /dev/sda | grep -E 'Model|Serial|Firmware|SATA|Speed|Transfer'"
+  },
+  {
+    "instruction": "Measure write latency with dd and fdatasync",
+    "output": "<think>\nSo the request is to measure write latency with dd and fdatasync.\nFirst, let me understand what's needed here.\nThe tool for this job is dd — dd operations.\nA single command handles this cleanly — no need to overcomplicate it.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\nI'll check the output to make sure it did what we expected.\n</think>\ndd if=/dev/zero of=/tmp/latency bs=4k count=10000 conv=fdatasync oflag=direct 2>&1"
+  },
+  {
+    "instruction": "Benchmark sequential write with dd and multiple block sizes",
+    "output": "<think>\nWe're being asked to benchmark sequential write with dd and multiple block sizes.\nfor is what we need — for operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nfor bs in 512 4k 64k 1M; do dd if=/dev/zero of=/tmp/bs_$bs bs=$bs count=1024 conv=fdatasync 2>&1 | tail -1; done"
+  },
+  {
+    "instruction": "Use perforator mem to sample memory accesses",
+    "output": "<think>\nSo we need to use perforator mem to sample memory accesses.\nLet me reason through this.\nI'll reach for perf here because performance profiling.\nI'm using -a for AND operator in find — this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nperf mem record -a sleep 5 && perf mem report | head -30"
+  },
+  {
+    "instruction": "Use perforator c2c to detect false sharing",
+    "output": "<think>\nThe task requires us to use perforator c2c to detect false sharing.\nFirst, let me understand what's needed here.\nI'll reach for perf here because performance profiling.\nI've added -a to AND operator in find — important to get the expected behavior.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nperf c2c record -a sleep 5 && perf c2c report | head -40"
+  },
+  {
+    "instruction": "Profile kernel with perf stat per CPU",
+    "output": "<think>\nThe user wants to profile kernel with perf stat per CPU.\nLet me reason through this.\nperf is what we need — performance profiling.\nI'm using -a for AND operator in find — needed for this specific use case.\nWhy -e? Edit or executable. this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nperf stat -a -C 0,1,2,3 -e cycles,instructions,cache-misses sleep 5"
+  },
+  {
+    "instruction": "Profile branch prediction with perf stat per process",
+    "output": "<think>\nThe task requires us to profile branch prediction with perf stat per process.\nLet me think through this step by step.\nFor this, perf is the right tool — performance profiling.\n</think>\nperf stat -e branches,branch-misses,branch-loads,branch-load-misses -p 1234 sleep 10"
+  }
+]

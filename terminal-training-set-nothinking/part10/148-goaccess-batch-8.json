@@ -1,0 +1,23 @@
+[
+  {"instruction": "Analyze log from last 24 hours", "output": "awk -v d=\"$(date -d '24 hours ago' '+%d/%b/%Y')\" '$4 >= \"[\"d' access.log | goaccess -a -o report-24h.html"},
+  {"instruction": "Analyze logs for specific month only", "output": "awk '/\\[05\\/Jan\\/2025/' access.log | goaccess -a -o january-report.html"},
+  {"instruction": "Analyze logs excluding health checks", "output": "grep -v '/health' access.log | goaccess -a -o report-no-health.html"},
+  {"instruction": "Analyze only error responses", "output": "awk '$9 ~ /^[45]/' access.log | goaccess -a -o errors-report.html"},
+  {"instruction": "Analyze only successful responses", "output": "awk '$9 ~ /^2/' access.log | goaccess -a -o success-report.html"},
+  {"instruction": "Analyze only redirects", "output": "awk '$9 ~ /^3/' access.log | goaccess -a -o redirects-report.html"},
+  {"instruction": "Analyze traffic from specific country", "output": "goaccess access.log --geoip-database=GeoLite2-City.mmdb --match-panel=GEO_LOCATION,COUNTRY,US -a -o us-traffic.html"},
+  {"instruction": "Analyze traffic from mobile devices", "output": "goaccess access.log --match-panel=BROWSERS,OS,Android -a -o mobile-traffic.html"},
+  {"instruction": "Analyze traffic from specific IP range", "output": "awk -F' ' '$1 ~ /^10\\./' access.log | goaccess -a -o internal-traffic.html"},
+  {"instruction": "Analyze only POST requests", "output": "awk '$7 ~ /POST/' access.log | goaccess -a -o post-requests.html"},
+  {"instruction": "Analyze only GET requests", "output": "awk '$7 ~ /GET/' access.log | goaccess -a -o get-requests.html"},
+  {"instruction": "Analyze API endpoint traffic", "output": "awk '$7 ~ /^\\/api/' access.log | goaccess --log-format=COMBINED -a -o api-stats.html"},
+  {"instruction": "Analyze image file requests", "output": "awk '$7 ~ /\\.(jpg|jpeg|png|gif|webp)/' access.log | goaccess -a -o images-report.html"},
+  {"instruction": "Analyze static file requests", "output": "awk '$7 ~ /\\.(css|js|woff|woff2|svg)/' access.log | goaccess -a -o static-report.html"},
+  {"instruction": "Analyze non-static file requests", "output": "awk '$7 !~ /\\.(css|js|png|jpg|svg|woff)/' access.log | goaccess -a -o dynamic-report.html"},
+  {"instruction": "Analyze robots.txt requests", "output": "grep 'robots.txt' access.log | goaccess -a -o robots-report.html"},
+  {"instruction": "Analyze traffic from search engines", "output": "grep -iE '(googlebot|bingbot|slurp|duckduckbot)' access.log | goaccess -a -o search-bots.html"},
+  {"instruction": "Analyze traffic excluding known bots", "output": "grep -viE '(bot|crawler|spider)' access.log | goaccess -a -o human-traffic.html"},
+  {"instruction": "Analyze traffic during business hours", "output": "awk -F: '$2 >= 8 && $2 <= 18' access.log | goaccess -a -o business-hours.html"},
+  {"instruction": "Analyze weekend traffic only", "output": "awk 'system(\"date -d \\\"\" substr($4,2) \"\\\" +%u\") ~ /[67]/' access.log | goaccess -a -o weekend-report.html"},
+  {"instruction": "Analyze combined daily reports", "output": "for f in /var/log/nginx/access.log.*.gz; do zcat \"$f\"; done | goaccess -a -o monthly-archive.html"}
+]

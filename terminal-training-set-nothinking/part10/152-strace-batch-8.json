@@ -1,0 +1,22 @@
+[
+  {"instruction": "Trace a running daemon for debugging", "output": "strace -p $(pidof nginx) -f -o /tmp/nginx-strace.log"},
+  {"instruction": "Monitor database query from application", "output": "strace -e trace=network,sendto,recvfrom -p $(pgrep -f 'postgres|mysql|sqlite')"},
+  {"instruction": "Debug connection refused errors", "output": "strace -e trace=connect -p $(pgrep -f myapp) -o connect.log"},
+  {"instruction": "Identify slow file reads in app", "output": "strace -T -e trace=read -p $(pgrep -f myapp) 2>&1 | awk -F'[<>]' '{if($2>0.01) print}'"},
+  {"instruction": "Find missing files an app needs", "output": "strace -e trace=openat,stat -p $(pgrep -f myapp) -o missing-files.log 2>&1 & sleep 10; kill %1"},
+  {"instruction": "Debug permission denied errors", "output": "strace -e trace=openat -e status=failed -p $(pgrep -f myapp) 2>&1 | grep EACCES"},
+  {"instruction": "Trace config file loading at startup", "output": "strace -e trace=openat -f myapp 2>&1 | grep 'config\\|conf'"},
+  {"instruction": "Find library loading issues", "output": "strace -e trace=openat myapp 2>&1 | grep -E '\\.so|No such file'"},
+  {"instruction": "Debug DNS resolution timeout", "output": "strace -e trace=connect -T curl -v http://example.com 2>&1 | grep -E 'connect|time'"},
+  {"instruction": "Identify socket leaks in app", "output": "strace -e trace=socket,close -p $(pgrep -f myapp) -o sockets.log 2>&1 & sleep 30; kill %1; cat sockets.log | awk '{a[$1]++} END{for(k in a) print a[k],k}'"},
+  {"instruction": "Debug slow shutdown sequence", "output": "strace -f -T -o /tmp/shutdown.log kill -TERM $(pgrep -f myapp)"},
+  {"instruction": "Monitor lock file creation", "output": "strace -e trace=openat,flock -p $(pgrep -f myapp) 2>&1 | grep -E 'lock|\\.pid|\\.lock'"},
+  {"instruction": "Track unlink (file deletion) operations", "output": "strace -e trace=unlink,unlinkat -p $(pgrep -f myapp) 2>&1"},
+  {"instruction": "Debug cron job execution", "output": "strace -f -e trace=execve,clone -o /tmp/cron-strace.log cron"},
+  {"instruction": "Monitor log file writes from app", "output": "strace -e trace=write,writev -p $(pgrep -f myapp) -o /tmp/app-writes.log"},
+  {"instruction": "Debug race condition with timing", "output": "strace -r -f -o /tmp/race-timing.log myapp"},
+  {"instruction": "Find mmap churn in application", "output": "strace -e trace=mmap,munmap -c myapp"},
+  {"instruction": "Identify file descriptors left open", "output": "strace -e trace=openat,close -f -o /tmp/fd-trace.log myapp; awk '/openat/ {o++} /close/ {c++} END {print \"opens:\",o,\"closes:\",c}' /tmp/fd-trace.log"},
+  {"instruction": "Debug docker container entrypoint", "output": "strace -f -e trace=execve -o /tmp/docker-strace.log docker run alpine echo hello"},
+  {"instruction": "Monitor systemd unit startup", "output": "strace -f -e trace=execve,openat -o /tmp/unit-trace.log systemctl start myapp.service"}
+]

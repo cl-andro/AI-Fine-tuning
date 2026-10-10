@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Set ulimit core file size via limit.conf and apply",
+    "output": "<think>\nWe're being asked to set ulimit core file size via limit.conf and apply.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho '* soft core 0' >> /etc/security/limits.conf && sysctl -p"
+  },
+  {
+    "instruction": "Configure ulimit via pam_limits in sshd session",
+    "output": "<think>\nSo we need to configure ulimit via pam_limits in sshd session.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'session required pam_limits.so' >> /etc/pam.d/sshd"
+  },
+  {
+    "instruction": "Set ulimit for systemd user manager",
+    "output": "<think>\nThis is asking us to set ulimit for systemd user manager.\nFor this, systemctl is the right tool — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl --user set-property user@uid.service LimitNOFILE=16384"
+  },
+  {
+    "instruction": "Check systemd user manager limits",
+    "output": "<think>\nSo the request is to check systemd user manager limits.\nI'd use systemctl for this — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show user@$(id -u).service -p LimitNOFILE"
+  },
+  {
+    "instruction": "Set system-wide nofile max by sysctl",
+    "output": "<think>\nSo the request is to set system-wide nofile max by sysctl.\nLet me think about the best approach.\nBest tool here is sysctl — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsysctl fs.file-max=200000"
+  },
+  {
+    "instruction": "Set system-wide max PID by sysctl",
+    "output": "<think>\nNeed to set system-wide max PID by sysctl.\nLet me think about the best approach.\nThe tool for this job is sysctl — kernel parameter tuning.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsysctl kernel.pid_max=65536"
+  },
+  {
+    "instruction": "Check NUMA node distances with numactl -H",
+    "output": "<think>\nThe goal is to check NUMA node distances with numactl -H.\nLet me consider what makes sense here.\nnumactl is what we need — numactl operations.\nOne command does the job. Simple is better.\n</think>\nnumactl -H"
+  },
+  {
+    "instruction": "Run a process with mempolicy on specific nodes",
+    "output": "<think>\nThe goal is to run a process with mempolicy on specific nodes.\nThe tool for this job is numactl — numactl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nnumactl --membind=0,1 --cpunodebind=0 command"
+  },
+  {
+    "instruction": "Run with all local allocation via numactl",
+    "output": "<think>\nThis is asking us to run with all local allocation via numactl.\nFor this, numactl is the right tool — numactl operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nnumactl --localalloc command"
+  },
+  {
+    "instruction": "Show each process NUMA memory policy",
+    "output": "<think>\nThe task requires us to show each process NUMA memory policy.\nThis calls for numastat. Numastat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nnumastat"
+  },
+  {
+    "instruction": "Show per-node memory usage",
+    "output": "<think>\nThe user wants to show per-node memory usage.\nLet me reason through this.\nBest tool here is numastat — numastat operations.\nThe -n flag means dry-run, no changes, which matters here because without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnumastat -n"
+  },
+  {
+    "instruction": "Show per-process NUMA stats",
+    "output": "<think>\nSo we need to show per-process NUMA stats.\nI'll reach for numastat here because numastat operations.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\n</think>\nnumastat -p 1234"
+  },
+  {
+    "instruction": "Set cgroup v2 to kill on memory pressure",
+    "output": "<think>\nWe're being asked to set cgroup v2 to kill on memory pressure.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 1 > /sys/fs/cgroup/mygroup/memory.oom.group"
+  },
+  {
+    "instruction": "Disable OOM killer for a cgroup v2",
+    "output": "<think>\nThis is asking us to disable OOM killer for a cgroup v2.\nFirst, let me understand what's needed here.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1 > /sys/fs/cgroup/mygroup/memory.oom.group && echo 0 > /sys/fs/cgroup/mygroup/memory.max"
+  },
+  {
+    "instruction": "Read memory.events for OOM events",
+    "output": "<think>\nWe should read memory.events for OOM events.\nLet me break this down.\nI'd use cat for this — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /sys/fs/cgroup/mygroup/memory.events"
+  },
+  {
+    "instruction": "Read cgroup v2 cpu.stat for usage",
+    "output": "<think>\nAlright, we need to read cgroup v2 cpu.stat for usage.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /sys/fs/cgroup/mygroup/cpu.stat"
+  },
+  {
+    "instruction": "Read cgroup v2 io.pressure for IO pressure",
+    "output": "<think>\nThis is asking us to read cgroup v2 io.pressure for IO pressure.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncat /sys/fs/cgroup/mygroup/io.pressure"
+  },
+  {
+    "instruction": "Set cgroup v2 memory.swap.high to limit swap usage",
+    "output": "<think>\nSo the request is to set cgroup v2 memory.swap.high to limit swap usage.\nLet me consider what makes sense here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 100M > /sys/fs/cgroup/mygroup/memory.swap.high"
+  },
+  {
+    "instruction": "Set cgroup v2 memory.swap.max to cap swap",
+    "output": "<think>\nSo we need to set cgroup v2 memory.swap.max to cap swap.\nLet me reason through this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 200M > /sys/fs/cgroup/mygroup/memory.swap.max"
+  },
+  {
+    "instruction": "Create nested cgroup within a cgroup",
+    "output": "<think>\nSo we need to create nested cgroup within a cgroup.\nLet me reason through this.\nBest tool here is mkdir — directory creation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nmkdir /sys/fs/cgroup/mygroup/child && echo '+memory' > /sys/fs/cgroup/mygroup/cgroup.subtree_control"
+  },
+  {
+    "instruction": "Set child cgroup memory.max",
+    "output": "<think>\nThe goal is to set child cgroup memory.max.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 256M > /sys/fs/cgroup/mygroup/child/memory.max"
+  },
+  {
+    "instruction": "Use systemd resource control via drop-in",
+    "output": "<think>\nAlright, we need to use systemd resource control via drop-in.\nFirst, let me understand what's needed here.\nThe tool for this job is mkdir — directory creation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nI've added -e to edit or executable — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nmkdir -p /etc/systemd/system/nginx.service.d && echo -e '[Service]\nCPUWeight=200\nMemoryMax=512M' > /etc/systemd/system/nginx.service.d/resource.conf"
+  },
+  {
+    "instruction": "Reload systemd after drop-in change",
+    "output": "<think>\nThe task requires us to reload systemd after drop-in change.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl daemon-reload"
+  },
+  {
+    "instruction": "Apply systemd resource limits without restart",
+    "output": "<think>\nNeed to apply systemd resource limits without restart.\nI'd use systemctl for this — managing systemd services.\n</think>\nsystemctl reload nginx.service"
+  },
+  {
+    "instruction": "Check cgroup v2 hierarchy tree with ps command",
+    "output": "<think>\nNeed to check cgroup v2 hierarchy tree with ps command.\nLet me think through this step by step.\nI'd use ps for this — process listing.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nps -eo pid,cgroup"
+  },
+  {
+    "instruction": "Show cgroup of a specific process",
+    "output": "<think>\nThe goal is to show cgroup of a specific process.\nI'd use cat for this — cat operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/1234/cgroup"
+  }
+]

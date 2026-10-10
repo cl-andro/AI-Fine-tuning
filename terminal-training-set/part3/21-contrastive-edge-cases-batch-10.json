@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "List hidden files matching 'config' in home",
+    "output": "<think>\nWe're being asked to list hidden files matching 'config' in home.\nI'll reach for ls here because ls operations.\nWhy -d? Directory listing, don't descend. without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nls -A -d ~/.*config* 2>/dev/null"
+  },
+  {
+    "instruction": "List only non-hidden .txt files in current dir",
+    "output": "<think>\nNeed to list only non-hidden .txt files in current dir.\nLet me consider what makes sense here.\nI'd use ls for this — ls operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nls *.txt"
+  },
+  {
+    "instruction": "Find only files at depth 1 excluding subdirectories",
+    "output": "<think>\nWe're being asked to find only files at depth 1 excluding subdirectories.\nLet me break this down.\nFor this, find is the right tool — file searching.\nI'm using -maxdepth for limit directory descent depth — standard practice for this kind of operation.\nI'm using -type for filter by file type — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nQuick verification after execution to be safe.\n</think>\nfind . -maxdepth 1 -type f"
+  },
+  {
+    "instruction": "Find only files at depth 2 including subdirectories",
+    "output": "<think>\nWe should find only files at depth 2 including subdirectories.\nThe tool for this job is find — file searching.\nWhy -maxdepth? Limit directory descent depth. this controls how the output is formatted.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind . -maxdepth 2 -type f"
+  },
+  {
+    "instruction": "Copy all hidden items (non-recursive) from src to dest",
+    "output": "<think>\nWe're being asked to copy all hidden items (non-recursive) from src to dest.\nLet me reason through this.\nI'll reach for cp here because file copying.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncp src/.* dest/ 2>/dev/null"
+  },
+  {
+    "instruction": "Copy only the first-level non-hidden files",
+    "output": "<think>\nThe goal is to copy only the first-level non-hidden files.\nFor this, cp is the right tool — file copying.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\nI'll check the output to make sure it did what we expected.\n</think>\ncp src/* dest/"
+  },
+  {
+    "instruction": "Archive a project but skip .git and hidden configs",
+    "output": "<think>\nThe user wants to archive a project but skip .git and hidden configs.\nLet me consider what makes sense here.\nThe tool for this job is tar — file archiving.\nCheck that the target device has enough space before extracting large archives.\nI'll check the output to make sure it did what we expected.\n</think>\ntar --exclude='.*' -czf project.tar.gz project/"
+  },
+  {
+    "instruction": "Archive with rsync skipping hidden files using hide filter",
+    "output": "<think>\nWe're being asked to archive with rsync skipping hidden files using hide filter.\nLet me think through this step by step.\nBest tool here is rsync — efficient file synchronization.\nI've added -a to AND operator in find — needed for this specific use case.\n</think>\nrsync -a --filter='hide .*' project/ user@host:~/"
+  },
+  {
+    "instruction": "Rsync including hidden files with archive mode",
+    "output": "<think>\nAlright, we need to rsync including hidden files with archive mode.\nLet me break this down.\nrsync is what we need — efficient file synchronization.\nWhy -a? AND operator in find. this controls how the output is formatted.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -a project/ user@host:~/"
+  },
+  {
+    "instruction": "Rsync archive mode but without preserving dotfiles specifically",
+    "output": "<think>\nThis is asking us to rsync archive mode but without preserving dotfiles specifically.\nHere's how I'd approach this.\nrsync is what we need — efficient file synchronization.\nThe -a flag means AND operator in find, which matters here because needed for this specific use case.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -a --no-owner --no-group project/ user@host:~/"
+  },
+  {
+    "instruction": "Grep for 'error' recursively skipping hidden dirs",
+    "output": "<think>\nSo the request is to grep for 'error' recursively skipping hidden dirs.\nFor this, grep is the right tool — pattern searching.\nWhy -r? Recursive operation (descend into subdirectories). this controls how the output is formatted.\n</think>\ngrep -r 'error' --exclude-dir='.*' /var/log"
+  },
+  {
+    "instruction": "Show disk usage of only hidden dirs in home",
+    "output": "<think>\nSo the request is to show disk usage of only hidden dirs in home.\nI'll reach for du here because disk usage analysis.\nA single command handles this cleanly — no need to overcomplicate it.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nI'll check the output to make sure it did what we expected.\n</think>\ndu -sh ~/.* 2>/dev/null"
+  },
+  {
+    "instruction": "Show disk usage of only non-hidden dirs in home",
+    "output": "<think>\nWe're being asked to show disk usage of only non-hidden dirs in home.\nLet me consider what makes sense here.\nI'd use du for this — disk usage analysis.\nOne command does the job. Simple is better.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\n</think>\ndu -sh */"
+  },
+  {
+    "instruction": "Diff two recursive dirs showing only differing filenames",
+    "output": "<think>\nThe task requires us to diff two recursive dirs showing only differing filenames.\nLet me break this down.\nThis calls for diff. Diff operations.\nQuick verification after execution to be safe.\n</think>\ndiff -rq src/ dest/"
+  },
+  {
+    "instruction": "Apply a patch as a dry run",
+    "output": "<think>\nThe user wants to apply a patch as a dry run.\nLet me think through this step by step.\nThe tool for this job is patch — patch operations.\nI've added --dry-run to simulate without making changes — standard practice for this kind of operation.\nAfter running, I'll confirm the result looks right.\n</think>\npatch --dry-run -p1 < fix.patch"
+  },
+  {
+    "instruction": "Pipe ls -la into awk and print just the filenames",
+    "output": "<think>\nWe should pipe ls -la into awk and print just the filenames.\nLet me reason through this.\nThe tool for this job is ls — ls operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nls -la | awk '{print $NF}'"
+  },
+  {
+    "instruction": "Pipe ls -la into awk and print just the file sizes",
+    "output": "<think>\nSo the request is to pipe ls -la into awk and print just the file sizes.\nHere's how I'd approach this.\nls is what we need — ls operations.\nWhy -la? Detailed listing including hidden files. without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\nls -la | awk '{print $5}'"
+  },
+  {
+    "instruction": "Replace the word 'temp' with 'permanent' globally in config",
+    "output": "<think>\nNeed to replace the word 'temp' with 'permanent' globally in config.\nI'll reach for sed here because text stream editing.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nsed -i 's/temp/permanent/g' config.ini"
+  },
+  {
+    "instruction": "Delete lines containing 'DEBUG' from log file",
+    "output": "<think>\nSo the request is to delete lines containing 'DEBUG' from log file.\nFor this, sed is the right tool — text stream editing.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nsed -i '/DEBUG/d' app.log"
+  },
+  {
+    "instruction": "Convert spaces to newlines in words.txt",
+    "output": "<think>\nWe should convert spaces to newlines in words.txt.\nLet me consider what makes sense here.\nI'd use tr for this — tr operations.\n</think>\ntr ' ' '\\n' < words.txt"
+  },
+  {
+    "instruction": "Reverse each line of text in file.txt",
+    "output": "<think>\nThe task requires us to reverse each line of text in file.txt.\nrev is what we need — rev operations.\n</think>\nrev file.txt"
+  },
+  {
+    "instruction": "Wrap lines in longlines.txt at 40 characters",
+    "output": "<think>\nNeed to wrap lines in longlines.txt at 40 characters.\nLet me break this down.\nI'd use fold for this — fold operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nfold -w 40 longlines.txt"
+  },
+  {
+    "instruction": "Format paragraphs in readme.txt with 72 character width",
+    "output": "<think>\nWe're being asked to format paragraphs in readme.txt with 72 character width.\nLet me consider what makes sense here.\nFor this, fmt is the right tool — fmt operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nfmt -w 72 readme.txt"
+  },
+  {
+    "instruction": "Print file.txt formatted as pages with 60-line headers",
+    "output": "<think>\nAlright, we need to print file.txt formatted as pages with 60-line headers.\npr is what we need — pr operations.\nWhy -l? Long format with details. standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\npr -l 60 file.txt"
+  },
+  {
+    "instruction": "Print file.txt in double-column format",
+    "output": "<think>\nSo we need to print file.txt in double-column format.\nLet me break this down.\nI'd use pr for this — pr operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\npr -2 file.txt"
+  },
+  {
+    "instruction": "Print just the first field from passwd file",
+    "output": "<think>\nThis is asking us to print just the first field from passwd file.\nI'd use awk for this — text processing and reporting.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nawk -F: '{print $1}' /etc/passwd"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show all filesystems and their mount options",
+    "output": "<think>\nThe task requires us to show all filesystems and their mount options.\nLet me think about the best approach.\nThe tool for this job is mount — filesystem mounting.\nThe -v flag handles verbose output. Important because needed for this specific use case.\nWhy -t? Sort by modification time. needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmount -v | column -t"
+  },
+  {
+    "instruction": "Check if a filesystem is mounted read-only",
+    "output": "<think>\nThe goal is to check if a filesystem is mounted read-only.\nThe tool for this job is mount — filesystem mounting.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\nmount | grep ro | head -5"
+  },
+  {
+    "instruction": "Show filesystem creation time",
+    "output": "<think>\nThe goal is to show filesystem creation time.\nFirst, let me understand what's needed here.\nFor this, tune2fs is the right tool — tune2fs operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ntune2fs -l /dev/sda1 | grep 'Filesystem created'"
+  },
+  {
+    "instruction": "Show the UUID of root filesystem",
+    "output": "<think>\nThe user wants to show the UUID of root filesystem.\nLet me break this down.\nFor this, blkid is the right tool — block device attribute lookup.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\nblkid /dev/sda1 | grep -o 'UUID=\"[^\"]*\"'"
+  },
+  {
+    "instruction": "Check filesystem for bad blocks (read-only)",
+    "output": "<think>\nWe should check filesystem for bad blocks (read-only).\nLet me think about the best approach.\nBest tool here is badblocks — badblocks operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbadblocks -sv /dev/sda1"
+  },
+  {
+    "instruction": "Show the last time filesystem was checked",
+    "output": "<think>\nSo the request is to show the last time filesystem was checked.\nLet me reason through this.\nThe tool for this job is tune2fs — tune2fs operations.\nThe -l flag means long format with details, which matters here because this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ntune2fs -l /dev/sda1 | grep 'Last checked'"
+  },
+  {
+    "instruction": "Show filesystem features",
+    "output": "<think>\nThis is asking us to show filesystem features.\nThe tool for this job is tune2fs — tune2fs operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntune2fs -l /dev/sda1 | grep 'Filesystem features'"
+  },
+  {
+    "instruction": "Show reserved block count for root",
+    "output": "<think>\nSo we need to show reserved block count for root.\nLet me reason through this.\nI'll reach for tune2fs here because tune2fs operations.\nI'm using -l for long format with details — important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntune2fs -l /dev/sda1 | grep 'Reserved block'"
+  },
+  {
+    "instruction": "Change reserved block percentage to 2%",
+    "output": "<think>\nThe task requires us to change reserved block percentage to 2%.\nLet me consider what makes sense here.\nFor this, tune2fs is the right tool — tune2fs operations.\nOne command does the job. Simple is better.\n</think>\ntune2fs -m 2 /dev/sda1"
+  },
+  {
+    "instruction": "Enable filesystem writeback mode",
+    "output": "<think>\nNeed to enable filesystem writeback mode.\nLet me think through this step by step.\nBest tool here is mount — filesystem mounting.\nQuick verification after execution to be safe.\n</think>\nmount -o remount,data=writeback /dev/sda1"
+  },
+  {
+    "instruction": "Show LVM volume groups",
+    "output": "<think>\nNeed to show LVM volume groups.\nLet me consider what makes sense here.\nI'd use vgdisplay for this — vgdisplay operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nvgdisplay"
+  },
+  {
+    "instruction": "Show LVM logical volumes",
+    "output": "<think>\nThe user wants to show LVM logical volumes.\nBest tool here is lvdisplay — lvdisplay operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nlvdisplay"
+  },
+  {
+    "instruction": "Show LVM physical volumes",
+    "output": "<think>\nThe task requires us to show LVM physical volumes.\nFor this, pvdisplay is the right tool — pvdisplay operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npvdisplay"
+  },
+  {
+    "instruction": "Create a logical volume",
+    "output": "<think>\nThe task requires us to create a logical volume.\nLet me consider what makes sense here.\nI'd use lvcreate for this — LVM volume creation.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nlvcreate -L 10G -n mylv vg0"
+  },
+  {
+    "instruction": "Extend a logical volume",
+    "output": "<think>\nThis is asking us to extend a logical volume.\nLet me break this down.\nI'd use lvextend for this — lvextend operations.\nI'm using -L for follow symlinks when processing — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nlvextend -L +5G /dev/vg0/mylv && resize2fs /dev/vg0/mylv"
+  },
+  {
+    "instruction": "Reduce a logical volume",
+    "output": "<think>\nSo we need to reduce a logical volume.\nLet me break this down.\nThe tool for this job is resize2fs — resize2fs operations.\nI'm using -L for follow symlinks when processing — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nresize2fs /dev/vg0/mylv 5G && lvreduce -L 5G /dev/vg0/mylv"
+  },
+  {
+    "instruction": "Show RAID array status",
+    "output": "<think>\nSo we need to show RAID array status.\nThis calls for cat. Cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncat /proc/mdstat"
+  },
+  {
+    "instruction": "Show detailed RAID info",
+    "output": "<think>\nAlright, we need to show detailed RAID info.\nLet me reason through this.\nmdadm is what we need — software RAID management.\nOne command does the job. Simple is better.\n</think>\nmdadm --detail /dev/md0"
+  },
+  {
+    "instruction": "Check ZFS pool status",
+    "output": "<think>\nThe goal is to check ZFS pool status.\nThe tool for this job is zpool — zpool operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nzpool status 2>/dev/null || echo ZFS not loaded"
+  },
+  {
+    "instruction": "Check ZFS filesystem usage",
+    "output": "<think>\nThis is asking us to check ZFS filesystem usage.\nLet me think through this step by step.\nFor this, zfs is the right tool — ZFS storage management.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nzfs list 2>/dev/null || echo ZFS not loaded"
+  },
+  {
+    "instruction": "Show Btrfs filesystem usage",
+    "output": "<think>\nSo we need to show Btrfs filesystem usage.\nThis calls for btrfs. Btrfs filesystem management.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nbtrfs filesystem usage / 2>/dev/null || echo not btrfs"
+  },
+  {
+    "instruction": "Show Btrfs device info",
+    "output": "<think>\nWe're being asked to show Btrfs device info.\nI'd use btrfs for this — Btrfs filesystem management.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nbtrfs device show / 2>/dev/null || echo not btrfs"
+  },
+  {
+    "instruction": "Defragment a Btrfs filesystem",
+    "output": "<think>\nWe should defragment a Btrfs filesystem.\nbtrfs is what we need — Btrfs filesystem management.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nbtrfs filesystem defragment -r / 2>/dev/null || echo not btrfs"
+  },
+  {
+    "instruction": "Check F2FS status",
+    "output": "<think>\nThe goal is to check F2FS status.\nI'd use cat for this — cat operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/fs/f2fs/*/ckpt 2>/dev/null || echo F2FS not in use"
+  },
+  {
+    "instruction": "Show NFS mount stats",
+    "output": "<think>\nThe user wants to show NFS mount stats.\nI'd use nfsstat for this — nfsstat operations.\nLet me verify afterward that it worked correctly.\n</think>\nnfsstat -s"
+  }
+]

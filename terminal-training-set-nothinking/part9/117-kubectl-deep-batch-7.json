@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a certificate signing request",
+    "output": "kubectl create csr my-csr --cert=user.csr --key=user.key"
+  },
+  {
+    "instruction": "Get all container images used sorted unique",
+    "output": "kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{\"\\n\"}{end}' | sort -u"
+  },
+  {
+    "instruction": "Get nodes sorted by internal IP address",
+    "output": "kubectl get nodes -o wide --sort-by='.status.addresses[0].address'"
+  },
+  {
+    "instruction": "Get all nodes in YAML format",
+    "output": "kubectl get nodes -o yaml"
+  },
+  {
+    "instruction": "Check Istio injection label on a namespace",
+    "output": "kubectl get ns default -o yaml | grep istio-injection"
+  },
+  {
+    "instruction": "Create a namespace and run a pod inside it",
+    "output": "kubectl create ns testing && kubectl run test-pod --image=nginx --namespace=testing"
+  },
+  {
+    "instruction": "Delete a namespace and all its resources",
+    "output": "kubectl delete ns testing"
+  },
+  {
+    "instruction": "Get all pods with a specific annotation",
+    "output": "kubectl get pods -A -o json | jq '.items[] | select(.metadata.annotations | has(\"sidecar.istio.io/inject\")) | .metadata.name'"
+  },
+  {
+    "instruction": "Run a command on all pods matching a label",
+    "output": "kubectl get pods -l app=web-app -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}{end}' | xargs -I {} kubectl exec {} -- hostname"
+  },
+  {
+    "instruction": "Add an existing deployment to a kustomization",
+    "output": "kustomize edit add resource deployment.yaml"
+  },
+  {
+    "instruction": "Set an environment variable in a deployment",
+    "output": "kubectl set env deployment/web-app NODE_ENV=production"
+  },
+  {
+    "instruction": "Set a service account on a deployment",
+    "output": "kubectl set serviceaccount deployment/web-app my-sa"
+  },
+  {
+    "instruction": "Update a service selector",
+    "output": "kubectl patch svc web-app -p '{\"spec\":{\"selector\":{\"app\":\"web-app\"}}}'"
+  },
+  {
+    "instruction": "Get the raw logs from a node's kubelet",
+    "output": "kubectl logs -n kube-system kubelet-$(hostname) || journalctl -u kubelet -n 100"
+  },
+  {
+    "instruction": "Check if a specific pod exists",
+    "output": "kubectl get pod web-app-5d8f9c -o name"
+  },
+  {
+    "instruction": "List all container images by count",
+    "output": "kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{\"\\n\"}{end}' | sort | uniq -c | sort -rn"
+  },
+  {
+    "instruction": "Get the age of all pods",
+    "output": "kubectl get pods --sort-by='.metadata.creationTimestamp'"
+  },
+  {
+    "instruction": "List all container statuses with restart counts",
+    "output": "kubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{\"\\t\"}{.status.containerStatuses[0].restartCount}{\"\\t\"}{.status.containerStatuses[0].ready}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Create a pod with a specific node selector",
+    "output": "kubectl run nginx --image=nginx --overrides='{\"spec\":{\"nodeSelector\":{\"disktype\":\"ssd\"}}}'"
+  },
+  {
+    "instruction": "Add a node selector to an existing deployment",
+    "output": "kubectl patch deploy web-app -p '{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"disktype\":\"ssd\"}}}}}'"
+  },
+  {
+    "instruction": "Check the taints on all nodes",
+    "output": "kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{\"\\t\"}{.spec.taints[*].key}{\":\"}{.spec.taints[*].value}{\":\"}{.spec.taints[*].effect}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Get the number of pods per node",
+    "output": "kubectl get pods --all-namespaces -o wide | awk '{print $8}' | sort | uniq -c"
+  }
+]

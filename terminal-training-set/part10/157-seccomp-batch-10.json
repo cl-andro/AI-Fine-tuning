@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "List seccomp actions available on system",
+    "output": "<think>\nThis is asking us to list seccomp actions available on system.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run container with seccomp label",
+    "output": "<think>\nThe goal is to run container with seccomp label.\nLet me think through this step by step.\nThis calls for docker. Container management.\nNo need for complex pipelines here — one command is sufficient.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run --security-opt seccomp=profiles/allow.json nginx"
+  },
+  {
+    "instruction": "Get seccomp mode of a process",
+    "output": "<think>\nThe user wants to get seccomp mode of a process.\nLet me think through this step by step.\nBest tool here is cat — cat operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/$(pgrep -f myapp)/status | grep Seccomp"
+  },
+  {
+    "instruction": "View seccomp filter details with dump",
+    "output": "<think>\nThe user wants to view seccomp filter details with dump.\nHere's how I'd approach this.\nBest tool here is seccomp-tools — seccomp-tools operations.\nThe -f flag handles force, suppress errors. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nseccomp-tools dump $(pgrep -f nginx)"
+  },
+  {
+    "instruction": "Run container with no seccomp filter",
+    "output": "<think>\nThe user wants to run container with no seccomp filter.\nFor this, docker is the right tool — container management.\nNo need for complex pipelines here — one command is sufficient.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run --security-opt seccomp=unconfined alpine"
+  },
+  {
+    "instruction": "Run strace with only file syscalls",
+    "output": "<think>\nThe task requires us to run strace with only file syscalls.\nLet me break this down.\nThe tool for this job is strace — system call tracing.\nI've added -e to edit or executable — needed for this specific use case.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -e trace=file -f ./myapp"
+  },
+  {
+    "instruction": "Install seccomp-tools on Debian",
+    "output": "<think>\nThe task requires us to install seccomp-tools on Debian.\nLet me think through this step by step.\nThis calls for apt-get. Apt-get operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo apt-get install -y seccomp-tools"
+  },
+  {
+    "instruction": "Install latest strace on Debian",
+    "output": "<think>\nThe goal is to install latest strace on Debian.\nBest tool here is apt-get — apt-get operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt-get install -y strace"
+  },
+  {
+    "instruction": "Extract syscall numbers from strace raw mode",
+    "output": "<think>\nThe user wants to extract syscall numbers from strace raw mode.\nI'd use strace for this — system call tracing.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e raw=all -f -o /tmp/raw.log ./myapp"
+  },
+  {
+    "instruction": "Run a container without seccomp",
+    "output": "<think>\nThe task requires us to run a container without seccomp.\nThis calls for docker. Container management.\nNo need for complex pipelines here — one command is sufficient.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --security-opt seccomp=unconfined nginx"
+  },
+  {
+    "instruction": "Dump nginx seccomp filter",
+    "output": "<think>\nThe user wants to dump nginx seccomp filter.\nLet me break this down.\nThe tool for this job is seccomp-tools — seccomp-tools operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nseccomp-tools dump $(pidof nginx)"
+  },
+  {
+    "instruction": "Check PID seccomp status",
+    "output": "<think>\nThis is asking us to check PID seccomp status.\nLet me break this down.\nFor this, grep is the right tool — pattern searching.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ngrep Seccomp /proc/1/status"
+  },
+  {
+    "instruction": "Generate JSON seccomp from syscall list",
+    "output": "<think>\nAlright, we need to generate JSON seccomp from syscall list.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '{\"defaultAction\":\"SCMP_ACT_ALLOW\",\"architectures\":[\"SCMP_ARCH_X86_64\"],\"syscalls\":[{\"names\":[\"write\",\"read\"],\"action\":\"SCMP_ACT_ALLOW\"}]}' > myprofile.json"
+  },
+  {
+    "instruction": "Show the default Docker seccomp profile",
+    "output": "<think>\nWe're being asked to show the default Docker seccomp profile.\nHere's how I'd approach this.\ncat is what we need — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Count allowed syscalls in Docker profile",
+    "output": "<think>\nSo we need to count allowed syscalls in Docker profile.\nI'd use jq for this — jq operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\njq '[.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]] | length' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Trace signal handling syscalls",
+    "output": "<think>\nThe goal is to trace signal handling syscalls.\nLet me think through this step by step.\nThis calls for strace. System call tracing.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nstrace -e trace=signal ./myapp"
+  },
+  {
+    "instruction": "List syscalls blocked by Docker seccomp profile",
+    "output": "<think>\nSo the request is to list syscalls blocked by Docker seccomp profile.\nLet me think through this step by step.\nI'd use jq for this — jq operations.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ERRNO\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Trace all children processes",
+    "output": "<think>\nThe user wants to trace all children processes.\nBest tool here is strace — system call tracing.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -f -e trace=all -o /tmp/child.log ./myapp"
+  },
+  {
+    "instruction": "Dump seccomp filters for a running process",
+    "output": "<think>\nWe're being asked to dump seccomp filters for a running process.\nLet me break this down.\nFor this, seccomp-tools is the right tool — seccomp-tools operations.\nThe -f flag means force, suppress errors, which matters here because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nseccomp-tools dump $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "View Docker seccomp in JSON format",
+    "output": "<think>\nAlright, we need to view Docker seccomp in JSON format.\nFor this, python3 is the right tool — Python interpreter for scripting and automation.\n</think>\npython3 -m json.tool /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Use seccomp-tools to inspect a container",
+    "output": "<think>\nWe should use seccomp-tools to inspect a container.\nThis calls for seccomp-tools. Seccomp-tools operations.\nQuick verification after execution to be safe.\n</think>\nseccomp-tools dump $(docker inspect --format '{{.State.Pid}}' container_name)"
+  },
+  {
+    "instruction": "Run strace on PID",
+    "output": "<think>\nSo the request is to run strace on PID.\nLet me think about the best approach.\nFor this, strace is the right tool — system call tracing.\nWhy -p? Create parent directories as needed. without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -p $(pgrep -f myapp) -o /tmp/trace.out"
+  },
+  {
+    "instruction": "Inspect a process for seccomp mode",
+    "output": "<think>\nNeed to inspect a process for seccomp mode.\nBest tool here is cat — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/$(pgrep -f myapp)/status | grep -i seccomp"
+  },
+  {
+    "instruction": "Use BPF compiler for seccomp",
+    "output": "<think>\nSo we need to use BPF compiler for seccomp.\nLet me reason through this.\nscmp_bpf_dispatcher is what we need — scmp_bpf_dispatcher operations.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nscmp_bpf_dispatcher -p $(pgrep myapp)"
+  }
+]

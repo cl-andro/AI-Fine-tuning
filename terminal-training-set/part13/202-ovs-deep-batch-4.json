@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to set OVS bridge controller connection mode",
+    "output": "<think>\nWe're being asked to set OVS bridge controller connection mode.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl set-controller br0 tcp:192.168.1.10:6653 tcp:192.168.1.11:6653"
+  },
+  {
+    "instruction": "How to set OVS controller connection with SSL",
+    "output": "<think>\nAlright, we need to set OVS controller connection with SSL.\novs-vsctl is what we need — ovs-vsctl operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl set-controller br0 ssl:192.168.1.10:6653"
+  },
+  {
+    "instruction": "How to configure OVS SSL certificates",
+    "output": "<think>\nSo we need to configure OVS SSL certificates.\nLet me think about the best approach.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\novs-vsctl set-ssl /etc/openvswitch/controller-privkey.pem /etc/openvswitch/controller-cert.pem /etc/openvswitch/cacert.pem"
+  },
+  {
+    "instruction": "How to check OVS SSL configuration",
+    "output": "<think>\nThis is asking us to check OVS SSL configuration.\nLet me think through this step by step.\nFor this, ovs-vsctl is the right tool — ovs-vsctl operations.\n</think>\novs-vsctl get-ssl"
+  },
+  {
+    "instruction": "How to add a bond port in OVS",
+    "output": "<think>\nAlright, we need to add a bond port in OVS.\nLet me consider what makes sense here.\nFor this, ovs-vsctl is the right tool — ovs-vsctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl add-bond br0 bond0 eth0 eth1 -- set port bond0 bond_mode=balance-tcp"
+  },
+  {
+    "instruction": "How to set bond mode in OVS",
+    "output": "<think>\nAlright, we need to set bond mode in OVS.\novs-vsctl is what we need — ovs-vsctl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\novs-vsctl set port bond0 bond_mode=active-backup"
+  },
+  {
+    "instruction": "How to set LACP on OVS bond",
+    "output": "<think>\nWe should set LACP on OVS bond.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nOne command does the job. Simple is better.\n</think>\novs-vsctl set port bond0 lacp=active"
+  },
+  {
+    "instruction": "How to set OVS bond LACP time",
+    "output": "<think>\nSo we need to set OVS bond LACP time.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\novs-vsctl set port bond0 other_config:lacp-time=fast"
+  },
+  {
+    "instruction": "How to set OVS interface QoS",
+    "output": "<think>\nWe should set OVS interface QoS.\nHere's how I'd approach this.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nQuick verification after execution to be safe.\n</think>\novs-vsctl set interface eth0 ingress_policing_rate=10000 ingress_policing_burst=1000"
+  },
+  {
+    "instruction": "How to check OVS QoS stats on a port",
+    "output": "<think>\nThis is asking us to check OVS QoS stats on a port.\nLet me think through this step by step.\novs-vsctl is what we need — ovs-vsctl operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\novs-vsctl list port eth0 | grep qos"
+  },
+  {
+    "instruction": "How to dump OVS statistics for table",
+    "output": "<think>\nNeed to dump OVS statistics for table.\nI'd use ovs-ofctl for this — ovs-ofctl operations.\nOne command does the job. Simple is better.\n</think>\novs-ofctl dump-table-stats br0"
+  },
+  {
+    "instruction": "How to dump OVS port statistics",
+    "output": "<think>\nWe're being asked to dump OVS port statistics.\nFor this, ovs-ofctl is the right tool — ovs-ofctl operations.\nOne command does the job. Simple is better.\n</think>\novs-ofctl dump-ports br0"
+  },
+  {
+    "instruction": "How to dump OVS queue stats",
+    "output": "<think>\nThe user wants to dump OVS queue stats.\nFor this, ovs-ofctl is the right tool — ovs-ofctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\novs-ofctl queue-stats br0"
+  },
+  {
+    "instruction": "How to add OpenFlow table with goto-table",
+    "output": "<think>\nThe goal is to add OpenFlow table with goto-table.\nLet me break this down.\nI'd use ovs-ofctl for this — ovs-ofctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\novs-ofctl add-flow br0 table=0,priority=100,action=goto_table:1"
+  },
+  {
+    "instruction": "How to add OpenFlow table miss flow",
+    "output": "<think>\nNeed to add OpenFlow table miss flow.\nLet me reason through this.\nThe tool for this job is ovs-ofctl — ovs-ofctl operations.\n</think>\novs-ofctl add-flow br0 priority=1,action=controller"
+  },
+  {
+    "instruction": "How to set OpenFlow table miss-send-len",
+    "output": "<think>\nWe should set OpenFlow table miss-send-len.\novs-vsctl is what we need — ovs-vsctl operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl set bridge br0 other_config:flow-restore-wait=false"
+  },
+  {
+    "instruction": "How to enable OVS CT (connection tracking)",
+    "output": "<think>\nWe should enable OVS CT (connection tracking).\nThis calls for ovs-ofctl. Ovs-ofctl operations.\n</think>\novs-ofctl add-flow br0 priority=100,ct_state=-trk,ip,action=ct(table=0)"
+  },
+  {
+    "instruction": "How to add a CT zone flow in OVS",
+    "output": "<think>\nThe task requires us to add a CT zone flow in OVS.\nLet me consider what makes sense here.\nFor this, ovs-ofctl is the right tool — ovs-ofctl operations.\nOne command does the job. Simple is better.\n</think>\novs-ofctl add-flow br0 priority=100,ct_state=+trk+est,ip,action=output:2"
+  },
+  {
+    "instruction": "How to add CT with NAT in OVS",
+    "output": "<think>\nThe goal is to add CT with NAT in OVS.\nBest tool here is ovs-ofctl — ovs-ofctl operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\novs-ofctl add-flow br0 priority=100,ip,in_port=1,action=ct(commit,nat(dst=10.0.0.2:8080),table=0)"
+  },
+  {
+    "instruction": "How to add a flow that matches on conntrack mark",
+    "output": "<think>\nThe task requires us to add a flow that matches on conntrack mark.\nFor this, ovs-ofctl is the right tool — ovs-ofctl operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-ofctl add-flow br0 priority=100,ct_mark=1,action=output:2"
+  },
+  {
+    "instruction": "How to add a flow that matches on conntrack label",
+    "output": "<think>\nWe should add a flow that matches on conntrack label.\nBest tool here is ovs-ofctl — ovs-ofctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\novs-ofctl add-flow br0 priority=100,ct_label=1,action=output:2"
+  },
+  {
+    "instruction": "How to add a MAC rewriting flow in OVS",
+    "output": "<think>\nThe goal is to add a MAC rewriting flow in OVS.\nI'll reach for ovs-ofctl here because ovs-ofctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\novs-ofctl add-flow br0 priority=100,ip,in_port=1,action=mod_dl_src:00:11:22:33:44:55,mod_dl_dst:66:77:88:99:aa:bb,output:2"
+  },
+  {
+    "instruction": "How to add a flow with combined match TCP flags",
+    "output": "<think>\nWe're being asked to add a flow with combined match TCP flags.\nThis calls for ovs-ofctl. Ovs-ofctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\novs-ofctl add-flow br0 priority=100,tcp,tcp_flags=+syn,action=output:2"
+  },
+  {
+    "instruction": "How to add a flow that matches on TCP flags RST",
+    "output": "<think>\nThe task requires us to add a flow that matches on TCP flags RST.\nFirst, let me understand what's needed here.\nI'd use ovs-ofctl for this — ovs-ofctl operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-ofctl add-flow br0 priority=100,tcp,tcp_flags=+rst,action=output:2"
+  },
+  {
+    "instruction": "How to add a flow matching on ICMP type",
+    "output": "<think>\nSo the request is to add a flow matching on ICMP type.\nLet me break this down.\nI'd use ovs-ofctl for this — ovs-ofctl operations.\n</think>\novs-ofctl add-flow br0 priority=100,icmp,icmp_type=8,action=output:2"
+  }
+]

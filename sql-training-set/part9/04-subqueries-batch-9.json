@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows where value is above the average",
+    "output": "SELECT * FROM positions WHERE value > (SELECT AVG(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRow with the highest value",
+    "output": "SELECT * FROM positions WHERE value = (SELECT MAX(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRow with the lowest value",
+    "output": "SELECT * FROM positions WHERE value = (SELECT MIN(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows where id is in a subquery from positions",
+    "output": "SELECT * FROM positions WHERE id IN (SELECT DISTINCT id FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows where id is not in the set of values 1 and 2",
+    "output": "SELECT * FROM positions WHERE id NOT IN (1, 2);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nUse EXISTS to find rows where a id appears more than once",
+    "output": "SELECT * FROM positions t WHERE EXISTS (SELECT 1 FROM positions t2 WHERE t2.id = t.id GROUP BY t2.id HAVING COUNT(*) > 1);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery in SELECT returning count per id",
+    "output": "SELECT t.*, (SELECT COUNT(*) FROM positions t2 WHERE t2.id = t.id) AS cnt FROM positions t;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows where value > the maximum of account plus 100 in subquery",
+    "output": "SELECT * FROM positions WHERE value > ((SELECT MAX(value) FROM positions) + 100);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSecond highest value using subquery",
+    "output": "SELECT MAX(value) FROM positions WHERE value < (SELECT MAX(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nCorrelated subquery: rows whose value is above the avg of their id",
+    "output": "SELECT * FROM positions t WHERE value > (SELECT AVG(value) FROM positions t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nColumns where value is greater than average in their group",
+    "output": "SELECT * FROM positions t WHERE value >= (SELECT AVG(value) FROM positions t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nDerived table returning count per id",
+    "output": "SELECT sub.id, sub.cnt FROM (SELECT id, COUNT(*) AS cnt FROM positions GROUP BY id) sub WHERE sub.cnt > 2;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery filtering rows with ANY operator",
+    "output": "SELECT * FROM positions WHERE value = ANY (SELECT value FROM positions WHERE value < 50);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery filtering rows with ALL operator",
+    "output": "SELECT * FROM positions WHERE value > ALL (SELECT AVG(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nScalar subquery for a single value",
+    "output": "SELECT (SELECT AVG(value) FROM positions) AS avg_val;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows matching set from a subquery using IN",
+    "output": "SELECT * FROM positions WHERE id IN (SELECT id FROM positions GROUP BY id HAVING COUNT(*) >= 3);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nLargest value strictly less than the global maximum",
+    "output": "SELECT value FROM positions ORDER BY value DESC LIMIT 1 OFFSET 1;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nNested subquery: top values per group based on derived ranking",
+    "output": "SELECT t.* FROM positions t WHERE t.value = (SELECT MAX(value) FROM positions t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nRows where account not present in a sub table",
+    "output": "SELECT * FROM positions WHERE account NOT IN (SELECT account FROM positions WHERE value > 90);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery used to compare against the overall total",
+    "output": "SELECT id, SUM(value) AS part FROM positions GROUP BY id HAVING SUM(value) > (SELECT AVG(value) FROM positions);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nUse a subquery to compute rolling reference count",
+    "output": "SELECT t.id, (SELECT COUNT(*) FROM positions t2 WHERE t2.id <= t.id) AS running FROM positions t;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nEXISTS correlated check to its own table values",
+    "output": "SELECT * FROM positions t WHERE EXISTS (SELECT 1 FROM positions t2 WHERE t2.id = t.id AND t2.value > t.value);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery comparing to the minimum plus a constant",
+    "output": "SELECT * FROM positions WHERE value > (SELECT MIN(value) FROM positions) + 10;"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery returning rows for a top slice group",
+    "output": "SELECT * FROM positions WHERE value IN (SELECT value FROM positions ORDER BY value DESC LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: positions(id, account, value)\nSubquery joining a derived aggregate",
+    "output": "SELECT t.* FROM positions t JOIN (SELECT id, MAX(value) mx FROM positions GROUP BY id) a ON a.id = t.id AND a.mx = t.value;"
+  }
+]

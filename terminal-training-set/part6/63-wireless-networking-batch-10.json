@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Restart networking services for wifi",
+    "output": "<think>\nThe goal is to restart networking services for wifi.\nFirst, let me understand what's needed here.\nThe tool for this job is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl restart networking"
+  },
+  {
+    "instruction": "Restart wpa_supplicant service",
+    "output": "<think>\nWe should restart wpa_supplicant service.\nFirst, let me understand what's needed here.\nI'll reach for systemctl here because managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl restart wpa_supplicant"
+  },
+  {
+    "instruction": "Renew DHCP lease on wlan0",
+    "output": "<think>\nSo we need to renew DHCP lease on wlan0.\ndhclient is what we need — dhclient operations.\n</think>\ndhclient wlan0"
+  },
+  {
+    "instruction": "Release the current DHCP lease",
+    "output": "<think>\nWe're being asked to release the current DHCP lease.\nHere's how I'd approach this.\nThe tool for this job is dhclient — dhclient operations.\nLet me verify afterward that it worked correctly.\n</think>\ndhclient -r wlan0"
+  },
+  {
+    "instruction": "Get IP address with dhcpcd",
+    "output": "<think>\nThis is asking us to get IP address with dhcpcd.\nFor this, dhcpcd is the right tool — dhcpcd operations.\nOne command does the job. Simple is better.\n</think>\ndhcpcd wlan0"
+  },
+  {
+    "instruction": "Check wlan0 link state",
+    "output": "<think>\nWe're being asked to check wlan0 link state.\nLet me think about the best approach.\nFor this, ip is the right tool — network interface configuration.\nAfter running, confirm it worked as expected before moving on.\n</think>\nip link show wlan0"
+  },
+  {
+    "instruction": "Show wlan0 routing table",
+    "output": "<think>\nThis is asking us to show wlan0 routing table.\nLet me break this down.\nI'll reach for ip here because network interface configuration.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nip route show dev wlan0"
+  },
+  {
+    "instruction": "Test connectivity via wifi",
+    "output": "<think>\nThe goal is to test connectivity via wifi.\nI'd use ping for this — network connectivity testing.\nThe -I flag means ignore case, which matters here because needed for this specific use case.\nThe -c flag handles count or create. Important because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nping -I wlan0 -c 3 8.8.8.8"
+  },
+  {
+    "instruction": "Diagnose wifi driver info",
+    "output": "<think>\nThe user wants to diagnose wifi driver info.\nLet me reason through this.\nThis calls for lspci. Lspci operations.\nI've added -i to interactive, prompt before action — standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\nlspci -k | grep -i wireless"
+  },
+  {
+    "instruction": "Check kernel wifi modules",
+    "output": "<think>\nThe task requires us to check kernel wifi modules.\nHere's how I'd approach this.\nI'd use lsmod for this — kernel module listing.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlsmod | grep -E 'iwl|ath|brcm|rtl|mac80211'"
+  },
+  {
+    "instruction": "Show wifi interface queue length",
+    "output": "<think>\nWe should show wifi interface queue length.\nLet me think about the best approach.\nBest tool here is ip — network interface configuration.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nip -s link show wlan0"
+  },
+  {
+    "instruction": "Show signal strength with watch",
+    "output": "<think>\nThe task requires us to show signal strength with watch.\nLet me think through this step by step.\nI'd use watch for this — watch operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nwatch -n 2 'iw dev wlan0 link'"
+  },
+  {
+    "instruction": "Scan for hidden SSID networks",
+    "output": "<think>\nNeed to scan for hidden SSID networks.\nThe tool for this job is iw — iw operations.\nWhy -E? Extended regex. this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\niw dev wlan0 scan | grep -E 'SSID|freq|signal'"
+  },
+  {
+    "instruction": "Get the wifi channel width",
+    "output": "<think>\nSo the request is to get the wifi channel width.\nLet me think through this step by step.\niw is what we need — iw operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\niw dev wlan0 info | grep channel"
+  },
+  {
+    "instruction": "Set a static IP on wlan0",
+    "output": "<think>\nSo the request is to set a static IP on wlan0.\nThis calls for ip. Network interface configuration.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nip addr add 192.168.1.100/24 dev wlan0"
+  },
+  {
+    "instruction": "Debug wpa_supplicant connection loop",
+    "output": "<think>\nSo we need to debug wpa_supplicant connection loop.\nFirst, let me understand what's needed here.\nI'll reach for journalctl here because checking systemd logs.\nThe -u flag handles show or sort by access time. Important because important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u wpa_supplicant -f"
+  },
+  {
+    "instruction": "Check rfkill hard block state",
+    "output": "<think>\nWe're being asked to check rfkill hard block state.\nHere's how I'd approach this.\nThe tool for this job is rfkill — rfkill operations.\nThe -E flag means extended regex, which matters here because standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nrfkill list | grep -E 'Hard|Soft'"
+  },
+  {
+    "instruction": "Check wifi regulatory constraints",
+    "output": "<think>\nThe goal is to check wifi regulatory constraints.\niw is what we need — iw operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\niw reg get"
+  },
+  {
+    "instruction": "List frequencies allowed in current reg domain",
+    "output": "<think>\nWe should list frequencies allowed in current reg domain.\nHere's how I'd approach this.\nBest tool here is iw — iw operations.\nI've added -E to extended regex — this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\niw list | grep -E 'MHz|DFS'"
+  },
+  {
+    "instruction": "Enable wifi via nmcli",
+    "output": "<think>\nWe should enable wifi via nmcli.\nLet me consider what makes sense here.\nI'd use nmcli for this — nmcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nnmcli radio wifi on"
+  },
+  {
+    "instruction": "Check network manager wifi status",
+    "output": "<think>\nSo the request is to check network manager wifi status.\nLet me think through this step by step.\nI'll reach for nmcli here because nmcli operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nnmcli dev wifi list"
+  },
+  {
+    "instruction": "Read the wireless kernel log",
+    "output": "<think>\nThe user wants to read the wireless kernel log.\nThe tool for this job is dmesg — kernel ring buffer inspection.\nThe -i flag means interactive, prompt before action, which matters here because important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ndmesg | grep -i wlan"
+  }
+]

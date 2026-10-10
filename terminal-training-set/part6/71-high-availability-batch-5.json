@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up a DRBD dual-primary configuration for GFS2",
+    "output": "<think>\nWe're being asked to set up a DRBD dual-primary configuration for GFS2.\nLet me reason through this.\nI'll reach for drbdadm here because drbdadm operations.\nThe --force flag means override warnings, which matters here because needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ndrbdadm create-md r0 && drbdadm up r0 && drbdadm primary --force r0"
+  },
+  {
+    "instruction": "Show DRBD connection state",
+    "output": "<think>\nNeed to show DRBD connection state.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /sys/block/drbd0/drbd/connection_state"
+  },
+  {
+    "instruction": "Show DRBD sync progress",
+    "output": "<think>\nAlright, we need to show DRBD sync progress.\nLet me think about the best approach.\ndrbdadm is what we need — drbdadm operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndrbdadm status r0 | grep synced"
+  },
+  {
+    "instruction": "Force DRBD resource to become primary after split-brain",
+    "output": "<think>\nThe user wants to force DRBD resource to become primary after split-brain.\ndrbdadm is what we need — drbdadm operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndrbdadm state r0"
+  },
+  {
+    "instruction": "Discard DRBD dirty bitmap and force sync",
+    "output": "<think>\nThis is asking us to discard DRBD dirty bitmap and force sync.\nLet me consider what makes sense here.\nI'll reach for drbdadm here because drbdadm operations.\n</think>\ndrbdadm -- --discard-my-data connect r0"
+  },
+  {
+    "instruction": "Resync DRBD after split-brain recovery",
+    "output": "<think>\nWe're being asked to resync DRBD after split-brain recovery.\nLet me think about the best approach.\nFor this, drbdadm is the right tool — drbdadm operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ndrbdadm disconnect r0 && drbdadm connect r0"
+  },
+  {
+    "instruction": "Attach DRBD to a backing device",
+    "output": "<think>\nWe should attach DRBD to a backing device.\nLet me consider what makes sense here.\ndrbdadm is what we need — drbdadm operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\ndrbdadm attach r0"
+  },
+  {
+    "instruction": "Detach DRBD backing device for maintenance",
+    "output": "<think>\nSo the request is to detach DRBD backing device for maintenance.\nLet me think about the best approach.\ndrbdadm is what we need — drbdadm operations.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm detach r0"
+  },
+  {
+    "instruction": "Show DRBD resource configuration",
+    "output": "<think>\nNeed to show DRBD resource configuration.\nLet me think about the best approach.\nFor this, drbdadm is the right tool — drbdadm operations.\nI'll check the output to make sure it did what we expected.\n</think>\ndrbdadm dump r0"
+  },
+  {
+    "instruction": "Show DRBD sync speed statistics",
+    "output": "<think>\nThis is asking us to show DRBD sync speed statistics.\nLet me reason through this.\nI'd use drbdadm for this — drbdadm operations.\n</think>\ndrbdadm status r0 --statistics"
+  },
+  {
+    "instruction": "Configure GFS2 in Pacemaker",
+    "output": "<think>\nWe should configure GFS2 in Pacemaker.\nBest tool here is pcs — pcs operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npcs resource create GFS2 ocf:heartbeat:Filesystem device=/dev/drbd0 directory=/mnt/gfs2 fstype=gfs2 op monitor interval=10s"
+  },
+  {
+    "instruction": "Add a clustered LVM volume for DRBD",
+    "output": "<think>\nNeed to add a clustered LVM volume for DRBD.\nHere's how I'd approach this.\nBest tool here is lvcreate — LVM volume creation.\nWhy -L? Follow symlinks when processing. needed for this specific use case.\nWhy -n? Dry-run, no changes. important to get the expected behavior.\nOne command does the job. Simple is better.\n</think>\nlvcreate -L 10G -n vol1 vg_cluster"
+  },
+  {
+    "instruction": "Prepare a DRBD device with ext4 filesystem",
+    "output": "<think>\nThe task requires us to prepare a DRBD device with ext4 filesystem.\nHere's how I'd approach this.\nI'd use mkfs.ext4 for this — mkfs.ext4 operations.\nOne command does the job. Simple is better.\n</think>\nmkfs.ext4 /dev/drbd0"
+  },
+  {
+    "instruction": "Check DRBD role and connection state",
+    "output": "<think>\nThis is asking us to check DRBD role and connection state.\nLet me think through this step by step.\nBest tool here is drbd-overview — drbd-overview operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ndrbd-overview"
+  },
+  {
+    "instruction": "Configure a floating IP with ucarp and script",
+    "output": "<think>\nWe should configure a floating IP with ucarp and script.\nLet me think through this step by step.\nFor this, ucarp is the right tool — ucarp operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nucarp --interface=eth0 --srcip=192.168.1.10 --vip=192.168.1.100 --pass=secret --up=/etc/ucarp/vip-up.sh --down=/etc/ucarp/vip-down.sh"
+  },
+  {
+    "instruction": "Configure VRRP preempt mode in Keepalived",
+    "output": "<think>\nWe should configure VRRP preempt mode in Keepalived.\nThe tool for this job is preempt — preempt operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npreempt"
+  },
+  {
+    "instruction": "Set VRRP nopreempt in Keepalived",
+    "output": "<think>\nThis is asking us to set VRRP nopreempt in Keepalived.\nFor this, nopreempt is the right tool — nopreempt operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nnopreempt"
+  },
+  {
+    "instruction": "Configure VRRP multicast group in Keepalived",
+    "output": "<think>\nNeed to configure VRRP multicast group in Keepalived.\nLet me think about the best approach.\nvrrp_mcast_group4 is what we need — vrrp_mcast_group4 operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nvrrp_mcast_group4 224.0.0.18"
+  },
+  {
+    "instruction": "Configure VRRP VIP with a specific scope in Keepalived",
+    "output": "<think>\nWe're being asked to configure VRRP VIP with a specific scope in Keepalived.\nvirtual_ipaddress_excluded is what we need — virtual_ipaddress_excluded operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nvirtual_ipaddress_excluded {\n  192.168.2.100/24 dev eth1\n}"
+  },
+  {
+    "instruction": "Track interfaces in Keepalived VRRP instance",
+    "output": "<think>\nWe should track interfaces in Keepalived VRRP instance.\nI'd use track_interface for this — track_interface operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntrack_interface {\n  eth0\n  eth1\n}"
+  },
+  {
+    "instruction": "Set Keepalived global notification email settings",
+    "output": "<think>\nSo the request is to set Keepalived global notification email settings.\nHere's how I'd approach this.\nI'd use global_defs for this — global_defs operations.\nAfter running, I'll confirm the result looks right.\n</think>\nglobal_defs {\n  notification_email {\n    admin@example.com\n  }\n  notification_email_from keepalived@example.com\n  smtp_server 127.0.0.1\n}"
+  },
+  {
+    "instruction": "Configure HAProxy as a load balancer with VRRP",
+    "output": "<think>\nNeed to configure HAProxy as a load balancer with VRRP.\nI'd use pcs for this — pcs operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\npcs resource create LB ocf:heartbeat:haproxy config=/etc/haproxy/haproxy.cfg op monitor interval=10s"
+  },
+  {
+    "instruction": "PCS resource clone for multi-node availability",
+    "output": "<think>\nSo the request is to pCS resource clone for multi-node availability.\nLet me consider what makes sense here.\nI'll reach for pcs here because pcs operations.\n</think>\npcs resource clone VirtualIP"
+  },
+  {
+    "instruction": "Create a Pacemaker alert for email notifications",
+    "output": "<think>\nThe user wants to create a Pacemaker alert for email notifications.\nLet me think about the best approach.\nBest tool here is pcs — pcs operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\npcs alert create id=email type=snmp"
+  },
+  {
+    "instruction": "Show Pacemaker cluster timeline",
+    "output": "<think>\nThe task requires us to show Pacemaker cluster timeline.\nI'd use crm_mon for this — crm_mon operations.\nOne command does the job. Simple is better.\n</think>\ncrm_mon --show-timeline"
+  }
+]

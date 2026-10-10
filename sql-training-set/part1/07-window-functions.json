@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet salary rank of each employee within their department",
+    "output": "SELECT name, department_id, salary, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) FROM employees;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet dense rank of employees by salary overall",
+    "output": "SELECT name, salary, DENSE_RANK() OVER (ORDER BY salary DESC) FROM employees;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total, order_date)\nGet row number for each order per user",
+    "output": "SELECT id, user_id, total, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) FROM orders;"
+  },
+  {
+    "instruction": "Schema: sales(id, product_id, amount, sale_date)\nGet running total of sales amount ordered by date",
+    "output": "SELECT id, sale_date, amount, SUM(amount) OVER (ORDER BY sale_date) FROM sales;"
+  },
+  {
+    "instruction": "Schema: sales(id, product_id, amount, sale_date)\nGet running total of sales per product",
+    "output": "SELECT id, product_id, sale_date, amount, SUM(amount) OVER (PARTITION BY product_id ORDER BY sale_date) FROM sales;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, hire_date)\nGet the previous salary of each employee ordered by hire date",
+    "output": "SELECT name, salary, LAG(salary, 1) OVER (ORDER BY hire_date) FROM employees;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, hire_date)\nGet the next salary of each employee ordered by hire date",
+    "output": "SELECT name, salary, LEAD(salary, 1) OVER (ORDER BY hire_date) FROM employees;"
+  },
+  {
+    "instruction": "Schema: stock_prices(id, ticker, price, trade_date)\nGet first price for each ticker",
+    "output": "SELECT ticker, price, FIRST_VALUE(price) OVER (PARTITION BY ticker ORDER BY trade_date) FROM stock_prices;"
+  },
+  {
+    "instruction": "Schema: stock_prices(id, ticker, price, trade_date)\nGet last price for each ticker",
+    "output": "SELECT ticker, price, LAST_VALUE(price) OVER (PARTITION BY ticker ORDER BY trade_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM stock_prices;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nGet moving average of last 3 scores per student",
+    "output": "SELECT student_id, exam_date, score, AVG(score) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM scores;"
+  },
+  {
+    "instruction": "Schema: events(id, event_type, event_time)\nGet time difference between consecutive events",
+    "output": "SELECT id, event_type, event_time, event_time - LAG(event_time, 1) OVER (ORDER BY event_time) AS diff FROM events;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nGet percent rank of each order total",
+    "output": "SELECT id, total, PERCENT_RANK() OVER (ORDER BY total) FROM orders;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nGet cumulative distribution of order totals",
+    "output": "SELECT id, total, CUME_DIST() OVER (ORDER BY total) FROM orders;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nDivide employees into 4 salary quartiles",
+    "output": "SELECT name, salary, NTILE(4) OVER (ORDER BY salary DESC) FROM employees;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet top 3 highest paid employees per department",
+    "output": "SELECT * FROM (SELECT name, department_id, salary, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rn FROM employees) sub WHERE rn <= 3;"
+  },
+  {
+    "instruction": "Schema: transactions(id, account_id, amount, tx_date)\nGet running balance per account",
+    "output": "SELECT id, account_id, amount, tx_date, SUM(amount) OVER (PARTITION BY account_id ORDER BY tx_date) AS balance FROM transactions;"
+  },
+  {
+    "instruction": "Schema: logs(id, level, message, created_at)\nGet count of logs in a sliding window of 1 hour",
+    "output": "SELECT id, created_at, COUNT(*) OVER (ORDER BY created_at RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW) FROM logs;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary)\nGet the difference from the average salary using window function",
+    "output": "SELECT name, salary, salary - AVG(salary) OVER () AS diff_from_avg FROM employees;"
+  },
+  {
+    "instruction": "Schema: sales(region, product, revenue)\nGet max revenue per region without grouping",
+    "output": "SELECT region, product, revenue, MAX(revenue) OVER (PARTITION BY region) AS max_revenue FROM sales;"
+  },
+  {
+    "instruction": "Schema: students(id, name, grade, gpa)\nRank students by GPA within each grade",
+    "output": "SELECT name, grade, gpa, RANK() OVER (PARTITION BY grade ORDER BY gpa DESC) FROM students;"
+  },
+  {
+    "instruction": "Schema: payments(id, customer_id, amount, payment_date)\nGet the second most recent payment per customer",
+    "output": "SELECT * FROM (SELECT id, customer_id, amount, payment_date, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY payment_date DESC) AS rn FROM payments) sub WHERE rn = 2;"
+  },
+  {
+    "instruction": "Schema: sensor_data(sensor_id, reading, ts)\nGet average reading over last 5 rows per sensor",
+    "output": "SELECT sensor_id, ts, reading, AVG(reading) OVER (PARTITION BY sensor_id ORDER BY ts ROWS BETWEEN 4 PRECEDING AND CURRENT ROW) FROM sensor_data;"
+  },
+  {
+    "instruction": "Schema: games(player_id, score, game_date)\nGet the highest score up to current row per player",
+    "output": "SELECT player_id, game_date, score, MAX(score) OVER (PARTITION BY player_id ORDER BY game_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM games;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total, order_date)\nGet the nth value of order total (3rd order) per customer",
+    "output": "SELECT customer_id, total, NTH_VALUE(total, 3) OVER (PARTITION BY customer_id ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM orders;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet ratio of each salary to department total",
+    "output": "SELECT name, department_id, salary, salary / SUM(salary) OVER (PARTITION BY department_id) AS ratio FROM employees;"
+  }
+]

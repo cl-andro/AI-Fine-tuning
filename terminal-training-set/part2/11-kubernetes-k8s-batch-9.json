@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Check pod security policies (PSP v1beta1 or PSA)",
+    "output": "<think>\nNeed to check pod security policies (PSP v1beta1 or PSA).\nThe tool for this job is kubectl — Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get psp 2>/dev/null; kubectl get ns -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.annotations.pod-security\\.kubernetes\\.io/enforce}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Apply a Pod Security Standard (baseline)",
+    "output": "<think>\nNeed to apply a Pod Security Standard (baseline).\nHere's how I'd approach this.\nI'd use kubectl for this — Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl label namespace myns pod-security.kubernetes.io/enforce=baseline"
+  },
+  {
+    "instruction": "Apply Pod Security Standard (restricted)",
+    "output": "<think>\nThis is asking us to apply Pod Security Standard (restricted).\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl label namespace myns pod-security.kubernetes.io/enforce=restricted"
+  },
+  {
+    "instruction": "Create an OPA Gatekeeper constraint template",
+    "output": "<think>\nThe user wants to create an OPA Gatekeeper constraint template.\nI'd use kubectl for this — Kubernetes cluster management.\nI'm using -f for force, suppress errors — standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/demo/basic/templates/k8srequiredlabels_template.yaml"
+  },
+  {
+    "instruction": "Create a Gatekeeper constraint",
+    "output": "<think>\nThe goal is to create a Gatekeeper constraint.\nFirst, let me understand what's needed here.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f - << 'EOF'\napiVersion: constraints.gatekeeper.sh/v1beta1\nkind: K8sRequiredLabels\nmetadata:\n  name: require-owner\nspec:\n  match:\n    kinds:\n    - apiGroups: [\"\"]\n      kinds: [\"Namespace\"]\n  parameters:\n    labels: [\"owner\"]\nEOF"
+  },
+  {
+    "instruction": "Check Kyverno policies",
+    "output": "<think>\nThe user wants to check Kyverno policies.\nHere's how I'd approach this.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get clusterpolicies.kyverno.io"
+  },
+  {
+    "instruction": "Install Kyverno",
+    "output": "<think>\nThe task requires us to install Kyverno.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl create -f https://raw.githubusercontent.com/kyverno/kyverno/main/config/install.yaml"
+  },
+  {
+    "instruction": "Create a Kyverno policy",
+    "output": "<think>\nSo we need to create a Kyverno policy.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > kyverno-policy.yaml << 'EOF'\napiVersion: kyverno.io/v1\nkind: ClusterPolicy\nmetadata:\n  name: require-labels\nspec:\n  rules:\n  - name: check-owner\n    match:\n      resources:\n        kinds:\n        - Pod\n    validate:\n      message: \"label 'owner' is required\"\n      pattern:\n        metadata:\n          labels:\n            owner: \"*?*\"\nEOF\nkubectl apply -f kyverno-policy.yaml"
+  },
+  {
+    "instruction": "Create a ConfigMap propagation policy",
+    "output": "<think>\nNeed to create a ConfigMap propagation policy.\nThis calls for cat. Cat operations.\n</think>\ncat > cm-propagate.yaml << 'EOF'\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: shared-config\n  annotations:\n    config.kubernetes.io/local-config: \"true\"\ndata:\n  key: value\nEOF\nkubectl apply -f cm-propagate.yaml"
+  },
+  {
+    "instruction": "Use kubectl tree (needs plugin)",
+    "output": "<think>\nThe task requires us to use kubectl tree (needs plugin).\nBest tool here is kubectl — Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl tree deployment myapp"
+  },
+  {
+    "instruction": "Get the API server flags",
+    "output": "<think>\nThis is asking us to get the API server flags.\nFor this, ps is the right tool — process listing.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nps aux | grep kube-apiserver | tr ' ' '\\n' | grep -- '--' | head -20"
+  },
+  {
+    "instruction": "Check controller manager flags",
+    "output": "<think>\nWe should check controller manager flags.\nBest tool here is ps — process listing.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nps aux | grep kube-controller | tr ' ' '\\n' | grep -- '--' | head -20"
+  },
+  {
+    "instruction": "Check scheduler flags",
+    "output": "<think>\nNeed to check scheduler flags.\nHere's how I'd approach this.\nBest tool here is ps — process listing.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nps aux | grep kube-scheduler | tr ' ' '\\n' | grep -- '--' | head -20"
+  },
+  {
+    "instruction": "Check kube-proxy mode",
+    "output": "<think>\nThe goal is to check kube-proxy mode.\nLet me think about the best approach.\nI'd use kubectl for this — Kubernetes cluster management.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl get configmap -n kube-system kube-proxy -o yaml | grep -i mode"
+  },
+  {
+    "instruction": "Check kube-proxy logs",
+    "output": "<think>\nThis is asking us to check kube-proxy logs.\nLet me think through this step by step.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl logs -n kube-system -l k8s-app=kube-proxy | head -10"
+  },
+  {
+    "instruction": "Check coredns logs",
+    "output": "<think>\nSo we need to check coredns logs.\nkubectl is what we need — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl logs -n kube-system -l k8s-app=kube-dns --tail=20"
+  },
+  {
+    "instruction": "Check coredns config",
+    "output": "<think>\nThe user wants to check coredns config.\nLet me think through this step by step.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nOne command does the job. Simple is better.\n</think>\nkubectl get configmap -n kube-system coredns -o yaml"
+  },
+  {
+    "instruction": "List all services sorted by name",
+    "output": "<think>\nWe should list all services sorted by name.\nFirst, let me understand what's needed here.\nBest tool here is kubectl — Kubernetes cluster management.\n</think>\nkubectl get services --sort-by=.metadata.name"
+  },
+  {
+    "instruction": "List all pods sorted by restart count",
+    "output": "<think>\nThe goal is to list all pods sorted by restart count.\nLet me think through this step by step.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods --sort-by='.status.containerStatuses[0].restartCount'"
+  },
+  {
+    "instruction": "Show pod IPs only",
+    "output": "<think>\nAlright, we need to show pod IPs only.\nLet me reason through this.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods -o jsonpath='{range .items[*]}{.metadata.name} {.status.podIP}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Show all container images in cluster",
+    "output": "<think>\nSo the request is to show all container images in cluster.\nLet me consider what makes sense here.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{\"\\n\"}{end}' | sort -u"
+  },
+  {
+    "instruction": "Check Kubernetes version on all components",
+    "output": "<think>\nNeed to check Kubernetes version on all components.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl version --short"
+  },
+  {
+    "instruction": "Check API server health",
+    "output": "<think>\nThe goal is to check API server health.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get --raw /healthz"
+  },
+  {
+    "instruction": "Check cluster metrics (if available)",
+    "output": "<think>\nWe're being asked to check cluster metrics (if available).\nLet me think about the best approach.\nBest tool here is kubectl — Kubernetes cluster management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get --raw /metrics | head -20"
+  },
+  {
+    "instruction": "OpenAPI spec of the cluster",
+    "output": "<think>\nWe should openAPI spec of the cluster.\nLet me think through this step by step.\nI'd use kubectl for this — Kubernetes cluster management.\nPipes let me chain these operations efficiently without writing temp files.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get --raw /openapi/v2 | jq '.info.title'"
+  }
+]

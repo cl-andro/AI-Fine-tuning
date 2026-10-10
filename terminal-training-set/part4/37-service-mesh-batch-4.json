@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "linkerd check",
+    "output": "<think>\nThe task requires us to linkerd check.\nLet me consider what makes sense here.\nLinkerd is what we need — Linkerd operations.\nLet me verify afterward that it worked correctly.\n</think>\nLinkerd core checks\n===================\n✜ kubernetes-api: can initialize the client............................................[ok]\n✜ kubernetes-version: is running the minimum Kubernetes API version...................[ok]\n✜ linkerd-existence: control plane namespace exists...................................[ok]\n✜ linkerd-existence: linkerd-config exists...........................................[ok]\n✜ linkerd-identity: certificate config is valid......................................[ok]\n✜ linkerd-identity: trust roots are valid............................................[ok]\n✜ linkerd-identity: identity controller is running....................................[ok]\n✜ linkerd-identity: issuer cert is trusted by the roots..............................[ok]\n✜ linkerd-web: linkerd-web is running................................................[ok]\n✜ linkerd-web: linkerd-web is healthy................................................[ok]\n\nStatus check results are ✓"
+  },
+  {
+    "instruction": "linkerd check --pre",
+    "output": "<think>\nThis is asking us to linkerd check --pre.\nLet me consider what makes sense here.\nThe tool for this job is linkerd — linkerd operations.\n</think>\nlinkerd check --pre"
+  },
+  {
+    "instruction": "linkerd install | kubectl apply -f -",
+    "output": "<think>\nAlright, we need to linkerd install | kubectl apply -f -.\nLet me consider what makes sense here.\nnamespace is what we need — namespace operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nnamespace/linkerd created\nserviceaccount/linkerd-identity created\nclusterrole.rbac.authorization.k8s.io/linkerd-identity created\nclusterrolebinding.rbac.authorization.k8s.io/linkerd-identity created\nservice/linkerd-identity created\ndeployment.apps/linkerd-identity created\n...\n✜ Linkerd installed successfully"
+  },
+  {
+    "instruction": "linkerd viz install | kubectl apply -f -",
+    "output": "<think>\nWe're being asked to linkerd viz install | kubectl apply -f -.\nLet me consider what makes sense here.\nnamespace is what we need — namespace operations.\nAfter running, I'll confirm the result looks right.\n</think>\nnamespace/linkerd-viz created\ndeployment.apps/linkerd-viz created\nservice/linkerd-viz created\n...\n✜ Linkerd viz installed successfully"
+  },
+  {
+    "instruction": "linkerd inject deployment.yml | kubectl apply -f -",
+    "output": "<think>\nSo we need to linkerd inject deployment.yml | kubectl apply -f -.\nI'd use deployment for this — deployment operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\ndeployment \"httpbin\" injected\n  \"linkerd.io/inject: enabled\" annotation added to deployment/httpbin\ndeployment.apps/httpbin configured"
+  },
+  {
+    "instruction": "linkerd uninject deployment.yml | kubectl apply -f -",
+    "output": "<think>\nThe task requires us to linkerd uninject deployment.yml | kubectl apply -f -.\nLet me reason through this.\nFor this, deployment is the right tool — deployment operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ndeployment \"httpbin\" uninjected\n  \"linkerd.io/inject: enabled\" annotation removed from deployment/httpbin\ndeployment.apps/httpbin configured"
+  },
+  {
+    "instruction": "linkerd profile -n default --template httpbin > httpbin-profile.yaml",
+    "output": "<think>\nSo we need to linkerd profile -n default --template httpbin > httpbin-profile.yaml.\nHere's how I'd approach this.\nThis calls for linkerd. Linkerd operations.\nI'll check the output to make sure it did what we expected.\n</think>\nlinkerd profile -n default --template httpbin > httpbin-profile.yaml"
+  },
+  {
+    "instruction": "cat httpbin-profile.yaml",
+    "output": "<think>\nAlright, we need to cat httpbin-profile.yaml.\nLet me think through this step by step.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\n###\n### Service profile for httpbin.default\n###\n### After installing this profile, linkerd adds per-route metrics for the httpbin\n### service.\n###\napiVersion: linkerd.io/v1alpha2\nkind: ServiceProfile\nmetadata:\n  name: httpbin.default\n  namespace: default\nspec:\n  routes:\n  - name: GET /\n    condition:\n      method: GET\n      pathRegex: /\n    responses:\n    - condition:\n        statusRange:\n          min: 200\n          max: 299"
+  },
+  {
+    "instruction": "kubectl apply -f httpbin-profile.yaml",
+    "output": "<think>\nSo the request is to kubectl apply -f httpbin-profile.yaml.\nLet me think through this step by step.\nThe tool for this job is serviceprofile.linkerd.io — serviceprofile.linkerd.io operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nserviceprofile.linkerd.io/httpbin.default created"
+  },
+  {
+    "instruction": "linkerd -n default profile --open-api /tmp/swagger.json svc-name",
+    "output": "<think>\nWe should linkerd -n default profile --open-api /tmp/swagger.json svc-name.\nLet me reason through this.\nBest tool here is Service — Service operations.\nThe -name flag means filter by filename pattern, which matters here because important to get the expected behavior.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nService profile generated from OpenAPI spec for svc-name.default\nProfile written to stdout"
+  },
+  {
+    "instruction": "linkerd check --proxy",
+    "output": "<think>\nWe're being asked to linkerd check --proxy.\nHere's how I'd approach this.\nFor this, Linkerd is the right tool — Linkerd operations.\nLet me verify afterward that it worked correctly.\n</think>\nLinkerd proxy checks\n====================\n✜ linkerd-identity: proxy certificates are valid..............................[ok]\n✜ linkerd-identity: proxy identity is correctly configured....................[ok]\n✜ linkerd-proxy: proxies are up-to-date.......................................[ok]\n✜ linkerd-proxy: proxies are healthy.........................................[ok]\n✜ linkerd-proxy: proxies are ready...........................................[ok]\n\nStatus check results are ✓"
+  },
+  {
+    "instruction": "linkerd -n default stat deploy",
+    "output": "<think>\nWe're being asked to linkerd -n default stat deploy.\nLet me reason through this.\nI'll reach for NAME here because NAME operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nNAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2\nsleep        1/1   100.00%   1.2rps           3ms           10ms           20ms          1"
+  },
+  {
+    "instruction": "linkerd -n default stat deploy/httpbin",
+    "output": "<think>\nThe goal is to linkerd -n default stat deploy/httpbin.\nBest tool here is NAME — NAME operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nNAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2"
+  },
+  {
+    "instruction": "linkerd -n default stat svc",
+    "output": "<think>\nThe task requires us to linkerd -n default stat svc.\nI'll reach for NAME here because NAME operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nNAME      MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN\nhttpbin      1/1   100.00%   2.5rps           5ms           12ms           25ms          2\nsleep        1/1   100.00%   1.2rps           3ms           10ms           20ms          1"
+  },
+  {
+    "instruction": "linkerd -n default tap deploy/httpbin -o wide",
+    "output": "<think>\nWe should linkerd -n default tap deploy/httpbin -o wide.\nI'll reach for req here because req operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nreq id=0:0 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :method=GET :authority=httpbin.default:80 :path=/get\nrsp id=0:0 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :status=200 latency=1234µs"
+  },
+  {
+    "instruction": "linkerd -n default edges deploy",
+    "output": "<think>\nAlright, we need to linkerd -n default edges deploy.\nFirst, let me understand what's needed here.\nI'll reach for SRC here because SRC operations.\nOne command does the job. Simple is better.\n</think>\nSRC     DST                       SVC                         CONTROL\nhttpbin sleep.default:80          sleep.default:80            default\nsleep   httpbin.default:80        httpbin.default:80          default"
+  },
+  {
+    "instruction": "linkerd -n default top deploy",
+    "output": "<think>\nAlright, we need to linkerd -n default top deploy.\nThis calls for SOURCE. SOURCE operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nSOURCE                                 DESTINATION                        SUCCESS      RPS   LATENCY_P50   LATENCY_P95\npod/sleep-6c9f78b8d6-abc12             pod/httpbin-5c5944c88c-v9q5k       100.00%   2.5rps           5ms           12ms\npod/httpbin-5c5944c88c-v9q5k           pod/sleep-6c9f78b8d6-abc12         100.00%   1.2rps           3ms           10ms"
+  },
+  {
+    "instruction": "linkerd version",
+    "output": "<think>\nThis is asking us to linkerd version.\nLet me consider what makes sense here.\nClient is what we need — Client operations.\nOne command does the job. Simple is better.\n</think>\nClient version: stable-2.15.0\nServer version: stable-2.15.0"
+  },
+  {
+    "instruction": "linkerd viz uninstall",
+    "output": "<think>\nThe task requires us to linkerd viz uninstall.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\n✜ Viz extension uninstalled"
+  },
+  {
+    "instruction": "linkerd uninstall | kubectl delete -f -",
+    "output": "<think>\nAlright, we need to linkerd uninstall | kubectl delete -f -.\nnamespace is what we need — namespace operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnamespace \"linkerd\" deleted\n...\n✜ Linkerd uninstalled"
+  },
+  {
+    "instruction": "linkerd -n default tap deploy/httpbin --to deploy/sleep -o json",
+    "output": "<think>\nSo we need to linkerd -n default tap deploy/httpbin --to deploy/sleep -o json.\nHere's how I'd approach this.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\n{\"source\":{\"namespace\":\"default\",\"pod\":\"httpbin-5c5944c88c-v9q5k\"},\"destination\":{\"namespace\":\"default\",\"pod\":\"sleep-6c9f78b8d6-abc12\"},\"method\":\"GET\",\"path\":\"/get\",\"status\":200,\"latency\":\"1234µs\"}"
+  }
+]

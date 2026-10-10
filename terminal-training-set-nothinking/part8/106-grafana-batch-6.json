@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Grafana playlist via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/playlists -H 'Content-Type: application/json' -d '{\"name\":\"Kiosk\",\"interval\":\"5m\",\"items\":[{\"type\":\"dashboard_by_uid\",\"value\":\"abc123\"}]}'"
+  },
+  {
+    "instruction": "List Grafana playlists via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/playlists | jq '.'"
+  },
+  {
+    "instruction": "Start a Grafana playlist via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/playlists/1"
+  },
+  {
+    "instruction": "Delete a Grafana playlist via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/playlists/1"
+  },
+  {
+    "instruction": "Get Grafana dashboard versions via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/id/1/versions | jq '.'"
+  },
+  {
+    "instruction": "Restore a Grafana dashboard version via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/id/1/restore -H 'Content-Type: application/json' -d '{\"version\":3}'"
+  },
+  {
+    "instruction": "Get Grafana dashboard diff between versions via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/id/1/versions/2/3 | jq '.'"
+  },
+  {
+    "instruction": "Create Grafana library panel via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/library-elements -H 'Content-Type: application/json' -d '{\"name\":\"CPU Panel\",\"model\":{\"type\":\"timeseries\",\"title\":\"CPU\",\"targets\":[{\"expr\":\"node_cpu_seconds_total\"}]},\"kind\":1}'"
+  },
+  {
+    "instruction": "List Grafana library panels via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/library-elements | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana library panel by UID via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/library-elements/abc123 | jq '.'"
+  },
+  {
+    "instruction": "Delete Grafana library panel via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/library-elements/abc123"
+  },
+  {
+    "instruction": "Connect Grafana library panel to dashboard via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/library-elements/abc123/connect -H 'Content-Type: application/json' -d '{\"dashboardId\":1,\"panelId\":1}'"
+  },
+  {
+    "instruction": "Get Grafana public dashboard config via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc/public-dashboards | jq '.'"
+  },
+  {
+    "instruction": "Enable Grafana public dashboard via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/uid/abc/public-dashboards -H 'Content-Type: application/json' -d '{\"isEnabled\":true}'"
+  },
+  {
+    "instruction": "Disable Grafana public dashboard via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/dashboards/uid/abc/public-dashboards/uid"
+  },
+  {
+    "instruction": "Get Grafana datasource UID by name via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/datasources/uid/my-prom | jq '.'"
+  },
+  {
+    "instruction": "Get Grafana datasource ID by UID via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/datasources/uid/prom-uid | jq '.id'"
+  },
+  {
+    "instruction": "Create Grafana dashboard via provisioning file with folder",
+    "output": "echo 'apiVersion: 1 providers: - name: infra orgId: 1 folder: Infrastructure type: file disableDeletion: false updateIntervalSeconds: 30 options: path: /dashboards/infra' > /etc/grafana/provisioning/dashboards/infra.yml"
+  },
+  {
+    "instruction": "Run Grafana with custom INI via env",
+    "output": "docker run -d --name grafana -p 3000:3000 -e GF_SERVER_ROOT_URL=https://grafana.example.com -e GF_AUTH_ANONYMOUS_ENABLED=true grafana/grafana"
+  },
+  {
+    "instruction": "Check Grafana plugin listing via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/plugins | jq '.plugins[] | {name, version}'"
+  },
+  {
+    "instruction": "Install Grafana plugin via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/plugins/grafana-piechart-panel/install"
+  },
+  {
+    "instruction": "Uninstall Grafana plugin via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/plugins/grafana-piechart-panel/uninstall"
+  },
+  {
+    "instruction": "Get Grafana plugin settings via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/plugins/grafana-piechart-panel/settings | jq '.'"
+  },
+  {
+    "instruction": "Create a Grafana dashboard by copying another",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc | jq '.dashboard | .title = \"Copy of Dashboard\"' | curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Bulk delete Grafana dashboards by folder",
+    "output": "curl -s http://admin:admin@localhost:3000/api/search?folderIds=1 | jq -r '.[].uid' | xargs -I{} curl -X DELETE http://admin:admin@localhost:3000/api/dashboards/uid/{}"
+  }
+]

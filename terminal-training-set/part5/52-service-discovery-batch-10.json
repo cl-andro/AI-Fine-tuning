@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Take a Consul snapshot and inspect its contents",
+    "output": "<think>\nAlright, we need to take a Consul snapshot and inspect its contents.\nFor this, consul is the right tool — consul operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nconsul snapshot inspect consul-snapshot.snap\nID:           abc123\nIndex:        12500\nTerm:         5\nVersion:      1\nSuccess:      true\nMeta:         map[]"
+  },
+  {
+    "instruction": "List Consul ACL policies",
+    "output": "<think>\nAlright, we need to list Consul ACL policies.\nHere's how I'd approach this.\nThis calls for consul. Consul operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nconsul acl policy list\nID: 00000000-0000-0000-0000-000000000001  global-management\nID: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeef  node-read\nID: bbbbbbbb-cccc-dddd-eeee-ffffffffffff  service-write"
+  },
+  {
+    "instruction": "Create a Consul ACL policy",
+    "output": "<think>\nNeed to create a Consul ACL policy.\nBest tool here is consul — consul operations.\n</think>\nconsul acl policy create -name \"service-read\" -rules 'service \"\" { policy = \"read\" }'\nID:  cccccccc-dddd-eeee-ffff-000000000000\nName: service-read\nDatacenters: []\nRules:\nservice \"\" { policy = \"read\" }\n\nCreated successfully"
+  },
+  {
+    "instruction": "Set Consul autopilot upgrade migration tag",
+    "output": "<think>\nWe're being asked to set Consul autopilot upgrade migration tag.\nFor this, consul is the right tool — consul operations.\nOne command does the job. Simple is better.\n</think>\nconsul operator autopilot set-config -upgrade-migration-tag=2.0\nAutopilot configuration updated successfully"
+  },
+  {
+    "instruction": "Deregister a Consul service by ID",
+    "output": "<think>\nWe should deregister a Consul service by ID.\nI'll reach for consul here because consul operations.\nI'll check the output to make sure it did what we expected.\n</think>\nconsul services deregister -id=web-1\nSuccessfully deregistered service: web-1"
+  },
+  {
+    "instruction": "Register a Consul service with a health check",
+    "output": "<think>\nThe user wants to register a Consul service with a health check.\nThe tool for this job is consul — consul operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nconsul services register '{\"ID\":\"web-2\",\"Name\":\"web\",\"Address\":\"10.0.0.5\",\"Port\":80,\"Check\":{\"HTTP\":\"http://10.0.0.5:80/health\",\"Interval\":\"10s\"}}'\nSuccessfully registered service: web-2"
+  },
+  {
+    "instruction": "List all Consul intentions",
+    "output": "<think>\nThe user wants to list all Consul intentions.\nI'd use consul for this — consul operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nconsul intention list\nID                                    SourceName    DestinationName  Action\nf1a2b3c4-d5e6-7890-abcd-ef1234567890  web           db               deny\na2b3c4d5-e6f7-8901-bcde-f12345678901  api           redis            allow"
+  },
+  {
+    "instruction": "Match Consul intentions for a source service",
+    "output": "<think>\nThe task requires us to match Consul intentions for a source service.\nBest tool here is consul — consul operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nconsul intention match web\n{\n  \"intentions\": [\n    {\n      \"SourceName\": \"web\",\n      \"DestinationName\": \"db\",\n      \"Action\": \"deny\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "Create a Consul ACL token with service identity",
+    "output": "<think>\nWe're being asked to create a Consul ACL token with service identity.\nFirst, let me understand what's needed here.\nI'd use consul for this — consul operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nconsul acl token create -service-identity \"web:dc1\"\nAccessorID:   dddddddd-eeee-ffff-0000-111111111111\nSecretID:     eeeeeeee-ffff-0000-1111-222222222222\nDescription:  Service Identity for web (dc1)\nServiceIdentities:\n   web (Datacenters: [dc1])"
+  },
+  {
+    "instruction": "Export Consul KV data filtered by prefix",
+    "output": "<think>\nThe user wants to export Consul KV data filtered by prefix.\nFor this, consul is the right tool — consul operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nconsul kv export -prefix config/app\n[\n  {\n    \"key\": \"config/app/database\",\n    \"value\": \"eyJob3N0IjoiZGIxIn0=\"\n  },\n  {\n    \"key\": \"config/app/version\",\n    \"value\": \"Mw==\"\n  }\n]"
+  },
+  {
+    "instruction": "Use etcdctl to watch a key with revision history",
+    "output": "<think>\nThis is asking us to use etcdctl to watch a key with revision history.\nBest tool here is etcdctl — etcdctl operations.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl watch --rev 500 /config/app/version\nPUT\n/config/app/version\n3\n"
+  },
+  {
+    "instruction": "Compare and swap a value in etcd",
+    "output": "<think>\nWe should compare and swap a value in etcd.\nHere's how I'd approach this.\nBest tool here is etcdctl — etcdctl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\netcdctl txn <<EOF\ncompare:\n  value(\"/config/app/version\") = \"2\"\nsuccess:\n  put /config/app/version \"3\"\nfailure:\n  put /config/app/version-error \"mismatch\"\nEOF\nSUCCESS\n\n/config/app/version\n3"
+  },
+  {
+    "instruction": "Check the etcd alarm list for NOSPACE",
+    "output": "<think>\nSo we need to check the etcd alarm list for NOSPACE.\nI'd use etcdctl for this — etcdctl operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl alarm list\nmemberID:8214f0d9b4675f94 alarm:NOSPACE"
+  },
+  {
+    "instruction": "Disarm a specific etcd alarm",
+    "output": "<think>\nWe should disarm a specific etcd alarm.\nLet me think about the best approach.\nFor this, etcdctl is the right tool — etcdctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\netcdctl alarm disarm --alarm NOSPACE\n"
+  },
+  {
+    "instruction": "Create a user and grant role in etcd",
+    "output": "<think>\nNeed to create a user and grant role in etcd.\nHere's how I'd approach this.\nBest tool here is etcdctl — etcdctl operations.\n</think>\netcdctl user add bob --new-user-password=secret123\nUser bob created\n\netcdctl user grant-role bob admin\nRole admin is granted to user bob"
+  },
+  {
+    "instruction": "Check status of a specific etcd endpoint",
+    "output": "<think>\nThis is asking us to check status of a specific etcd endpoint.\nBest tool here is etcdctl — etcdctl operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\netcdctl endpoint status --endpoints=https://10.0.1.1:2379 -w table\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|        ENDPOINT        |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|  https://10.0.1.1:2379 | 8214f0d9b4675f94 |  3.5.9  |   25 MB |      true |      false |         4 |      12458 |              12458 |        |\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+"
+  },
+  {
+    "instruction": "Perform a maintenance operation on a Serf node via tags",
+    "output": "<think>\nThe user wants to perform a maintenance operation on a Serf node via tags.\nHere's how I'd approach this.\nserf is what we need — serf operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nserf tags -set maintenance=true\nTags set: maintenance=true"
+  },
+  {
+    "instruction": "Query Serf for nodes with a specific tag",
+    "output": "<think>\nWe're being asked to query Serf for nodes with a specific tag.\nLet me think through this step by step.\nI'll reach for serf here because serf operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nserf members -tag role=web\nnode1    127.0.0.1:7946    alive  role=web\nnode4    10.0.0.4:7946     alive  role=web"
+  },
+  {
+    "instruction": "Send a directed Serf query to a specific node",
+    "output": "<think>\nSo the request is to send a directed Serf query to a specific node.\nI'd use serf for this — serf operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nserf query -node node2 disk-usage\nQuery 'disk-usage' sent to 1 member\n  node2: /dev/sda1  40G  12G  26G  32% /"
+  },
+  {
+    "instruction": "Watch ZooKeeper znodes for changes via CLI watch",
+    "output": "<think>\nWe're being asked to watch ZooKeeper znodes for changes via CLI watch.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\n[zk: localhost:2181(CONNECTED) 23] get /myapp watch\nmydata\n\nWATCHER::\nWatchedEvent state:SyncConnected type:NodeDataChanged path:/myapp"
+  },
+  {
+    "instruction": "Set a ZooKeeper znode with expected version for optimistic locking",
+    "output": "<think>\nThis is asking us to set a ZooKeeper znode with expected version for optimistic locking.\nFirst, let me understand what's needed here.\nAfter running, I'll confirm the result looks right.\n</think>\n[zk: localhost:2181(CONNECTED) 25] set /myapp/config v3 1\ncZxid = 0x104\nctime = Sat Jul 25 10:25:00 UTC 2026\nmZxid = 0x105\nmtime = Sat Jul 25 10:26:00 UTC 2026\npZxid = 0x104\ncversion = 0\ndataVersion = 2\naclVersion = 0\nephemeralOwner = 0x0\ndataLength = 2\nnumChildren = 0"
+  },
+  {
+    "instruction": "List all active ZooKeeper sessions via four-letter word",
+    "output": "<think>\nNeed to list all active ZooKeeper sessions via four-letter word.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho cons | nc localhost 2181\n0x1234567890abcdef 127.0.0.1:54231\n0x2345678901bcdef1 127.0.0.1:54232\n0x3456789012cdef12 10.0.0.2:54233"
+  }
+]

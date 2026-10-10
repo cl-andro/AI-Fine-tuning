@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Debug logrotate config showing what would happen to each log",
+    "output": "<think>\nSo the request is to debug logrotate config showing what would happen to each log.\nHere's how I'd approach this.\nThis calls for logrotate. Logrotate operations.\nI've added -d to directory listing, don't descend — this controls how the output is formatted.\nI've added -E to extended regex — needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nlogrotate -d /etc/logrotate.conf 2>&1 | grep -E '^(rotating|considering|not truncating)'"
+  },
+  {
+    "instruction": "Check if a specific log file needs rotation",
+    "output": "<think>\nThis is asking us to check if a specific log file needs rotation.\nLet me think through this step by step.\nI'd use logrotate for this — logrotate operations.\nWhy -d? Directory listing, don't descend. needed for this specific use case.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nlogrotate -d /etc/logrotate.d/myapp 2>&1 | grep -i 'needs rotating'"
+  },
+  {
+    "instruction": "Show logrotate version and compile options",
+    "output": "<think>\nWe're being asked to show logrotate version and compile options.\nFor this, logrotate is the right tool — logrotate operations.\nWhy --version? Show version info. standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nlogrotate --version"
+  },
+  {
+    "instruction": "Trace logrotate system calls during dry run",
+    "output": "<think>\nThis is asking us to trace logrotate system calls during dry run.\nBest tool here is strace — system call tracing.\nI've added -e to edit or executable — standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nstrace -e openat,read logrotate -d /etc/logrotate.conf 2>&1 | head -50"
+  },
+  {
+    "instruction": "Profile logrotate execution time",
+    "output": "<think>\nWe should profile logrotate execution time.\nBest tool here is time — time operations.\nWhy -d? Directory listing, don't descend. standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\ntime logrotate -d /etc/logrotate.conf"
+  },
+  {
+    "instruction": "Run logrotate for all configs and log results",
+    "output": "<think>\nThe user wants to run logrotate for all configs and log results.\nLet me think through this step by step.\nFor this, logrotate is the right tool — logrotate operations.\nI'm using -v for verbose output — without it the command won't work as we need.\nI've added -f to force, suppress errors — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nlogrotate -v -f /etc/logrotate.conf 2>&1 | tee /var/log/logrotate-run.log"
+  },
+  {
+    "instruction": "Create logrotate config with errors to test validation",
+    "output": "<think>\nSo the request is to create logrotate config with errors to test validation.\nI'll reach for cat here because cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/logrotate.d/test-bad-config << 'EOF'\n/var/log/test/*.log {\n    daily\n    rotate abc\n    compress\n}\nEOF"
+  },
+  {
+    "instruction": "Validate config file catches errors",
+    "output": "<think>\nThis is asking us to validate config file catches errors.\nLet me reason through this.\nThe tool for this job is logrotate — logrotate operations.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nlogrotate -d /etc/logrotate.d/test-bad-config 2>&1"
+  },
+  {
+    "instruction": "Remove test config file after validation",
+    "output": "<think>\nSo we need to remove test config file after validation.\nLet me think about the best approach.\nFor this, rm is the right tool — file deletion.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\n</think>\nrm /etc/logrotate.d/test-bad-config"
+  },
+  {
+    "instruction": "Debug specific logrotate config line by line",
+    "output": "<think>\nThe user wants to debug specific logrotate config line by line.\nLet me think about the best approach.\nI'd use logrotate for this — logrotate operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nlogrotate -d /etc/logrotate.d/nginx 2>&1 | while read line; do echo \"$line\"; sleep 0.1; done"
+  },
+  {
+    "instruction": "Run logrotate with maximum verbosity",
+    "output": "<think>\nThe goal is to run logrotate with maximum verbosity.\nFirst, let me understand what's needed here.\nBest tool here is logrotate — logrotate operations.\n</think>\nlogrotate -v -v -d /etc/logrotate.conf 2>&1"
+  },
+  {
+    "instruction": "Check if state file is readable",
+    "output": "<think>\nThe goal is to check if state file is readable.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /var/lib/logrotate/status 2>/dev/null || echo 'No state file found'"
+  },
+  {
+    "instruction": "Reset logrotate state for a specific file",
+    "output": "<think>\nSo the request is to reset logrotate state for a specific file.\nLet me consider what makes sense here.\nFor this, sed is the right tool — text stream editing.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nsed -i '/\\/var\\/log\\/app\\/app.log/d' /var/lib/logrotate/status"
+  },
+  {
+    "instruction": "Force re-rotation of already rotated log",
+    "output": "<think>\nThe user wants to force re-rotation of already rotated log.\nI'll reach for rm here because file deletion.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\nLet me verify afterward that it worked correctly.\n</think>\nrm -f /var/lib/logrotate/status && logrotate -f /etc/logrotate.conf"
+  },
+  {
+    "instruction": "Run logrotate with custom config from stdin",
+    "output": "<think>\nNeed to run logrotate with custom config from stdin.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e '/var/log/test/*.log { daily; rotate 3; compress; }' | logrotate -f -"
+  },
+  {
+    "instruction": "Check logrotate config syntax for all files",
+    "output": "<think>\nThe task requires us to check logrotate config syntax for all files.\nFor this, for is the right tool — for operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nfor f in /etc/logrotate.d/*; do logrotate -d \"$f\" > /dev/null 2>&1 && echo \"OK: $f\" || echo \"FAIL: $f\"; done"
+  },
+  {
+    "instruction": "Monitor log file growth rate for rotation tuning",
+    "output": "<think>\nAlright, we need to monitor log file growth rate for rotation tuning.\nLet me think about the best approach.\nThe tool for this job is du — disk usage analysis.\nNo need for complex pipelines here — one command is sufficient.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\n</think>\ndu -sb /var/log/app/app.log; sleep 3600; du -sb /var/log/app/app.log"
+  },
+  {
+    "instruction": "Compare logrotate behavior with different configs",
+    "output": "<think>\nSo we need to compare logrotate behavior with different configs.\nLet me consider what makes sense here.\nThe tool for this job is diff — diff operations.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nI'm using -a for AND operator in find — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndiff <(logrotate -d /etc/logrotate.d/config-a 2>&1) <(logrotate -d /etc/logrotate.d/config-b 2>&1)"
+  },
+  {
+    "instruction": "Export logrotate status as JSON",
+    "output": "<think>\nSo we need to export logrotate status as JSON.\nBest tool here is cat — cat operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /var/lib/logrotate/status | awk '{print \"{\\\"file\\\":\\\"\"$1\"\\\",\\\"date\\\":\\\"\"$2\"\\\"}\"}'"
+  },
+  {
+    "instruction": "Verify logrotate state file integrity",
+    "output": "<think>\nAlright, we need to verify logrotate state file integrity.\nFirst, let me understand what's needed here.\nThe tool for this job is wc — wc operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\nwc -l /var/lib/logrotate/status && sort /var/lib/logrotate/status | head -5"
+  }
+]

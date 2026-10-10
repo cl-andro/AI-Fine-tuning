@@ -1,0 +1,94 @@
+[
+  {
+    "instruction": "Show rsyslog configuration file",
+    "output": "<think>\nWe should show rsyslog configuration file.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /etc/rsyslog.conf"
+  },
+  {
+    "instruction": "Show rsyslog default configuration directory",
+    "output": "<think>\nSo we need to show rsyslog default configuration directory.\nLet me reason through this.\nBest tool here is ls — ls operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nls /etc/rsyslog.d/"
+  },
+  {
+    "instruction": "Check rsyslog configuration syntax",
+    "output": "<think>\nThe user wants to check rsyslog configuration syntax.\nLet me think about the best approach.\nThe tool for this job is rsyslogd — rsyslogd operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrsyslogd -N 1"
+  },
+  {
+    "instruction": "Restart rsyslog after configuration changes",
+    "output": "<think>\nThe goal is to restart rsyslog after configuration changes.\nLet me think through this step by step.\nThe tool for this job is systemctl — managing systemd services.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl restart rsyslog"
+  },
+  {
+    "instruction": "Create an rsyslog template for custom log format",
+    "output": "<think>\nWe should create an rsyslog template for custom log format.\nLet me think through this step by step.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho '$template CustomFormat,\"%TIMESTAMP% %HOSTNAME% %syslogtag%%msg%\\n\"' > /etc/rsyslog.d/custom.conf"
+  },
+  {
+    "instruction": "Forward logs to a remote syslog server over UDP",
+    "output": "<think>\nThe task requires us to forward logs to a remote syslog server over UDP.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '*.* @192.168.1.100:514' >> /etc/rsyslog.d/remote.conf"
+  },
+  {
+    "instruction": "Forward logs to a remote syslog server over TCP",
+    "output": "<think>\nAlright, we need to forward logs to a remote syslog server over TCP.\nA quick sanity check afterward saves debugging time later.\n</think>\necho '*.* @@192.168.1.100:514' >> /etc/rsyslog.d/remote.conf"
+  },
+  {
+    "instruction": "Set up rsyslog TLS forwarding to a remote server",
+    "output": "<think>\nThe goal is to set up rsyslog TLS forwarding to a remote server.\nLet me consider what makes sense here.\nQuick verification after execution to be safe.\n</think>\necho 'global(\n  DefaultNetstreamDriver=\"gtls\"\n  DefaultNetstreamDriverCAFile=\"/etc/ssl/certs/ca.pem\"\n  DefaultNetstreamDriverCertFile=\"/etc/ssl/certs/client-cert.pem\"\n  DefaultNetstreamDriverKeyFile=\"/etc/ssl/private/client-key.pem\"\n)' > /etc/rsyslog.d/tls.conf"
+  },
+  {
+    "instruction": "Create an rsyslog ruleset to filter logs by facility",
+    "output": "<think>\nSo we need to create an rsyslog ruleset to filter logs by facility.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'if $syslogfacility-text == \"mail\" then /var/log/mail.log' > /etc/rsyslog.d/mail.conf"
+  },
+  {
+    "instruction": "Discard specific logs with rsyslog ruleset",
+    "output": "<think>\nThe goal is to discard specific logs with rsyslog ruleset.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'if $msg contains \"healthcheck\" then stop' > /etc/rsyslog.d/discard.conf"
+  },
+  {
+    "instruction": "Create an rsyslog rule to log specific program messages",
+    "output": "<think>\nThe user wants to create an rsyslog rule to log specific program messages.\nLet me verify afterward that it worked correctly.\n</think>\necho ':programname, isequal, \"cron\" /var/log/cron.log' > /etc/rsyslog.d/cron.conf"
+  },
+  {
+    "instruction": "Show rsyslog queue statistics",
+    "output": "<think>\nThis is asking us to show rsyslog queue statistics.\nLet me think through this step by step.\nI'd use cat for this — cat operations.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/sys/net/ipv4/igmp_max_memberships 2>/dev/null; echo '---'; kill -USR1 $(cat /var/run/rsyslogd.pid) && journalctl -u rsyslog -n 20"
+  },
+  {
+    "instruction": "Show syslog-ng configuration file",
+    "output": "<think>\nWe're being asked to show syslog-ng configuration file.\nLet me think about the best approach.\ncat is what we need — cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncat /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Check syslog-ng configuration syntax",
+    "output": "<think>\nWe're being asked to check syslog-ng configuration syntax.\nLet me think about the best approach.\nThis calls for syslog-ng. Syslog-ng operations.\nI've added -s to summarize or silent mode — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nsyslog-ng -s"
+  },
+  {
+    "instruction": "Reload syslog-ng configuration",
+    "output": "<think>\nThe user wants to reload syslog-ng configuration.\nLet me break this down.\nBest tool here is systemctl — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl reload syslog-ng"
+  },
+  {
+    "instruction": "Create a syslog-ng source for local logs",
+    "output": "<think>\nWe should create a syslog-ng source for local logs.\nLet me reason through this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'source s_local { system(); internal(); };' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Create a syslog-ng destination for remote syslog",
+    "output": "<think>\nThe user wants to create a syslog-ng destination for remote syslog.\nLet me consider what makes sense here.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'destination d_remote { syslog(\"192.168.1.100\" port(514)); };' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Create a syslog-ng log path connecting source to destination",
+    "output": "<think>\nThe user wants to create a syslog-ng log path connecting source to destination.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'log { source(s_local); destination(d_remote); };' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Show syslog-ng version and compilation flags",
+    "output": "<think>\nWe're being asked to show syslog-ng version and compilation flags.\nLet me consider what makes sense here.\nFor this, syslog-ng is the right tool — syslog-ng operations.\nThe --version flag handles show version info. Important because this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\n</think>\nsyslog-ng --version"
+  },
+  {
+    "instruction": "List syslog-ng modules",
+    "output": "<think>\nSo we need to list syslog-ng modules.\nLet me think through this step by step.\nBest tool here is syslog-ng — syslog-ng operations.\nI'm using -M for display mount targets in df — important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\nsyslog-ng -M"
+  },
+  {
+    "instruction": "Generate syslog-ng config with debug info",
+    "output": "<think>\nSo the request is to generate syslog-ng config with debug info.\nLet me think about the best approach.\nI'd use syslog-ng for this — syslog-ng operations.\nThe -d flag means directory listing, don't descend, which matters here because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsyslog-ng -F -d"
+  },
+  {
+    "instruction": "View syslog-ng statistics",
+    "output": "<think>\nAlright, we need to view syslog-ng statistics.\nHere's how I'd approach this.\nBest tool here is syslog-ng-ctl — syslog-ng-ctl operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nsyslog-ng-ctl stats"
+  },
+  {
+    "instruction": "Enable syslog-ng verbose debug mode temporarily",
+    "output": "<think>\nSo the request is to enable syslog-ng verbose debug mode temporarily.\nI'd use syslog-ng-ctl for this — syslog-ng-ctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nsyslog-ng-ctl verbose --set=on"
+  }
+]

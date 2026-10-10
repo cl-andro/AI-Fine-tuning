@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "How to lock an NVRAM index for writing",
+    "output": "<think>\nNeed to lock an NVRAM index for writing.\nFirst, let me understand what's needed here.\nI'll reach for tpm2_nvlock here because tpm2_nvlock operations.\n</think>\ntpm2_nvlock 0x1500015"
+  },
+  {
+    "instruction": "How to create a primary key in the TPM",
+    "output": "<think>\nThe user wants to create a primary key in the TPM.\nFirst, let me understand what's needed here.\nThe tool for this job is tpm2_createprimary — tpm2_createprimary operations.\nI'm using -c for count or create — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_createprimary -c primary.ctx"
+  },
+  {
+    "instruction": "How to create a primary key with a specific scheme",
+    "output": "<think>\nAlright, we need to create a primary key with a specific scheme.\nLet me break this down.\ntpm2_createprimary is what we need — tpm2_createprimary operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_createprimary -c primary.ctx -a 'fixedtpm|fixedparent|sensitivedataorigin|userwithauth'"
+  },
+  {
+    "instruction": "How to create an RSA key in the TPM",
+    "output": "<think>\nWe should create an RSA key in the TPM.\nThe tool for this job is tpm2_create — tpm2_create operations.\nThe -u flag handles show or sort by access time. Important because important to get the expected behavior.\nWhy -r? Recursive operation (descend into subdirectories). important to get the expected behavior.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv"
+  },
+  {
+    "instruction": "How to create an ECC key in the TPM",
+    "output": "<think>\nThe user wants to create an ECC key in the TPM.\nLet me reason through this.\nBest tool here is tpm2_create — tpm2_create operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ntpm2_create -C primary.ctx -G ecc256 -u ecc.pub -r ecc.priv"
+  },
+  {
+    "instruction": "How to create a key with a policy",
+    "output": "<think>\nWe should create a key with a policy.\nLet me reason through this.\nI'd use tpm2_create for this — tpm2_create operations.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv -L policy.dat"
+  },
+  {
+    "instruction": "How to create a key with an authorization value",
+    "output": "<think>\nSo we need to create a key with an authorization value.\nLet me break this down.\nI'll reach for tpm2_create here because tpm2_create operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv -p secret123"
+  },
+  {
+    "instruction": "How to create a symmetric key",
+    "output": "<think>\nWe should create a symmetric key.\nThis calls for tpm2_create. Tpm2_create operations.\nI'm using -u for show or sort by access time — needed for this specific use case.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntpm2_create -C primary.ctx -G aes128cfb -u sym.pub -r sym.priv"
+  },
+  {
+    "instruction": "How to load a key into the TPM",
+    "output": "<think>\nWe're being asked to load a key into the TPM.\nI'd use tpm2_load for this — tpm2_load operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_load -C primary.ctx -u key.pub -r key.priv -c key.ctx"
+  },
+  {
+    "instruction": "How to load an external key into the TPM",
+    "output": "<think>\nAlright, we need to load an external key into the TPM.\nLet me break this down.\nBest tool here is tpm2_loadexternal — tpm2_loadexternal operations.\n</think>\ntpm2_loadexternal -G rsa2048 -u key.pub -c ext.ctx"
+  },
+  {
+    "instruction": "How to seal a secret to the TPM",
+    "output": "<think>\nThis is asking us to seal a secret to the TPM.\nLet me think about the best approach.\nBest tool here is tpm2_create — tpm2_create operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_create -C primary.ctx -u seal.pub -r seal.priv -i secret.txt"
+  },
+  {
+    "instruction": "How to seal a 32-byte binary secret",
+    "output": "<think>\nSo we need to seal a 32-byte binary secret.\nThe tool for this job is tpm2_create — tpm2_create operations.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nI've added -r to recursive operation (descend into subdirectories) — without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_create -C primary.ctx -u seal.pub -r seal.priv -i <(echo -n '0123456789abcdef0123456789abcdef')"
+  },
+  {
+    "instruction": "How to seal with an authorization value",
+    "output": "<think>\nWe're being asked to seal with an authorization value.\nLet me think about the best approach.\nBest tool here is tpm2_create — tpm2_create operations.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_create -C primary.ctx -u seal.pub -r seal.priv -p myauth -i secret.txt"
+  },
+  {
+    "instruction": "How to seal with a PCR policy",
+    "output": "<think>\nAlright, we need to seal with a PCR policy.\nLet me reason through this.\nThe tool for this job is tpm2_create — tpm2_create operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntpm2_create -C primary.ctx -u seal.pub -r seal.priv -L pcr_policy.dat -i secret.bin"
+  },
+  {
+    "instruction": "How to unseal a secret from the TPM",
+    "output": "<think>\nThis is asking us to unseal a secret from the TPM.\nThis calls for tpm2_unseal. Tpm2_unseal operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_unseal -c seal.ctx"
+  },
+  {
+    "instruction": "How to unseal with authorization",
+    "output": "<think>\nThis is asking us to unseal with authorization.\nLet me think through this step by step.\nI'll reach for tpm2_unseal here because tpm2_unseal operations.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\ntpm2_unseal -c seal.ctx -p myauth"
+  },
+  {
+    "instruction": "How to unseal a key object",
+    "output": "<think>\nSo we need to unseal a key object.\nFirst, let me understand what's needed here.\nI'd use tpm2_unseal for this — tpm2_unseal operations.\n</think>\ntpm2_unseal -c key.ctx -o recovered_key.bin"
+  },
+  {
+    "instruction": "How to evict a persistent handle",
+    "output": "<think>\nThis is asking us to evict a persistent handle.\nHere's how I'd approach this.\nThe tool for this job is tpm2_evictcontrol — tpm2_evictcontrol operations.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ntpm2_evictcontrol -C o -c key.ctx"
+  },
+  {
+    "instruction": "How to make a key persistent at a handle",
+    "output": "<think>\nAlright, we need to make a key persistent at a handle.\nLet me break this down.\nThe tool for this job is tpm2_evictcontrol — tpm2_evictcontrol operations.\nI've added -c to count or create — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_evictcontrol -C o -c key.ctx 0x81000001"
+  },
+  {
+    "instruction": "How to read all PCRs from the TPM",
+    "output": "<think>\nWe should read all PCRs from the TPM.\nFirst, let me understand what's needed here.\nI'd use tpm2_pcrread for this — tpm2_pcrread operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_pcrread"
+  },
+  {
+    "instruction": "How to read specific PCR banks",
+    "output": "<think>\nWe should read specific PCR banks.\nLet me think through this step by step.\nThis calls for tpm2_pcrread. Tpm2_pcrread operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_pcrread sha256:0,1,2,3"
+  }
+]

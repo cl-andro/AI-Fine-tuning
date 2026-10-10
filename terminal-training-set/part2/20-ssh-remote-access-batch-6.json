@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "SSH with a jump host and key forwarding",
+    "output": "<think>\nSo we need to sSH with a jump host and key forwarding.\nLet me think about the best approach.\nI'd use ssh for this — remote system access.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nLet me verify afterward that it worked correctly.\n</think>\nssh -o ProxyCommand='ssh -W %h:%p bastion' -i ~/.ssh/target_key user@target"
+  },
+  {
+    "instruction": "Create an SSH tunnel for MySQL remote access",
+    "output": "<think>\nWe're being asked to create an SSH tunnel for MySQL remote access.\nLet me reason through this.\nI'd use ssh for this — remote system access.\nThe -L flag means follow symlinks when processing, which matters here because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nssh -L 3306:localhost:3306 user@db-server"
+  },
+  {
+    "instruction": "Create an SSH tunnel for remote debugging",
+    "output": "<think>\nThe goal is to create an SSH tunnel for remote debugging.\nLet me consider what makes sense here.\nThe tool for this job is ssh — remote system access.\nThe -L flag handles follow symlinks when processing. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nssh -L 9229:localhost:9229 user@remote -N"
+  },
+  {
+    "instruction": "Create an SSH tunnel for multiple ports",
+    "output": "<think>\nThe goal is to create an SSH tunnel for multiple ports.\nFor this, ssh is the right tool — remote system access.\nWhy -L? Follow symlinks when processing. this controls how the output is formatted.\nI've added -L to follow symlinks when processing — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nssh -L 8080:localhost:80 -L 3000:localhost:3000 user@host -N"
+  },
+  {
+    "instruction": "Use SSH as a SOCKS5 proxy",
+    "output": "<think>\nWe're being asked to use SSH as a SOCKS5 proxy.\nLet me break this down.\nThe tool for this job is ssh — remote system access.\nCheck the output for errors before proceeding to the next step.\n</think>\nssh -D 1080 -N -C user@proxy-server"
+  },
+  {
+    "instruction": "Mount remote filesystem with SSHFS with reconnect",
+    "output": "<think>\nThe user wants to mount remote filesystem with SSHFS with reconnect.\nLet me think about the best approach.\nI'd use sshfs for this — sshfs operations.\nThe -o flag handles output to file, OR operator in find. Important because this controls how the output is formatted.\nAfter running, I'll confirm the result looks right.\n</think>\nsshfs -o reconnect,ServerAliveInterval=15,compression=yes user@host:/remote /mnt/remote"
+  },
+  {
+    "instruction": "Copy a directory from remote using tar over SSH",
+    "output": "<think>\nNeed to copy a directory from remote using tar over SSH.\nHere's how I'd approach this.\nBest tool here is ssh — remote system access.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nssh user@host 'tar czf - /remote/dir' | tar xzf - -C /local/dir"
+  },
+  {
+    "instruction": "Copy directories from local to remote via tar",
+    "output": "<think>\nThe task requires us to copy directories from local to remote via tar.\nFirst, let me understand what's needed here.\nI'd use tar for this — file archiving.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - /local/dir | ssh user@host 'tar xzf - -C /remote/dir'"
+  },
+  {
+    "instruction": "Use rsync to sync a remote directory efficiently",
+    "output": "<think>\nSo we need to use rsync to sync a remote directory efficiently.\nLet me think through this step by step.\nThe tool for this job is rsync — efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avz --progress -e ssh user@host:/source/dir /dest/dir"
+  },
+  {
+    "instruction": "Use rsync over SSH with partial transfer for large files",
+    "output": "<think>\nAlright, we need to use rsync over SSH with partial transfer for large files.\nThis calls for rsync. Efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avz --partial --progress -e ssh user@host:largefile.iso ."
+  },
+  {
+    "instruction": "Do a remote backup with rsync and hard links",
+    "output": "<think>\nSo the request is to do a remote backup with rsync and hard links.\nLet me consider what makes sense here.\nBest tool here is rsync — efficient file synchronization.\nThe --delete flag means remove extraneous files from destination, which matters here because important to get the expected behavior.\nWhy -e? Edit or executable. without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avz --link-dest=/backup/previous --delete -e ssh /source user@host:/backup/current"
+  },
+  {
+    "instruction": "Use rdiff-backup for incremental remote backups",
+    "output": "<think>\nWe're being asked to use rdiff-backup for incremental remote backups.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y rdiff-backup && rdiff-backup --print-statistics /source user@host::/backup"
+  },
+  {
+    "instruction": "Use duplicity for encrypted backups over SSH",
+    "output": "<think>\nSo the request is to use duplicity for encrypted backups over SSH.\nLet me reason through this.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y duplicity && duplicity /source scp://user@host/backup"
+  },
+  {
+    "instruction": "Restore from duplicity backup",
+    "output": "<think>\nNeed to restore from duplicity backup.\nduplicity is what we need — duplicity operations.\nI'll check the output to make sure it did what we expected.\n</think>\nduplicity restore scp://user@host/backup /restore-dir"
+  },
+  {
+    "instruction": "Use borgbackup for deduplicated remote backups",
+    "output": "<think>\nThis is asking us to use borgbackup for deduplicated remote backups.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y borgbackup && borg init --encryption=repokey user@host:/backup"
+  },
+  {
+    "instruction": "Create a Borg backup",
+    "output": "<think>\nSo we need to create a Borg backup.\nLet me consider what makes sense here.\nFor this, borg is the right tool — deduplicating backups.\nAfter running, I'll confirm the result looks right.\n</think>\nborg create --stats --progress user@host:/backup::{hostname}-{now} /source"
+  },
+  {
+    "instruction": "List Borg backup archives",
+    "output": "<think>\nThis is asking us to list Borg backup archives.\nThe tool for this job is borg — deduplicating backups.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nborg list user@host:/backup"
+  },
+  {
+    "instruction": "Restore a Borg backup",
+    "output": "<think>\nAlright, we need to restore a Borg backup.\nLet me break this down.\nBest tool here is borg — deduplicating backups.\nI'm using -name for filter by filename pattern — needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nborg extract user@host:/backup::archive-name"
+  },
+  {
+    "instruction": "Use restic for encrypted backups",
+    "output": "<think>\nSo we need to use restic for encrypted backups.\nHere's how I'd approach this.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y restic && restic init --repo sftp:user@host:/backup"
+  },
+  {
+    "instruction": "Create a restic backup",
+    "output": "<think>\nSo the request is to create a restic backup.\nThis calls for restic. Encrypted backups.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nrestic -r sftp:user@host:/backup backup /source"
+  },
+  {
+    "instruction": "List restic snapshots",
+    "output": "<think>\nWe should list restic snapshots.\nBest tool here is restic — encrypted backups.\nWhy -r? Recursive operation (descend into subdirectories). this controls how the output is formatted.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nrestic -r sftp:user@host:/backup snapshots"
+  },
+  {
+    "instruction": "Restore a restic backup",
+    "output": "<think>\nWe should restore a restic backup.\nLet me reason through this.\nI'll reach for restic here because encrypted backups.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nrestic -r sftp:user@host:/backup restore latest --target /restore"
+  },
+  {
+    "instruction": "Use rsync to mirror a remote website",
+    "output": "<think>\nThe task requires us to use rsync to mirror a remote website.\nLet me consider what makes sense here.\nBest tool here is rsync — efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avz --delete --links --safe-links --ignore-errors --timeout=60 -e ssh user@host:/var/www/ /var/www/"
+  },
+  {
+    "instruction": "Use rsync with include/exclude lists",
+    "output": "<think>\nSo we need to use rsync with include/exclude lists.\nThe tool for this job is rsync — efficient file synchronization.\nWhy -e? Edit or executable. important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nAfter running, I'll confirm the result looks right.\n</think>\nrsync -avz --include-from=include.txt --exclude-from=exclude.txt -e ssh user@host:/source /dest"
+  },
+  {
+    "instruction": "Use rsync to copy only new/changed files (not existing)",
+    "output": "<think>\nSo the request is to use rsync to copy only new/changed files (not existing).\nLet me think about the best approach.\nrsync is what we need — efficient file synchronization.\nA single command handles this cleanly — no need to overcomplicate it.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nQuick verification after execution to be safe.\n</think>\nrsync -avz --ignore-existing -e ssh user@host:/source /dest"
+  }
+]

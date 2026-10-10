@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a network for VLAN tagged interface",
+    "output": "<think>\nWe're being asked to create a network for VLAN tagged interface.\nLet me think through this step by step.\nFor this, printf is the right tool — printf operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nprintf '[Match]\\nName=eth0.10\\n[Network]\\nDHCP=ipv4\\n' > /etc/systemd/network/10-vlan-interface.network"
+  },
+  {
+    "instruction": "Configure DHCP use DNS from DHCP server",
+    "output": "<think>\nThe user wants to configure DHCP use DNS from DHCP server.\nLet me consider what makes sense here.\nI'll reach for printf here because printf operations.\n</think>\nprintf '[DHCPv4]\\nUseDNS=true\\n' > /etc/systemd/network/10-dhcp-dns.network"
+  },
+  {
+    "instruction": "Stop networkd service",
+    "output": "<think>\nThe user wants to stop networkd service.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl stop systemd-networkd"
+  },
+  {
+    "instruction": "Configure wireless network",
+    "output": "<think>\nSo we need to configure wireless network.\nI'd use printf for this — printf operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nprintf '[Match]\\nName=wlan0\\n[Network]\\nDHCP=ipv4\\n' > /etc/systemd/network/10-wifi.network"
+  },
+  {
+    "instruction": "Reload network configuration",
+    "output": "<think>\nAlright, we need to reload network configuration.\nI'd use networkctl for this — network link status.\nQuick verification after execution to be safe.\n</think>\nnetworkctl reload"
+  },
+  {
+    "instruction": "Set bond primary slave",
+    "output": "<think>\nThe user wants to set bond primary slave.\nFirst, let me understand what's needed here.\nI'd use printf for this — printf operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nprintf '[Bond]\\nPrimarySlave=eth0\\n' > /etc/systemd/network/10-bond-primary.netdev"
+  },
+  {
+    "instruction": "Create a dummy interface",
+    "output": "<think>\nThe task requires us to create a dummy interface.\nLet me think about the best approach.\nI'd use printf for this — printf operations.\n</think>\nprintf '[NetDev]\\nName=dummy0\\nKind=dummy\\n' > /etc/systemd/network/10-dummy.netdev"
+  },
+  {
+    "instruction": "List all link config files",
+    "output": "<think>\nThe user wants to list all link config files.\nFor this, ls is the right tool — ls operations.\nLet me verify afterward that it worked correctly.\n</think>\nls /etc/systemd/network/*.link"
+  },
+  {
+    "instruction": "Display link status in JSON format",
+    "output": "<think>\nThe user wants to display link status in JSON format.\nLet me break this down.\nnetworkctl is what we need — network link status.\n</think>\nnetworkctl --json=pretty status"
+  },
+  {
+    "instruction": "Create bridge port config",
+    "output": "<think>\nNeed to create bridge port config.\nLet me break this down.\nI'd use printf for this — printf operations.\nOne command does the job. Simple is better.\n</think>\nprintf '[Match]\\nName=eth0\\n[Network]\\nBridge=br0\\n' > /etc/systemd/network/20-eth0-bridge-member.network"
+  },
+  {
+    "instruction": "View networkd journal logs",
+    "output": "<think>\nSo the request is to view networkd journal logs.\nLet me consider what makes sense here.\nThe tool for this job is journalctl — checking systemd logs.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u systemd-networkd"
+  },
+  {
+    "instruction": "Set DHCP lease timeout",
+    "output": "<think>\nNeed to set DHCP lease timeout.\nprintf is what we need — printf operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nprintf '[DHCPv4]\\nMaxAttempts=10\\n' > /etc/systemd/network/10-dhcp-timeout.network"
+  },
+  {
+    "instruction": "Forcibly reconfigure all interfaces",
+    "output": "<think>\nWe're being asked to forcibly reconfigure all interfaces.\nThis calls for networkctl. Network link status.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nnetworkctl reconfigure"
+  },
+  {
+    "instruction": "Configure route table",
+    "output": "<think>\nWe're being asked to configure route table.\nLet me reason through this.\nprintf is what we need — printf operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nprintf '[Match]\\nName=eth0\\n[Route]\\nDestination=10.0.0.0/8\\nGateway=192.168.1.1\\nTable=100\\n' > /etc/systemd/network/10-route.network"
+  },
+  {
+    "instruction": "Check status of a specific link",
+    "output": "<think>\nThe user wants to check status of a specific link.\nLet me think through this step by step.\nnetworkctl is what we need — network link status.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nnetworkctl status eth0"
+  },
+  {
+    "instruction": "Create network config with DNS server list",
+    "output": "<think>\nAlright, we need to create network config with DNS server list.\nLet me break this down.\nBest tool here is printf — printf operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nprintf '[Match]\\nName=eth0\\n[Network]\\nDHCP=no\\nDNS=8.8.8.8\\nDNS=1.1.1.1\\nAddress=192.168.1.10/24\\nGateway=192.168.1.1\\n' > /etc/systemd/network/10-static-dns.network"
+  },
+  {
+    "instruction": "Configure DHCP client identifier type",
+    "output": "<think>\nWe're being asked to configure DHCP client identifier type.\nLet me reason through this.\nprintf is what we need — printf operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nprintf '[DHCPv4]\\nClientIdentifier=mac\\n' > /etc/systemd/network/10-dhcp-client-id.network"
+  },
+  {
+    "instruction": "Configure DHCP with hostname",
+    "output": "<think>\nThe goal is to configure DHCP with hostname.\nThis calls for printf. Printf operations.\nOne command does the job. Simple is better.\n</think>\nprintf '[Match]\\nName=eth0\\n[Network]\\nDHCP=ipv4\\n[DHCPv4]\\nHostname=myhost\\n' > /etc/systemd/network/10-dhcp-hostname.network"
+  },
+  {
+    "instruction": "Create a VLAN netdev",
+    "output": "<think>\nWe should create a VLAN netdev.\nThis calls for printf. Printf operations.\nI'll check the output to make sure it did what we expected.\n</think>\nprintf '[NetDev]\\nName=vlan10\\nKind=vlan\\n[VLAN]\\nId=10\\n' > /etc/systemd/network/15-vlan10.netdev"
+  },
+  {
+    "instruction": "Configure DHCP use NTP from server",
+    "output": "<think>\nThe user wants to configure DHCP use NTP from server.\nLet me break this down.\nI'll reach for printf here because printf operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nprintf '[DHCPv4]\\nUseNTP=true\\n' > /etc/systemd/network/10-dhcp-ntp.network"
+  },
+  {
+    "instruction": "Restart networkd service",
+    "output": "<think>\nThis is asking us to restart networkd service.\nThis calls for systemctl. Managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl restart systemd-networkd"
+  },
+  {
+    "instruction": "Configure IPv6 on interface",
+    "output": "<think>\nWe should configure IPv6 on interface.\nBest tool here is printf — printf operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nprintf '[Match]\\nName=eth0\\n[Network]\\nIPv6AcceptRA=yes\\nAddress=2001:db8::1/64\\nGateway=2001:db8::ff\\n' > /etc/systemd/network/10-ipv6.network"
+  }
+]

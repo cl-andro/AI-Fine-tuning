@@ -1,0 +1,23 @@
+[
+  {"instruction": "Store a key-value pair in Consul KV", "output": "consul kv put redis/config/maxconn 100\nSuccess! Data written to: redis/config/maxconn"},
+  {"instruction": "Store a JSON value in Consul KV", "output": "consul kv put app/config '{\"host\":\"db1\",\"port\":5432,\"ssl\":true}'\nSuccess! Data written to: app/config"},
+  {"instruction": "Retrieve a value from Consul KV", "output": "consul kv get redis/config/maxconn\n100"},
+  {"instruction": "Retrieve detailed metadata from Consul KV", "output": "consul kv get -detailed redis/config/maxconn\nCreateIndex      525\nFlags            0\nKey              redis/config/maxconn\nLockIndex        0\nModifyIndex      525\nSession          -\nValue            100"},
+  {"instruction": "List all keys under a Consul KV prefix", "output": "consul kv list redis/\nredis/config/maxconn\nredis/config/timeout\nredis/config/poolsize\nredis/secrets/password"},
+  {"instruction": "List only keys (no values) under a prefix", "output": "consul kv get -keys redis/\nredis/config/maxconn\nredis/config/poolsize\nredis/config/timeout\nredis/secrets/password"},
+  {"instruction": "Delete a single key from Consul KV", "output": "consul kv delete redis/config/timeout\nSuccess! Data deleted at key: redis/config/timeout"},
+  {"instruction": "Delete all keys under a Consul KV prefix", "output": "consul kv delete -prefix redis/\nSuccess! Data deleted at prefix: redis/"},
+  {"instruction": "Export Consul KV data to JSON", "output": "consul kv export -prefix app/\n[\n  {\n    \"key\": \"app/config\",\n    \"value\": \"eyJob3N0IjoiZGIxIn0=\"\n  },\n  {\n    \"key\": \"app/version\",\n    \"value\": \"Mw==\"\n  }\n]"},
+  {"instruction": "Import keys from JSON into Consul KV", "output": "consul kv import \"$(cat ./backup.json)\"\nImported 5 keys from JSON"},
+  {"instruction": "Watch a Consul KV key for changes", "output": "consul watch -type key -key redis/config/maxconn\nOld: 100\nNew: 200\n\nOld: 200\nNew: 300"},
+  {"instruction": "Watch Consul KV keys under a prefix", "output": "consul watch -type keyprefix -prefix app/config/\n{\"key\":\"app/config/host\",\"value\":\"dGIy\"}\n{\"key\":\"app/config/port\",\"value\":\"NTQzMg==\"}"},
+  {"instruction": "Watch Consul service health", "output": "consul watch -type service -service web\n{\n  \"Key\": \"web\",\n  \"Nodes\": [\n    {\"Node\": \"node1\",\"Address\":\"10.0.0.1\",\"Status\":\"passing\"},\n    {\"Node\": \"node2\",\"Address\":\"10.0.0.2\",\"Status\":\"passing\"}\n  ]\n}"},
+  {"instruction": "Watch Consul for node changes", "output": "consul watch -type nodes\n[\n  {\"ID\":\"12345678-abcd\",\"Node\":\"node1\",\"Address\":\"10.0.0.1\"},\n  {\"ID\":\"23456789-bcde\",\"Node\":\"node2\",\"Address\":\"10.0.0.2\"}\n]"},
+  {"instruction": "Watch Consul for service registration changes", "output": "consul watch -type services\n{\n  \"consul\": [\"\"],\n  \"web\": [\"production\"],\n  \"db\": [\"production\"]\n}"},
+  {"instruction": "Retrieve a binary value from Consul KV", "output": "consul kv get -base64 app/config/secret\nc3VwZXJfc2VjcmV0X3ZhbHVl"},
+  {"instruction": "Store a value in Consul KV with explicit flags", "output": "consul kv put -flags 42 app/config/debug true\nSuccess! Data written to: app/config/debug"},
+  {"instruction": "Check if a Consul KV key exists", "output": "consul kv get app/config/missing-key\nError! No key exists at: app/config/missing-key"},
+  {"instruction": "Retrieve keys with recursive prefix from Consul KV", "output": "consul kv get -recurse app/\napp/config: {\"host\":\"db1\"}\napp/version: 3\napp/debug: true"},
+  {"instruction": "Export all Consul KV data", "output": "consul kv export\n[\n  {\"key\":\"app/config\",\"value\":\"eyJob3N0IjoiZGIxIn0=\"},\n  {\"key\":\"app/version\",\"value\":\"Mw==\"},\n  {\"key\":\"redis/config/maxconn\",\"value\":\"MTAw\"}\n]"},
+  {"instruction": "Watch Consul for checks passing/failing", "output": "consul watch -type checks -service web\n[\n  {\n    \"Node\": \"node1\",\n    \"CheckID\": \"service:web\",\n    \"Name\": \"Service 'web' check\",\n    \"Status\": \"passing\",\n    \"Notes\": \"\",\n    \"Output\": \"HTTP GET http://localhost:80/health: 200 OK\",\n    \"ServiceID\": \"web-1\",\n    \"ServiceName\": \"web\"\n  }\n]"}
+]

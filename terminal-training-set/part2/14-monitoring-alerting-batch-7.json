@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Install and configure Prometheus",
+    "output": "<think>\nWe're being asked to install and configure Prometheus.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y prometheus && systemctl enable --now prometheus"
+  },
+  {
+    "instruction": "Reload Prometheus config without restart",
+    "output": "<think>\nWe're being asked to reload Prometheus config without restart.\nLet me reason through this.\nI'd use killall for this — killall operations.\nLet me verify afterward that it worked correctly.\n</think>\nkillall -HUP prometheus"
+  },
+  {
+    "instruction": "Check Prometheus targets status via API",
+    "output": "<think>\nSo the request is to check Prometheus targets status via API.\nFirst, let me understand what's needed here.\nI'd use curl for this — making HTTP requests.\nI've added -s to summarize or silent mode — important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job: .labels.job, health: .health}'"
+  },
+  {
+    "instruction": "Query Prometheus for CPU usage",
+    "output": "<think>\nThe task requires us to query Prometheus for CPU usage.\nLet me consider what makes sense here.\nI'd use curl for this — making HTTP requests.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ncurl -s 'http://localhost:9090/api/v1/query?query=100+-+(avg+by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))*100' | jq .data.result"
+  },
+  {
+    "instruction": "Install Grafana from APT repo",
+    "output": "<think>\nThe task requires us to install Grafana from APT repo.\nBest tool here is wget — downloading files.\nThe -o flag means output to file, OR operator in find, which matters here because important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -qO- https://packages.grafana.com/gpg.key | gpg --dearmor -o /usr/share/keyrings/grafana.gpg && echo 'deb [signed-by=/usr/share/keyrings/grafana.gpg] https://packages.grafana.com/oss/deb stable main' > /etc/apt/sources.list.d/grafana.list && apt update && apt install -y grafana && systemctl enable --now grafana-server"
+  },
+  {
+    "instruction": "Check Grafana service status",
+    "output": "<think>\nThe task requires us to check Grafana service status.\nHere's how I'd approach this.\nThe tool for this job is systemctl — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsystemctl status grafana-server --no-pager -l"
+  },
+  {
+    "instruction": "Reset Grafana admin password",
+    "output": "<think>\nSo we need to reset Grafana admin password.\nFirst, let me understand what's needed here.\nI'll reach for grafana-cli here because Grafana management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ngrafana-cli admin reset-admin-password myNewPass123"
+  },
+  {
+    "instruction": "Install and enable Alertmanager",
+    "output": "<think>\nNeed to install and enable Alertmanager.\nFor this, apt is the right tool — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y prometheus-alertmanager && systemctl enable --now prometheus-alertmanager"
+  },
+  {
+    "instruction": "Silence an alert in Alertmanager via API",
+    "output": "<think>\nNeed to silence an alert in Alertmanager via API.\nLet me think about the best approach.\nBest tool here is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://localhost:9093/api/v2/silences -d '{\"matchers\":[{\"name\":\"alertname\",\"value\":\"HighCpuUsage\",\"isRegex\":false,\"isEqual\":true}],\"startsAt\":\"2026-07-25T12:00:00Z\",\"endsAt\":\"2026-07-26T12:00:00Z\",\"createdBy\":\"admin\",\"comment\":\"planned maintenance\"}' -H 'Content-Type: application/json'"
+  },
+  {
+    "instruction": "Install Loki and Promtail",
+    "output": "<think>\nSo we need to install Loki and Promtail.\nLet me consider what makes sense here.\nThe tool for this job is wget — downloading files.\nThe -d flag handles directory listing, don't descend. Important because this controls how the output is formatted.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nAfter running, I'll confirm the result looks right.\n</think>\nwget -qO- https://raw.githubusercontent.com/grafana/loki/main/cmd/loki/loki-local-config.yaml -O /etc/loki-config.yaml && wget https://github.com/grafana/loki/releases/latest/download/loki-linux-amd64.zip && unzip loki-linux-amd64.zip -d /usr/local/bin/ && mv /usr/local/bin/loki-linux-amd64 /usr/local/bin/loki && chmod +x /usr/local/bin/loki && useradd --system loki && mkdir -p /var/lib/loki && loki --config.file=/etc/loki-config.yaml &"
+  },
+  {
+    "instruction": "Install Promtail for log shipping",
+    "output": "<think>\nSo we need to install Promtail for log shipping.\nI'd use wget for this — downloading files.\nWhy -d? Directory listing, don't descend. without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nwget https://github.com/grafana/loki/releases/latest/download/promtail-linux-amd64.zip && unzip promtail-linux-amd64.zip -d /usr/local/bin/ && mv /usr/local/bin/promtail-linux-amd64 /usr/local/bin/promtail && chmod +x /usr/local/bin/promtail && useradd --system promtail && promtail --config.file=/etc/promtail-config.yaml &"
+  },
+  {
+    "instruction": "Query Loki for recent logs",
+    "output": "<think>\nThis is asking us to query Loki for recent logs.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s 'http://localhost:3100/loki/api/v1/query_range?query={job=%22syslog%22}&limit=10' | jq .data.result"
+  },
+  {
+    "instruction": "Install Tempo (distributed tracing)",
+    "output": "<think>\nThe user wants to install Tempo (distributed tracing).\nLet me break this down.\nwget is what we need — downloading files.\nThe -p flag handles create parent directories as needed. Important because standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\nQuick verification after execution to be safe.\n</think>\nwget https://github.com/grafana/tempo/releases/latest/download/tempo-linux-amd64 -O /usr/local/bin/tempo && chmod +x /usr/local/bin/tempo && mkdir -p /etc/tempo /var/lib/tempo && useradd --system tempo && tempo --config.file=/etc/tempo/tempo.yaml &"
+  },
+  {
+    "instruction": "Install Jaeger all-in-one",
+    "output": "<think>\nWe're being asked to install Jaeger all-in-one.\nFirst, let me understand what's needed here.\nI'll reach for wget here because downloading files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nwget https://github.com/jaegertracing/jaeger/releases/latest/download/jaeger-linux-amd64.tar.gz && tar -xzf jaeger-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 && useradd --system jaeger && /usr/local/bin/jaeger-all-in-one --collector.zipkin.host-port=:9411 &"
+  },
+  {
+    "instruction": "Query Jaeger for services",
+    "output": "<think>\nWe should query Jaeger for services.\nThe tool for this job is curl — making HTTP requests.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s http://localhost:16686/api/services | jq .data.services"
+  },
+  {
+    "instruction": "Install OpenTelemetry Collector",
+    "output": "<think>\nThe user wants to install OpenTelemetry Collector.\nwget is what we need — downloading files.\nI'm using -p for create parent directories as needed — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\nAfter running, I'll confirm the result looks right.\n</think>\nwget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/latest/download/otelcol-linux-amd64 -O /usr/local/bin/otelcol && chmod +x /usr/local/bin/otelcol && mkdir -p /etc/otelcol && useradd --system otelcol && otelcol --config=/etc/otelcol/config.yaml &"
+  },
+  {
+    "instruction": "Send a trace via OpenTelemetry Collector",
+    "output": "<think>\nSo the request is to send a trace via OpenTelemetry Collector.\ncurl is what we need — making HTTP requests.\nThe -d flag means directory listing, don't descend, which matters here because without it the command won't work as we need.\nWhy -H? Follow symlinks on command line only. this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://localhost:4318/v1/traces -d '{\"resourceSpans\":[{\"scopeSpans\":[{\"spans\":[{\"traceId\":\"0af7651916cd43dd8448eb211c80319c\",\"spanId\":\"b7ad6b7169203331\",\"parentSpanId\":\"b7ad6b7169203330\",\"name\":\"test-span\",\"startTimeUnixNano\":\"1721865600000000000\",\"endTimeUnixNano\":\"1721865601000000000\"}]}]}]}' -H 'Content-Type: application/json'"
+  },
+  {
+    "instruction": "List all active Prometheus alerts",
+    "output": "<think>\nSo the request is to list all active Prometheus alerts.\nLet me reason through this.\nBest tool here is curl — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:9090/api/v1/alerts | jq '.data.alerts[] | {name: .labels.alertname, state: .state}'"
+  },
+  {
+    "instruction": "Check Grafana datasources via API",
+    "output": "<think>\nThe user wants to check Grafana datasources via API.\nLet me reason through this.\nThis calls for curl. Making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/datasources | jq '.[] | {name: .name, type: .type, url: .url}'"
+  },
+  {
+    "instruction": "Add Loki datasource to Grafana",
+    "output": "<think>\nSo the request is to add Loki datasource to Grafana.\nThe tool for this job is curl — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because needed for this specific use case.\nThe -d flag handles directory listing, don't descend. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s -X POST http://admin:admin@localhost:3000/api/datasources -d '{\"name\":\"Loki\",\"type\":\"loki\",\"url\":\"http://localhost:3100\",\"access\":\"proxy\",\"basicAuth\":false}' -H 'Content-Type: application/json'"
+  },
+  {
+    "instruction": "Export Grafana dashboard as JSON",
+    "output": "<think>\nThis is asking us to export Grafana dashboard as JSON.\nFor this, curl is the right tool — making HTTP requests.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/dashboards/uid/cpu-usage | jq .dashboard > /tmp/grafana-dashboard.json"
+  },
+  {
+    "instruction": "Install prometheus-node-exporter",
+    "output": "<think>\nNeed to install prometheus-node-exporter.\nLet me consider what makes sense here.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y prometheus-node-exporter && systemctl enable --now prometheus-node-exporter"
+  },
+  {
+    "instruction": "Check node-exporter metrics endpoint",
+    "output": "<think>\nThe task requires us to check node-exporter metrics endpoint.\nLet me consider what makes sense here.\nI'd use curl for this — making HTTP requests.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s http://localhost:9100/metrics | head -20"
+  },
+  {
+    "instruction": "Reload Alertmanager config",
+    "output": "<think>\nSo the request is to reload Alertmanager config.\nThis calls for killall. Killall operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nkillall -HUP prometheus-alertmanager"
+  }
+]

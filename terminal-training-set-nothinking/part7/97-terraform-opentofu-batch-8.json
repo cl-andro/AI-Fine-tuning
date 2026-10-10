@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Terraform Cloud API token for CLI",
+    "output": "echo 'credentials \"app.terraform.io\" { token = \"xxxxx\" }' > ~/.terraformrc"
+  },
+  {
+    "instruction": "Login to Terraform Cloud from CLI",
+    "output": "terraform login"
+  },
+  {
+    "instruction": "Set Terraform Cloud workspace name in config",
+    "output": "echo 'terraform { cloud { organization = \"my-org\" workspaces { name = \"prod-infra\" } } }' > cloud.tf"
+  },
+  {
+    "instruction": "Run init with Terraform Cloud remote execution",
+    "output": "terraform init"
+  },
+  {
+    "instruction": "Run plan on Terraform Cloud remotely",
+    "output": "terraform plan"
+  },
+  {
+    "instruction": "Trigger a Terraform Cloud run via API",
+    "output": "curl -s --header \"Authorization: Bearer $TOKEN\" --header \"Content-Type: application/vnd.api+json\" -X POST https://app.terraform.io/api/v2/runs -d '{\"data\":{\"type\":\"runs\",\"relationships\":{\"workspace\":{\"data\":{\"type\":\"workspaces\",\"id\":\"ws-xxxxx\"}}}}}'"
+  },
+  {
+    "instruction": "List Terraform Cloud workspaces",
+    "output": "terraform workspace list"
+  },
+  {
+    "instruction": "Set Terraform Cloud variables via API",
+    "output": "curl -s --header \"Authorization: Bearer $TOKEN\" --header \"Content-Type: application/vnd.api+json\" -X POST https://app.terraform.io/api/v2/vars -d '{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"region\",\"value\":\"us-east-1\",\"category\":\"terraform\"}}}'"
+  },
+  {
+    "instruction": "Check Terraform Cloud run status via API",
+    "output": "curl -s --header \"Authorization: Bearer $TOKEN\" https://app.terraform.io/api/v2/runs/run-xxxxx | jq -r '.data.attributes.status'"
+  },
+  {
+    "instruction": "Create a Terraform Cloud team API token",
+    "output": "curl -s --header \"Authorization: Bearer $TOKEN\" -X POST https://app.terraform.io/api/v2/teams/team-xxxxx/authentication-token | jq -r '.data.attributes.token'"
+  },
+  {
+    "instruction": "Use Terraform Cloud policy sets via API",
+    "output": "curl -s --header \"Authorization: Bearer $TOKEN\" https://app.terraform.io/api/v2/policy-sets"
+  },
+  {
+    "instruction": "Set up remote state data source from another workspace",
+    "output": "echo 'data \"terraform_remote_state\" \"shared\" { backend = \"remote\" config = { organization = \"my-org\" workspaces = { name = \"shared-infra\" } } }' > remote.tf"
+  },
+  {
+    "instruction": "Use local state data source",
+    "output": "echo 'data \"terraform_remote_state\" \"local\" { backend = \"local\" config = { path = \"../shared/terraform.tfstate\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use S3 remote state data source",
+    "output": "echo 'data \"terraform_remote_state\" \"network\" { backend = \"s3\" config = { bucket = \"tf-state\" key = \"network/terraform.tfstate\" region = \"us-east-1\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use consul remote state data source",
+    "output": "echo 'data \"terraform_remote_state\" \"db\" { backend = \"consul\" config = { path = \"tf/state/db\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Use etcd remote state data source",
+    "output": "echo 'data \"terraform_remote_state\" \"config\" { backend = \"etcdv3\" config = { endpoints = [\"http://etcd:2379\"] path = \"/tf/kv/state\" } }' > remote.tf"
+  },
+  {
+    "instruction": "Check if a local Terraform state is locked",
+    "output": "ls -la .terraform/terraform.tfstate.lock.info 2>/dev/null && echo 'locked' || echo 'unlocked'"
+  },
+  {
+    "instruction": "Remove a stale local lock file",
+    "output": "rm -f .terraform/terraform.tfstate.lock.info"
+  },
+  {
+    "instruction": "Regenerate the .terraform.lock.hcl file",
+    "output": "rm .terraform.lock.hcl && terraform init"
+  },
+  {
+    "instruction": "Show the dependency lock file contents",
+    "output": "cat .terraform.lock.hcl"
+  },
+  {
+    "instruction": "Update the lock file for new provider hashes",
+    "output": "terraform providers lock -platform=linux_amd64 -platform=darwin_amd64"
+  },
+  {
+    "instruction": "Check provider hash mismatch error",
+    "output": "terraform providers lock -platform=linux_amd64"
+  },
+  {
+    "instruction": "Use sentinel with Terraform Cloud",
+    "output": "cat .terraform.lock.hcl | grep -c 'hash'"
+  },
+  {
+    "instruction": "Cache providers locally for offline use",
+    "output": "terraform providers mirror /opt/terraform/providers"
+  },
+  {
+    "instruction": "Use a custom plugin cache directory",
+    "output": "export TF_PLUGIN_CACHE_DIR=/opt/terraform/plugin-cache && terraform init"
+  }
+]

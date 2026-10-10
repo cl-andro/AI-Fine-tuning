@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Look up A records with short output for example.com",
+    "output": "<think>\nWe're being asked to look up A records with short output for example.com.\nNo need for complex pipelines here — one command is sufficient.\n</think>\n93.184.216.34\n\nUse +short to get a concise answer without dig header information."
+  },
+  {
+    "instruction": "Trace the DNS delegation chain for example.com",
+    "output": "<think>\nSo the request is to trace the DNS delegation chain for example.com.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> example.com +trace\n;; global options: +cmd\n.                       518088  IN      NS      a.root-servers.net.\n.                       518088  IN      NS      b.root-servers.net.\n.                       518088  IN      NS      c.root-servers.net.\n;; Received 525 bytes from 198.41.0.4"
+  },
+  {
+    "instruction": "Show only the answer section for example.com MX",
+    "output": "<think>\nThe goal is to show only the answer section for example.com MX.\nexample.com. is what we need — example.com. operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nexample.com.\t\t3600\tIN\tMX\t10 mail.example.com.\nexample.com.\t\t3600\tIN\tMX\t20 backup-mail.example.com.\n\nUse +noauthority +noadditional to further limit output."
+  },
+  {
+    "instruction": "Show only the additional section for an NS query",
+    "output": "<think>\nAlright, we need to show only the additional section for an NS query.\nBest tool here is a.iana-servers.net. — a.iana-servers.net. operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\na.iana-servers.net.\t86400\tIN\tA\t199.43.0.53\nb.iana-servers.net.\t86400\tIN\tA\t199.43.1.53\n\nAdditional section contains glue records and EDNS information."
+  },
+  {
+    "instruction": "Display query statistics for a DNS lookup",
+    "output": "<think>\nThe goal is to display query statistics for a DNS lookup.\nHere's how I'd approach this.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\n; Query time: 12 msec\n; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Format output with multiline for readability",
+    "output": "<think>\nWe're being asked to format output with multiline for readability.\nLet me break this down.\nI'd use example.com. for this — example.com. operations.\nI'll check the output to make sure it did what we expected.\n</think>\nexample.com.\t\t3600\n\t\t\tIN\n\t\t\tA\n\t\t\t93.184.216.34\n\nMultiline format places each field on a separate line for easier parsing."
+  },
+  {
+    "instruction": "Suppress all output sections except the answer",
+    "output": "<think>\nWe should suppress all output sections except the answer.\nLet me consider what makes sense here.\nI'd use example.com. for this — example.com. operations.\n</think>\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\nUsing +noall +answer is the most common way to get clean output."
+  },
+  {
+    "instruction": "Query a specific DNS server for a record",
+    "output": "<think>\nSo we need to query a specific DNS server for a record.\nLet me break this down.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> @8.8.8.8 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 88990\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 5 msec\n;; SERVER: 8.8.8.8"
+  },
+  {
+    "instruction": "Query over TCP instead of UDP",
+    "output": "<think>\nSo we need to query over TCP instead of UDP.\nLet me think about the best approach.\nAfter running, I'll confirm the result looks right.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +tcp example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 99001\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 25 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Disable DNSSEC validation for a query",
+    "output": "<think>\nSo the request is to disable DNSSEC validation for a query.\nLet me think about the best approach.\nQuick verification after execution to be safe.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +nodnssec example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 00112\n;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 11 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Query with DNSSEC checking enabled (DO bit set)",
+    "output": "<think>\nWe should query with DNSSEC checking enabled (DO bit set).\nCheck the output for errors before proceeding to the next step.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +dnssec example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 11223\n;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; AUTHORITY SECTION:\nexample.com.\t\t3600\tIN\tRRSIG\tA 13 2 3600 20240801000000 20240725000000 12345 example.com. ...\n\n;; Query time: 20 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Use domain= format for reverse lookups",
+    "output": "<think>\nSo the request is to use domain= format for reverse lookups.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +domain=in-addr.arpa 34.216.184.93 PTR\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 22334\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\n34.216.184.93.in-addr.arpa. 3600 IN\tPTR\texample.com.\n\n;; Query time: 14 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Set the query timeout to 10 seconds",
+    "output": "<think>\nThis is asking us to set the query timeout to 10 seconds.\nLet me think about the best approach.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +time=10 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 33445\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 9 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Retry a query up to 5 times on failure",
+    "output": "<think>\nNeed to retry a query up to 5 times on failure.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> +tries=5 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 44556\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 10 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Perform an IXFR (incremental zone transfer) query",
+    "output": "<think>\nSo the request is to perform an IXFR (incremental zone transfer) query.\nLet me think through this step by step.\nLet me verify afterward that it worked correctly.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> @ns1.example.com example.com IXFR=2024072500\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55667\n;; flags: qr rd; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tSOA\tsns.dns.icann.org. noc.dns.icann.org. 2024072501 7200 3600 1209600 3600\n\n;; Query time: 45 msec\n;; SERVER: 199.43.0.53"
+  },
+  {
+    "instruction": "Perform a full AXFR zone transfer",
+    "output": "<think>\nWe should perform a full AXFR zone transfer.\nLet me think about the best approach.\nAfter running, I'll confirm the result looks right.\n</think>\n; <<>> DiG 9.18.24-1-Debian <<>> @ns1.example.com example.com AXFR\n;; global options: +cmd\n; Transfer failed: zone transfer denied.\n\n;; Query time: 5 msec\n;; SERVER: 199.43.0.53"
+  },
+  {
+    "instruction": "Query with short output showing only TTL and value",
+    "output": "<think>\nAlright, we need to query with short output showing only TTL and value.\nQuick verification after execution to be safe.\n</think>\n3600 93.184.216.34\n\nUse +short to get minimal output for scripting purposes."
+  },
+  {
+    "instruction": "Show the query time only",
+    "output": "<think>\nThe user wants to show the query time only.\n</think>\n;; Query time: 12 msec\n\nPipe output through grep to extract specific values from dig output."
+  },
+  {
+    "instruction": "Query with the +noidnout flag to suppress hostname output",
+    "output": "<think>\nNeed to query with the +noidnout flag to suppress hostname output.\nLet me reason through this.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\n93.184.216.34\n\n+noidnout suppresses the hostname line when using +short."
+  },
+  {
+    "instruction": "Use dig +nocomment to suppress comment lines",
+    "output": "<think>\nAlright, we need to use dig +nocomment to suppress comment lines.\nI'd use dig for this — DNS querying.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndig +nocomment example.com A"
+  }
+]

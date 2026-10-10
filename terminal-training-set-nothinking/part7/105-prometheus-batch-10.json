@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Check Prometheus TSDB WAL stats",
+    "output": "curl -s http://localhost:9090/api/v1/status/tsdb | jq '.data.walSize'"
+  },
+  {
+    "instruction": "Check Prometheus head chunks",
+    "output": "curl -s http://localhost:9090/api/v1/status/tsdb | jq '.data.headChunks'"
+  },
+  {
+    "instruction": "Check Prometheus head series count",
+    "output": "curl -s http://localhost:9090/api/v1/status/tsdb | jq '.data.numSeries'"
+  },
+  {
+    "instruction": "Check Prometheus head samples",
+    "output": "curl -s http://localhost:9090/api/v1/status/tsdb | jq '.data.headSamples'"
+  },
+  {
+    "instruction": "Use Prometheus with basic auth in curl",
+    "output": "curl -u prom:mypass 'http://localhost:9090/api/v1/query?query=up'"
+  },
+  {
+    "instruction": "Use Prometheus with bearer token in curl",
+    "output": "curl -H 'Authorization: Bearer token123' 'http://localhost:9090/api/v1/query?query=up'"
+  },
+  {
+    "instruction": "Format PromQL query output as JSON with jq",
+    "output": "curl 'http://localhost:9090/api/v1/query?query=up' | jq '.data.result[].value[1]'"
+  },
+  {
+    "instruction": "Find metric names matching a pattern",
+    "output": "curl -s 'http://localhost:9090/api/v1/label/__name__/values' | jq -r '.data[] | select(startswith(\"node_\"))'"
+  },
+  {
+    "instruction": "Explore Prometheus metrics via /metrics endpoint",
+    "output": "curl -s http://localhost:9090/metrics | head -50"
+  },
+  {
+    "instruction": "Get total number of time series in Prometheus",
+    "output": "curl -s http://localhost:9090/api/v1/query?query=prometheus_tsdb_head_series | jq '.data.result[0].value[1]'"
+  },
+  {
+    "instruction": "PromQL query to detect rate spike",
+    "output": "rate(http_requests_total[5m]) > 100 * rate(http_requests_total[5m] offset 1h)"
+  },
+  {
+    "instruction": "PromQL anomaly detection with z-score",
+    "output": "abs(rate(http_requests_total[5m]) - avg_over_time(rate(http_requests_total[5m])[7d])) > 3 * stddev_over_time(rate(http_requests_total[5m])[7d])"
+  },
+  {
+    "instruction": "Calculate the number of active alerts",
+    "output": "count(ALERTS{alertstate=\"firing\"}) by (alertname)"
+  },
+  {
+    "instruction": "Check Prometheus rule eval duration",
+    "output": "rate(prometheus_evaluator_duration_seconds_sum[5m])"
+  },
+  {
+    "instruction": "Check Prometheus scrape duration",
+    "output": "scrape_duration_seconds"
+  },
+  {
+    "instruction": "Check Prometheus scrape samples per target",
+    "output": "scrape_samples_scraped"
+  },
+  {
+    "instruction": "Check Prometheus remote write latency",
+    "output": "rate(prometheus_remote_storage_succeeded_requests_total[5m]) / rate(prometheus_remote_storage_requests_total[5m])"
+  },
+  {
+    "instruction": "Check rate of failed remote write requests",
+    "output": "rate(prometheus_remote_storage_failed_requests_total[5m])"
+  },
+  {
+    "instruction": "Use promtool to extract series from snapshot",
+    "output": "promtool tsdb dump /data/prometheus"
+  },
+  {
+    "instruction": "Analyze TSDB block sizes",
+    "output": "promtool tsdb analyze /data/prometheus"
+  },
+  {
+    "instruction": "List TSDB blocks",
+    "output": "promtool tsdb list /data/prometheus"
+  },
+  {
+    "instruction": "Promtool tsdb analyze with extended output",
+    "output": "promtool tsdb analyze --extended /data/prometheus"
+  },
+  {
+    "instruction": "Check Prometheus runtime info via API",
+    "output": "curl -s http://localhost:9090/api/v1/status/runtimeinfo | jq '.'"
+  },
+  {
+    "instruction": "Check Prometheus build info via API",
+    "output": "curl -s http://localhost:9090/api/v1/status/buildinfo | jq '.'"
+  }
+]

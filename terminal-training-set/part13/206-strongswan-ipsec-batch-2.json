@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "How to show charon logging in real time",
+    "output": "<think>\nThe goal is to show charon logging in real time.\nLet me break this down.\njournalctl is what we need — checking systemd logs.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nThe -f flag handles force, suppress errors. Important because standard practice for this kind of operation.\nOne command does the job. Simple is better.\nOld logs can be large — add --since to limit the range and avoid huge output.\nAfter running, I'll confirm the result looks right.\n</think>\njournalctl -u strongswan-starter -f"
+  },
+  {
+    "instruction": "How to set charon debug log level",
+    "output": "<think>\nAlright, we need to set charon debug log level.\n</think>\necho 'charon {\n  syslog {\n    default = 2\n  }\n}' >> /etc/strongswan.d/charon-logging.conf"
+  },
+  {
+    "instruction": "How to check IPsec kernel SA count",
+    "output": "<think>\nNeed to check IPsec kernel SA count.\nLet me think about the best approach.\nI'll reach for ipsec here because IPsec VPN tunnel management.\nI'm using -c for count or create — without it the command won't work as we need.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\n</think>\nipsec listall | grep -c 'ESP\\|AH'"
+  },
+  {
+    "instruction": "How to flush IPsec SAs from kernel",
+    "output": "<think>\nThe task requires us to flush IPsec SAs from kernel.\nLet me think about the best approach.\nI'll reach for ipsec here because IPsec VPN tunnel management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nipsec down my-connection"
+  },
+  {
+    "instruction": "How to flush all IPsec SAs",
+    "output": "<think>\nWe're being asked to flush all IPsec SAs.\nipsec is what we need — IPsec VPN tunnel management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\nipsec stop && ipsec start"
+  },
+  {
+    "instruction": "How to list active IKE SAs",
+    "output": "<think>\nAlright, we need to list active IKE SAs.\nHere's how I'd approach this.\nThis calls for swanctl. Swanctl operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nswanctl --list-sas | grep -A10 'child-sas'"
+  },
+  {
+    "instruction": "How to check IKE version being used",
+    "output": "<think>\nThe user wants to check IKE version being used.\nLet me think about the best approach.\nI'd use swanctl for this — swanctl operations.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nswanctl --list-sas | grep -i ike"
+  },
+  {
+    "instruction": "How to show IPsec interface stats",
+    "output": "<think>\nWe should show IPsec interface stats.\nBest tool here is cat — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/net/ipsec_esp/statistics"
+  },
+  {
+    "instruction": "How to check strongSwan version",
+    "output": "<think>\nThe task requires us to check strongSwan version.\nThe tool for this job is ipsec — IPsec VPN tunnel management.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nipsec version"
+  },
+  {
+    "instruction": "How to check charon version",
+    "output": "<think>\nWe should check charon version.\nFirst, let me understand what's needed here.\nI'd use charon for this — charon operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ncharon --version"
+  },
+  {
+    "instruction": "How to configure IKEv2 in strongSwan",
+    "output": "<think>\nThis is asking us to configure IKEv2 in strongSwan.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  ikev2 {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    local {\n      auth = pubkey\n      certs = server.crt\n      id = server.example.com\n    }\n    remote {\n      auth = pubkey\n      id = client.example.com\n    }\n    children {\n      net {\n        local_ts = 10.0.0.0/24\n        remote_ts = 10.0.1.0/24\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to generate a CA certificate with pki",
+    "output": "<think>\nWe should generate a CA certificate with pki.\nFirst, let me understand what's needed here.\npki is what we need — pki operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\npki --gen --type ecdsa --size 256 --outform pem > ca.key && pki --self --ca --lifetime 3650 --in ca.key --dn 'CN=VPN CA, O=Example' --outform pem > ca.crt"
+  },
+  {
+    "instruction": "How to generate a server certificate with pki",
+    "output": "<think>\nThe task requires us to generate a server certificate with pki.\nHere's how I'd approach this.\nFor this, pki is the right tool — pki operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\npki --gen --type ecdsa --size 256 --outform pem > server.key && pki --pub --in server.key | pki --issue --cacert ca.crt --cakey ca.key --dn 'CN=server.example.com, O=Example' --san server.example.com --flag serverAuth --flag ikeIntermediate --outform pem > server.crt"
+  },
+  {
+    "instruction": "How to generate a client certificate with pki",
+    "output": "<think>\nThe goal is to generate a client certificate with pki.\nFor this, pki is the right tool — pki operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\npki --gen --type ecdsa --size 256 --outform pem > client.key && pki --pub --in client.key | pki --issue --cacert ca.crt --cakey ca.key --dn 'CN=client.example.com, O=Example' --san client.example.com --outform pem > client.crt"
+  },
+  {
+    "instruction": "How to generate a preshared key for IPsec",
+    "output": "<think>\nThis is asking us to generate a preshared key for IPsec.\nFirst, let me understand what's needed here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'mypresharedsecret' > /etc/ipsec.secrets"
+  },
+  {
+    "instruction": "How to set up PSK authentication in strongSwan",
+    "output": "<think>\nThe task requires us to set up PSK authentication in strongSwan.\nLet me break this down.\nLet me verify afterward that it worked correctly.\n</think>\necho '192.168.2.10 : PSK \"mypresharedkey\"' > /etc/ipsec.secrets"
+  },
+  {
+    "instruction": "How to configure swanctl.conf for IKEv2 PSK",
+    "output": "<think>\nThe user wants to configure swanctl.conf for IKEv2 PSK.\nHere's how I'd approach this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'connections {\n  ikev2-psk {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    local {\n      auth = psk\n      id = server\n    }\n    remote {\n      auth = psk\n      id = client\n    }\n    children {\n      net {\n        local_ts = 0.0.0.0/0\n        remote_ts = 0.0.0.0/0\n      }\n    }\n  }\n}' > /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up EAP for strongSwan",
+    "output": "<think>\nAlright, we need to set up EAP for strongSwan.\nLet me break this down.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'connections {\n  eap {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    pools = pool1\n    local {\n      auth = pubkey\n      certs = server.crt\n      id = server.example.com\n    }\n    remote {\n      auth = eap-mschapv2\n      eap_id = %any\n    }\n    children {\n      net {\n        local_ts = 0.0.0.0/0\n      }\n    }\n  }\n  pools {\n    pool1 {\n      addrs = 10.8.0.0/24\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to add a user for EAP in strongSwan",
+    "output": "<think>\nThe user wants to add a user for EAP in strongSwan.\nLet me consider what makes sense here.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'user1 : EAP \"password1\"' > /etc/ipsec.secrets"
+  },
+  {
+    "instruction": "How to reload swanctl credentials",
+    "output": "<think>\nWe should reload swanctl credentials.\nThis calls for swanctl. Swanctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nswanctl --load-creds"
+  },
+  {
+    "instruction": "How to reload swanctl connections",
+    "output": "<think>\nThe goal is to reload swanctl connections.\nI'll reach for swanctl here because swanctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nswanctl --load-conns"
+  },
+  {
+    "instruction": "How to verify swanctl configuration",
+    "output": "<think>\nSo we need to verify swanctl configuration.\nFirst, let me understand what's needed here.\nThe tool for this job is swanctl — swanctl operations.\n</think>\nswanctl --load-conns 2>&1"
+  },
+  {
+    "instruction": "How to test IPsec connection without bringing it up",
+    "output": "<think>\nNeed to test IPsec connection without bringing it up.\nLet me break this down.\nFor this, ipsec is the right tool — IPsec VPN tunnel management.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nipsec statusall | grep my-connection"
+  },
+  {
+    "instruction": "How to show strongSwan pools",
+    "output": "<think>\nWe should show strongSwan pools.\nLet me consider what makes sense here.\nThis calls for swanctl. Swanctl operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nswanctl --list-pools"
+  },
+  {
+    "instruction": "How to show IPsec kernel policies",
+    "output": "<think>\nAlright, we need to show IPsec kernel policies.\nLet me think about the best approach.\nThe tool for this job is ip — network interface configuration.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nip xfrm policy list"
+  },
+  {
+    "instruction": "How to show kernel SAD entries",
+    "output": "<think>\nNeed to show kernel SAD entries.\nLet me think about the best approach.\nI'll reach for ip here because network interface configuration.\nCheck the output for errors before proceeding to the next step.\n</think>\nip xfrm state list"
+  }
+]

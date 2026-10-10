@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to compute the hash of a video file to verify integrity",
+    "output": "<think>\nAlright, we need to compute the hash of a video file to verify integrity.\nI'll reach for sha256sum here because sha256sum operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nsha256sum video.mp4 > video.mp4.sha256"
+  },
+  {
+    "instruction": "How to compute the hash of a compressed archive",
+    "output": "<think>\nSo the request is to compute the hash of a compressed archive.\nLet me consider what makes sense here.\nI'd use sha256sum for this — sha256sum operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nsha256sum archive.zip"
+  },
+  {
+    "instruction": "How to verify an archive after extraction",
+    "output": "<think>\nSo we need to verify an archive after extraction.\nFor this, sha256sum is the right tool — sha256sum operations.\nI'm using -c for count or create — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsha256sum archive.tar.gz > archive.sha256 && tar xzf archive.tar.gz && sha256sum -c archive.sha256"
+  },
+  {
+    "instruction": "How to compute hash of all system files for integrity checking",
+    "output": "<think>\nNeed to compute hash of all system files for integrity checking.\nLet me break this down.\nI'll reach for find here because file searching.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nLet me verify afterward that it worked correctly.\n</think>\nfind /etc -type f -exec sha256sum {} \\; > /tmp/etc-baseline.txt 2>/dev/null"
+  },
+  {
+    "instruction": "How to use hashdeep for FIM (File Integrity Monitoring)",
+    "output": "<think>\nWe should use hashdeep for FIM (File Integrity Monitoring).\nI'd use hashdeep for this — hashdeep operations.\nOne command does the job. Simple is better.\n</think>\nhashdeep -r -c sha256 /etc /bin /usr/bin > baseline.txt"
+  },
+  {
+    "instruction": "How to create a second snapshot for comparison",
+    "output": "<think>\nThe task requires us to create a second snapshot for comparison.\nLet me consider what makes sense here.\nI'll reach for hashdeep here because hashdeep operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because this controls how the output is formatted.\nI've added -c to count or create — without it the command won't work as we need.\n</think>\nhashdeep -r -c sha256 /etc /bin /usr/bin > snapshot2.txt"
+  },
+  {
+    "instruction": "How to compare two hashdeep snapshots",
+    "output": "<think>\nWe're being asked to compare two hashdeep snapshots.\nI'll reach for hashdeep here because hashdeep operations.\nWhy -a? AND operator in find. needed for this specific use case.\nThe -l flag handles long format with details. Important because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nhashdeep -a -k baseline.txt -l snapshot2.txt"
+  },
+  {
+    "instruction": "How to inspect hashdeep audit results",
+    "output": "<think>\nWe're being asked to inspect hashdeep audit results.\nLet me break this down.\nI'd use hashdeep for this — hashdeep operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nhashdeep -a -k baseline.txt -l snapshot2.txt | grep -v '^%%%%%'"
+  },
+  {
+    "instruction": "How to compute a hash of a memory dump",
+    "output": "<think>\nSo we need to compute a hash of a memory dump.\nThe tool for this job is dd — dd operations.\nI'm piping because each stage transforms the data before passing it to the next.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\nsudo dd if=/dev/mem bs=1M count=100 2>/dev/null | sha256sum"
+  },
+  {
+    "instruction": "How to compute a hash of a process executable",
+    "output": "<think>\nAlright, we need to compute a hash of a process executable.\nThe tool for this job is sha256sum — sha256sum operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsha256sum /proc/$(pidof nginx)/exe"
+  },
+  {
+    "instruction": "How to compute a hash of all libraries loaded by a process",
+    "output": "<think>\nWe should compute a hash of all libraries loaded by a process.\nI'll reach for lsof here because lsof operations.\nI've added -p to create parent directories as needed — this controls how the output is formatted.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nlsof -p $(pidof nginx) | grep 'mem' | awk '{print $9}' | xargs sha256sum 2>/dev/null"
+  },
+  {
+    "instruction": "How to hash all files in /boot to check for tampering",
+    "output": "<think>\nAlright, we need to hash all files in /boot to check for tampering.\nLet me think about the best approach.\nI'd use sha256sum for this — sha256sum operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nsha256sum /boot/* > /tmp/boot-hashes.txt"
+  },
+  {
+    "instruction": "How to compute the hash of a kernel image",
+    "output": "<think>\nThis is asking us to compute the hash of a kernel image.\nThis calls for sha256sum. Sha256sum operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsha256sum /boot/vmlinuz-$(uname -r)"
+  },
+  {
+    "instruction": "How to compute the hash of a container image layer",
+    "output": "<think>\nNeed to compute the hash of a container image layer.\nBest tool here is sha256sum — sha256sum operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsha256sum /var/lib/docker/overlay2/*/diff"
+  },
+  {
+    "instruction": "How to compute the hash of a Docker container's filesystem",
+    "output": "<think>\nThe user wants to compute the hash of a Docker container's filesystem.\nBest tool here is docker — container management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker export $(docker ps -ql) | sha256sum"
+  },
+  {
+    "instruction": "How to compute the hash of a VM disk image",
+    "output": "<think>\nSo we need to compute the hash of a VM disk image.\nFirst, let me understand what's needed here.\nThis calls for sha256sum. Sha256sum operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsha256sum disk.qcow2 > disk.qcow2.sha256"
+  },
+  {
+    "instruction": "How to verify a VM disk image copy",
+    "output": "<think>\nSo we need to verify a VM disk image copy.\nLet me reason through this.\nFor this, sha256sum is the right tool — sha256sum operations.\nI've added -c to count or create — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsha256sum -c disk.qcow2.sha256"
+  },
+  {
+    "instruction": "How to compute the hash of a file shared on a network",
+    "output": "<think>\nAlright, we need to compute the hash of a file shared on a network.\nLet me reason through this.\nsha256sum is what we need — sha256sum operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nsha256sum /mnt/nfs/shared/file.dat"
+  },
+  {
+    "instruction": "How to compute the hash of a file as an asset tag",
+    "output": "<think>\nThe goal is to compute the hash of a file as an asset tag.\nThe -d flag means directory listing, don't descend, which matters here because this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho \"ASSET_TAG=$(sha256sum /etc/machine-id | cut -d' ' -f1)\""
+  },
+  {
+    "instruction": "How to compute a unique ID for a machine using hashes",
+    "output": "<think>\nWe should compute a unique ID for a machine using hashes.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\ncat /etc/machine-id /proc/sys/kernel/random/boot_id | sha256sum"
+  },
+  {
+    "instruction": "How to compute hash of a file and embed it in the file itself",
+    "output": "<think>\nAlright, we need to compute hash of a file and embed it in the file itself.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\necho \"# $(sha256sum $0)\" >> script.sh"
+  },
+  {
+    "instruction": "How to verify a file after download using curl and sha256",
+    "output": "<think>\nThe user wants to verify a file after download using curl and sha256.\nLet me think about the best approach.\nThe tool for this job is curl — making HTTP requests.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ncurl -sL https://example.com/file.iso | sha256sum"
+  },
+  {
+    "instruction": "How to download and verify in a pipeline",
+    "output": "<think>\nWe're being asked to download and verify in a pipeline.\nI'll reach for curl here because making HTTP requests.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -sL https://example.com/file.iso | tee file.iso | sha256sum -c <(echo 'expected_hash  -')"
+  },
+  {
+    "instruction": "How to compute hash of data with a progress indicator",
+    "output": "<think>\nAlright, we need to compute hash of data with a progress indicator.\nThe tool for this job is pv — pv operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\npv file.txt | sha256sum"
+  },
+  {
+    "instruction": "How to compute hash of a file with output formatting for a webhook",
+    "output": "<think>\nThe task requires us to compute hash of a file with output formatting for a webhook.\nI'll reach for hash here because hash operations.\nI've added -d to directory listing, don't descend — needed for this specific use case.\nThe -d flag handles directory listing, don't descend. Important because this controls how the output is formatted.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nhash=$(sha256sum file.txt | cut -d' ' -f1) && curl -X POST -d \"hash=$hash\" https://webhook.example.com"
+  }
+]

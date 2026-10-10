@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Generate JSON seccomp from syscall list",
+    "output": "echo '{\"defaultAction\":\"SCMP_ACT_ALLOW\",\"architectures\":[\"SCMP_ARCH_X86_64\"],\"syscalls\":[{\"names\":[\"write\",\"read\"],\"action\":\"SCMP_ACT_ALLOW\"}]}' > myprofile.json"
+  },
+  {
+    "instruction": "List all Docker seccomp profiles available",
+    "output": "ls /usr/share/docker/ | grep seccomp"
+  },
+  {
+    "instruction": "Check PID seccomp status",
+    "output": "grep Seccomp /proc/1/status"
+  },
+  {
+    "instruction": "Generate seccomp profile from strace log",
+    "output": "strace -f -e trace=all -o /tmp/trace.log ./myapp && cat /tmp/trace.log | awk '{print $2}' | sed 's/(.*//' | sort -u"
+  },
+  {
+    "instruction": "Generate allowlist from strace output",
+    "output": "strace -c -f ./myapp 2>&1 | grep -v '^%' | awk '{print $2}' | sort -u > allow.txt"
+  },
+  {
+    "instruction": "Trace process creation with strace",
+    "output": "strace -f -e trace=clone,execve ./myapp"
+  },
+  {
+    "instruction": "Run a container without seccomp",
+    "output": "docker run --security-opt seccomp=unconfined nginx"
+  },
+  {
+    "instruction": "Use mmap in strace to trace memory syscalls",
+    "output": "strace -e trace=mmap ./myapp"
+  },
+  {
+    "instruction": "Use BPF compiler for seccomp",
+    "output": "scmp_bpf_dispatcher -p $(pgrep myapp)"
+  },
+  {
+    "instruction": "Use scmp_bpf_dispatcher to inspect BPF",
+    "output": "scmp_bpf_dispatcher -p $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "Extract syscall numbers from strace raw mode",
+    "output": "strace -e raw=all -f -o /tmp/raw.log ./myapp"
+  },
+  {
+    "instruction": "Check if seccomp is enabled in the kernel",
+    "output": "cat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Trace all children processes",
+    "output": "strace -f -e trace=all -o /tmp/child.log ./myapp"
+  },
+  {
+    "instruction": "Dump seccomp for nginx",
+    "output": "seccomp-tools dump $(pgrep -f nginx)"
+  },
+  {
+    "instruction": "Run strace with only file syscalls",
+    "output": "strace -e trace=file -f ./myapp"
+  },
+  {
+    "instruction": "Run container with seccomp label",
+    "output": "docker run --security-opt seccomp=profiles/allow.json nginx"
+  },
+  {
+    "instruction": "Install seccomp-tools on Debian",
+    "output": "sudo apt-get install -y seccomp-tools"
+  },
+  {
+    "instruction": "List available Docker profiles",
+    "output": "ls -la /usr/share/docker/"
+  },
+  {
+    "instruction": "Trace syscalls with summary grouped by name",
+    "output": "strace -c -f -S name ./myapp 2>&1"
+  },
+  {
+    "instruction": "Find seccomp profile path",
+    "output": "find / -name 'default-seccomp.json' 2>/dev/null"
+  },
+  {
+    "instruction": "Count seccomp filter actions",
+    "output": "jq '.syscalls | length' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "View Docker seccomp in JSON format",
+    "output": "python3 -m json.tool /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Show the default Docker seccomp profile",
+    "output": "cat /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Run a container with a custom seccomp profile",
+    "output": "docker run --security-opt seccomp=custom-profile.json nginx"
+  }
+]

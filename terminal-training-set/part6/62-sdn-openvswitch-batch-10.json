@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Monitor OVS logs in real time",
+    "output": "<think>\nThe goal is to monitor OVS logs in real time.\nFirst, let me understand what's needed here.\nI'll reach for tail here because tail operations.\n</think>\ntail -f /var/log/openvswitch/ovs-vswitchd.log"
+  },
+  {
+    "instruction": "Check OVS process health",
+    "output": "<think>\nWe're being asked to check OVS process health.\nLet me think through this step by step.\nThe tool for this job is systemctl — managing systemd services.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status openvswitch-switch"
+  },
+  {
+    "instruction": "Restart the OVS service",
+    "output": "<think>\nNeed to restart the OVS service.\nLet me think through this step by step.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart openvswitch-switch"
+  },
+  {
+    "instruction": "Display OVS version",
+    "output": "<think>\nThis is asking us to display OVS version.\nI'll reach for ovs-vsctl here because ovs-vsctl operations.\nI've added --version to show version info — without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\novs-vsctl --version"
+  },
+  {
+    "instruction": "Trace a packet through the pipeline",
+    "output": "<think>\nThe task requires us to trace a packet through the pipeline.\nFor this, ovs-appctl is the right tool — ovs-appctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-appctl ofproto/trace br0 'in_port=1,eth_src=00:00:00:00:00:01,eth_dst=00:00:00:00:00:02'"
+  },
+  {
+    "instruction": "Check OVS memory map",
+    "output": "<think>\nThe goal is to check OVS memory map.\nThe tool for this job is ovs-appctl — ovs-appctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\novs-appctl memory/show"
+  },
+  {
+    "instruction": "List all OVS log files",
+    "output": "<think>\nThe task requires us to list all OVS log files.\nLet me think about the best approach.\nBest tool here is ls — ls operations.\nThe -la flag handles detailed listing including hidden files. Important because needed for this specific use case.\n</think>\nls -la /var/log/openvswitch/"
+  },
+  {
+    "instruction": "Show interface error counters",
+    "output": "<think>\nSo we need to show interface error counters.\nFor this, ovs-vsctl is the right tool — ovs-vsctl operations.\n</think>\novs-vsctl get interface eth0 error"
+  },
+  {
+    "instruction": "Dump multicast snooping table",
+    "output": "<think>\nThis is asking us to dump multicast snooping table.\nLet me reason through this.\nI'd use ovs-appctl for this — ovs-appctl operations.\n</think>\novs-appctl mdb/show br0"
+  },
+  {
+    "instruction": "Check OVSDB server status",
+    "output": "<think>\nWe should check OVSDB server status.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status ovsdb-server"
+  },
+  {
+    "instruction": "Monitor OVS DB transactions",
+    "output": "<think>\nWe should monitor OVS DB transactions.\nLet me reason through this.\novsdb-client is what we need — ovsdb-client operations.\n</think>\novsdb-client monitor Open_vSwitch"
+  },
+  {
+    "instruction": "Dump all ovsdb schema tables",
+    "output": "<think>\nThe goal is to dump all ovsdb schema tables.\nLet me consider what makes sense here.\nBest tool here is ovsdb-client — ovsdb-client operations.\n</think>\novsdb-client list-tables"
+  },
+  {
+    "instruction": "Get all bridge statistics via JSON",
+    "output": "<think>\nThis is asking us to get all bridge statistics via JSON.\nLet me reason through this.\nThis calls for ovsdb-client. Ovsdb-client operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\novsdb-client dump Open_vSwitch Bridge --format json"
+  },
+  {
+    "instruction": "Check kernel module version",
+    "output": "<think>\nThe user wants to check kernel module version.\nFirst, let me understand what's needed here.\nThe tool for this job is modinfo — modinfo operations.\nAfter running, I'll confirm the result looks right.\n</think>\nmodinfo openvswitch"
+  },
+  {
+    "instruction": "List OVS kernel module parameters",
+    "output": "<think>\nSo the request is to list OVS kernel module parameters.\nThis calls for systool. Systool operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nsystool -vm openvswitch"
+  },
+  {
+    "instruction": "Trace packet in table 0 with ct_state",
+    "output": "<think>\nWe're being asked to trace packet in table 0 with ct_state.\nHere's how I'd approach this.\novs-appctl is what we need — ovs-appctl operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\novs-appctl ofproto/trace br0 'in_port=1,ct_state=-trk,ip'"
+  },
+  {
+    "instruction": "Monitor flow table changes with ovs-ofctl",
+    "output": "<think>\nSo we need to monitor flow table changes with ovs-ofctl.\nI'll reach for ovs-ofctl here because ovs-ofctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\novs-ofctl monitor br0 --detach --pidfile=monitor.pid"
+  },
+  {
+    "instruction": "Count total flows installed",
+    "output": "<think>\nThe goal is to count total flows installed.\nHere's how I'd approach this.\nThis calls for ovs-ofctl. Ovs-ofctl operations.\nThe -l flag handles long format with details. Important because needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\novs-ofctl dump-flows br0 | wc -l"
+  },
+  {
+    "instruction": "Show OVS datapath cache hit ratio",
+    "output": "<think>\nThis is asking us to show OVS datapath cache hit ratio.\nFor this, ovs-dpctl is the right tool — ovs-dpctl operations.\nI'm using -E for extended regex — standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\novs-dpctl show --statistics | grep -E '(hit|missed|lost)'"
+  },
+  {
+    "instruction": "Check if eth0 has OF port number",
+    "output": "<think>\nThe task requires us to check if eth0 has OF port number.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\novs-vsctl get interface eth0 ofport"
+  },
+  {
+    "instruction": "List all dpif backends and types",
+    "output": "<think>\nSo we need to list all dpif backends and types.\nThis calls for ovs-appctl. Ovs-appctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-appctl dpif/list-dpif"
+  },
+  {
+    "instruction": "Show the number of active ports",
+    "output": "<think>\nWe're being asked to show the number of active ports.\novs-vsctl is what we need — ovs-vsctl operations.\nI'm using -l for long format with details — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\novs-vsctl list-ports br0 | wc -l"
+  }
+]

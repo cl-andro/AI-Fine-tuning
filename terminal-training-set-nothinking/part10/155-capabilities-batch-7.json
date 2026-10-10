@@ -1,0 +1,23 @@
+[
+  {"instruction": "View capabilities for all suid binaries", "output": "find / -perm -4000 -type f 2>/dev/null | xargs getcap 2>/dev/null"},
+  {"instruction": "Audit all files with file capabilities", "output": "getcap -r /usr /bin /sbin /opt 2>/dev/null"},
+  {"instruction": "Find files with CAP_SYS_ADMIN", "output": "getcap -r / 2>/dev/null | grep cap_sys_admin"},
+  {"instruction": "Audit files with CAP_NET_RAW capability", "output": "getcap -r / 2>/dev/null | grep cap_net_raw"},
+  {"instruction": "Check for CAP_DAC_OVERRIDE files (dangerous)", "output": "getcap -r / 2>/dev/null | grep cap_dac_override"},
+  {"instruction": "Find any file with any capability", "output": "find / -type f -exec getcap {} \\; 2>/dev/null"},
+  {"instruction": "Report capability security audit", "output": "cat > /tmp/cap-audit.sh << 'EOF'\n#!/bin/bash\necho \"=== Capability Audit ===\"\necho \"Files with capabilities:\"\ngetcap -r / 2>/dev/null\necho \"\"\necho \"Running processes with special caps:\"\nfor pid in /proc/[0-9]*; do\n    pid=${pid#/proc/}\n    caps=$(cat /proc/$pid/status 2>/dev/null | grep CapEff | awk '{print $2}')\n    if [ \"$caps\" ] && [ \"$caps\" != \"0000000000000000\" ]; then\n        echo \"PID $pid: $(cat /proc/$pid/comm 2>/dev/null) -> $(capsh --decode=$caps 2>/dev/null)\"\n    fi\ndone\nEOF\nbash /tmp/cap-audit.sh"},
+  {"instruction": "Find SUID binaries without file caps", "output": "find / -perm -4000 -type f 2>/dev/null | while read f; do getcap \"$f\" 2>/dev/null | grep -q . || echo \"$f (no cap)\"; done"},
+  {"instruction": "Check if capabilities are enabled on system", "output": "grep CAP /boot/config-$(uname -r) 2>/dev/null | head -10 || grep 'CONFIG_SECURITY' /boot/config-$(uname -r) 2>/dev/null | head -5"},
+  {"instruction": "Check kernel config for file capabilities", "output": "cat /proc/config.gz 2>/dev/null | gunzip | grep -i 'SECURITY_FILE_CAPABILITIES' || echo 'Not available'"},
+  {"instruction": "Verify capabilities in kernel boot params", "output": "cat /proc/cmdline | tr ' ' '\\n' | grep -i 'cap'"},
+  {"instruction": "Check if user namespaces are enabled", "output": "cat /proc/sys/user/max_user_namespaces"},
+  {"instruction": "View capability-related kernel parameters", "output": "sysctl -a 2>/dev/null | grep -i cap"},
+  {"instruction": "Disable file capabilities temporarily", "output": "mount -o remount,nosuid,noexec /"},
+  {"instruction": "Restrict setcap to root only", "output": "chmod 700 /sbin/setcap"},
+  {"instruction": "Create capability blacklist script", "output": "cat > /usr/local/bin/audit-caps.sh << 'EOF'\n#!/bin/bash\nREPORT=\"/tmp/cap-report-$(date +%Y%m%d).txt\"\necho \"Capability Audit Report - $(date)\" > \"$REPORT\"\ngetcap -r / 2>/dev/null >> \"$REPORT\"\necho \"\" >> \"$REPORT\"\necho \"=== Dangerous Capabilities Check ===\" >> \"$REPORT\"\ngetcap -r / 2>/dev/null | grep -Ei 'cap_sys_admin|cap_dac_override|cap_sys_ptrace' >> \"$REPORT\"\necho \"Report saved to $REPORT\"\nEOF\nchmod +x /usr/local/bin/audit-caps.sh"},
+  {"instruction": "Run capability audit report", "output": "bash /usr/local/bin/audit-caps.sh"},
+  {"instruction": "Weekly cron for cap audit", "output": "echo '0 6 * * 1 root /usr/local/bin/audit-caps.sh' > /etc/cron.d/cap-audit"},
+  {"instruction": "Email capability audit results", "output": "cat /tmp/cap-report-$(date +%Y%m%d).txt | mail -s 'Capability Audit' admin@example.com"},
+  {"instruction": "Check for latent capabilities in system", "output": "getcap -r /var /opt /home /tmp 2>/dev/null"},
+  {"instruction": "Compare cap policies between container images", "output": "docker run --rm debian getcap -r /usr 2>/dev/null; docker run --rm ubuntu getcap -r /usr 2>/dev/null"}
+]

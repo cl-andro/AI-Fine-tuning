@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to check for rpm-ostree base image updates in background",
+    "output": "<think>\nThe task requires us to check for rpm-ostree base image updates in background.\nI'd use rpm-ostree for this — rpm-ostree operations.\n</think>\nrpm-ostree upgrade --check"
+  },
+  {
+    "instruction": "How to see the rpm-ostree list of available container images",
+    "output": "<think>\nAlright, we need to see the rpm-ostree list of available container images.\nLet me think about the best approach.\nBest tool here is rpm-ostree — rpm-ostree operations.\nThe --help flag means show usage information, which matters here because without it the command won't work as we need.\nThe -i flag handles interactive, prompt before action. Important because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree rebase --help | grep -i container"
+  },
+  {
+    "instruction": "How to reset rpm-ostree to factory state",
+    "output": "<think>\nSo we need to reset rpm-ostree to factory state.\nLet me consider what makes sense here.\nBest tool here is rpm-ostree — rpm-ostree operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nrpm-ostree reset --all && rpm-ostree cleanup --base --count=0"
+  },
+  {
+    "instruction": "How to check if rpm-ostree overlay is active",
+    "output": "<think>\nNeed to check if rpm-ostree overlay is active.\nLet me break this down.\nI'd use mount for this — filesystem mounting.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nmount | grep 'usr/local'"
+  },
+  {
+    "instruction": "How to limit the rpm-ostree download bandwidth",
+    "output": "<think>\nSo the request is to limit the rpm-ostree download bandwidth.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'BandwidthLimit=1000000' >> /etc/rpm-ostreed.conf && systemctl restart rpm-ostreed"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deployment's UEFI entry",
+    "output": "<think>\nWe're being asked to see the rpm-ostree deployment's UEFI entry.\nLet me reason through this.\nFor this, efibootmgr is the right tool — efibootmgr operations.\nI'm using -v for verbose output — needed for this specific use case.\n</think>\nefibootmgr -v"
+  },
+  {
+    "instruction": "How to create a golden image from rpm-ostree deployment",
+    "output": "<think>\nNeed to create a golden image from rpm-ostree deployment.\nThe tool for this job is rpm-ostree — rpm-ostree operations.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree compose image --format=qcow2 /path/to/config.json"
+  },
+  {
+    "instruction": "How to add a kernel argument for the nouveau driver",
+    "output": "<think>\nNeed to add a kernel argument for the nouveau driver.\nI'd use rpm-ostree for this — rpm-ostree operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nrpm-ostree kargs --append='nouveau.modeset=0'"
+  },
+  {
+    "instruction": "How to check the rpm-ostree daemon TLS configuration",
+    "output": "<think>\nWe should check the rpm-ostree daemon TLS configuration.\nFirst, let me understand what's needed here.\nThe tool for this job is cat — cat operations.\nThe -i flag means interactive, prompt before action, which matters here because standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /etc/rpm-ostreed.conf | grep -i tls"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deployment's bootloader timeout",
+    "output": "<think>\nSo we need to see the rpm-ostree deployment's bootloader timeout.\nI'd use cat for this — cat operations.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ncat /boot/loader/loader.conf | grep timeout"
+  },
+  {
+    "instruction": "How to set the rpm-ostree deployment as default",
+    "output": "<think>\nSo the request is to set the rpm-ostree deployment as default.\nBest tool here is rpm-ostree — rpm-ostree operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nrpm-ostree pin --index 0"
+  },
+  {
+    "instruction": "How to use rpm-ostree with a HTTP proxy for container images",
+    "output": "<think>\nThe goal is to use rpm-ostree with a HTTP proxy for container images.\nThe tool for this job is export — export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nexport http_proxy=http://proxy:3128 && rpm-ostree upgrade"
+  },
+  {
+    "instruction": "How to check the rpm-ostree remote ref count",
+    "output": "<think>\nThe goal is to check the rpm-ostree remote ref count.\nFirst, let me understand what's needed here.\nBest tool here is ostree — ostree operations.\nWhy -l? Long format with details. needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\nostree refs --repo=/sysroot/ostree/repo | wc -l"
+  },
+  {
+    "instruction": "How to purge all pending rpm-ostree updates",
+    "output": "<think>\nThis is asking us to purge all pending rpm-ostree updates.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nrpm-ostree cancel && rpm-ostree cleanup --base"
+  },
+  {
+    "instruction": "How to see the rpm-ostree deployment's file system tree",
+    "output": "<think>\nThis is asking us to see the rpm-ostree deployment's file system tree.\nLet me consider what makes sense here.\nI'd use find for this — file searching.\nI'm using -maxdepth for limit directory descent depth — this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nfind /sysroot/ostree/deploy/*/deploy/*/ -maxdepth 1 -type d | head -10"
+  },
+  {
+    "instruction": "How to run a command on the rpm-ostree deployment root",
+    "output": "<think>\nAlright, we need to run a command on the rpm-ostree deployment root.\nFor this, bwrap is the right tool — bwrap operations.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nbwrap --bind /sysroot/ostree/deploy/$(rpm-ostree status --booted | grep Deployment | awk '{print $2}')/root / -- cat /etc/os-release"
+  },
+  {
+    "instruction": "How to check the rpm-ostree compose configuration",
+    "output": "<think>\nThe goal is to check the rpm-ostree compose configuration.\ncat is what we need — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /etc/ostree/remotes.d/*.conf"
+  },
+  {
+    "instruction": "How to view the rpm-ostree bootloader configuration type",
+    "output": "<think>\nNeed to view the rpm-ostree bootloader configuration type.\nLet me consider what makes sense here.\nI'll reach for ls here because ls operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nls -la /boot/loader/grub*"
+  },
+  {
+    "instruction": "How to verify the rpm-ostree deployment's origin URL",
+    "output": "<think>\nWe should verify the rpm-ostree deployment's origin URL.\nI'll reach for rpm-ostree here because rpm-ostree operations.\nI'm using -c for count or create — this controls how the output is formatted.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nrpm-ostree status --json | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d[\"deployments\"][0][\"origin\"] if \"origin\" in d[\"deployments\"][0] else \"N/A\")'"
+  },
+  {
+    "instruction": "How to see the rpm-ostree commit diff between deployments",
+    "output": "<think>\nThe goal is to see the rpm-ostree commit diff between deployments.\nThe tool for this job is ostree — ostree operations.\nLet me verify afterward that it worked correctly.\n</think>\nostree diff --repo=/sysroot/ostree/repo OLDREF NEWREF"
+  }
+]

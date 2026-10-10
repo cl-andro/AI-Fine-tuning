@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to query for NS records of a domain",
+    "output": "<think>\nSo we need to query for NS records of a domain.\nThis calls for dig. DNS querying.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ndig example.com NS"
+  },
+  {
+    "instruction": "How to query only the answer section of a dig",
+    "output": "<think>\nSo we need to query only the answer section of a dig.\nI'd use dig for this — DNS querying.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndig +short example.com A"
+  },
+  {
+    "instruction": "How to set up DNSSEC KSK rollover",
+    "output": "<think>\nSo the request is to set up DNSSEC KSK rollover.\nI'll reach for dnssec-settime here because dnssec-settime operations.\nQuick verification after execution to be safe.\n</think>\ndnssec-settime -P +7d Kexample.com.+008+12345.key"
+  },
+  {
+    "instruction": "How to extract the DS record from a DNSKEY",
+    "output": "<think>\nSo we need to extract the DS record from a DNSKEY.\nFirst, let me understand what's needed here.\nI'd use dnssec-dsfromkey for this — dnssec-dsfromkey operations.\nQuick verification after execution to be safe.\n</think>\ndnssec-dsfromkey Kexample.com.+008+12345.key"
+  },
+  {
+    "instruction": "How to check DNSSEC validation status from server",
+    "output": "<think>\nSo the request is to check DNSSEC validation status from server.\nHere's how I'd approach this.\nI'll reach for rndc here because BIND9 remote name daemon control.\n</think>\nrndc dnssec -status"
+  },
+  {
+    "instruction": "How to add a SSHFP record",
+    "output": "<think>\nWe should add a SSHFP record.\nLet me break this down.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '@ IN SSHFP 2 1 1234567890abcdef' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to set max cache TTL in BIND",
+    "output": "<think>\nThis is asking us to set max cache TTL in BIND.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'options { max-cache-ttl 3600; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to create a TSIG key between two servers",
+    "output": "<think>\nThe user wants to create a TSIG key between two servers.\nLet me break this down.\ntsig-keygen is what we need — tsig-keygen operations.\nI've added -a to AND operator in find — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ntsig-keygen -a hmac-sha256 primary-secondary"
+  },
+  {
+    "instruction": "How to allow updates to zone with TSIG",
+    "output": "<think>\nThis is asking us to allow updates to zone with TSIG.\nLet me consider what makes sense here.\n</think>\necho 'zone \"example.com\" { type master; allow-update { key \"primary-secondary\"; }; };' >> /etc/bind/named.conf.local"
+  },
+  {
+    "instruction": "How to perform a zone transfer with dig",
+    "output": "<think>\nThis is asking us to perform a zone transfer with dig.\nLet me break this down.\nI'd use dig for this — DNS querying.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ndig @192.168.1.1 example.com AXFR"
+  },
+  {
+    "instruction": "How to add an AAAA record to zone",
+    "output": "<think>\nThis is asking us to add an AAAA record to zone.\nFirst, let me understand what's needed here.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'www IN AAAA 2001:db8::1' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to set up BIND to use root hints",
+    "output": "<think>\nThis is asking us to set up BIND to use root hints.\n</think>\necho 'options { root-hints /usr/share/dns/root.hints; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to DNSSEC sign with NSEC3",
+    "output": "<think>\nThe user wants to DNSSEC sign with NSEC3.\nBest tool here is dnssec-signzone — dnssec-signzone operations.\nI'm using -c for count or create — this controls how the output is formatted.\nI've added -p to create parent directories as needed — this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\n</think>\ndnssec-signzone -3 $(head -c 16 /dev/urandom | xxd -p) -A -o example.com /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to check if DNSSEC is enabled on a zone",
+    "output": "<think>\nThe user wants to check if DNSSEC is enabled on a zone.\nLet me reason through this.\nI'd use rndc for this — BIND9 remote name daemon control.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nrndc zonestatus example.com | grep dnssec"
+  },
+  {
+    "instruction": "How to configure recursion ACL for LAN",
+    "output": "<think>\nThis is asking us to configure recursion ACL for LAN.\nLet me break this down.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'options { allow-recursion { 192.168.1.0/24; 10.0.0.0/8; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set up query source address",
+    "output": "<think>\nThe goal is to set up query source address.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'options { query-source address 192.168.1.1 port 53; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to define named.conf include statement",
+    "output": "<think>\nThe user wants to define named.conf include statement.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'include \"/etc/bind/named.conf.local\";' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to check zone expiry timing",
+    "output": "<think>\nSo we need to check zone expiry timing.\ndig is what we need — DNS querying.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ndig +short SOA example.com | awk '{print $5}'"
+  },
+  {
+    "instruction": "How to set up notify for zone changes",
+    "output": "<think>\nThe task requires us to set up notify for zone changes.\nLet me think through this step by step.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'zone \"example.com\" { type master; notify yes; also-notify { 192.168.1.2; }; };' >> /etc/bind/named.conf.local"
+  },
+  {
+    "instruction": "How to secure the rndc channel with key",
+    "output": "<think>\nAlright, we need to secure the rndc channel with key.\nLet me think through this step by step.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'key \"rndc-key\" { algorithm hmac-sha256; secret \"base64secret==\"; }; controls { inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { \"rndc-key\"; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to list all zones in BIND",
+    "output": "<think>\nSo we need to list all zones in BIND.\nHere's how I'd approach this.\nBest tool here is rndc — BIND9 remote name daemon control.\nAfter running, I'll confirm the result looks right.\n</think>\nrndc zonestatus"
+  },
+  {
+    "instruction": "How to delete a zone from BIND",
+    "output": "<think>\nThe task requires us to delete a zone from BIND.\nrndc is what we need — BIND9 remote name daemon control.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nrndc delzone example.com"
+  },
+  {
+    "instruction": "How to transfer zone file to remote server",
+    "output": "<think>\nSo the request is to transfer zone file to remote server.\nI'd use scp for this — secure file transfer.\n</think>\nscp /etc/bind/db.example.com root@192.168.1.2:/etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to make named fully verbose to stdout",
+    "output": "<think>\nThe goal is to make named fully verbose to stdout.\nHere's how I'd approach this.\nFor this, named is the right tool — BIND9 DNS server control.\nI've added -f to force, suppress errors — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nnamed -f -g"
+  },
+  {
+    "instruction": "How to generate SHA256 TSIG key",
+    "output": "<think>\nWe should generate SHA256 TSIG key.\nLet me consider what makes sense here.\nThis calls for dnssec-keygen. Dnssec-keygen operations.\n</think>\ndnssec-keygen -a HMAC-SHA256 -b 256 -n HOST tsig-key"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install RethinkDB database",
+    "output": "<think>\nNeed to install RethinkDB database.\nLet me break this down.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y rethinkdb && systemctl start rethinkdb"
+  },
+  {
+    "instruction": "Query RethinkDB with the ReQL HTTP API",
+    "output": "<think>\nThis is asking us to query RethinkDB with the ReQL HTTP API.\nBest tool here is curl — making HTTP requests.\nI've added -H to follow symlinks on command line only — needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://localhost:8080/db/mydb -H 'Content-Type: text/plain' -d 'r.table(\"users\").limit(10).run()'"
+  },
+  {
+    "instruction": "Install ArangoDB multi-model database",
+    "output": "<think>\nWe should install ArangoDB multi-model database.\nHere's how I'd approach this.\nBest tool here is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y arangodb3 && systemctl start arangodb3"
+  },
+  {
+    "instruction": "Create a collection in ArangoDB",
+    "output": "<think>\nAlright, we need to create a collection in ArangoDB.\ncurl is what we need — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"users\"}' http://root:password@localhost:8529/_db/mydb/_api/collection"
+  },
+  {
+    "instruction": "Insert a document in ArangoDB",
+    "output": "<think>\nNeed to insert a document in ArangoDB.\nFor this, curl is the right tool — making HTTP requests.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"John\",\"email\":\"john@example.com\"}' http://root:password@localhost:8529/_db/mydb/_api/document/users"
+  },
+  {
+    "instruction": "Query documents in ArangoDB with AQL",
+    "output": "<think>\nAlright, we need to query documents in ArangoDB with AQL.\nLet me reason through this.\nBest tool here is curl — making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X POST -H 'Content-Type: application/json' -d '{\"query\":\"FOR u IN users FILTER u.name == \\\"John\\\" RETURN u\"}' http://root:password@localhost:8529/_db/mydb/_api/cursor"
+  },
+  {
+    "instruction": "Install SurrealDB",
+    "output": "<think>\nThe goal is to install SurrealDB.\nThe tool for this job is curl — making HTTP requests.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -sSf https://install.surrealdb.com | sh && ./surreal start --log debug file://mydb"
+  },
+  {
+    "instruction": "Query SurrealDB with SQL",
+    "output": "<think>\nThe user wants to query SurrealDB with SQL.\nLet me reason through this.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\n./surreal sql --ns test --db mydb 'SELECT * FROM user WHERE name = \"John\";'"
+  },
+  {
+    "instruction": "Install and configure pg_stat_statements (PostgreSQL monitoring)",
+    "output": "<think>\nThe user wants to install and configure pg_stat_statements (PostgreSQL monitoring).\npsql is what we need — PostgreSQL database queries.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -U postgres -c 'CREATE EXTENSION pg_stat_statements;' && echo 'shared_preload_libraries = \"pg_stat_statements\"' >> /etc/postgresql/16/main/postgresql.conf && systemctl restart postgresql"
+  },
+  {
+    "instruction": "Query PostgreSQL slow queries from pg_stat_statements",
+    "output": "<think>\nAlright, we need to query PostgreSQL slow queries from pg_stat_statements.\nLet me think about the best approach.\nFor this, psql is the right tool — PostgreSQL database queries.\nI've added -U to use full user name instead of UID — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -U postgres -c 'SELECT query, calls, total_time/calls AS avg_time, rows FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;'"
+  },
+  {
+    "instruction": "Set up MySQL slow query log",
+    "output": "<think>\nWe should set up MySQL slow query log.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\necho -e 'slow_query_log = 1\\nslow_query_log_file = /var/log/mysql/mysql-slow.log\\nlong_query_time = 2' >> /etc/mysql/my.cnf && systemctl restart mysql"
+  },
+  {
+    "instruction": "Read MySQL slow query log",
+    "output": "<think>\nNeed to read MySQL slow query log.\nLet me think about the best approach.\nmysqldumpslow is what we need — mysqldumpslow operations.\nLet me verify afterward that it worked correctly.\n</think>\nmysqldumpslow /var/log/mysql/mysql-slow.log"
+  },
+  {
+    "instruction": "Install and run pt-query-digest (Percona Toolkit)",
+    "output": "<think>\nWe should install and run pt-query-digest (Percona Toolkit).\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y percona-toolkit && pt-query-digest /var/log/mysql/mysql-slow.log"
+  },
+  {
+    "instruction": "Create a PostgreSQL foreign data wrapper (FDW)",
+    "output": "<think>\nThe task requires us to create a PostgreSQL foreign data wrapper (FDW).\nLet me break this down.\nI'll reach for psql here because PostgreSQL database queries.\nThe -U flag means use full user name instead of UID, which matters here because without it the command won't work as we need.\nI'm using -c for count or create — important to get the expected behavior.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -U postgres mydb -c 'CREATE EXTENSION postgres_fdw; CREATE SERVER other_server FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host \"192.168.1.20\", dbname \"otherdb\", port \"5432\");'"
+  },
+  {
+    "instruction": "Import foreign tables with PostgreSQL FDW",
+    "output": "<think>\nThe user wants to import foreign tables with PostgreSQL FDW.\npsql is what we need — PostgreSQL database queries.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -U postgres mydb -c \"CREATE USER MAPPING FOR postgres SERVER other_server OPTIONS (user 'remote_user', password 'remotepass'); IMPORT FOREIGN SCHEMA public FROM SERVER other_server INTO public;\""
+  },
+  {
+    "instruction": "Create a materialized view in PostgreSQL",
+    "output": "<think>\nAlright, we need to create a materialized view in PostgreSQL.\nFirst, let me understand what's needed here.\nThe tool for this job is psql — PostgreSQL database queries.\nI'm using -U for use full user name instead of UID — without it the command won't work as we need.\nI've added -c to count or create — needed for this specific use case.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -U postgres mydb -c 'CREATE MATERIALIZED VIEW user_summary AS SELECT city, count(*) FROM users GROUP BY city;'"
+  },
+  {
+    "instruction": "Refresh a PostgreSQL materialized view",
+    "output": "<think>\nWe're being asked to refresh a PostgreSQL materialized view.\nThe tool for this job is psql — PostgreSQL database queries.\nThe -U flag handles use full user name instead of UID. Important because without it the command won't work as we need.\nI'm using -c for count or create — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -U postgres mydb -c 'REFRESH MATERIALIZED VIEW CONCURRENTLY user_summary;'"
+  },
+  {
+    "instruction": "Set up a PostgreSQL cron job with pg_cron",
+    "output": "<think>\nWe should set up a PostgreSQL cron job with pg_cron.\nBest tool here is psql — PostgreSQL database queries.\nThe -U flag handles use full user name instead of UID. Important because without it the command won't work as we need.\nThe -c flag handles count or create. Important because standard practice for this kind of operation.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nQuick verification after execution to be safe.\n</think>\npsql -U postgres mydb -c 'CREATE EXTENSION pg_cron; SELECT cron.schedule(\"vacuum-db\", \"0 3 * * *\", \"VACUUM\");'"
+  },
+  {
+    "instruction": "Encrypt a MySQL tablespace",
+    "output": "<think>\nWe're being asked to encrypt a MySQL tablespace.\nLet me reason through this.\nmysql is what we need — MySQL database queries.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nI'm using -p for create parent directories as needed — needed for this specific use case.\nI've added -e to edit or executable — important to get the expected behavior.\nSame as psql — test destructive queries on a staging db first.\nI'll check the output to make sure it did what we expected.\n</think>\nmysql -u root -p -e 'ALTER TABLE users ENCRYPTION=\"Y\";'"
+  },
+  {
+    "instruction": "Create a MySQL event scheduler task",
+    "output": "<think>\nSo the request is to create a MySQL event scheduler task.\nThis calls for mysql. MySQL database queries.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nThe -p flag means create parent directories as needed, which matters here because without it the command won't work as we need.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p mydb -e \"CREATE EVENT daily_cleanup ON SCHEDULE EVERY 1 DAY STARTS '2025-01-01 03:00:00' DO DELETE FROM logs WHERE created_at < NOW() - INTERVAL 90 DAY;\""
+  },
+  {
+    "instruction": "Check MySQL replication performance with seconds_behind_master",
+    "output": "<think>\nWe should check MySQL replication performance with seconds_behind_master.\nI'd use mysql for this — MySQL database queries.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e 'SHOW SLAVE STATUS\\G' | grep 'Seconds_Behind_Master'"
+  },
+  {
+    "instruction": "Install TiDB (distributed SQL database)",
+    "output": "<think>\nNeed to install TiDB (distributed SQL database).\ncurl is what we need — making HTTP requests.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh && tiup playground"
+  },
+  {
+    "instruction": "Query TiDB with MySQL protocol",
+    "output": "<think>\nThe goal is to query TiDB with MySQL protocol.\nFor this, mysql is the right tool — MySQL database queries.\nThe -h flag handles human-readable format. Important because needed for this specific use case.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nSame as psql — test destructive queries on a staging db first.\nI'll check the output to make sure it did what we expected.\n</think>\nmysql -h 127.0.0.1 -P 4000 -u root -e 'SELECT version();'"
+  },
+  {
+    "instruction": "Install and use Valkey (Redis fork) on Debian",
+    "output": "<think>\nThe goal is to install and use Valkey (Redis fork) on Debian.\nLet me think about the best approach.\nBest tool here is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y valkey-server && systemctl start valkey-server && valkey-cli PING"
+  },
+  {
+    "instruction": "Monitor MariaDB queries with the slow query log",
+    "output": "<think>\nThe task requires us to monitor MariaDB queries with the slow query log.\nThe tool for this job is mariadbd — mariadbd operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nmariadbd --slow-query-log --slow-query-log-file=/var/log/mariadb/slow.log --long-query-time=2 --log-queries-not-using-indexes &"
+  }
+]

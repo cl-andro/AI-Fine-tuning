@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Use unshare with rootfs argument",
+    "output": "<think>\nThis is asking us to use unshare with rootfs argument.\nFor this, unshare is the right tool — unshare operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunshare --mount --fork --root=/path/to/rootfs /bin/bash"
+  },
+  {
+    "instruction": "Create chroot with mount namespace and proc",
+    "output": "<think>\nThe task requires us to create chroot with mount namespace and proc.\nLet me consider what makes sense here.\nBest tool here is unshare — unshare operations.\nWhy -c? Count or create. this controls how the output is formatted.\nThe -c flag means count or create, which matters here because important to get the expected behavior.\nThe -t flag means sort by modification time, which matters here because without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\nunshare --mount bash -c 'chroot /path/to/rootfs /bin/bash -c \"mount -t proc proc /proc; ps aux\"'"
+  },
+  {
+    "instruction": "Combine selinux and namespaces",
+    "output": "<think>\nWe should combine selinux and namespaces.\nFirst, let me understand what's needed here.\nruncon is what we need — runcon operations.\nI've added -t to sort by modification time — this controls how the output is formatted.\nI'm using -n for dry-run, no changes — needed for this specific use case.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nruncon -t container_t unshare -m -n -p --fork --mount-proc /bin/bash"
+  },
+  {
+    "instruction": "Use apparmor with namespace confined process",
+    "output": "<think>\nSo we need to use apparmor with namespace confined process.\nLet me break this down.\naa-exec is what we need — aa-exec operations.\nI'll check the output to make sure it did what we expected.\n</think>\naa-exec -p /path/to/profile -- unshare -n /bin/bash"
+  },
+  {
+    "instruction": "Check process namespace with seccomp-box",
+    "output": "<think>\nAlright, we need to check process namespace with seccomp-box.\nseccomp-unshare is what we need — seccomp-unshare operations.\nI'm using -n for dry-run, no changes — needed for this specific use case.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\nseccomp-unshare -n -p -- /bin/bash -c 'ps aux'"
+  },
+  {
+    "instruction": "Use bubblewrap for sandboxing",
+    "output": "<think>\nAlright, we need to use bubblewrap for sandboxing.\nI'd use bwrap for this — bwrap operations.\n</think>\nbwrap --ro-bind /usr /usr --dev /dev --proc /proc --tmpfs /tmp bash"
+  },
+  {
+    "instruction": "Build bubblewrap with user namespace",
+    "output": "<think>\nWe should build bubblewrap with user namespace.\nFor this, bwrap is the right tool — bwrap operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nbwrap --unshare-user --unshare-pid --unshare-net --ro-bind /usr /usr --proc /proc bash"
+  },
+  {
+    "instruction": "Firejail with namespace isolation",
+    "output": "<think>\nNeed to firejail with namespace isolation.\nBest tool here is firejail — firejail operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nfirejail --net=none --private-tmp firefox"
+  },
+  {
+    "instruction": "Firejail network namespace setup",
+    "output": "<think>\nSo we need to firejail network namespace setup.\nBest tool here is firejail — firejail operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nfirejail --net=eth0 --ip=192.168.1.100 firefox"
+  },
+  {
+    "instruction": "Check firejail namespace status",
+    "output": "<think>\nSo the request is to check firejail namespace status.\nThe tool for this job is firejail — firejail operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nfirejail --list"
+  },
+  {
+    "instruction": "Use flatpak sandbox namespaces",
+    "output": "<think>\nSo we need to use flatpak sandbox namespaces.\nLet me break this down.\nI'll reach for flatpak here because Flatpak application management.\nNo need for complex pipelines here — one command is sufficient.\nSimilar to snaps — check permissions with flatpak info if an app can't access files.\nLet me verify afterward that it worked correctly.\n</think>\nflatpak run --command=ls org.gnome.Epiphany /proc/self/ns/"
+  },
+  {
+    "instruction": "Snap confinement namespaces",
+    "output": "<think>\nThe user wants to snap confinement namespaces.\nThe tool for this job is snap — Snap package management.\nA single command handles this cleanly — no need to overcomplicate it.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\nAfter running, I'll confirm the result looks right.\n</think>\nsnap run --shell firefox; readlink /proc/self/ns/net"
+  },
+  {
+    "instruction": "Check snap with systemd namespace",
+    "output": "<think>\nThis is asking us to check snap with systemd namespace.\nI'd use systemctl for this — managing systemd services.\nI'm using -p for create parent directories as needed — this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl show snap.firefox -p PrivateNetwork"
+  },
+  {
+    "instruction": "Use Linux namespace for process sandboxing",
+    "output": "<think>\nThe user wants to use Linux namespace for process sandboxing.\nI'll reach for unshare here because unshare operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nunshare -n -p --fork --mount-proc bash -c 'ip link set lo up; python3 -m http.server 8080'"
+  },
+  {
+    "instruction": "Isolated development environment with unshare",
+    "output": "<think>\nThe user wants to isolated development environment with unshare.\nLet me consider what makes sense here.\nI'll reach for unshare here because unshare operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nunshare --mount --uts --ipc --net --pid --fork --mount-proc bash --rcfile <(echo 'PS1=\"[isolated] \\w $ \"')"
+  },
+  {
+    "instruction": "Net namespace for isolated testing",
+    "output": "<think>\nAlright, we need to net namespace for isolated testing.\nThe tool for this job is unshare — unshare operations.\nI'm using -n for dry-run, no changes — standard practice for this kind of operation.\nWhy -c? Count or create. standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nunshare -n bash -c 'ip link set lo up && ping -c2 127.0.0.1 && curl --version'"
+  },
+  {
+    "instruction": "Create namespace for DNS testing",
+    "output": "<think>\nNeed to create namespace for DNS testing.\nLet me consider what makes sense here.\nFor this, unshare is the right tool — unshare operations.\nI'm using -n for dry-run, no changes — important to get the expected behavior.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nunshare -n bash -c 'ip link set lo up && echo \"nameserver 8.8.8.8\" > /etc/resolv.conf; dig google.com'"
+  },
+  {
+    "instruction": "Namespace-based service isolation",
+    "output": "<think>\nNeed to namespace-based service isolation.\nunshare is what we need — unshare operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nunshare --net --pid --fork --mount-proc bash -c 'ip link set lo up; nc -l -p 8080 &; bg; ps aux'"
+  },
+  {
+    "instruction": "Debug namespace limits",
+    "output": "<think>\nAlright, we need to debug namespace limits.\nLet me think through this step by step.\nBest tool here is cat — cat operations.\nI've added -n to dry-run, no changes — important to get the expected behavior.\nThe -u flag handles show or sort by access time. Important because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/sys/user/max_user_namespaces; ulimit -n; ulimit -u"
+  },
+  {
+    "instruction": "Check namespace inode usage",
+    "output": "<think>\nAlright, we need to check namespace inode usage.\nBest tool here is ls — ls operations.\nI've added -la to detailed listing including hidden files — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nls -la /proc/self/ns/ && stat /proc/self/ns/net"
+  },
+  {
+    "instruction": "Show namespace hierarchy with pstree",
+    "output": "<think>\nThe goal is to show namespace hierarchy with pstree.\nHere's how I'd approach this.\nThe tool for this job is pstree — pstree operations.\nThe -p flag handles create parent directories as needed. Important because important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\npstree -p $$ | head -30"
+  },
+  {
+    "instruction": "Display namespace information for debugging",
+    "output": "<think>\nAlright, we need to display namespace information for debugging.\nLet me reason through this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho; for ns in net pid mnt uts ipc user cgroup time; do printf \"%-6s: %s\\n\" \"$ns\" \"$(readlink /proc/self/ns/$ns 2>/dev/null)\"; done"
+  }
+]

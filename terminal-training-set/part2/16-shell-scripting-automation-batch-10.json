@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "List all tmux sessions",
+    "output": "<think>\nThe user wants to list all tmux sessions.\nBest tool here is tmux — tmux operations.\n</think>\ntmux list-sessions"
+  },
+  {
+    "instruction": "Detach from tmux with a specific target session",
+    "output": "<think>\nThis is asking us to detach from tmux with a specific target session.\nLet me reason through this.\nThis calls for tmux. Tmux operations.\nThe -s flag means summarize or silent mode, which matters here because important to get the expected behavior.\n</think>\ntmux detach -s dev"
+  },
+  {
+    "instruction": "Attach to an existing tmux session",
+    "output": "<think>\nAlright, we need to attach to an existing tmux session.\nFirst, let me understand what's needed here.\nBest tool here is tmux — tmux operations.\nThe -t flag handles sort by modification time. Important because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ntmux attach-session -t dev"
+  },
+  {
+    "instruction": "Split a tmux window vertically and horizontally",
+    "output": "<think>\nWe should split a tmux window vertically and horizontally.\nLet me think about the best approach.\nThe tool for this job is tmux — tmux operations.\nI've added -h to human-readable format — important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ntmux split-window -h; tmux split-window -v"
+  },
+  {
+    "instruction": "Create a new tmux window named 'logs'",
+    "output": "<think>\nWe're being asked to create a new tmux window named 'logs'.\nFirst, let me understand what's needed here.\ntmux is what we need — tmux operations.\nI'm using -n for dry-run, no changes — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntmux new-window -n 'logs' 'tail -f /var/log/syslog'"
+  },
+  {
+    "instruction": "Kill a specific tmux session",
+    "output": "<think>\nWe should kill a specific tmux session.\nLet me reason through this.\nI'd use tmux for this — tmux operations.\nI've added -t to sort by modification time — needed for this specific use case.\n</think>\ntmux kill-session -t dev"
+  },
+  {
+    "instruction": "Start a screen session named 'work'",
+    "output": "<think>\nThe goal is to start a screen session named 'work'.\nBest tool here is screen — screen operations.\n</think>\nscreen -S work"
+  },
+  {
+    "instruction": "List all screen sessions",
+    "output": "<think>\nThe user wants to list all screen sessions.\nLet me consider what makes sense here.\nscreen is what we need — screen operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nscreen -ls"
+  },
+  {
+    "instruction": "Detach from a screen session (Ctrl+A d)",
+    "output": "<think>\nThe goal is to detach from a screen session (Ctrl+A d).\nHere's how I'd approach this.\nFor this, screen is the right tool — screen operations.\n</think>\nscreen -d"
+  },
+  {
+    "instruction": "Reattach to a detached screen session",
+    "output": "<think>\nWe should reattach to a detached screen session.\nHere's how I'd approach this.\nFor this, screen is the right tool — screen operations.\nWhy -r? Recursive operation (descend into subdirectories). without it the command won't work as we need.\n</think>\nscreen -r work"
+  },
+  {
+    "instruction": "Reattach to a screen session by PID",
+    "output": "<think>\nWe should reattach to a screen session by PID.\nLet me think about the best approach.\nscreen is what we need — screen operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because needed for this specific use case.\n</think>\nscreen -r 12345.work"
+  },
+  {
+    "instruction": "Create a screen session running a command directly",
+    "output": "<think>\nThis is asking us to create a screen session running a command directly.\nThis calls for screen. Screen operations.\nWhy -S? Sort by size. this controls how the output is formatted.\nI've added -d to directory listing, don't descend — standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\n</think>\nscreen -S monitor -d -m htop"
+  },
+  {
+    "instruction": "Log a screen session to a file",
+    "output": "<think>\nNeed to log a screen session to a file.\nFirst, let me understand what's needed here.\nThe tool for this job is screen — screen operations.\nI've added -L to follow symlinks when processing — important to get the expected behavior.\nI've added -S to sort by size — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nscreen -L -S build -dm make"
+  },
+  {
+    "instruction": "Create a systemd timer that runs at boot + every hour",
+    "output": "<think>\nSo we need to create a systemd timer that runs at boot + every hour.\nBest tool here is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /etc/systemd/system/hourly.service << 'EOF'\n[Service]\nExecStart=/usr/local/bin/hourly-task.sh\nEOF\ncat > /etc/systemd/system/hourly.timer << 'EOF'\n[Timer]\nOnBootSec=5min\nOnUnitActiveSec=1h\n[Install]\nWantedBy=timers.target\nEOF\nsystemctl daemon-reload && systemctl enable --now hourly.timer"
+  },
+  {
+    "instruction": "Check systemd timer status and next run",
+    "output": "<think>\nThis is asking us to check systemd timer status and next run.\nHere's how I'd approach this.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-timers --all"
+  },
+  {
+    "instruction": "View systemd timer configuration",
+    "output": "<think>\nWe're being asked to view systemd timer configuration.\nLet me think about the best approach.\nThis calls for systemctl. Managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl cat hourly.timer"
+  },
+  {
+    "instruction": "Use systemd-run to create a transient timer on-the-fly",
+    "output": "<think>\nThe goal is to use systemd-run to create a transient timer on-the-fly.\nFor this, systemd-run is the right tool — systemd-run operations.\nQuick verification after execution to be safe.\n</think>\nsystemd-run --on-active=60 --unit=delayed-job /usr/local/bin/script.sh"
+  },
+  {
+    "instruction": "Use trap with multiple signals for cleanup",
+    "output": "<think>\nThis is asking us to use trap with multiple signals for cleanup.\nI'd use trap for this — trap operations.\n</think>\ntrap 'echo \"Cleanup on EXIT\"; rm -rf /tmp/workdir' EXIT; trap 'echo \"Interrupted\"; exit 1' INT TERM"
+  },
+  {
+    "instruction": "Use trap with DEBUG to trace every command",
+    "output": "<think>\nThe user wants to use trap with DEBUG to trace every command.\nLet me reason through this.\nI'd use trap for this — trap operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\ntrap 'echo \"Running: $BASH_COMMAND\"' DEBUG"
+  },
+  {
+    "instruction": "Use trap -p to list active traps",
+    "output": "<think>\nSo we need to use trap -p to list active traps.\nHere's how I'd approach this.\nThis calls for trap. Trap operations.\n</think>\ntrap -p"
+  },
+  {
+    "instruction": "Use read with -t timeout for interactive input",
+    "output": "<think>\nSo we need to use read with -t timeout for interactive input.\nLet me reason through this.\nif is what we need — if operations.\nI'm using -t for sort by modification time — standard practice for this kind of operation.\nThe -p flag handles create parent directories as needed. Important because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nif read -t 5 -p 'Continue? (y/n): ' -n 1 ans; then echo; else echo 'Timed out'; fi"
+  },
+  {
+    "instruction": "Use read -s for silent password input",
+    "output": "<think>\nSo we need to use read -s for silent password input.\nFirst, let me understand what's needed here.\nI'd use read for this — read operations.\nWhy -s? Summarize or silent mode. without it the command won't work as we need.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nread -s -p 'Password: ' pass; echo; echo \"${"
+  },
+  {
+    "instruction": "Use read with -d to use custom delimiter",
+    "output": "<think>\nWe should use read with -d to use custom delimiter.\nLet me reason through this.\nwhile is what we need — while operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nwhile read -d: field; do echo \"Field: $field\"; done <<< 'a:b:c:'"
+  },
+  {
+    "instruction": "Use declare -i for integer arithmetic attributes",
+    "output": "<think>\nSo the request is to use declare -i for integer arithmetic attributes.\nLet me break this down.\nThis calls for declare. Declare operations.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\n</think>\ndeclare -i a=10 b=20; a+=b; echo $a  # 30"
+  },
+  {
+    "instruction": "Use declare -r to create read-only variables",
+    "output": "<think>\nAlright, we need to use declare -r to create read-only variables.\nThe tool for this job is declare — declare operations.\n</think>\ndeclare -r PATH=/custom/path;"
+  },
+  {
+    "instruction": "Use declare -x to export a variable to subprocesses",
+    "output": "<think>\nThe goal is to use declare -x to export a variable to subprocesses.\nLet me think through this step by step.\nI'd use declare for this — declare operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\ndeclare -x APP_ENV=production"
+  }
+]

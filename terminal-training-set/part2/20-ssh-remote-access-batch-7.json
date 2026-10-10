@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a SSH config alias 'jumpserver' that uses a jump host to reach a target",
+    "output": "<think>\nSo we need to create a SSH config alias 'jumpserver' that uses a jump host to reach a target.\nThe tool for this job is cat — cat operations.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost jumpserver\n  HostName 10.0.1.50\n  User admin\n  Port 2222\n  IdentityFile ~/.ssh/id_ed25519\n  ProxyJump bastion.example.com\nEOF"
+  },
+  {
+    "instruction": "Set up ControlMaster multiplexing in SSH config for faster reconnections",
+    "output": "<think>\nThe goal is to set up ControlMaster multiplexing in SSH config for faster reconnections.\nLet me reason through this.\nI'll reach for cat here because cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost *\n  ControlMaster auto\n  ControlPath ~/.ssh/controlmasters/%r@%h:%p\n  ControlPersist 10m\nEOF\nmkdir -p ~/.ssh/controlmasters"
+  },
+  {
+    "instruction": "Open a local port forward from localhost:8080 to remote server:80 via SSH",
+    "output": "<think>\nNeed to open a local port forward from localhost:8080 to remote server:80 via SSH.\nLet me break this down.\nThe tool for this job is ssh — remote system access.\nWhy -L? Follow symlinks when processing. without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nssh -L 8080:localhost:80 user@remote.example.com"
+  },
+  {
+    "instruction": "Open a remote port forward so remote port 3000 tunnels to localhost:3000",
+    "output": "<think>\nThe user wants to open a remote port forward so remote port 3000 tunnels to localhost:3000.\nBest tool here is ssh — remote system access.\nWhy -R? Recursive operation. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -R 3000:localhost:3000 user@remote.example.com"
+  },
+  {
+    "instruction": "Create a dynamic SOCKS5 tunnel on port 1080 through an SSH server",
+    "output": "<think>\nNeed to create a dynamic SOCKS5 tunnel on port 1080 through an SSH server.\nThe tool for this job is ssh — remote system access.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nssh -D 1080 -C -N user@proxy.example.com"
+  },
+  {
+    "instruction": "Use ProxyCommand with netcat to hop through a jump host",
+    "output": "<think>\nSo the request is to use ProxyCommand with netcat to hop through a jump host.\nLet me think about the best approach.\nThe tool for this job is ssh — remote system access.\nA quick sanity check afterward saves debugging time later.\n</think>\nssh -o ProxyCommand='ssh bastion.example.com -W %h:%p' user@target.internal:2222"
+  },
+  {
+    "instruction": "Add a SSH config entry that uses ProxyCommand with nc for a target behind a bastion",
+    "output": "<think>\nSo the request is to add a SSH config entry that uses ProxyCommand with nc for a target behind a bastion.\nLet me break this down.\nThe tool for this job is cat — cat operations.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost internal-box\n  HostName 172.16.0.10\n  User appuser\n  Port 22\n  ProxyCommand ssh bastion.example.com -W %h:%p\nEOF"
+  },
+  {
+    "instruction": "Disable host key checking (ephemeral environments only) and log known_hosts to /dev/null",
+    "output": "<think>\nThe goal is to disable host key checking (ephemeral environments only) and log known_hosts to /dev/null.\nFirst, let me understand what's needed here.\nssh is what we need — remote system access.\nI'm using -o for output to file, OR operator in find — important to get the expected behavior.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null user@192.168.1.100"
+  },
+  {
+    "instruction": "Forward X11 connections over SSH with compression",
+    "output": "<think>\nSo the request is to forward X11 connections over SSH with compression.\nLet me break this down.\nssh is what we need — remote system access.\n</think>\nssh -X -C user@remote.example.com"
+  },
+  {
+    "instruction": "Pass the SSH agent through a jump chain of two hosts",
+    "output": "<think>\nSo we need to pass the SSH agent through a jump chain of two hosts.\nHere's how I'd approach this.\nBest tool here is ssh — remote system access.\nCheck the output for errors before proceeding to the next step.\n</think>\nssh -o ProxyJump=user@jump1.example.com -A user@target.internal"
+  },
+  {
+    "instruction": "Create a SSH config entry with both ProxyJump and agent forwarding",
+    "output": "<think>\nAlright, we need to create a SSH config entry with both ProxyJump and agent forwarding.\nLet me think through this step by step.\nThe tool for this job is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost db-proxy\n  HostName db.internal\n  User dba\n  ProxyJump bastion.example.com\n  ForwardAgent yes\nEOF"
+  },
+  {
+    "instruction": "Set a non-default SSH port and custom timeout in the config for a host",
+    "output": "<think>\nAlright, we need to set a non-default SSH port and custom timeout in the config for a host.\nThis calls for cat. Cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost legacy-box\n  HostName 10.0.0.5\n  Port 2222\n  User root\n  ConnectTimeout 5\n  ServerAliveInterval 30\nEOF"
+  },
+  {
+    "instruction": "Run a single command on a remote host with SSH and allocate a pseudo-TTY",
+    "output": "<think>\nThe task requires us to run a single command on a remote host with SSH and allocate a pseudo-TTY.\nI'll reach for ssh here because remote system access.\nI've added -t to sort by modification time — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nssh -t user@remote.example.com 'sudo systemctl status nginx'"
+  },
+  {
+    "instruction": "Keep an SSH tunnel alive with ServerAliveInterval and exit on signal",
+    "output": "<think>\nSo the request is to keep an SSH tunnel alive with ServerAliveInterval and exit on signal.\nHere's how I'd approach this.\nssh is what we need — remote system access.\nI'm using -L for follow symlinks when processing — without it the command won't work as we need.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nssh -L 3307:localhost:3306 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -N user@db.example.com"
+  },
+  {
+    "instruction": "Use escape character to suspend an SSH session and bring it back (tilde control)",
+    "output": "<think>\nWe're being asked to use escape character to suspend an SSH session and bring it back (tilde control).\nThis calls for ssh. Remote system access.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nssh user@remote.example.com"
+  },
+  {
+    "instruction": "Print the SSH config that will be applied for a given host",
+    "output": "<think>\nThe goal is to print the SSH config that will be applied for a given host.\nThis calls for ssh. Remote system access.\n</think>\nssh -G internal-box 2>/dev/null"
+  },
+  {
+    "instruction": "Start a SSH master connection manually and then reuse it",
+    "output": "<think>\nThe task requires us to start a SSH master connection manually and then reuse it.\nLet me break this down.\nBest tool here is ssh — remote system access.\nWhy -M? Display mount targets in df. needed for this specific use case.\nThe -S flag handles sort by size. Important because needed for this specific use case.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nssh -M -S ~/.ssh/ctrl-socket user@remote.example.com\nssh -S ~/.ssh/ctrl-socket user@remote.example.com 'uptime'"
+  },
+  {
+    "instruction": "Close a multiplexed SSH session gracefully via the control socket",
+    "output": "<think>\nNeed to close a multiplexed SSH session gracefully via the control socket.\nLet me consider what makes sense here.\nBest tool here is ssh — remote system access.\nAfter running, confirm it worked as expected before moving on.\n</think>\nssh -O exit -S ~/.ssh/ctrl-socket user@remote.example.com"
+  },
+  {
+    "instruction": "Check the status of a multiplexed SSH control socket",
+    "output": "<think>\nThe goal is to check the status of a multiplexed SSH control socket.\nThe tool for this job is ssh — remote system access.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -O check -S ~/.ssh/ctrl-socket user@remote.example.com"
+  },
+  {
+    "instruction": "Forward multiple local ports in a single SSH connection",
+    "output": "<think>\nThe task requires us to forward multiple local ports in a single SSH connection.\nLet me think about the best approach.\nFor this, ssh is the right tool — remote system access.\nWhy -L? Follow symlinks when processing. without it the command won't work as we need.\nI've added -L to follow symlinks when processing — this controls how the output is formatted.\n</think>\nssh -L 8888:localhost:8888 -L 9000:localhost:9000 -N user@remote.example.com"
+  },
+  {
+    "instruction": "Use SSH config with a wildcard host to apply common settings to all hosts",
+    "output": "<think>\nThe user wants to use SSH config with a wildcard host to apply common settings to all hosts.\nBest tool here is cat — cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost *.internal\n  User admin\n  Port 22\n  IdentityFile ~/.ssh/id_ed25519-internal\n  ProxyJump bastion.example.com\nEOF"
+  },
+  {
+    "instruction": "Set up a reverse dynamic tunnel (remote SOCKS)",
+    "output": "<think>\nNeed to set up a reverse dynamic tunnel (remote SOCKS).\nI'll reach for ssh here because remote system access.\nWhy -R? Recursive operation. needed for this specific use case.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nssh -R 1080 -N -f user@remote.example.com"
+  },
+  {
+    "instruction": "Execute a command with no PTY allocation and no agent forwarding",
+    "output": "<think>\nThe user wants to execute a command with no PTY allocation and no agent forwarding.\nLet me break this down.\nFor this, ssh is the right tool — remote system access.\nI've added -T to print filesystem type in df — without it the command won't work as we need.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\n</think>\nssh -T -o ForwardAgent=no user@remote.example.com 'df -h /'"
+  },
+  {
+    "instruction": "Login to a host and automatically cd into a directory and activate a venv",
+    "output": "<think>\nThis is asking us to login to a host and automatically cd into a directory and activate a venv.\nThis calls for ssh. Remote system access.\nThe -t flag handles sort by modification time. Important because standard practice for this kind of operation.\nThe -l flag means long format with details, which matters here because needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -t user@remote.example.com 'cd /opt/app && source venv/bin/activate && exec bash -l'"
+  },
+  {
+    "instruction": "Use the CheckHostIP and HashKnownHosts security options",
+    "output": "<think>\nAlright, we need to use the CheckHostIP and HashKnownHosts security options.\nHere's how I'd approach this.\nI'll reach for cat here because cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat >> ~/.ssh/config << 'EOF'\nHost *\n  CheckHostIP yes\n  HashKnownHosts yes\n  StrictHostKeyChecking ask\nEOF"
+  }
+]

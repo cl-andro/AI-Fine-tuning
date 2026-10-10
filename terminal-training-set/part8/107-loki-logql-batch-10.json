@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Use range aggregation rate",
+    "output": "<think>\nAlright, we need to use range aggregation rate.\nLet me break this down.\nBest tool here is logcli — logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nlogcli query 'rate({job=\"nginx\"} |= \"error\"[5m])'"
+  },
+  {
+    "instruction": "Count logs per level with sum by",
+    "output": "<think>\nThe goal is to count logs per level with sum by.\nHere's how I'd approach this.\nI'll reach for logcli here because logcli operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\nlogcli query 'sum by (level) (count_over_time({job=\"app\"} | json [1m]))'"
+  },
+  {
+    "instruction": "Get top 5 error types with topk",
+    "output": "<think>\nThe goal is to get top 5 error types with topk.\nLet me think through this step by step.\nBest tool here is logcli — logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlogcli query 'topk(5, count_over_time({job=\"app\"} |= \"error\" [5m]))'"
+  },
+  {
+    "instruction": "Check absent_over_time for missing service",
+    "output": "<think>\nAlright, we need to check absent_over_time for missing service.\nLet me think about the best approach.\nBest tool here is logcli — logcli operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nlogcli query 'absent_over_time({job=\"worker\"}[10m])'"
+  },
+  {
+    "instruction": "Query raw output format",
+    "output": "<think>\nThe goal is to query raw output format.\nLet me reason through this.\nI'll reach for logcli here because logcli operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nlogcli query '{job=\"nginx\"}' --output raw"
+  },
+  {
+    "instruction": "Query JSON output format",
+    "output": "<think>\nWe should query JSON output format.\nHere's how I'd approach this.\nThis calls for logcli. Logcli operations.\nQuick verification after execution to be safe.\n</think>\nlogcli query '{job=\"nginx\"}' --output json"
+  },
+  {
+    "instruction": "Query with specific time range",
+    "output": "<think>\nSo we need to query with specific time range.\nBest tool here is logcli — logcli operations.\n</think>\nlogcli query '{job=\"nginx\"}' --from \"2025-01-01T00:00:00Z\" --to \"2025-01-02T00:00:00Z\""
+  },
+  {
+    "instruction": "Compute bytes per second rate",
+    "output": "<think>\nNeed to compute bytes per second rate.\nFor this, logcli is the right tool — logcli operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlogcli query 'rate({job=\"nginx\"} | json | unwrap bytes_sent [1m])'"
+  },
+  {
+    "instruction": "Count logs per host",
+    "output": "<think>\nWe're being asked to count logs per host.\nI'd use logcli for this — logcli operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli query 'count by (host) (count_over_time({job=\"nginx\"}[5m]))'"
+  },
+  {
+    "instruction": "Query with multiple label matchers",
+    "output": "<think>\nSo the request is to query with multiple label matchers.\nLet me break this down.\nI'd use logcli for this — logcli operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli query '{job=\"nginx\", env=\"production\"} |= \"error\"'"
+  },
+  {
+    "instruction": "Stream selector with regex on labels",
+    "output": "<think>\nWe're being asked to stream selector with regex on labels.\nLet me think through this step by step.\nI'll reach for logcli here because logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\nlogcli query '{job=~\"nginx|apache\"} |= \"error\"'"
+  },
+  {
+    "instruction": "Extract label with label_format",
+    "output": "<think>\nThe goal is to extract label with label_format.\nFirst, let me understand what's needed here.\nFor this, logcli is the right tool — logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli query '{job=\"app\"} | logfmt | label_format hostname=host'"
+  },
+  {
+    "instruction": "Calculate quantile of request duration",
+    "output": "<think>\nThe task requires us to calculate quantile of request duration.\nHere's how I'd approach this.\nI'd use logcli for this — logcli operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nlogcli query 'quantile_over_time(0.95, {job=\"nginx\"} | json | unwrap request_time [1h])'"
+  },
+  {
+    "instruction": "Filter logs by JSON field value",
+    "output": "<think>\nSo we need to filter logs by JSON field value.\nLet me think through this step by step.\nBest tool here is logcli — logcli operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlogcli query '{job=\"app\"} | json | status >= 500'"
+  },
+  {
+    "instruction": "Detect missing cron job",
+    "output": "<think>\nAlright, we need to detect missing cron job.\nLet me reason through this.\nFor this, logcli is the right tool — logcli operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nlogcli query 'absent_over_time({job=\"cron\"}[15m])'"
+  },
+  {
+    "instruction": "Average request duration by host",
+    "output": "<think>\nSo the request is to average request duration by host.\nFirst, let me understand what's needed here.\nBest tool here is logcli — logcli operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli query 'avg by (host) (rate({job=\"nginx\"} | json | unwrap request_time [5m]))'"
+  },
+  {
+    "instruction": "Count error logs as metric vector",
+    "output": "<think>\nSo we need to count error logs as metric vector.\nFirst, let me understand what's needed here.\nBest tool here is logcli — logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli query 'sum(rate({job=\"nginx\"} |= \"error\" [5m]))'"
+  },
+  {
+    "instruction": "Use LogQL metric query for status codes",
+    "output": "<think>\nThe goal is to use LogQL metric query for status codes.\nHere's how I'd approach this.\nBest tool here is logcli — logcli operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nlogcli query 'count by (status) (rate({job=\"nginx\"} | json [1m]))'"
+  },
+  {
+    "instruction": "Compute apdex score from request times",
+    "output": "<think>\nNeed to compute apdex score from request times.\nLet me break this down.\nFor this, logcli is the right tool — logcli operations.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nlogcli query 'apdex(0.25, 0.5, {job=\"nginx\"} | json | unwrap request_time [5m])'"
+  },
+  {
+    "instruction": "Use absent_over_time for metric alert",
+    "output": "<think>\nSo we need to use absent_over_time for metric alert.\nThe tool for this job is logcli — logcli operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli query 'absent_over_time({job=\"exporter\"}[5m])'"
+  },
+  {
+    "instruction": "Get min/ max/ avg latency",
+    "output": "<think>\nSo we need to get min/ max/ avg latency.\nFirst, let me understand what's needed here.\nFor this, logcli is the right tool — logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nlogcli query 'min by (host) (rate({job=\"nginx\"} | json | unwrap request_time [5m]))'"
+  },
+  {
+    "instruction": "Use bottomk for slowest endpoints",
+    "output": "<think>\nThe goal is to use bottomk for slowest endpoints.\nFirst, let me understand what's needed here.\nThis calls for logcli. Logcli operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nlogcli query 'bottomk(5, avg by (path) (rate({job=\"nginx\"} | json | unwrap request_time [5m])))'"
+  }
+]

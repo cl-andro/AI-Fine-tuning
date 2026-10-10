@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Use capsh to test specific capability",
+    "output": "<think>\nAlright, we need to use capsh to test specific capability.\nLet me consider what makes sense here.\nBest tool here is capsh — capsh operations.\nI've added -c to count or create — standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncapsh --has-cap=cap_net_raw -- -c 'echo cap_net_raw is supported'"
+  },
+  {
+    "instruction": "List all available capability values",
+    "output": "<think>\nSo the request is to list all available capability values.\nLet me break this down.\nThe tool for this job is capsh — capsh operations.\nI'm using --help for show usage information — important to get the expected behavior.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncapsh --help 2>&1 | grep -oP 'cap_[a-z_]+' | sort -u"
+  },
+  {
+    "instruction": "Decode capability bitmask manually",
+    "output": "<think>\nWe're being asked to decode capability bitmask manually.\nLet me consider what makes sense here.\nI'd use python3 for this — Python interpreter for scripting and automation.\nThe -c flag means count or create, which matters here because important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\npython3 -c \"mask=0x0000000000000400; bits=[i for i in range(64) if mask>>i & 1]; print('Capabilities:', [f'cap_{i}' for i in bits])\""
+  },
+  {
+    "instruction": "Convert capability name to numeric",
+    "output": "<think>\nAlright, we need to convert capability name to numeric.\nLet me break this down.\nBest tool here is python3 — Python interpreter for scripting and automation.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\npython3 -c \"import ctypes; print(ctypes.CDLL('libcap.so.2').cap_from_name(b'cap_net_raw'))\""
+  },
+  {
+    "instruction": "ASCII art showing capability sets",
+    "output": "<think>\nWe should aSCII art showing capability sets.\npython3 is what we need — Python interpreter for scripting and automation.\nAfter running, I'll confirm the result looks right.\n</think>\npython3 -c \"\ndata = open('/proc/self/status').read().split('\\n')\ncaps = {}\nfor l in data:\n    if 'Cap' in l and ':' in l:\n        parts = l.split()\n        if len(parts) >= 2:\n            name = parts[0].rstrip(':')\n            mask = int(parts[1], 16)\n            caps[name] = mask\n            bits = [i for i in range(64) if mask>>i & 1]\n            print(f'{name:8} = {mask:016x}: {bits}')\n\""
+  },
+  {
+    "instruction": "Check if dotnet has capabilities",
+    "output": "<think>\nThe user wants to check if dotnet has capabilities.\ngetcap is what we need — getcap operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\ngetcap /usr/share/dotnet/dotnet 2>/dev/null || echo 'no caps'"
+  },
+  {
+    "instruction": "View capabilities of installed browsers",
+    "output": "<think>\nWe're being asked to view capabilities of installed browsers.\nThis calls for getcap. Getcap operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ngetcap /usr/bin/firefox /usr/bin/chromium /usr/bin/brave 2>/dev/null"
+  },
+  {
+    "instruction": "Find packages that use capabilities",
+    "output": "<think>\nWe're being asked to find packages that use capabilities.\nI'll reach for dpkg here because dpkg operations.\nI'm piping because each stage transforms the data before passing it to the next.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndpkg -L libcap2-bin | head -20"
+  },
+  {
+    "instruction": "Show all man pages for cap_* functions",
+    "output": "<think>\nAlright, we need to show all man pages for cap_* functions.\nLet me think through this step by step.\nFor this, man is the right tool — man operations.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nman -k cap_ | grep -i 'capability'"
+  },
+  {
+    "instruction": "View capabilities related to mount",
+    "output": "<think>\nThe task requires us to view capabilities related to mount.\nLet me think through this step by step.\nI'll reach for man here because man operations.\nI've added -i to interactive, prompt before action — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nman 7 capabilities | grep -i 'mount' | head -10"
+  },
+  {
+    "instruction": "Check Vim capability CAP_NET_RAW",
+    "output": "<think>\nThe user wants to check Vim capability CAP_NET_RAW.\nLet me think through this step by step.\nThe tool for this job is getcap — getcap operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\ngetcap /usr/bin/vim.basic 2>/dev/null || echo 'no vim caps'"
+  },
+  {
+    "instruction": "List capabilities for disk tools",
+    "output": "<think>\nAlright, we need to list capabilities for disk tools.\nLet me think through this step by step.\nThe tool for this job is getcap — getcap operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ngetcap /sbin/fdisk /sbin/parted /sbin/mkfs.ext4 2>/dev/null"
+  },
+  {
+    "instruction": "Check if traceroute6 has raw capability",
+    "output": "<think>\nThe goal is to check if traceroute6 has raw capability.\nFor this, getcap is the right tool — getcap operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ngetcap /usr/bin/traceroute6 2>/dev/null || echo 'no separate cap'"
+  },
+  {
+    "instruction": "Find binaries with CAP_SYS_PTRACE",
+    "output": "<think>\nWe should find binaries with CAP_SYS_PTRACE.\nI'd use getcap for this — getcap operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ngetcap -r / 2>/dev/null | grep cap_sys_ptrace"
+  },
+  {
+    "instruction": "Check all cap functionaly for nmap",
+    "output": "<think>\nSo the request is to check all cap functionaly for nmap.\nHere's how I'd approach this.\nThis calls for getcap. Getcap operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ngetcap /usr/bin/nmap 2>/dev/null || echo 'nmap no caps'"
+  },
+  {
+    "instruction": "View CAP_FOWNER for chown tools",
+    "output": "<think>\nSo we need to view CAP_FOWNER for chown tools.\nThe tool for this job is getcap — getcap operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ngetcap /bin/chown /usr/bin/chown 2>/dev/null"
+  },
+  {
+    "instruction": "Check if journalctl has capabilities",
+    "output": "<think>\nThe user wants to check if journalctl has capabilities.\nLet me reason through this.\nFor this, getcap is the right tool — getcap operations.\n</think>\ngetcap /usr/bin/journalctl 2>/dev/null"
+  },
+  {
+    "instruction": "See what capabilities logrotate runs with",
+    "output": "<think>\nThe user wants to see what capabilities logrotate runs with.\nBest tool here is getpcaps — getpcaps operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ngetpcaps $(pgrep -x logrotate) 2>/dev/null || echo 'not running'"
+  },
+  {
+    "instruction": "Check cron daemon capabilities",
+    "output": "<think>\nAlright, we need to check cron daemon capabilities.\nThis calls for getpcaps. Getpcaps operations.\n</think>\ngetpcaps $(pgrep -x cron) 2>/dev/null"
+  },
+  {
+    "instruction": "View cups daemon capabilities",
+    "output": "<think>\nAlright, we need to view cups daemon capabilities.\nLet me think about the best approach.\nI'll reach for getpcaps here because getpcaps operations.\n</think>\ngetpcaps $(pgrep -x cupsd) 2>/dev/null"
+  },
+  {
+    "instruction": "Check dhcp client capabilities",
+    "output": "<think>\nWe should check dhcp client capabilities.\nLet me reason through this.\nI'd use getpcaps for this — getpcaps operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ngetpcaps $(pgrep -x dhclient) 2>/dev/null"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Copy a file to a remote host using SCP with port 2222",
+    "output": "<think>\nNeed to copy a file to a remote host using SCP with port 2222.\nLet me break this down.\nscp is what we need — secure file transfer.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nscp -P 2222 /local/file.txt user@remote.example.com:/home/user/"
+  },
+  {
+    "instruction": "Recursively copy a directory from remote to local using SCP",
+    "output": "<think>\nThe goal is to recursively copy a directory from remote to local using SCP.\nLet me consider what makes sense here.\nI'll reach for scp here because secure file transfer.\nI'm using -r for recursive operation (descend into subdirectories) — this controls how the output is formatted.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nscp -r -P 2222 user@remote.example.com:/remote/dir/ /local/dir/"
+  },
+  {
+    "instruction": "Copy a file between two remote hosts through the local machine",
+    "output": "<think>\nWe should copy a file between two remote hosts through the local machine.\nLet me consider what makes sense here.\nI'll reach for scp here because secure file transfer.\nQuick verification after execution to be safe.\n</think>\nscp -3 user@host1:/path/file.txt user@host2:/path/"
+  },
+  {
+    "instruction": "Use SCP with bandwidth limit and cipher specification",
+    "output": "<think>\nNeed to use SCP with bandwidth limit and cipher specification.\nLet me break this down.\nI'd use scp for this — secure file transfer.\nI'm using -l for long format with details — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\nscp -l 1000 -c aes256-gcm@openssh.com large-file.iso user@remote.example.com:~/"
+  },
+  {
+    "instruction": "Start an interactive SFTP session on a non-standard port",
+    "output": "<think>\nThe user wants to start an interactive SFTP session on a non-standard port.\nLet me consider what makes sense here.\nThis calls for sftp. Sftp operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsftp -o Port=2222 user@remote.example.com"
+  },
+  {
+    "instruction": "Download a single file non-interactively with SFTP",
+    "output": "<think>\nWe're being asked to download a single file non-interactively with SFTP.\nBest tool here is sftp — sftp operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nsftp user@remote.example.com:/remote/file.txt /local/destination/"
+  },
+  {
+    "instruction": "Upload an entire directory tree via SFTP batch mode",
+    "output": "<think>\nWe're being asked to upload an entire directory tree via SFTP batch mode.\nLet me break this down.\nI'll reach for sftp here because sftp operations.\nWhy -b? Brief output. needed for this specific use case.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nsftp -b - user@remote.example.com <<< $'put -r /local/folder /remote/destination'"
+  },
+  {
+    "instruction": "List a remote directory contents using SFTP in batch mode",
+    "output": "<think>\nThe user wants to list a remote directory contents using SFTP in batch mode.\nFirst, let me understand what's needed here.\nThis calls for sftp. Sftp operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsftp user@remote.example.com <<< $'ls -la /var/log'"
+  },
+  {
+    "instruction": "Install and connect to a remote host using Mosh",
+    "output": "<think>\nWe should install and connect to a remote host using Mosh.\nThis calls for mosh. Mosh operations.\n</think>\nmosh user@remote.example.com"
+  },
+  {
+    "instruction": "Connect with Mosh on a specific port and predict mode",
+    "output": "<think>\nSo we need to connect with Mosh on a specific port and predict mode.\nI'd use mosh for this — mosh operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nmosh --port=60001 --predict=experimental user@remote.example.com"
+  },
+  {
+    "instruction": "Use autossh to maintain a persistent reverse tunnel with monitoring",
+    "output": "<think>\nWe should use autossh to maintain a persistent reverse tunnel with monitoring.\nLet me think about the best approach.\nThe tool for this job is autossh — autossh operations.\nI'm using -M for display mount targets in df — without it the command won't work as we need.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nautossh -M 0 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 8080:localhost:80 user@remote.example.com -N"
+  },
+  {
+    "instruction": "Set up autossh as a systemd service for a reverse tunnel",
+    "output": "<think>\nThe user wants to set up autossh as a systemd service for a reverse tunnel.\ncat is what we need — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo cat > /etc/systemd/system/autossh-tunnel.service << 'EOF'\n[Unit]\nDescription=AutoSSH tunnel to remote\nAfter=network.target\n\n[Service]\nEnvironment=\"AUTOSSH_GATETIME=0\"\nExecStart=/usr/bin/autossh -M 0 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -NT -R 2222:localhost:22 user@remote.example.com\nRestart=always\nRestartSec=10\nUser=autossh\n\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl daemon-reload && sudo systemctl enable --now autossh-tunnel.service"
+  },
+  {
+    "instruction": "Copy your public SSH key to a remote server for passwordless login",
+    "output": "<think>\nAlright, we need to copy your public SSH key to a remote server for passwordless login.\nThe tool for this job is ssh-copy-id — SSH public key deployment.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-copy-id -i ~/.ssh/id_ed25519.pub user@remote.example.com"
+  },
+  {
+    "instruction": "Copy your SSH key to a remote server on a non-standard port",
+    "output": "<think>\nSo we need to copy your SSH key to a remote server on a non-standard port.\nThe tool for this job is ssh-copy-id — SSH public key deployment.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nWhy -p? Create parent directories as needed. without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nssh-copy-id -i ~/.ssh/id_rsa.pub -p 2222 user@remote.example.com"
+  },
+  {
+    "instruction": "Generate an Ed25519 SSH key with 100 rounds of KDF",
+    "output": "<think>\nThe task requires us to generate an Ed25519 SSH key with 100 rounds of KDF.\nHere's how I'd approach this.\nI'd use ssh-keygen for this — SSH key pair generation.\n</think>\nssh-keygen -t ed25519 -a 100 -f ~/.ssh/id_ed25519 -C 'my-personal-key'"
+  },
+  {
+    "instruction": "Generate an RSA SSH key with 4096 bits",
+    "output": "<think>\nThe goal is to generate an RSA SSH key with 4096 bits.\nLet me think through this step by step.\nThis calls for ssh-keygen. SSH key pair generation.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nI've added -b to brief output — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -C 'work-2026' -N ''"
+  },
+  {
+    "instruction": "Change the passphrase on an existing SSH private key",
+    "output": "<think>\nThe goal is to change the passphrase on an existing SSH private key.\nHere's how I'd approach this.\nI'd use ssh-keygen for this — SSH key pair generation.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\nI've added -f to force, suppress errors — standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\n</think>\nssh-keygen -p -f ~/.ssh/id_ed25519"
+  },
+  {
+    "instruction": "Extract the public key from a private key file",
+    "output": "<think>\nThe user wants to extract the public key from a private key file.\nFor this, ssh-keygen is the right tool — SSH key pair generation.\nCheck the output for errors before proceeding to the next step.\n</think>\nssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub"
+  },
+  {
+    "instruction": "List all keys currently loaded in the SSH agent",
+    "output": "<think>\nThe task requires us to list all keys currently loaded in the SSH agent.\nBest tool here is ssh-add — ssh-add operations.\n</think>\nssh-add -l"
+  },
+  {
+    "instruction": "Add a specific SSH key to the running SSH agent",
+    "output": "<think>\nWe're being asked to add a specific SSH key to the running SSH agent.\nLet me think through this step by step.\nThis calls for ssh-add. Ssh-add operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-add ~/.ssh/id_ed25519"
+  },
+  {
+    "instruction": "Remove all keys from the SSH agent",
+    "output": "<think>\nAlright, we need to remove all keys from the SSH agent.\nLet me break this down.\nFor this, ssh-add is the right tool — ssh-add operations.\n</think>\nssh-add -D"
+  },
+  {
+    "instruction": "Start the SSH agent in the current shell and add a key",
+    "output": "<think>\nSo we need to start the SSH agent in the current shell and add a key.\nLet me consider what makes sense here.\nBest tool here is eval — eval operations.\nI'm using -s for summarize or silent mode — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\neval $(ssh-agent -s) && ssh-add ~/.ssh/id_ed25519"
+  },
+  {
+    "instruction": "Add a key to the agent with a limited lifetime of 1 hour",
+    "output": "<think>\nAlright, we need to add a key to the agent with a limited lifetime of 1 hour.\nLet me think through this step by step.\nThe tool for this job is ssh-add — ssh-add operations.\nOne command does the job. Simple is better.\n</think>\nssh-add -t 3600 ~/.ssh/work-key"
+  },
+  {
+    "instruction": "Lock the SSH agent with a password",
+    "output": "<think>\nWe're being asked to lock the SSH agent with a password.\nLet me reason through this.\nssh-add is what we need — ssh-add operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-add -x"
+  },
+  {
+    "instruction": "Display the fingerprint of a public key in a human-readable format",
+    "output": "<think>\nSo we need to display the fingerprint of a public key in a human-readable format.\nLet me reason through this.\nssh-keygen is what we need — SSH key pair generation.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-keygen -lf ~/.ssh/id_ed25519.pub"
+  }
+]

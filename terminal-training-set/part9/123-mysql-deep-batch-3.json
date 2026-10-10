@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "PT: Checksum tables for replication consistency",
+    "output": "<think>\nThe goal is to pT: Checksum tables for replication consistency.\nLet me think about the best approach.\nFor this, pt-table-checksum is the right tool — pt-table-checksum operations.\nAfter running, I'll confirm the result looks right.\n</think>\npt-table-checksum --databases=mydb --replicate=percona.checksums"
+  },
+  {
+    "instruction": "PT: Sync table data between master and replica",
+    "output": "<think>\nSo the request is to pT: Sync table data between master and replica.\nI'll reach for pt-table-sync here because pt-table-sync operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\npt-table-sync --execute --sync-to-master h=replica.example.com,D=mydb"
+  },
+  {
+    "instruction": "PT: Analyze slow query log",
+    "output": "<think>\nSo the request is to pT: Analyze slow query log.\nLet me break this down.\nFor this, pt-query-digest is the right tool — pt-query-digest operations.\n</think>\npt-query-digest /var/log/mysql/mysql-slow.log"
+  },
+  {
+    "instruction": "PT: Analyze process list",
+    "output": "<think>\nWe're being asked to pT: Analyze process list.\nFirst, let me understand what's needed here.\nThe tool for this job is pt-query-digest — pt-query-digest operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\npt-query-digest --processlist h=localhost"
+  },
+  {
+    "instruction": "Xtrabackup: Full backup",
+    "output": "<think>\nSo we need to xtrabackup: Full backup.\nxtrabackup is what we need — xtrabackup operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nxtrabackup --backup --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Prepare for restore",
+    "output": "<think>\nThis is asking us to xtrabackup: Prepare for restore.\nHere's how I'd approach this.\nFor this, xtrabackup is the right tool — xtrabackup operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nxtrabackup --prepare --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Restore from backup",
+    "output": "<think>\nThe task requires us to xtrabackup: Restore from backup.\nThe tool for this job is xtrabackup — xtrabackup operations.\n</think>\nxtrabackup --copy-back --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Streaming backup with compression",
+    "output": "<think>\nWe're being asked to xtrabackup: Streaming backup with compression.\nThe tool for this job is xtrabackup — xtrabackup operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nxtrabackup --backup --stream=xbstream --target-dir=/tmp/backup | gzip > backup.xbstream.gz"
+  },
+  {
+    "instruction": "Run mysqlslap benchmark with concurrency",
+    "output": "<think>\nThe goal is to run mysqlslap benchmark with concurrency.\nI'd use mysqlslap for this — mysqlslap operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nmysqlslap --user=root --password --concurrency=10,50 --iterations=5 --number-int-cols=5 --number-char-cols=20 --auto-generate-sql"
+  },
+  {
+    "instruction": "Run mysqlslap with a custom query",
+    "output": "<think>\nThe task requires us to run mysqlslap with a custom query.\nFirst, let me understand what's needed here.\nThe tool for this job is mysqlslap — mysqlslap operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nmysqlslap --user=root --password --concurrency=10 --iterations=3 --query=\"SELECT * FROM mydb.orders WHERE status='pending'\""
+  },
+  {
+    "instruction": "Run mysqlslap with many queries",
+    "output": "<think>\nThe task requires us to run mysqlslap with many queries.\nLet me reason through this.\nmysqlslap is what we need — mysqlslap operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nmysqlslap --user root --password --concurrency=20 --number-of-queries=1000 --auto-generate-sql"
+  },
+  {
+    "instruction": "Check MyISAM table for errors",
+    "output": "<think>\nThe task requires us to check MyISAM table for errors.\nLet me reason through this.\nBest tool here is myisamchk — myisamchk operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nmyisamchk -e /var/lib/mysql/mydb/mytable.MYI"
+  },
+  {
+    "instruction": "Repair MyISAM table",
+    "output": "<think>\nNeed to repair MyISAM table.\nFirst, let me understand what's needed here.\nmyisamchk is what we need — myisamchk operations.\nI've added -r to recursive operation (descend into subdirectories) — this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\n</think>\nmyisamchk -r /var/lib/mysql/mydb/mytable.MYI"
+  },
+  {
+    "instruction": "Show table sizes in a database",
+    "output": "<think>\nThe user wants to show table sizes in a database.\nmysql is what we need — MySQL database queries.\nNo need for complex pipelines here — one command is sufficient.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"SELECT table_schema, table_name, ROUND((data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.tables WHERE table_schema = 'mydb' ORDER BY size_mb DESC\""
+  },
+  {
+    "instruction": "Show top 5 largest tables",
+    "output": "<think>\nSo we need to show top 5 largest tables.\nLet me think about the best approach.\nI'll reach for mysql here because MySQL database queries.\nThe -u flag handles show or sort by access time. Important because standard practice for this kind of operation.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"SELECT table_name, ROUND(((data_length + index_length) / 1024 / 1024), 2) AS size_mb FROM information_schema.tables WHERE table_schema = 'mydb' ORDER BY (data_length + index_length) DESC LIMIT 5\""
+  },
+  {
+    "instruction": "Set global MySQL variable",
+    "output": "<think>\nNeed to set global MySQL variable.\nI'll reach for mysql here because MySQL database queries.\nWhy -u? Show or sort by access time. this controls how the output is formatted.\nThe -p flag handles create parent directories as needed. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"SET GLOBAL max_connections = 500\""
+  },
+  {
+    "instruction": "Flush the query cache",
+    "output": "<think>\nThe task requires us to flush the query cache.\nFirst, let me understand what's needed here.\nI'll reach for mysql here because MySQL database queries.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"RESET QUERY CACHE\""
+  },
+  {
+    "instruction": "Add an index without blocking writes",
+    "output": "<think>\nThe goal is to add an index without blocking writes.\nLet me think about the best approach.\nmysql is what we need — MySQL database queries.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p mydb -e \"ALTER TABLE orders ADD INDEX idx_status (status), ALGORITHM=INPLACE, LOCK=NONE\""
+  },
+  {
+    "instruction": "Show open tables in use",
+    "output": "<think>\nThe goal is to show open tables in use.\nmysql is what we need — MySQL database queries.\nI'm using -u for show or sort by access time — standard practice for this kind of operation.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nSame as psql — test destructive queries on a staging db first.\nLet me verify afterward that it worked correctly.\n</think>\nmysql -u root -p -e \"SHOW OPEN TABLES WHERE In_use > 0\""
+  },
+  {
+    "instruction": "Check for table fragmentation",
+    "output": "<think>\nWe should check for table fragmentation.\nmysql is what we need — MySQL database queries.\nI'm using -u for show or sort by access time — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nSame as psql — test destructive queries on a staging db first.\nQuick verification after execution to be safe.\n</think>\nmysql -u root -p -e \"SELECT table_schema, table_name, ROUND(data_free / 1024 / 1024, 2) AS frag_mb FROM information_schema.tables WHERE data_free > 0 AND table_schema = 'mydb' ORDER BY frag_mb DESC\""
+  },
+  {
+    "instruction": "Run MySQL upgrade check",
+    "output": "<think>\nNeed to run MySQL upgrade check.\nLet me think through this step by step.\nThe tool for this job is mysqlcheck — mysqlcheck operations.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nmysqlcheck -u root -p --all-databases --check-upgrade"
+  },
+  {
+    "instruction": "Set InnoDB buffer pool size globally",
+    "output": "<think>\nThe user wants to set InnoDB buffer pool size globally.\nLet me think through this step by step.\nFor this, mysql is the right tool — MySQL database queries.\nI'm using -u for show or sort by access time — this controls how the output is formatted.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nWhy -e? Edit or executable. needed for this specific use case.\nSame as psql — test destructive queries on a staging db first.\nLet me verify afterward that it worked correctly.\n</think>\nmysql -u root -p -e \"SET GLOBAL innodb_buffer_pool_size = 4294967296\""
+  }
+]

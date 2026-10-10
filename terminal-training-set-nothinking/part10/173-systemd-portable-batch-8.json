@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Check if a portable image is currently attached",
+    "output": "portablectl list | grep myapp"
+  },
+  {
+    "instruction": "Restart the portable daemon",
+    "output": "systemctl restart systemd-portabled"
+  },
+  {
+    "instruction": "Create a minimal portable image directory",
+    "output": "mkdir -p /var/lib/portable/myapp/usr/bin /var/lib/portable/myapp/lib/systemd/system"
+  },
+  {
+    "instruction": "Attach portable with specific env variables",
+    "output": "portablectl attach --property=Environment=FOO=bar /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Force detach portable service",
+    "output": "portablectl detach --now myapp"
+  },
+  {
+    "instruction": "Create portable image with os-release",
+    "output": "mkdir -p /tmp/portable-build/usr/lib && echo 'ID=myapp\nVERSION_ID=1.0' > /tmp/portable-build/usr/lib/os-release && mksquashfs /tmp/portable-build /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Check status of a portable service unit",
+    "output": "systemctl status systemd-portabled.service"
+  },
+  {
+    "instruction": "Check status of portable service after attach",
+    "output": "systemctl status myapp.service"
+  },
+  {
+    "instruction": "Check portable image size",
+    "output": "ls -lh /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Verify portable image is valid OS",
+    "output": "test -f /var/lib/portable/myapp.raw && unsquashfs -l /var/lib/portable/myapp.raw usr/lib/os-release 2>/dev/null && echo 'Valid'"
+  },
+  {
+    "instruction": "Reattach portable to refresh units",
+    "output": "portablectl reattach /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Check journal for portable service",
+    "output": "journalctl -u myapp.service"
+  },
+  {
+    "instruction": "Set memory limit on portable service",
+    "output": "systemctl set-property myapp.service MemoryMax=256M"
+  },
+  {
+    "instruction": "Attach portable with read-only root",
+    "output": "portablectl attach --property=ProtectSystem=yes /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "List only detached portable images",
+    "output": "portablectl list --detached"
+  },
+  {
+    "instruction": "Enable and start portable daemon",
+    "output": "systemctl enable --now systemd-portabled.service"
+  },
+  {
+    "instruction": "List files in portable image",
+    "output": "unsquashfs -ll /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Detach portable image by image path",
+    "output": "portablectl detach /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Attach portable with network namespace bind",
+    "output": "portablectl attach --property=PrivateNetwork=yes /var/lib/portable/myapp.raw"
+  },
+  {
+    "instruction": "Attach multiple portable images at once",
+    "output": "portablectl attach /var/lib/portable/app1.raw /var/lib/portable/app2.raw"
+  },
+  {
+    "instruction": "Show portable image OS release info",
+    "output": "unsquashfs -l /var/lib/portable/myapp.raw etc/os-release 2>/dev/null; echo 'check inside image'"
+  },
+  {
+    "instruction": "Attach portable image with a specific unit name prefix",
+    "output": "portablectl attach --prefix=/usr/local /var/lib/portable/myapp.raw"
+  }
+]

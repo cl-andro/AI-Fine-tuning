@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Docker run with no network namespace",
+    "output": "<think>\nThe goal is to docker run with no network namespace.\nLet me think through this step by step.\nI'll reach for docker here because container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --net=host --rm alpine ip addr"
+  },
+  {
+    "instruction": "Docker run with new PID namespace",
+    "output": "<think>\nThe user wants to docker run with new PID namespace.\nFirst, let me understand what's needed here.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --pid=host --rm alpine ps aux"
+  },
+  {
+    "instruction": "Docker share IPC namespace with host",
+    "output": "<think>\nNeed to docker share IPC namespace with host.\ndocker is what we need — container management.\nNo need for complex pipelines here — one command is sufficient.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --ipc=host --rm alpine ipcs"
+  },
+  {
+    "instruction": "Docker mount namespace propagation",
+    "output": "<think>\nSo we need to docker mount namespace propagation.\nLet me think through this step by step.\ndocker is what we need — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --mount type=bind,source=/mnt,target=/mnt,bind-propagation=slave --rm alpine ls /mnt"
+  },
+  {
+    "instruction": "Docker run with user namespace",
+    "output": "<think>\nThe goal is to docker run with user namespace.\nLet me think about the best approach.\nFor this, docker is the right tool — container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --userns=host --rm alpine whoami"
+  },
+  {
+    "instruction": "Docker run with cgroup namespace",
+    "output": "<think>\nSo the request is to docker run with cgroup namespace.\nI'll reach for docker here because container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --cgroupns=host --rm alpine cat /proc/self/cgroup"
+  },
+  {
+    "instruction": "Docker with UTS namespace sharing",
+    "output": "<think>\nSo the request is to docker with UTS namespace sharing.\nFor this, docker is the right tool — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run --uts=host --rm alpine hostname"
+  },
+  {
+    "instruction": "Run docker in separate network namespace",
+    "output": "<think>\nThis is asking us to run docker in separate network namespace.\nFirst, let me understand what's needed here.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker run --net=isolated_ns --rm alpine ip addr"
+  },
+  {
+    "instruction": "Create Docker container with all namespaces",
+    "output": "<think>\nThe goal is to create Docker container with all namespaces.\nLet me think through this step by step.\nI'd use docker for this — container management.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker run --rm alpine sh -c 'for ns in /proc/self/ns/*; do echo \"$(basename $ns): $(readlink $ns)\"; done'"
+  },
+  {
+    "instruction": "Check namespaces of running container",
+    "output": "<think>\nThe goal is to check namespaces of running container.\nI'd use docker for this — container management.\nThe -I flag means ignore case, which matters here because this controls how the output is formatted.\nI've added -la to detailed listing including hidden files — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker inspect --format '{{.State.Pid}}' container_name | xargs -I{} ls -la /proc/{}/ns/"
+  },
+  {
+    "instruction": "Enter container namespace from host",
+    "output": "<think>\nThis is asking us to enter container namespace from host.\nHere's how I'd approach this.\nnsenter is what we need — nsenter operations.\n</think>\nnsenter -t $(docker inspect --format '{{.State.Pid}}' container_name) -a /bin/bash"
+  },
+  {
+    "instruction": "Enter container net namespace only",
+    "output": "<think>\nThe goal is to enter container net namespace only.\nLet me think about the best approach.\nI'll reach for nsenter here because nsenter operations.\n</think>\nnsenter -t $(docker inspect --format '{{.State.Pid}}' container_name) -n -- /bin/bash"
+  },
+  {
+    "instruction": "Check all namespaces of container",
+    "output": "<think>\nWe're being asked to check all namespaces of container.\nLet me think through this step by step.\nFor this, PID is the right tool — PID operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nPID=$(docker inspect --format '{{.State.Pid}}' container_name); for ns in /proc/$PID/ns/*; do echo \"$(basename $ns): $(readlink $ns)\"; done"
+  },
+  {
+    "instruction": "Find which containers share a namespace",
+    "output": "<think>\nAlright, we need to find which containers share a namespace.\nLet me think through this step by step.\nThis calls for for. For operations.\nThe -q flag means quiet mode, minimal output, which matters here because standard practice for this kind of operation.\nThe -I flag means ignore case, which matters here because without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nfor c in $(docker ps -q); do echo \"$c: $(docker inspect --format '{{.State.Pid}}' $c)\"; done | awk '{print $2}' | xargs -I{} readlink /proc/{}/ns/net"
+  },
+  {
+    "instruction": "LXC container namespace debugging",
+    "output": "<think>\nAlright, we need to lXC container namespace debugging.\nlxc-info is what we need — lxc-info operations.\nThe -n flag handles dry-run, no changes. Important because without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nlxc-info -n container_name; lsns -p $(lxc-info -n container_name -p 2>/dev/null)"
+  },
+  {
+    "instruction": "Check namespaces for podman container",
+    "output": "<think>\nWe should check namespaces for podman container.\nLet me reason through this.\nBest tool here is podman — rootless containers.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\npodman inspect --format '{{.State.Pid}}' container_name | xargs -I{} ls -la /proc/{}/ns/"
+  },
+  {
+    "instruction": "Enter podman container namespace",
+    "output": "<think>\nSo the request is to enter podman container namespace.\nHere's how I'd approach this.\nFor this, nsenter is the right tool — nsenter operations.\nI'll check the output to make sure it did what we expected.\n</think>\nnsenter -t $(podman inspect --format '{{.State.Pid}}' container_name) -a /bin/bash"
+  },
+  {
+    "instruction": "Run docker with specific capabilities",
+    "output": "<think>\nWe're being asked to run docker with specific capabilities.\nLet me break this down.\nFor this, docker is the right tool — container management.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --cap-add=NET_ADMIN --rm alpine ip link"
+  },
+  {
+    "instruction": "Docker container without network except loopback",
+    "output": "<think>\nSo the request is to docker container without network except loopback.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run --net=none --rm alpine ip addr"
+  },
+  {
+    "instruction": "Use slirp4netns for rootless networking",
+    "output": "<think>\nThe task requires us to use slirp4netns for rootless networking.\nLet me consider what makes sense here.\nI'll reach for slirp4netns here because slirp4netns operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nslirp4netns --configure /proc/$$/ns/net tap0"
+  },
+  {
+    "instruction": "Use pasta for net namespace",
+    "output": "<think>\nWe're being asked to use pasta for net namespace.\nHere's how I'd approach this.\nThis calls for pasta. Pasta operations.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\n</think>\npasta --config-net -t 8080 -u 5353"
+  },
+  {
+    "instruction": "Check if runc uses namespaces",
+    "output": "<think>\nSo the request is to check if runc uses namespaces.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/$(pgrep -x runc 2>/dev/null)/status 2>/dev/null | grep CapEff || echo 'runc not running'"
+  }
+]

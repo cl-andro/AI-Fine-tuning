@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Run strace with only network syscalls",
+    "output": "strace -e trace=network -f ./myapp"
+  },
+  {
+    "instruction": "View the default Docker seccomp profile with less",
+    "output": "less /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Extract syscalls from a binary using strace",
+    "output": "strace -e raw=all -f -o /tmp/syscalls.log ./myapp"
+  },
+  {
+    "instruction": "Dump nginx seccomp filter",
+    "output": "seccomp-tools dump $(pidof nginx)"
+  },
+  {
+    "instruction": "Install latest strace on Debian",
+    "output": "sudo apt-get install -y strace"
+  },
+  {
+    "instruction": "Extract only errno syscalls from seccomp profile",
+    "output": "jq '.syscalls[] | select(.action == \"SCMP_ACT_ERRNO\") | .names[]' /usr/share/docker/default-seccomp.json | wc -l"
+  },
+  {
+    "instruction": "Show seccomp actions_avail",
+    "output": "cat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Build strace from source",
+    "output": "git clone https://github.com/strace/strace.git && cd strace && ./bootstrap && ./configure && make -j$(nproc)"
+  },
+  {
+    "instruction": "Dump seccomp filters for a running process",
+    "output": "seccomp-tools dump $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "List all syscalls in Docker default profile",
+    "output": "jq '.syscalls[].names[]' /usr/share/docker/default-seccomp.json | sort -u"
+  },
+  {
+    "instruction": "List syscalls blocked by Docker seccomp profile",
+    "output": "jq '.syscalls[] | select(.action == \"SCMP_ACT_ERRNO\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Trace all syscalls of a program",
+    "output": "strace -f -o /tmp/all.log ./myapp"
+  },
+  {
+    "instruction": "Filter Docker seccomp for allowed syscalls",
+    "output": "jq '.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Run container with no seccomp filter",
+    "output": "docker run --security-opt seccomp=unconfined alpine"
+  },
+  {
+    "instruction": "Use seccomp-tools to inspect a container",
+    "output": "seccomp-tools dump $(docker inspect --format '{{.State.Pid}}' container_name)"
+  },
+  {
+    "instruction": "Run strace with IPC syscalls",
+    "output": "strace -e trace=ipc ./myapp"
+  },
+  {
+    "instruction": "Count allowed syscalls in Docker profile",
+    "output": "jq '[.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]] | length' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Check kernel seccomp support",
+    "output": "zgrep SECCOMP /proc/config.gz"
+  },
+  {
+    "instruction": "Generate a seccomp profile from strace output",
+    "output": "strace -c -f -S calls ./myapp 2>&1 | awk '{print $NF}' | sort -u > whitelist.txt"
+  },
+  {
+    "instruction": "List seccomp actions available on system",
+    "output": "cat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run strace on PID",
+    "output": "strace -p $(pgrep -f myapp) -o /tmp/trace.out"
+  }
+]

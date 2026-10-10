@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Add the LDAP schema for inetOrgPerson via cn=config",
+    "output": "<think>\nThis is asking us to add the LDAP schema for inetOrgPerson via cn=config.\nldapadd is what we need — ldapadd operations.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nWhy -f? Force, suppress errors. this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/inetorgperson.ldif"
+  },
+  {
+    "instruction": "Add the cosine schema to OpenLDAP",
+    "output": "<think>\nSo we need to add the cosine schema to OpenLDAP.\nHere's how I'd approach this.\nThe tool for this job is ldapadd — ldapadd operations.\nThe -H flag means follow symlinks on command line only, which matters here because this controls how the output is formatted.\n</think>\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif"
+  },
+  {
+    "instruction": "Add the NIS schema to OpenLDAP",
+    "output": "<think>\nNeed to add the NIS schema to OpenLDAP.\nFirst, let me understand what's needed here.\nBest tool here is ldapadd — ldapadd operations.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nI'm using -f for force, suppress errors — without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/nis.ldif"
+  },
+  {
+    "instruction": "Add the core schema to OpenLDAP",
+    "output": "<think>\nThis is asking us to add the core schema to OpenLDAP.\nLet me consider what makes sense here.\nBest tool here is ldapadd — ldapadd operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/core.ldif"
+  },
+  {
+    "instruction": "View loaded OpenLDAP schemas",
+    "output": "<think>\nThe task requires us to view loaded OpenLDAP schemas.\nI'll reach for ldapsearch here because ldapsearch operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config dn"
+  },
+  {
+    "instruction": "Check the OpenLDAP monitor backend",
+    "output": "<think>\nThe user wants to check the OpenLDAP monitor backend.\nldapsearch is what we need — ldapsearch operations.\nThe -H flag means follow symlinks on command line only, which matters here because standard practice for this kind of operation.\nThe -b flag means brief output, which matters here because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b cn=monitor"
+  },
+  {
+    "instruction": "Check OpenLDAP database statistics",
+    "output": "<think>\nNeed to check OpenLDAP database statistics.\nldapsearch is what we need — ldapsearch operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b 'cn=Database 2,cn=Monitor'"
+  },
+  {
+    "instruction": "View LDAP connection statistics from monitor",
+    "output": "<think>\nThe user wants to view LDAP connection statistics from monitor.\nI'd use ldapsearch for this — ldapsearch operations.\nQuick verification after execution to be safe.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b 'cn=Connections,cn=Monitor'"
+  },
+  {
+    "instruction": "View LDAP operations statistics from monitor",
+    "output": "<think>\nThe user wants to view LDAP operations statistics from monitor.\nI'll reach for ldapsearch here because ldapsearch operations.\nI'm using -H for follow symlinks on command line only — without it the command won't work as we need.\nWhy -b? Brief output. this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nldapsearch -Y EXTERNAL -H ldapi:/// -b 'cn=Operations,cn=Monitor'"
+  },
+  {
+    "instruction": "Enable the statslog overlay in OpenLDAP",
+    "output": "<think>\nThe goal is to enable the statslog overlay in OpenLDAP.\nLet me consider what makes sense here.\nThis calls for ldapmodify. Ldapmodify operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}statslog,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcStatsLog\nolcOverlay: statslog\nolcStatsLog: /var/log/slapd/stats.log'"
+  },
+  {
+    "instruction": "Set up LDAP referral to another server",
+    "output": "<think>\nThis is asking us to set up LDAP referral to another server.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcReferral\nolcReferral: ldap://backup.example.com'"
+  },
+  {
+    "instruction": "Configure OpenLDAP to listen on a specific IP and port",
+    "output": "<think>\nWe're being asked to configure OpenLDAP to listen on a specific IP and port.\nLet me think about the best approach.\nI'd use ldapmodify for this — ldapmodify operations.\nI've added -H to follow symlinks on command line only — important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcServerID\nolcServerID: 1 ldap://0.0.0.0:389/'"
+  },
+  {
+    "instruction": "Configure slapd to listen on LDAPS port",
+    "output": "<think>\nThe user wants to configure slapd to listen on LDAPS port.\nLet me think about the best approach.\nThe tool for this job is ldapmodify — ldapmodify operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcListen\nolcListen: ldaps://0.0.0.0:636/'"
+  },
+  {
+    "instruction": "Set the slapd thread count",
+    "output": "<think>\nThe user wants to set the slapd thread count.\nLet me think about the best approach.\nI'll reach for ldapmodify here because ldapmodify operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcThreads\nolcThreads: 16'"
+  },
+  {
+    "instruction": "Set slapd connection idle timeout",
+    "output": "<think>\nThe user wants to set slapd connection idle timeout.\nLet me consider what makes sense here.\nThe tool for this job is ldapmodify — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcIdleTimeout\nolcIdleTimeout: 300'"
+  },
+  {
+    "instruction": "Set the slapd maximum file descriptors",
+    "output": "<think>\nWe're being asked to set the slapd maximum file descriptors.\nLet me break this down.\nBest tool here is ldapmodify — ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because without it the command won't work as we need.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcMaxFileDescriptors\nolcMaxFileDescriptors: 8192'"
+  },
+  {
+    "instruction": "Set slapd write timeout",
+    "output": "<think>\nThe goal is to set slapd write timeout.\nLet me break this down.\nThe tool for this job is ldapmodify — ldapmodify operations.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcWriteTimeout\nolcWriteTimeout: 300'"
+  },
+  {
+    "instruction": "Set slapd TCP keepalive settings",
+    "output": "<think>\nAlright, we need to set slapd TCP keepalive settings.\nldapmodify is what we need — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcTCPKeepAlive\nolcTCPKeepAlive: 30'"
+  },
+  {
+    "instruction": "Limit the size of LDAP search results globally",
+    "output": "<think>\nWe're being asked to limit the size of LDAP search results globally.\nldapmodify is what we need — ldapmodify operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcSizeLimit\nolcSizeLimit: 500'"
+  },
+  {
+    "instruction": "Limit LDAP search time globally",
+    "output": "<think>\nThe task requires us to limit LDAP search time globally.\nLet me consider what makes sense here.\nBest tool here is ldapmodify — ldapmodify operations.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcTimeLimit\nolcTimeLimit: 60'"
+  },
+  {
+    "instruction": "Set slapd password hash method globally",
+    "output": "<think>\nThe task requires us to set slapd password hash method globally.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because this controls how the output is formatted.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcPasswordHash\nolcPasswordHash: {SSHA}'"
+  },
+  {
+    "instruction": "Disallow anonymous bind requests in LDAP",
+    "output": "<think>\nAlright, we need to disallow anonymous bind requests in LDAP.\nI'd use ldapmodify for this — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcDisallows\nolcDisallows: bind_anon'"
+  },
+  {
+    "instruction": "Set slapd to enforce strict RFC 4511 compliance",
+    "output": "<think>\nThis is asking us to set slapd to enforce strict RFC 4511 compliance.\nThis calls for ldapmodify. Ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because without it the command won't work as we need.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcStrict\nolcStrict: TRUE'"
+  },
+  {
+    "instruction": "Enable the LDAP no-op control for result estimation",
+    "output": "<think>\nWe're being asked to enable the LDAP no-op control for result estimation.\nFirst, let me understand what's needed here.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcPlugin\nolcPlugin: noop'"
+  }
+]

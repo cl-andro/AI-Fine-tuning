@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Copy SSH key to remote using ssh-copy-id with custom identity",
+    "output": "ssh-copy-id -i ~/.ssh/custom.pub -p 2222 user@host"
+  },
+  {
+    "instruction": "Set up passwordless SSH for root (after key copy)",
+    "output": "ssh-copy-id root@host && ssh root@host 'echo OK'"
+  },
+  {
+    "instruction": "Check if passwordless SSH works",
+    "output": "ssh -o BatchMode=yes user@host 'hostname'"
+  },
+  {
+    "instruction": "Create an SSH key with no passphrase (automation)",
+    "output": "ssh-keygen -t ed25519 -f ~/.ssh/automation -N ''"
+  },
+  {
+    "instruction": "Generate a CA-signed SSH host certificate",
+    "output": "ssh-keygen -s ca_key -I host.example.com -h -n host.example.com /etc/ssh/ssh_host_ed25519_key.pub"
+  },
+  {
+    "instruction": "Install SSH certificate authority for user keys",
+    "output": "echo 'TrustedUserCAKeys /etc/ssh/ca.pub' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Sign a user SSH key with CA",
+    "output": "ssh-keygen -s ca_key -I john -n john user_key.pub"
+  },
+  {
+    "instruction": "Use SSH certificates to authenticate",
+    "output": "ssh -o CertificateFile=~/.ssh/user_key-cert.pub user@host"
+  },
+  {
+    "instruction": "Force SSH to use key-based authentication only",
+    "output": "sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable SSH root login with key only (even key is optional)",
+    "output": "sed -i 's/^PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Allow only specific users to SSH",
+    "output": "echo 'AllowUsers john alice' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Allow only a specific group to SSH",
+    "output": "echo 'AllowGroups ssh-users' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Deny a specific user from SSH",
+    "output": "echo 'DenyUsers baduser' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Change SSH default port",
+    "output": "sed -i 's/^"
+  },
+  {
+    "instruction": "Limit SSH login attempts",
+    "output": "sed -i 's/^"
+  },
+  {
+    "instruction": "Limit concurrent SSH sessions per user",
+    "output": "echo 'MaxSessions 2' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Set SSH idle timeout",
+    "output": "echo -e 'ClientAliveInterval 300\\nClientAliveCountMax 2' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable SSH forwarding",
+    "output": "echo -e 'AllowTcpForwarding no\\nX11Forwarding no\\nAllowAgentForwarding no' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Enable SSH sftp-only chroot for users",
+    "output": "echo -e 'Subsystem sftp internal-sftp\\nMatch Group sftp-only\\n\\tChrootDirectory %h\\n\\tForceCommand internal-sftp\\n\\tX11Forwarding no\\n\\tAllowTcpForwarding no' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Create an SFTP user in a chroot jail",
+    "output": "useradd -m -s /sbin/nologin sftpuser && usermod -aG sftp-only sftpuser && mkdir -p /home/sftpuser/upload && chown root:root /home/sftpuser && chmod 755 /home/sftpuser && chown sftpuser:sftpuser /home/sftpuser/upload"
+  },
+  {
+    "instruction": "Check SSH key type and size",
+    "output": "ssh-keygen -l -f ~/.ssh/id_ed25519.pub"
+  },
+  {
+    "instruction": "Convert OpenSSH key to PuTTY format",
+    "output": "apt install -y putty-tools && puttygen ~/.ssh/id_rsa -o key.ppk"
+  },
+  {
+    "instruction": "Export SSH private key to OpenSSH format",
+    "output": "ssh-keygen -p -m RFC4716 -f ~/.ssh/id_rsa"
+  },
+  {
+    "instruction": "Restrict SSH key to specific commands",
+    "output": "echo 'command=\"/usr/bin/rsync-in-restricted-mode\",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding ssh-ed25519 AAA... key-comment' >> ~/.ssh/authorized_keys"
+  },
+  {
+    "instruction": "Add a trusted CA to authorized_keys for all users",
+    "output": "echo '@cert-authority * ssh-ed25519 AAAAC3...' >> ~/.ssh/known_hosts"
+  }
+]

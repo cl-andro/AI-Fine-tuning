@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to add a filter to match by source IP",
+    "output": "<think>\nThis is asking us to add a filter to match by source IP.\nLet me think through this step by step.\nThis calls for tc. Tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a filter to match by destination IP",
+    "output": "<think>\nWe should add a filter to match by destination IP.\nFor this, tc is the right tool — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 192.168.1.100 flowid 1:20"
+  },
+  {
+    "instruction": "How to add a filter to match by TCP port",
+    "output": "<think>\nWe're being asked to add a filter to match by TCP port.\nLet me think about the best approach.\nThis calls for tc. Tc operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dport 80 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a filter to match by UDP port",
+    "output": "<think>\nThe task requires us to add a filter to match by UDP port.\nLet me consider what makes sense here.\nI'd use tc for this — tc operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip sport 53 0xffff flowid 1:20"
+  },
+  {
+    "instruction": "How to add a filter to match by DSCP value",
+    "output": "<think>\nThe user wants to add a filter to match by DSCP value.\nLet me think about the best approach.\nBest tool here is tc — tc operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip tos 0x10 0xfc flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter to match by protocol",
+    "output": "<think>\nThe user wants to add a u32 filter to match by protocol.\nThe tool for this job is tc — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 6 0xff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter with match on any IP",
+    "output": "<think>\nThis is asking us to add a u32 filter with match on any IP.\nLet me think about the best approach.\nThe tool for this job is tc — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 0.0.0.0/0 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter with source port range",
+    "output": "<think>\nSo we need to add a u32 filter with source port range.\nFirst, let me understand what's needed here.\nThe tool for this job is tc — tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip sport 1024 0xfff8 flowid 1:10"
+  },
+  {
+    "instruction": "How to add an fw filter to match firewall mark",
+    "output": "<think>\nWe're being asked to add an fw filter to match firewall mark.\nI'll reach for tc here because tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 handle 1 fw flowid 1:10"
+  },
+  {
+    "instruction": "How to add a filter that redirects to ifb",
+    "output": "<think>\nSo the request is to add a filter that redirects to ifb.\nLet me think about the best approach.\ntc is what we need — tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u32 0 0 action mirred egress redirect dev ifb0"
+  },
+  {
+    "instruction": "How to add an ingress qdisc",
+    "output": "<think>\nThe task requires us to add an ingress qdisc.\nLet me break this down.\ntc is what we need — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev eth0 ingress"
+  },
+  {
+    "instruction": "How to add a filter on ingress qdisc",
+    "output": "<think>\nAlright, we need to add a filter on ingress qdisc.\nHere's how I'd approach this.\ntc is what we need — tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent ffff: protocol ip prio 1 u32 match ip src 10.0.0.1 action drop"
+  },
+  {
+    "instruction": "How to add an ifb interface for ingress shaping",
+    "output": "<think>\nWe should add an ifb interface for ingress shaping.\nLet me break this down.\nBest tool here is modprobe — kernel module loading and removal.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nmodprobe ifb && ip link set ifb0 up && tc qdisc add dev eth0 ingress && tc filter add dev eth0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0"
+  },
+  {
+    "instruction": "How to shape ingress traffic via ifb",
+    "output": "<think>\nThe user wants to shape ingress traffic via ifb.\nBest tool here is tc — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev ifb0 root handle 1: htb default 30 && tc class add dev ifb0 parent 1: classid 1:10 htb rate 5mbit"
+  },
+  {
+    "instruction": "How to add a filter to limit ICMP traffic",
+    "output": "<think>\nNeed to add a filter to limit ICMP traffic.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 1 0xff flowid 1:20"
+  },
+  {
+    "instruction": "How to add a cgroup filter for tc",
+    "output": "<think>\nThe goal is to add a cgroup filter for tc.\nLet me reason through this.\nThe tool for this job is tc — tc operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 cgroup match cgroup 1 flowid 1:10"
+  },
+  {
+    "instruction": "How to set up qdisc with SFQ (Stochastic Fairness Queueing)",
+    "output": "<think>\nNeed to set up qdisc with SFQ (Stochastic Fairness Queueing).\nLet me reason through this.\nI'd use tc for this — tc operations.\n</think>\ntc qdisc add dev eth0 root sfq perturb 10"
+  },
+  {
+    "instruction": "How to set up qdisc with ESFQ",
+    "output": "<think>\nNeed to set up qdisc with ESFQ.\nLet me consider what makes sense here.\nFor this, tc is the right tool — tc operations.\n</think>\ntc qdisc add dev eth0 root esfq perturb 10 hash ip"
+  },
+  {
+    "instruction": "How to add a RED (Random Early Detection) qdisc",
+    "output": "<think>\nAlright, we need to add a RED (Random Early Detection) qdisc.\nLet me consider what makes sense here.\nThis calls for tc. Tc operations.\n</think>\ntc qdisc add dev eth0 root red min 5000 max 15000 probability 0.02 limit 30000 avpkt 1000 bandwidth 10mbit"
+  },
+  {
+    "instruction": "How to add a GRED qdisc",
+    "output": "<think>\nThe goal is to add a GRED qdisc.\nLet me consider what makes sense here.\nThis calls for tc. Tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root gred setup DPs 3 default 2 grio"
+  },
+  {
+    "instruction": "How to add a TAPRIO qdisc for time-aware scheduling",
+    "output": "<think>\nWe're being asked to add a TAPRIO qdisc for time-aware scheduling.\nFirst, let me understand what's needed here.\nI'll reach for tc here because tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root taprio num_tc 4 map 2 2 1 0 3 2 2 2 2 2 2 2 2 2 2 2 queues 1@0 1@1 1@2 1@3 base-time 0 sched-entry S 01 1000000 sched-entry S 02 2000000 flags 0x2"
+  },
+  {
+    "instruction": "How to add an ETS (Enhanced Transmission Selection) qdisc",
+    "output": "<think>\nThe user wants to add an ETS (Enhanced Transmission Selection) qdisc.\nFor this, tc is the right tool — tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc qdisc add dev eth0 root ets strict 3 priomap 0 1 2 3 4 5 6 7"
+  },
+  {
+    "instruction": "How to add a MQPRIO qdisc for multiqueue devices",
+    "output": "<think>\nAlright, we need to add a MQPRIO qdisc for multiqueue devices.\nBest tool here is tc — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root mqprio num_tc 8 map 0 1 2 3 4 5 6 7 queues 1@0 1@1 1@2 1@3 1@4 1@5 1@6 1@7 hw 1"
+  },
+  {
+    "instruction": "How to add a CAKE qdisc for bandwidth shaping",
+    "output": "<think>\nNeed to add a CAKE qdisc for bandwidth shaping.\nI'll reach for tc here because tc operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc add dev eth0 root cake bandwidth 10mbit"
+  },
+  {
+    "instruction": "How to set CAKE to diffserv",
+    "output": "<think>\nThis is asking us to set CAKE to diffserv.\nLet me think through this step by step.\nThe tool for this job is tc — tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root cake bandwidth 10mbit diffserv"
+  }
+]

@@ -1,0 +1,66 @@
+[
+  {
+    "instruction": "Create a Nextcloud deployment with compose",
+    "output": "echo 'services: nextcloud: image: nextcloud ports: - 8080:80 volumes: - nextcloud_data:/var/www/html environment: MYSQL_DATABASE: nextcloud MYSQL_USER: ncuser MYSQL_PASSWORD: ncpass MYSQL_HOST: db db: image: mariadb environment: MYSQL_ROOT_PASSWORD: rootpass MYSQL_DATABASE: nextcloud MYSQL_USER: ncuser MYSQL_PASSWORD: ncpass volumes: - db_data:/var/lib/mysql volumes: nextcloud_data: db_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a GitLab CE deployment with compose",
+    "output": "echo 'services: gitlab: image: gitlab/gitlab-ce environment: GITLAB_OMNIBUS_CONFIG: external_url \"http://gitlab.example.com\" ports: - 8080:80 - 2222:22 volumes: - gitlab_data:/var/opt/gitlab - gitlab_logs:/var/log/gitlab - gitlab_config:/etc/gitlab volumes: gitlab_data: gitlab_logs: gitlab_config:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Pi-hole DNS with compose",
+    "output": "echo 'services: pihole: image: pihole/pihole ports: - 53:53/tcp - 53:53/udp - 80:80 environment: TZ: UTC WEBPASSWORD: admin volumes: - pihole_data:/etc/pihole volumes: pihole_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Minecraft server with compose",
+    "output": "echo 'services: minecraft: image: itzg/minecraft-server environment: EULA: true TYPE: PAPER VERSION: 1.20.4 ports: - 25565:25565 volumes: - mc_data:/data volumes: mc_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a collaborative editing with Etherpad",
+    "output": "echo 'services: etherpad: image: etherpad/etherpad ports: - 9001:9001 environment: DB_TYPE: mysql DB_HOST: db DB_NAME: etherpad DB_USER: epuser DB_PASSWORD: eppass db: image: mariadb environment: MYSQL_ROOT_PASSWORD: rootpass MYSQL_DATABASE: etherpad MYSQL_USER: epuser MYSQL_PASSWORD: eppass' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Vaultwarden instance with compose",
+    "output": "echo 'services: vaultwarden: image: vaultwarden/server:latest ports: - 8080:80 environment: SIGNUPS_ALLOWED: false volumes: - vault_data:/data volumes: vault_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Mattermost team chat with compose",
+    "output": "echo 'services: mattermost: image: mattermost/mattermost-team-edition environment: MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:mmpass@db:5432/mattermost?sslmode=disable ports: - 8065:8065 depends_on: - db db: image: postgres:16 environment: POSTGRES_USER: mmuser POSTGRES_PASSWORD: mmpass POSTGRES_DB: mattermost' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Keycloak IAM with compose",
+    "output": "echo 'services: keycloak: image: quay.io/keycloak/keycloak:latest command: start-dev environment: KC_DB_URL: jdbc:postgresql://db:5432/keycloak KC_DB_USERNAME: kcuser KC_DB_PASSWORD: kcpass KC_HOSTNAME: localhost ports: - 8080:8080 depends_on: - db db: image: postgres:16 environment: POSTGRES_DB: keycloak POSTGRES_USER: kcuser POSTGRES_PASSWORD: kcpass' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create an OpenVPN with compose",
+    "output": "echo 'services: openvpn: image: kylemanna/openvpn cap_add: - NET_ADMIN volumes: - ./openvpn-data:/etc/openvpn ports: - 1194:1194/udp command: ovpn_run' > docker-compose.yml"
+  },
+  {
+    "instruction": "Initialize OpenVPN config dir",
+    "output": "docker compose run openvpn ovpn_genconfig -u udp://vpn.example.com && docker compose run openvpn ovpn_initpki"
+  },
+  {
+    "instruction": "Generate an OpenVPN client certificate",
+    "output": "docker compose run openvpn easyrsa build-client-full client1 nopass && docker compose run openvpn ovpn_getclient client1 > client1.ovpn"
+  },
+  {
+    "instruction": "Create a Gitea (self-hosted git) with compose",
+    "output": "echo 'services: gitea: image: gitea/gitea ports: - 3000:3000 - 22:22 volumes: - gitea_data:/data depends_on: - db db: image: postgres:16 environment: POSTGRES_DB: gitea POSTGRES_USER: gitea POSTGRES_PASSWORD: pass volumes: - db_data:/var/lib/postgresql/data volumes: gitea_data: db_data:' > docker-compose.yml"
+  },
+  {
+ "instruction": "Create a Mailpit (SMTP testing) with compose",
+    "output": "echo 'services: mailpit: image: axllent/mailpit ports: - 1025:1025 - 8025:8025' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a Uptime Kuma monitoring with compose",
+    "output": "echo 'services: uptime-kuma: image: louislam/uptime-kuma ports: - 3001:3001 volumes: - uptime_kuma_data:/app/data volumes: uptime_kuma_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Create a NocoDB no-code database with compose",
+    "output": "echo 'services: nocodb: image: nocodb/nocodb:latest ports: - 8080:8080 volumes: - nocodb_data:/usr/app/data depends_on: - db db: image: postgres:16 environment: POSTGRES_DB: nocodb POSTGRES_USER: ncuser POSTGRES_PASSWORD: ncpass volumes: - pg_data:/var/lib/postgresql/data volumes: nocodb_data: pg_data:' > docker-compose.yml"
+  },
+  {
+    "instruction": "Use compose with GPU (NVIDIA) support",
+    "output": "echo 'services: gpu-app: image: nvidia/cuda:12.4-runtime deploy: resources: reservations: devices: - driver: nvidia count: 1 capabilities: [gpu]' >> docker-compose.yml"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a password policy in OpenLDAP",
+    "output": "<think>\nSo we need to create a password policy in OpenLDAP.\nI'll reach for cat here because cat operations.\n</think>\ncat > /tmp/ppolicy.ldif << 'EOF'\ndn: cn=default,ou=policies,dc=example,dc=com\nobjectClass: pwdPolicy\nobjectClass: person\ncn: default\nsn: default\npwdAttribute: userPassword\npwdMinLength: 8\npwdMaxAge: 7776000\npwdInHistory: 5\npwdLockout: TRUE\npwdLockoutDuration: 300\npwdMaxFailure: 3\nEOF"
+  },
+  {
+    "instruction": "Enable the ppolicy overlay in OpenLDAP",
+    "output": "<think>\nThe user wants to enable the ppolicy overlay in OpenLDAP.\nThe tool for this job is ldapmodify — ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}ppolicy,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcPPolicyConfig\nolcOverlay: ppolicy\nolcPPolicyDefault: cn=default,ou=policies,dc=example,dc=com'"
+  },
+  {
+    "instruction": "Create a LDAP replica consumer configuration",
+    "output": "<think>\nAlright, we need to create a LDAP replica consumer configuration.\nI'll reach for ldapmodify here because ldapmodify operations.\nI've added -H to follow symlinks on command line only — important to get the expected behavior.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nadd: olcSyncrepl\nolcSyncrepl: rid=123 provider=ldap://master:389 bindmethod=simple binddn=cn=replicator,dc=example,dc=com credentials=secret searchbase=dc=example,dc=com type=refreshAndPersist retry=60'"
+  },
+  {
+    "instruction": "Configure OpenLDAP as a syncrepl provider (master)",
+    "output": "<think>\nAlright, we need to configure OpenLDAP as a syncrepl provider (master).\nLet me think about the best approach.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nAfter running, I'll confirm the result looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcServerID\nolcServerID: 1 ldap://master.example.com'"
+  },
+  {
+    "instruction": "Enable the syncprov overlay for a specific backend",
+    "output": "<think>\nThe goal is to enable the syncprov overlay for a specific backend.\nI'd use ldapmodify for this — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}syncprov,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcSyncProvConfig\nolcOverlay: syncprov\nolcSpSessionLog: 100'"
+  },
+  {
+    "instruction": "Set the syncprov checkpoint interval",
+    "output": "<think>\nThe user wants to set the syncprov checkpoint interval.\nLet me break this down.\nThe tool for this job is ldapmodify — ldapmodify operations.\nI've added -H to follow symlinks on command line only — without it the command won't work as we need.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}syncprov,olcDatabase={1}mdb,cn=config\nchangetype: modify\nreplace: olcSpCheckpoint\nolcSpCheckpoint: 100 10'"
+  },
+  {
+    "instruction": "Configure delta-syncrepl with accesslog database",
+    "output": "<think>\nThe user wants to configure delta-syncrepl with accesslog database.\nLet me think through this step by step.\nI'd use ldapmodify for this — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={2}mdb,cn=config\nchangetype: add\nobjectClass: olcMdbConfig\nolcDatabase: {2}mdb\nolcSuffix: cn=accesslog\nolcDbDirectory: /var/lib/ldap/accesslog\nolcRootDN: cn=admin,dc=example,dc=com'"
+  },
+  {
+    "instruction": "Add the accesslog overlay for delta-syncrepl",
+    "output": "<think>\nWe're being asked to add the accesslog overlay for delta-syncrepl.\nLet me consider what makes sense here.\nI'll reach for ldapmodify here because ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}accesslog,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcAccessLog\nolcOverlay: accesslog\nolcAccessLogDB: cn=accesslog\nolcAccessLogOps: writes\nolcAccessLogSuccess: TRUE'"
+  },
+  {
+    "instruction": "Add the translucent overlay for LDAP proxying",
+    "output": "<think>\nThe user wants to add the translucent overlay for LDAP proxying.\nLet me reason through this.\nI'll reach for ldapmodify here because ldapmodify operations.\nI've added -H to follow symlinks on command line only — standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}translucent,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcTranslucent\nolcOverlay: translucent'"
+  },
+  {
+    "instruction": "Configure a LDAP proxy with translucent overlay",
+    "output": "<think>\nThe goal is to configure a LDAP proxy with translucent overlay.\nLet me consider what makes sense here.\nldapmodify is what we need — ldapmodify operations.\nI've added -H to follow symlinks on command line only — without it the command won't work as we need.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcDatabase={1}mdb,cn=config\nchangetype: modify\nadd: olcTranslucentURI\nolcTranslucentURI: ldap://backend.example.com'"
+  },
+  {
+    "instruction": "Enable the unique overlay for attribute uniqueness",
+    "output": "<think>\nThe goal is to enable the unique overlay for attribute uniqueness.\nLet me break this down.\nBest tool here is ldapmodify — ldapmodify operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}unique,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcUniqueConfig\nolcOverlay: unique\nolcUniqueURI: ldap:///?uid?sub?(objectClass=inetOrgPerson)'"
+  },
+  {
+    "instruction": "Add a constraint overlay for attribute validation",
+    "output": "<think>\nThe goal is to add a constraint overlay for attribute validation.\nI'd use ldapmodify for this — ldapmodify operations.\nWhy -H? Follow symlinks on command line only. without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}constraint,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcConstraintConfig\nolcOverlay: constraint\nolcConstraintAttribute: uidNumber integer 0..65535\nolcConstraintAttribute: gidNumber integer 0..65535'"
+  },
+  {
+    "instruction": "Enable the valsort overlay to sort attribute values",
+    "output": "<think>\nNeed to enable the valsort overlay to sort attribute values.\nLet me break this down.\nThis calls for ldapmodify. Ldapmodify operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}valsort,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcValSort\nolcOverlay: valsort\nolcValSortAttr: member'"
+  },
+  {
+    "instruction": "Enable the pcache overlay for LDAP caching",
+    "output": "<think>\nSo the request is to enable the pcache overlay for LDAP caching.\nLet me reason through this.\nI'd use ldapmodify for this — ldapmodify operations.\nI'm using -H for follow symlinks on command line only — needed for this specific use case.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}cache,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcPcacheConfig\nolcOverlay: cache\nolcPcache: 1000 600 3600 100'"
+  },
+  {
+    "instruction": "Add the retcode overlay for testing LDAP responses",
+    "output": "<think>\nThis is asking us to add the retcode overlay for testing LDAP responses.\nFor this, ldapmodify is the right tool — ldapmodify operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}retcode,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcRetCodeConfig\nolcOverlay: retcode\nolcRetCode: cn=test1,dc=example,dc=com LDAP_SUCCESS'"
+  },
+  {
+    "instruction": "Enable the memberOf overlay with dangling ignore",
+    "output": "<think>\nWe should enable the memberOf overlay with dangling ignore.\nLet me think through this step by step.\nI'd use ldapmodify for this — ldapmodify operations.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}memberof,olcDatabase={1}mdb,cn=config\nchangetype: modify\nadd: olcMemberOfDangling\nolcMemberOfDangling: ignore\n-\nadd: olcMemberOfRefInt\nolcMemberOfRefInt: TRUE'"
+  },
+  {
+    "instruction": "Enable the refint referential integrity overlay",
+    "output": "<think>\nAlright, we need to enable the refint referential integrity overlay.\nLet me consider what makes sense here.\nBest tool here is ldapmodify — ldapmodify operations.\nI'm using -H for follow symlinks on command line only — standard practice for this kind of operation.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={1}refint,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcRefintConfig\nolcOverlay: refint\nolcRefintAttribute: member manager'"
+  },
+  {
+    "instruction": "Set up the dynlist overlay for dynamic groups",
+    "output": "<think>\nThe task requires us to set up the dynlist overlay for dynamic groups.\nI'll reach for ldapmodify here because ldapmodify operations.\nQuick verification after execution to be safe.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: olcOverlay={0}dynlist,olcDatabase={1}mdb,cn=config\nchangetype: add\nobjectClass: olcDynamicList\nolcOverlay: dynlist\nolcDlAttrSet: {0}ou groupURL'"
+  },
+  {
+    "instruction": "Enable the authzid policy for SASL authorization",
+    "output": "<think>\nSo we need to enable the authzid policy for SASL authorization.\nFirst, let me understand what's needed here.\nI'll reach for ldapmodify here because ldapmodify operations.\nQuick verification after execution to be safe.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nreplace: olcAuthzPolicy\nolcAuthzPolicy: from'"
+  },
+  {
+    "instruction": "Set up SASL regex mapping in OpenLDAP",
+    "output": "<think>\nThe user wants to set up SASL regex mapping in OpenLDAP.\nLet me think through this step by step.\nldapmodify is what we need — ldapmodify operations.\nI'm using -H for follow symlinks on command line only — important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nldapmodify -Y EXTERNAL -H ldapi:/// <<< 'dn: cn=config\nchangetype: modify\nadd: olcAuthzRegexp\nolcAuthzRegexp: uid=([^,]+),cn=.*,cn=auth ldap:///dc=example,dc=com??sub?(uid=$1)'"
+  },
+  {
+    "instruction": "Test OpenLDAP configuration without starting",
+    "output": "<think>\nSo the request is to test OpenLDAP configuration without starting.\nLet me think about the best approach.\nThe tool for this job is slaptest — slaptest operations.\nThe -u flag handles show or sort by access time. Important because needed for this specific use case.\nCheck the output for errors before proceeding to the next step.\n</think>\nslaptest -u -d 1"
+  },
+  {
+    "instruction": "Debug an LDAP search by showing protocol ops",
+    "output": "<think>\nThe user wants to debug an LDAP search by showing protocol ops.\nLet me think about the best approach.\nFor this, ldapsearch is the right tool — ldapsearch operations.\nI've added -b to brief output — important to get the expected behavior.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nldapsearch -x -b dc=example,dc=com -d 1 '(uid=jdoe)'"
+  },
+  {
+    "instruction": "Check LDAP server info with root DSE search",
+    "output": "<think>\nSo we need to check LDAP server info with root DSE search.\nLet me think about the best approach.\nFor this, ldapsearch is the right tool — ldapsearch operations.\nI've added -b to brief output — without it the command won't work as we need.\nI've added -s to summarize or silent mode — standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\nldapsearch -x -b '' -s base vendorName"
+  },
+  {
+    "instruction": "Get the root DSE supported features",
+    "output": "<think>\nSo the request is to get the root DSE supported features.\nLet me think through this step by step.\nldapsearch is what we need — ldapsearch operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nldapsearch -x -b '' -s base supportedExtension supportedControl"
+  }
+]

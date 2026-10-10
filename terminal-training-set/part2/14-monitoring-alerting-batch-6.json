@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Set up healthchecks.io self-hosted monitoring",
+    "output": "<think>\nSo we need to set up healthchecks.io self-hosted monitoring.\nHere's how I'd approach this.\ndocker is what we need — container management.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d --name healthchecks -p 8000:8000 -e SECRET_KEY=abc -e ALLOWED_HOSTS=* healthchecks/healthchecks:latest"
+  },
+  {
+    "instruction": "Create a health check ping URL",
+    "output": "<think>\nWe should create a health check ping URL.\nThe --retry flag means retry on transient failure, which matters here because important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho '0 * * * * curl -fsS --retry 3 https://hc-ping.com/my-uuid > /dev/null' | crontab -"
+  },
+  {
+    "instruction": "Install and run Sentry (error tracking)",
+    "output": "<think>\nWe should install and run Sentry (error tracking).\nLet me break this down.\nFor this, docker is the right tool — container management.\nThe -d flag means directory listing, don't descend, which matters here because needed for this specific use case.\nThe -p flag handles create parent directories as needed. Important because standard practice for this kind of operation.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name sentry -p 9000:9000 -e SENTRY_SECRET_KEY=abc sentry:latest"
+  },
+  {
+    "instruction": "Install Grafana for IoT monitoring",
+    "output": "<think>\nThe goal is to install Grafana for IoT monitoring.\nHere's how I'd approach this.\nFor this, apt is the right tool — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y grafana && systemctl enable --now grafana-server"
+  },
+  {
+    "instruction": "Create a Grafana alert",
+    "output": "<think>\nWe're being asked to create a Grafana alert.\nHere's how I'd approach this.\nI'll reach for curl here because making HTTP requests.\nI'm using -s for summarize or silent mode — needed for this specific use case.\nThe -H flag means follow symlinks on command line only, which matters here because without it the command won't work as we need.\nI'm using -H for follow symlinks on command line only — important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s -X POST -H 'Authorization: Bearer token' -H 'Content-Type: application/json' -d '{\"name\":\"High CPU Alert\",\"condition\":{\"type\":\"query\",\"evaluator\":{\"type\":\"gt\",\"params\":[80]},\"query\":{\"params\":[\"A\",\"5m\",\"now\"]}}}' http://localhost:3000/api/alerts"
+  },
+  {
+    "instruction": "Export Grafana dashboard JSON",
+    "output": "<think>\nThe user wants to export Grafana dashboard JSON.\nFor this, curl is the right tool — making HTTP requests.\nWhy -s? Summarize or silent mode. without it the command won't work as we need.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s -H 'Authorization: Bearer token' http://localhost:3000/api/dashboards/uid/my-dashboard | jq '.dashboard' > dashboard.json"
+  },
+  {
+    "instruction": "Import Grafana dashboard JSON",
+    "output": "<think>\nThis is asking us to import Grafana dashboard JSON.\nBest tool here is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s -X POST -H 'Content-Type: application/json' -d '{\"dashboard\":$(cat dashboard.json),\"overwrite\":true}' http://admin:admin@localhost:3000/api/dashboards/db"
+  },
+  {
+    "instruction": "Install Grafana Prometheus dashboard (Node Exporter Full)",
+    "output": "<think>\nThe goal is to install Grafana Prometheus dashboard (Node Exporter Full).\ncurl is what we need — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s https://grafana.com/api/dashboards/1860/revisions/latest/download | jq '.dashboard.id' && echo 'Import via Grafana UI'"
+  },
+  {
+    "instruction": "Install Grafana Loki and Promtail",
+    "output": "<think>\nWe should install Grafana Loki and Promtail.\nFirst, let me understand what's needed here.\nI'd use docker for this — container management.\nWhy -d? Directory listing, don't descend. this controls how the output is formatted.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run -d --name=loki --restart=always -p 3100:3100 grafana/loki:latest && docker run -d --name=promtail --restart=always -v /var/log:/var/log grafana/promtail:latest -config.file=/etc/promtail/config.yml"
+  },
+  {
+    "instruction": "Query Loki via LogCLI",
+    "output": "<think>\nWe should query Loki via LogCLI.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y logcli && logcli query '{job=\"syslog\"}' --limit=10 --output=json --from='-1h'"
+  },
+  {
+    "instruction": "Set up Grafana Tempo for traces",
+    "output": "<think>\nThe user wants to set up Grafana Tempo for traces.\nBest tool here is docker — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d --name=tempo --restart=always -p 3200:3200 -p 14250:14250 grafana/tempo:latest"
+  },
+  {
+    "instruction": "Push a trace to Tempo with Jaeger",
+    "output": "<think>\nSo we need to push a trace to Tempo with Jaeger.\nLet me reason through this.\nFor this, docker is the right tool — container management.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nThe -p flag handles create parent directories as needed. Important because this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run -d --name jaeger -p 16686:16686 -p 4317:4317 jaegertracing/all-in-one:latest"
+  },
+  {
+    "instruction": "Install and configure OpenTelemetry Collector",
+    "output": "<think>\nThis is asking us to install and configure OpenTelemetry Collector.\nI'll reach for apt here because apt operations.\nWhy -e? Edit or executable. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y otel-collector && echo -e 'receivers:\\n  otlp:\\n    protocols:\\n      grpc:\\n        endpoint: 0.0.0.0:4317\\nexporters:\\n  logging:\\n    loglevel: debug\\nservice:\\n  pipelines:\\n    traces:\\n      receivers: [otlp]\\n      exporters: [logging]' > /etc/otel/config.yaml && otelcol --config /etc/otel/config.yaml &"
+  },
+  {
+    "instruction": "Send a trace with OpenTelemetry",
+    "output": "<think>\nSo the request is to send a trace with OpenTelemetry.\nLet me think about the best approach.\nI'll reach for apt here because apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y opentelemetry-cli && opentelemetry-cli --endpoint http://localhost:4317 span"
+  },
+  {
+    "instruction": "Check OpenTelemetry collector metrics",
+    "output": "<think>\nThe goal is to check OpenTelemetry collector metrics.\nHere's how I'd approach this.\nThis calls for curl. Making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:8888/metrics | head -20"
+  },
+  {
+    "instruction": "Install Datadog agent",
+    "output": "<think>\nNeed to install Datadog agent.\nHere's how I'd approach this.\nI'll reach for DD_API_KEY here because DD_API_KEY operations.\nWhy -c? Count or create. without it the command won't work as we need.\nWhy -L? Follow symlinks when processing. this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nDD_API_KEY=your_key DD_SITE=datadoghq.com bash -c \"$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)\""
+  },
+  {
+    "instruction": "Check Datadog agent status",
+    "output": "<think>\nAlright, we need to check Datadog agent status.\nLet me think through this step by step.\nFor this, datadog-agent is the right tool — datadog-agent operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo datadog-agent status"
+  },
+  {
+    "instruction": "Install New Relic agent for infrastructure monitoring",
+    "output": "<think>\nNeed to install New Relic agent for infrastructure monitoring.\nI'll reach for curl here because making HTTP requests.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && NEW_RELIC_API_KEY=key NEW_RELIC_ACCOUNT_ID=id /usr/local/bin/newrelic install -y"
+  },
+  {
+    "instruction": "Check New Relic agent status",
+    "output": "<think>\nWe're being asked to check New Relic agent status.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status newrelic-infra"
+  },
+  {
+    "instruction": "Install Dynatrace OneAgent",
+    "output": "<think>\nSo we need to install Dynatrace OneAgent.\nI'd use wget for this — downloading files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nwget -O Dynatrace-OneAgent-Linux-1.xxx.sh 'https://{environment}.live.dynatrace.com/api/v1/deployment/installer/agent/unix/default/latest?api-token=token' && sh Dynatrace-OneAgent-Linux-1.xxx.sh"
+  },
+  {
+    "instruction": "Check Dynatrace agent status",
+    "output": "<think>\nWe're being asked to check Dynatrace agent status.\nFirst, let me understand what's needed here.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status oneagent"
+  },
+  {
+    "instruction": "Install and run Checkly CLI for synthetic monitoring",
+    "output": "<think>\nThe task requires us to install and run Checkly CLI for synthetic monitoring.\nI'd use npm for this — Node.js package management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nnpm install -g @checkly/cli && checkly login"
+  },
+  {
+    "instruction": "Create a Checkly browser check",
+    "output": "<think>\nWe should create a Checkly browser check.\nLet me think through this step by step.\nFor this, checkly is the right tool — checkly operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\ncheckly init && cat > checks/example.js << 'EOF'\\nconst { BrowserCheck } = require('checkly')\\nconst check = new BrowserCheck('example-check', {\\n  name: 'Example Check',\\n  code: { entrypoint: { name: 'example.spec.js' } }\\n})\\nEOF && checkly deploy"
+  },
+  {
+    "instruction": "Run a Checkly test locally",
+    "output": "<think>\nThis is asking us to run a Checkly test locally.\nFirst, let me understand what's needed here.\nThe tool for this job is checkly — checkly operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ncheckly test --session-id mysession https://example.com"
+  }
+]

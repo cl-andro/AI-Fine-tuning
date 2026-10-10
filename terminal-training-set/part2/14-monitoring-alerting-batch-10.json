@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install Cockpit web console",
+    "output": "<think>\nThe goal is to install Cockpit web console.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y cockpit && systemctl enable --now cockpit && ufw allow 9090/tcp"
+  },
+  {
+    "instruction": "Add Cockpit session recording",
+    "output": "<think>\nWe're being asked to add Cockpit session recording.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y cockpit-session-recording && systemctl restart cockpit"
+  },
+  {
+    "instruction": "Check Cockpit service status",
+    "output": "<think>\nSo the request is to check Cockpit service status.\nLet me think about the best approach.\nBest tool here is systemctl — managing systemd services.\nI've added -l to long format with details — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl status cockpit --no-pager -l"
+  },
+  {
+    "instruction": "Install monit",
+    "output": "<think>\nWe're being asked to install monit.\nLet me reason through this.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y monit && systemctl enable --now monit"
+  },
+  {
+    "instruction": "Check monit status summary",
+    "output": "<think>\nWe should check monit status summary.\nFirst, let me understand what's needed here.\nThe tool for this job is monit — monit operations.\n</think>\nmonit summary"
+  },
+  {
+    "instruction": "Validate monit config",
+    "output": "<think>\nNeed to validate monit config.\nThis calls for monit. Monit operations.\nI'm using -t for sort by modification time — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nmonit -t"
+  },
+  {
+    "instruction": "Reload monit configuration",
+    "output": "<think>\nThe user wants to reload monit configuration.\nLet me break this down.\nFor this, monit is the right tool — monit operations.\nQuick verification after execution to be safe.\n</think>\nmonit reload"
+  },
+  {
+    "instruction": "Install and configure munin",
+    "output": "<think>\nThis is asking us to install and configure munin.\nI'll reach for apt here because apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y munin munin-node && systemctl enable --now munin-node"
+  },
+  {
+    "instruction": "Check munin-node status",
+    "output": "<think>\nThe user wants to check munin-node status.\nFirst, let me understand what's needed here.\nI'll reach for munin-node-configure here because munin-node-configure operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nmunin-node-configure --suggest | head -20"
+  },
+  {
+    "instruction": "Run munin update manually",
+    "output": "<think>\nThe task requires us to run munin update manually.\nI'd use munin-cron for this — munin-cron operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nmunin-cron"
+  },
+  {
+    "instruction": "Install checkmk agent",
+    "output": "<think>\nAlright, we need to install checkmk agent.\nFor this, wget is the right tool — downloading files.\nThe -i flag means interactive, prompt before action, which matters here because important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nAfter running, I'll confirm the result looks right.\n</think>\nwget https://checkmk.example.com/checkmk-agent_2.3.0-1_all.deb -O /tmp/checkmk-agent.deb && dpkg -i /tmp/checkmk-agent.deb && systemctl enable --now checkmk-agent.socket"
+  },
+  {
+    "instruction": "Check checkmk agent status",
+    "output": "<think>\nSo the request is to check checkmk agent status.\nBest tool here is systemctl — managing systemd services.\nI'm using -l for long format with details — this controls how the output is formatted.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl status checkmk-agent.socket --no-pager -l"
+  },
+  {
+    "instruction": "Install influxdb and telegraf",
+    "output": "<think>\nThis is asking us to install influxdb and telegraf.\nFirst, let me understand what's needed here.\nwget is what we need — downloading files.\nI've added -o to output to file, OR operator in find — needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nwget -qO- https://repos.influxdata.com/influxdata-archive.key | gpg --dearmor -o /usr/share/keyrings/influxdata-archive.gpg && echo 'deb [signed-by=/usr/share/keyrings/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' > /etc/apt/sources.list.d/influxdata.list && apt update && apt install -y influxdb2 telegraf && systemctl enable --now influxdb telegraf"
+  },
+  {
+    "instruction": "Verify influxdb is running",
+    "output": "<think>\nThe task requires us to verify influxdb is running.\nLet me think through this step by step.\nBest tool here is curl — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s http://localhost:8086/health | jq ."
+  },
+  {
+    "instruction": "Create influxdb bucket from CLI",
+    "output": "<think>\nThe user wants to create influxdb bucket from CLI.\nI'll reach for influx here because influx operations.\nOne command does the job. Simple is better.\n</think>\ninflux bucket create --name system_metrics --org my-org --retention 30d --token my-token"
+  },
+  {
+    "instruction": "Check telegraf agent status",
+    "output": "<think>\nThe goal is to check telegraf agent status.\nBest tool here is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status telegraf --no-pager -l"
+  },
+  {
+    "instruction": "View telegraf input plugins in use",
+    "output": "<think>\nThe goal is to view telegraf input plugins in use.\nBest tool here is telegraf — telegraf operations.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ntelegraf --test --input-filter cpu:mem:disk | head -30"
+  },
+  {
+    "instruction": "Install VictoriaMetrics",
+    "output": "<think>\nAlright, we need to install VictoriaMetrics.\nwget is what we need — downloading files.\nI've added -xzf to extract compressed archive — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nI'll check the output to make sure it did what we expected.\n</think>\nwget https://github.com/VictoriaMetrics/VictoriaMetrics/releases/latest/download/victoria-metrics-linux-amd64.tar.gz && tar -xzf victoria-metrics-linux-amd64.tar.gz -C /usr/local/bin/ && useradd --system victoria-metrics && /usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoria-metrics -retentionPeriod 30 &"
+  },
+  {
+    "instruction": "Query VictoriaMetrics for CPU metric",
+    "output": "<think>\nThe user wants to query VictoriaMetrics for CPU metric.\nThis calls for curl. Making HTTP requests.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s 'http://localhost:8428/api/v1/query?query=rate(node_cpu_seconds_total[5m])' | jq .data.result"
+  },
+  {
+    "instruction": "Install pyroscope for continuous profiling",
+    "output": "<think>\nSo we need to install pyroscope for continuous profiling.\nFirst, let me understand what's needed here.\nI'll reach for wget here because downloading files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\nQuick verification after execution to be safe.\n</think>\nwget https://github.com/pyroscope-io/pyroscope/releases/latest/download/pyroscope_linux_amd64 -O /usr/local/bin/pyroscope && chmod +x /usr/local/bin/pyroscope && useradd --system pyroscope && pyroscope server &"
+  },
+  {
+    "instruction": "Install thanos sidecar",
+    "output": "<think>\nSo the request is to install thanos sidecar.\nHere's how I'd approach this.\nI'll reach for wget here because downloading files.\nI'm using -xzf for extract compressed archive — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\nI'll check the output to make sure it did what we expected.\n</think>\nwget https://github.com/thanos-io/thanos/releases/latest/download/thanos-0.37.0.linux-amd64.tar.gz && tar -xzf thanos-0.37.0.linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 && useradd --system thanos && thanos sidecar --tsdb.path /var/lib/prometheus --prometheus.url http://localhost:9090 &"
+  },
+  {
+    "instruction": "Query thanos store gateway",
+    "output": "<think>\nSo we need to query thanos store gateway.\nHere's how I'd approach this.\nI'd use thanos for this — thanos operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nthanos tools bucket verify --objstore.config='{\"type\":\"FILESYSTEM\",\"config\":{\"directory\":\"/data/thanos\"}}' --delete-delay=30m"
+  },
+  {
+    "instruction": "Install mtail log parser",
+    "output": "<think>\nThe task requires us to install mtail log parser.\nBest tool here is wget — downloading files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget https://github.com/google/mtail/releases/latest/download/mtail_linux_amd64 -O /usr/local/bin/mtail && chmod +x /usr/local/bin/mtail && useradd --system mtail && mtail --progs /etc/mtail --logs /var/log/syslog &"
+  },
+  {
+    "instruction": "Install cAdvisor for container metrics",
+    "output": "<think>\nAlright, we need to install cAdvisor for container metrics.\nFirst, let me understand what's needed here.\nBest tool here is docker — container management.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nI've added -v to verbose output — this controls how the output is formatted.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run -d --restart=always --name=cadvisor -p 8080:8080 -v /:/rootfs:ro -v /var/run:/var/run:ro -v /sys:/sys:ro -v /var/lib/docker/:/var/lib/docker:ro gcr.io/cadvisor/cadvisor:latest"
+  },
+  {
+    "instruction": "Check cAdvisor metrics endpoint",
+    "output": "<think>\nSo the request is to check cAdvisor metrics endpoint.\nI'll reach for curl here because making HTTP requests.\nI've added -s to summarize or silent mode — without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://localhost:8080/metrics | grep '^container_cpu' | head -10"
+  }
+]

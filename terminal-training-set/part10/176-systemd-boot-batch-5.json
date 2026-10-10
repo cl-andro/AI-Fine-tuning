@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Update bootloader files only",
+    "output": "<think>\nNeed to update bootloader files only.\nLet me think about the best approach.\nThis calls for bootctl. EFI firmware boot manager.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nbootctl update --graceful"
+  },
+  {
+    "instruction": "Check initramfs generation after kernel add",
+    "output": "<think>\nWe're being asked to check initramfs generation after kernel add.\nHere's how I'd approach this.\nThis calls for ls. Ls operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nls -lh /boot/initrd.img-*"
+  },
+  {
+    "instruction": "Set boot timeout to 10 seconds",
+    "output": "<think>\nWe should set boot timeout to 10 seconds.\nHere's how I'd approach this.\nThis calls for bootctl. EFI firmware boot manager.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nbootctl set-timeout 10"
+  },
+  {
+    "instruction": "Rebuild initramfs for specific kernel",
+    "output": "<think>\nSo the request is to rebuild initramfs for specific kernel.\nFirst, let me understand what's needed here.\nI'll reach for update-initramfs here because update-initramfs operations.\nI'm using -u for show or sort by access time — standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nupdate-initramfs -k 6.1.0-13-amd64 -u"
+  },
+  {
+    "instruction": "Create EFI boot entry for systemd-boot",
+    "output": "<think>\nSo we need to create EFI boot entry for systemd-boot.\nLet me think through this step by step.\nI'd use efibootmgr for this — efibootmgr operations.\nI'm using -c for count or create — without it the command won't work as we need.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nefibootmgr -c -d /dev/sda -p 1 -L 'Linux Boot' -l \\\\EFI\\\\systemd\\\\systemd-bootx64.efi"
+  },
+  {
+    "instruction": "Update systemd-boot bootloader",
+    "output": "<think>\nSo we need to update systemd-boot bootloader.\nFirst, let me understand what's needed here.\nBest tool here is bootctl — EFI firmware boot manager.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nbootctl update"
+  },
+  {
+    "instruction": "Check kernel signature status",
+    "output": "<think>\nWe should check kernel signature status.\nI'll reach for pesign here because pesign operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\npesign -S -i /boot/vmlinuz-6.1.0-13-amd64 | grep -i sign"
+  },
+  {
+    "instruction": "Add a kernel via kernel-install",
+    "output": "<think>\nSo the request is to add a kernel via kernel-install.\nFor this, kernel-install is the right tool — kernel-install operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nkernel-install add 6.1.0-13-amd64 /boot/vmlinuz-6.1.0-13-amd64"
+  },
+  {
+    "instruction": "Add kernel with kernel-install and make-dracut",
+    "output": "<think>\nSo we need to add kernel with kernel-install and make-dracut.\nLet me think through this step by step.\nI'll reach for kernel-install here because kernel-install operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nkernel-install add 6.2.0-1-amd64 /boot/vmlinuz-6.2.0-1-amd64"
+  },
+  {
+    "instruction": "List all files in ESP partition",
+    "output": "<think>\nWe're being asked to list all files in ESP partition.\nLet me break this down.\nThis calls for find. File searching.\nI'm using -type for filter by file type — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nfind /boot/efi -type f 2>/dev/null | head -30"
+  },
+  {
+    "instruction": "Check if system is booted with UEFI",
+    "output": "<think>\nSo the request is to check if system is booted with UEFI.\nLet me think through this step by step.\nBest tool here is test — test operations.\nI've added -d to directory listing, don't descend — important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ntest -d /sys/firmware/efi && echo 'UEFI' || echo 'Legacy'"
+  },
+  {
+    "instruction": "Check systemd-boot build ID",
+    "output": "<think>\nWe should check systemd-boot build ID.\nFirst, let me understand what's needed here.\nI'll reach for bootctl here because EFI firmware boot manager.\nI'm using -i for interactive, prompt before action — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nbootctl status | grep -i firmware"
+  },
+  {
+    "instruction": "Create a UKI boot entry",
+    "output": "<think>\nNeed to create a UKI boot entry.\nLet me consider what makes sense here.\nThe tool for this job is printf — printf operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nprintf 'title My UKI\\nefi /EFI/Linux/my-uki.efi\\n' > /boot/loader/entries/my-uki.conf"
+  },
+  {
+    "instruction": "Set next boot to UEFI entry 0001",
+    "output": "<think>\nAlright, we need to set next boot to UEFI entry 0001.\nI'll reach for efibootmgr here because efibootmgr operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nefibootmgr -n 0001"
+  },
+  {
+    "instruction": "Install systemd-boot to specific device",
+    "output": "<think>\nThe user wants to install systemd-boot to specific device.\nbootctl is what we need — EFI firmware boot manager.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nbootctl install --boot-path=/boot --esp-path=/boot/efi"
+  },
+  {
+    "instruction": "Set boot loader entry-whitelist",
+    "output": "<think>\nSo we need to set boot loader entry-whitelist.\nLet me reason through this.\nFor this, printf is the right tool — printf operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nprintf 'entry-whitelist custom\\n' > /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "Set boot entry one-shot for next boot",
+    "output": "<think>\nSo we need to set boot entry one-shot for next boot.\nFor this, bootctl is the right tool — EFI firmware boot manager.\n</think>\nbootctl set-oneshot @current"
+  },
+  {
+    "instruction": "Check sd-boot current config",
+    "output": "<think>\nThe task requires us to check sd-boot current config.\nFor this, cat is the right tool — cat operations.\n</think>\ncat /boot/loader/entries.srel 2>/dev/null; echo '(type file)'"
+  },
+  {
+    "instruction": "View boot loader configuration",
+    "output": "<think>\nThe goal is to view boot loader configuration.\nFor this, cat is the right tool — cat operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "View UKI file information",
+    "output": "<think>\nSo the request is to view UKI file information.\nLet me think through this step by step.\nobjdump is what we need — objdump operations.\nThe -h flag means human-readable format, which matters here because standard practice for this kind of operation.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nobjdump -h /boot/efi/EFI/Linux/my-uki.efi 2>/dev/null | head -20"
+  },
+  {
+    "instruction": "Set default entry in loader.conf",
+    "output": "<think>\nNeed to set default entry in loader.conf.\nLet me break this down.\nBest tool here is printf — printf operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nprintf 'default @current\\n' > /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "Check bootctl version",
+    "output": "<think>\nWe should check bootctl version.\nLet me reason through this.\nFor this, bootctl is the right tool — EFI firmware boot manager.\nI'm using --version for show version info — without it the command won't work as we need.\nOne command does the job. Simple is better.\n</think>\nbootctl --version"
+  },
+  {
+    "instruction": "View a boot loader entry file",
+    "output": "<think>\nThis is asking us to view a boot loader entry file.\nBest tool here is cat — cat operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /boot/loader/entries/6.1.0-13-amd64.conf"
+  },
+  {
+    "instruction": "Edit loader.conf to add editor option",
+    "output": "<think>\nThe task requires us to edit loader.conf to add editor option.\nFor this, printf is the right tool — printf operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nprintf 'editor no\\n' >> /boot/loader/loader.conf"
+  },
+  {
+    "instruction": "Sign a kernel for secure boot",
+    "output": "<think>\nThe goal is to sign a kernel for secure boot.\nFor this, sbsign is the right tool — sbsign operations.\nThe -6 flag means use IPv6 only, which matters here because needed for this specific use case.\nI'll check the output to make sure it did what we expected.\n</think>\nsbsign --key /path/to/MOK.key --cert /path/to/MOK.crt /boot/vmlinuz-6.1.0-13-amd64"
+  }
+]

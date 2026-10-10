@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show all WiFi networks and signal strengths",
+    "output": "<think>\nSo we need to show all WiFi networks and signal strengths.\nFirst, let me understand what's needed here.\nThis calls for nmcli. Nmcli operations.\n</think>\nnmcli device wifi list"
+  },
+  {
+    "instruction": "Show Wi-Fi connection bitrate",
+    "output": "<think>\nSo we need to show Wi-Fi connection bitrate.\nFor this, iw is the right tool — iw operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\niw dev wlan0 link | grep bitrate"
+  },
+  {
+    "instruction": "Display signal quality of the current WiFi",
+    "output": "<think>\nThe task requires us to display signal quality of the current WiFi.\nThis calls for cat. Cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncat /proc/net/wireless"
+  },
+  {
+    "instruction": "Drop and renew DHCP lease",
+    "output": "<think>\nSo we need to drop and renew DHCP lease.\nI'd use dhclient for this — dhclient operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ndhclient -r eth0 && dhclient eth0"
+  },
+  {
+    "instruction": "Release the current DHCP lease",
+    "output": "<think>\nThe task requires us to release the current DHCP lease.\nHere's how I'd approach this.\nBest tool here is dhclient — dhclient operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ndhclient -r eth0"
+  },
+  {
+    "instruction": "Renew the DHCP lease",
+    "output": "<think>\nThe goal is to renew the DHCP lease.\nThis calls for dhclient. Dhclient operations.\n</think>\ndhclient -v eth0"
+  },
+  {
+    "instruction": "Show DHCP lease info from the system",
+    "output": "<think>\nThe task requires us to show DHCP lease info from the system.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\ncat /var/lib/dhcp/dhclient.leases 2>/dev/null | tail -20"
+  },
+  {
+    "instruction": "Set MTU on an interface",
+    "output": "<think>\nThis is asking us to set MTU on an interface.\nLet me consider what makes sense here.\nThis calls for ip. Network interface configuration.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nip link set eth0 mtu 1500"
+  },
+  {
+    "instruction": "Enable promiscuous mode on an interface",
+    "output": "<think>\nAlright, we need to enable promiscuous mode on an interface.\nFirst, let me understand what's needed here.\nBest tool here is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nip link set eth0 promisc on"
+  },
+  {
+    "instruction": "Check if promiscuous mode is on",
+    "output": "<think>\nAlright, we need to check if promiscuous mode is on.\nFirst, let me understand what's needed here.\nip is what we need — network interface configuration.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\nip link show eth0 | grep PROMISC"
+  },
+  {
+    "instruction": "Add a virtual interface alias",
+    "output": "<think>\nNeed to add a virtual interface alias.\nThe tool for this job is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nip addr add 192.168.1.200/24 dev eth0 label eth0:1"
+  },
+  {
+    "instruction": "Remove a virtual interface alias",
+    "output": "<think>\nWe're being asked to remove a virtual interface alias.\nLet me consider what makes sense here.\nip is what we need — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nip addr del 192.168.1.200/24 dev eth0"
+  },
+  {
+    "instruction": "Create a bridge interface",
+    "output": "<think>\nThe user wants to create a bridge interface.\nLet me break this down.\nip is what we need — network interface configuration.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nip link add name br0 type bridge && ip link set br0 up"
+  },
+  {
+    "instruction": "Add an interface to a bridge",
+    "output": "<think>\nThe task requires us to add an interface to a bridge.\nFirst, let me understand what's needed here.\nBest tool here is ip — network interface configuration.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nip link set eth1 master br0"
+  },
+  {
+    "instruction": "Remove an interface from a bridge",
+    "output": "<think>\nSo the request is to remove an interface from a bridge.\nLet me reason through this.\nThis calls for ip. Network interface configuration.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nip link set eth1 nomaster"
+  },
+  {
+    "instruction": "Create a VLAN interface",
+    "output": "<think>\nThe user wants to create a VLAN interface.\nLet me reason through this.\nI'd use ip for this — network interface configuration.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nip link add link eth0 name eth0.100 type vlan id 100"
+  },
+  {
+    "instruction": "Create a bond interface",
+    "output": "<think>\nThe task requires us to create a bond interface.\nI'll reach for ip here because network interface configuration.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nip link add bond0 type bond mode 802.3ad && ip link set eth0 master bond0"
+  },
+  {
+    "instruction": "Show bond status",
+    "output": "<think>\nSo we need to show bond status.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\n</think>\ncat /proc/net/bonding/bond0"
+  },
+  {
+    "instruction": "Check if TUN/TAP module is loaded",
+    "output": "<think>\nThis is asking us to check if TUN/TAP module is loaded.\nLet me reason through this.\nI'd use lsmod for this — kernel module listing.\nI'm using -q for quiet mode, minimal output — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nlsmod | grep -q tun && echo TUN loaded || echo not loaded"
+  },
+  {
+    "instruction": "Create a TUN interface (for VPN)",
+    "output": "<think>\nThis is asking us to create a TUN interface (for VPN).\nLet me think about the best approach.\nThis calls for ip. Network interface configuration.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nip tuntap add dev tun0 mode tun && ip link set tun0 up"
+  },
+  {
+    "instruction": "Create a TAP interface",
+    "output": "<think>\nThe task requires us to create a TAP interface.\nLet me think about the best approach.\nFor this, ip is the right tool — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nip tuntap add dev tap0 mode tap && ip link set tap0 up"
+  },
+  {
+    "instruction": "Show all TUN/TAP interfaces",
+    "output": "<think>\nNeed to show all TUN/TAP interfaces.\nI'll reach for ip here because network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nip tuntap list"
+  },
+  {
+    "instruction": "Check interface speed and duplex",
+    "output": "<think>\nWe're being asked to check interface speed and duplex.\nLet me reason through this.\nI'll reach for ethtool here because ethtool operations.\nI'm using -E for extended regex — this controls how the output is formatted.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nethtool eth0 | grep -E 'Speed|Duplex|Link detected'"
+  },
+  {
+    "instruction": "Show NIC driver and firmware info",
+    "output": "<think>\nThe goal is to show NIC driver and firmware info.\nLet me consider what makes sense here.\nBest tool here is ethtool — ethtool operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nethtool -i eth0"
+  },
+  {
+    "instruction": "Check NIC offload features",
+    "output": "<think>\nThe task requires us to check NIC offload features.\nLet me consider what makes sense here.\nethtool is what we need — ethtool operations.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\nethtool -k eth0 | head -20"
+  }
+]

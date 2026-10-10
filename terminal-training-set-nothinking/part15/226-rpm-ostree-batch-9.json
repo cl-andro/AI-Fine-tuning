@@ -1,0 +1,22 @@
+[
+  {"instruction": "How to view the rpm-ostree client configuration options", "output": "rpm-ostree --help | grep -E '--[a-z]'"},
+  {"instruction": "How to force rpm-ostree to check for updates immediately", "output": "rpm-ostree upgrade --check --force"},
+  {"instruction": "How to check the rpm-ostree deployment booted status", "output": "rpm-ostree status --booted"},
+  {"instruction": "How to add a kernel argument to enable EFI framebuffer", "output": "rpm-ostree kargs --append='efi_framebuffer'"},
+  {"instruction": "How to view the rpm-ostree deployment's package list", "output": "rpm -qa --root=/sysroot/ostree/deploy/$(rpm-ostree status --booted | grep Deployment | awk '{print $2}')/root"},
+  {"instruction": "How to see the rpm-ostree total number of boot entries", "output": "ls /boot/loader/entries/ | wc -l"},
+  {"instruction": "How to replace a layered package with a different version in rpm-ostree", "output": "rpm-ostree override replace --experimental /path/to/package.rpm"},
+  {"instruction": "How to check the rpm-ostree update delay configuration", "output": "rpm-ostree status --json | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get(\"automatic-update-policy\", \"none\"))'"},
+  {"instruction": "How to verify the rpm-ostree base image metadata", "output": "ostree show --repo=/sysroot/ostree/repo $(rpm-ostree status --booted | grep Commit | awk '{print $2}')"},
+  {"instruction": "How to clean the rpm-ostree local repo cache", "output": "ostree prune --repo=/sysroot/ostree/repo --depth=0"},
+  {"instruction": "How to see the rpm-ostree daemon environment", "output": "systemctl show rpm-ostreed -p Environment"},
+  {"instruction": "How to use rpm-ostree with a specific number of download threads", "output": "echo 'DownLoadThreads=8' >> /etc/rpm-ostreed.conf && systemctl restart rpm-ostreed"},
+  {"instruction": "How to see the total size of all rpm-ostree deployments", "output": "du -sh /sysroot/ostree/repo/objects/ 2>/dev/null"},
+  {"instruction": "How to override a package with a custom build using rpm-ostree", "output": "rpm-ostree override remove package && rpm-ostree override add /path/to/custom-package.rpm"},
+  {"instruction": "How to check the rpm-ostree remote's GPG key", "output": "ostree remote show-gpg-keys --repo=/sysroot/ostree/repo fedora"},
+  {"instruction": "How to change the rpm-ostree bootloader update policy", "output": "rpm-ostree initramfs --enable"},
+  {"instruction": "How to check the rpm-ostree version of the initramfs", "output": "lsinitrd /boot/ostree/*/initramfs* | grep 'Version'"},
+  {"instruction": "How to use rpm-ostree to deploy a raw commit by hash", "output": "rpm-ostree deploy COMMIT_HASH"},
+  {"instruction": "How to list all packages provided by rpm-ostree layer", "output": "rpm-ostree status --json | python3 -c 'import sys,json;d=json.load(sys.stdin);[print(x[\"layered-packages\"]) for x in d[\"deployments\"] if \"layered-packages\" in x]'"},
+  {"instruction": "How to verify the rpm-ostree deployment's signature validity", "output": "ostree gpg-verify --repo=/sysroot/ostree/repo $(rpm-ostree status --booted | grep Commit | awk '{print $2}')"}
+]

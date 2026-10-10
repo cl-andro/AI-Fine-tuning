@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Show replication slots info",
+    "output": "psql -c \"SELECT slot_name, slot_type, active, restart_lsn FROM pg_replication_slots\""
+  },
+  {
+    "instruction": "Show top 10 queries by total time",
+    "output": "psql -c \"SELECT query, calls, total_time, rows FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10\""
+  },
+  {
+    "instruction": "Show tables with highest dead tuple percentage",
+    "output": "psql -c \"SELECT relname, n_dead_tup, n_live_tup, ROUND(100.0 * n_dead_tup / GREATEST(n_live_tup + n_dead_tup, 1), 2) AS dead_pct FROM pg_stat_user_tables WHERE n_live_tup > 0 ORDER BY dead_pct DESC LIMIT 10\""
+  },
+  {
+    "instruction": "Show blocking and blocked queries",
+    "output": "psql -c \"SELECT a.datname, a.pid, a.usename, a.query, b.pid AS blocked_by, b.query AS blocking_query FROM pg_stat_activity a JOIN pg_stat_activity b ON a.pid != b.pid AND a.wait_event_type = 'Lock' WHERE b.state = 'active' AND a.state = 'active'\""
+  },
+  {
+    "instruction": "Show un-granted locks",
+    "output": "psql -c \"SELECT relation::regclass, mode, granted FROM pg_locks WHERE NOT granted\""
+  },
+  {
+    "instruction": "Create a tablespace on a specific disk",
+    "output": "psql -c \"CREATE TABLESPACE fastspace LOCATION '/ssd/postgresql/data'\""
+  },
+  {
+    "instruction": "Alter table fillfactor",
+    "output": "psql -c \"ALTER TABLE mytable SET (fillfactor = 70)\""
+  },
+  {
+    "instruction": "Add a check constraint",
+    "output": "psql -c \"ALTER TABLE orders ADD CONSTRAINT positive_price CHECK (price > 0)\""
+  },
+  {
+    "instruction": "Create a partial index",
+    "output": "psql -c \"CREATE INDEX idx_active_users ON users(email) WHERE active = true\""
+  },
+  {
+    "instruction": "Reindex all databases in the cluster",
+    "output": "reindexdb --all"
+  },
+  {
+    "instruction": "Vacuum and analyze all databases",
+    "output": "vacuumdb --all --analyze"
+  },
+  {
+    "instruction": "Show pgBouncer pool information",
+    "output": "psql -p 6432 -c \"SHOW POOLS\""
+  },
+  {
+    "instruction": "Show pgBouncer active clients",
+    "output": "psql -p 6432 -c \"SHOW CLIENTS\""
+  },
+  {
+    "instruction": "Show pgBouncer server connections",
+    "output": "psql -p 6432 -c \"SHOW SERVERS\""
+  },
+  {
+    "instruction": "Set session work memory to 256MB",
+    "output": "psql -c \"SET work_mem = '256MB'\""
+  },
+  {
+    "instruction": "Show memory-related configuration settings",
+    "output": "psql -c \"SELECT name, setting, unit FROM pg_settings WHERE category = 'Resource Usage / Memory'\""
+  },
+  {
+    "instruction": "Enable pg_stat_statements extension",
+    "output": "psql -c \"CREATE EXTENSION IF NOT EXISTS pg_stat_statements\""
+  },
+  {
+    "instruction": "Show WAL statistics",
+    "output": "psql -c \"SELECT * FROM pg_stat_wal\""
+  },
+  {
+    "instruction": "Find idle in transaction queries",
+    "output": "psql -c \"SELECT pid, datname, usename, now() - xact_start AS xact_duration, state, query FROM pg_stat_activity WHERE state = 'idle in transaction' ORDER BY xact_start\""
+  },
+  {
+    "instruction": "Generate pgBadger report from logs",
+    "output": "pgbadger /var/log/postgresql/postgresql-15-main.log -o report.html"
+  },
+  {
+    "instruction": "Show schema column information",
+    "output": "psql -c \"SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = 'public' ORDER BY table_name, ordinal_position\""
+  },
+  {
+    "instruction": "Show table inheritance hierarchy",
+    "output": "psql -c \"SELECT inhrelid::regclass AS child, inhparent::regclass AS parent FROM pg_inherits\""
+  }
+]

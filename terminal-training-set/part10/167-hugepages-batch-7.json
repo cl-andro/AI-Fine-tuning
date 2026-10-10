@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Disable transparent hugepages",
+    "output": "<think>\nNeed to disable transparent hugepages.\nLet me reason through this.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\necho never | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Show hugepage pool information with hugeadm",
+    "output": "<think>\nThe user wants to show hugepage pool information with hugeadm.\nThis calls for hugeadm. Hugeadm operations.\n</think>\nhugeadm --list-all"
+  },
+  {
+    "instruction": "View kernel boot parameters for hugepages",
+    "output": "<think>\nSo we need to view kernel boot parameters for hugepages.\nLet me consider what makes sense here.\nFor this, cat is the right tool — cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\ncat /proc/cmdline | tr ' ' '\\n' | grep -i huge"
+  },
+  {
+    "instruction": "Check current THP enabled mode string",
+    "output": "<think>\nNeed to check current THP enabled mode string.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Enable THP zero page",
+    "output": "<think>\nThe goal is to enable THP zero page.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 1 | sudo tee /sys/kernel/mm/transparent_hugepage/use_zero_page"
+  },
+  {
+    "instruction": "Check HugePages_Total value",
+    "output": "<think>\nAlright, we need to check HugePages_Total value.\nFirst, let me understand what's needed here.\nThis calls for grep. Pattern searching.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ngrep HugePages_Total /proc/meminfo"
+  },
+  {
+    "instruction": "Enable transparent hugepages always",
+    "output": "<think>\nThe goal is to enable transparent hugepages always.\nHere's how I'd approach this.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Set NUMA node 0 hugepages to 64",
+    "output": "<think>\nNeed to set NUMA node 0 hugepages to 64.\nLet me reason through this.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\necho 64 | sudo tee /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Check hugepage pool maximum setting",
+    "output": "<think>\nThe task requires us to check hugepage pool maximum setting.\nLet me reason through this.\nThe tool for this job is cat — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/sys/vm/hugetlb_pool_max 2>/dev/null; echo '(may not exist)'"
+  },
+  {
+    "instruction": "Allocate 100 hugepages immediately",
+    "output": "<think>\nWe're being asked to allocate 100 hugepages immediately.\nLet me think through this step by step.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\necho 100 | sudo tee /proc/sys/vm/nr_hugepages"
+  },
+  {
+    "instruction": "List all hugepage filesystem mounts",
+    "output": "<think>\nThe goal is to list all hugepage filesystem mounts.\nmount is what we need — filesystem mounting.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nmount -t hugetlbfs"
+  },
+  {
+    "instruction": "Make hugepage setting persistent via sysctl.d",
+    "output": "<think>\nThis is asking us to make hugepage setting persistent via sysctl.d.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'vm.nr_hugepages=512' | sudo tee /etc/sysctl.d/hugepages.conf"
+  },
+  {
+    "instruction": "Set transparent hugepage to madvise only",
+    "output": "<think>\nThis is asking us to set transparent hugepage to madvise only.\nLet me break this down.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho madvise | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Show system hugepage usage summary from meminfo",
+    "output": "<think>\nSo the request is to show system hugepage usage summary from meminfo.\nBest tool here is cat — cat operations.\nI've added -E to extended regex — needed for this specific use case.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/meminfo | grep -E '^Huge'"
+  },
+  {
+    "instruction": "Check hugetlb_shm_group sysctl value",
+    "output": "<think>\nWe should check hugetlb_shm_group sysctl value.\nLet me consider what makes sense here.\nsysctl is what we need — kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo sysctl vm.hugetlb_shm_group"
+  },
+  {
+    "instruction": "View hugepage documentation",
+    "output": "<think>\nAlright, we need to view hugepage documentation.\nThis calls for cat. Cat operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat /usr/share/doc/linux-doc/Documentation/admin-guide/mm/hugetlbpage.rst 2>/dev/null | head -50 || echo 'Docs not found'"
+  },
+  {
+    "instruction": "Display NUMA hugepage distribution per node",
+    "output": "<think>\nThe user wants to display NUMA hugepage distribution per node.\nLet me break this down.\nBest tool here is cat — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ncat /sys/devices/system/node/node*/meminfo | grep Huge"
+  },
+  {
+    "instruction": "Check THP defragmentation settings",
+    "output": "<think>\nSo we need to check THP defragmentation settings.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/defrag"
+  },
+  {
+    "instruction": "Set hugetlb_shm_group via sysctl",
+    "output": "<think>\nAlright, we need to set hugetlb_shm_group via sysctl.\nHere's how I'd approach this.\nI'd use sysctl for this — kernel parameter tuning.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sysctl vm.hugetlb_shm_group=2000"
+  },
+  {
+    "instruction": "Set khugepaged scan rate to 4096 pages",
+    "output": "<think>\nSo the request is to set khugepaged scan rate to 4096 pages.\nLet me consider what makes sense here.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 4096 | sudo tee /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan"
+  },
+  {
+    "instruction": "Enable transparent hugepages via sysfs",
+    "output": "<think>\nAlright, we need to enable transparent hugepages via sysfs.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "Set number of hugepages to 1024",
+    "output": "<think>\nThe goal is to set number of hugepages to 1024.\nLet me think through this step by step.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1024 | sudo tee /proc/sys/vm/nr_hugepages"
+  },
+  {
+    "instruction": "Set hugepages using sysctl command",
+    "output": "<think>\nNeed to set hugepages using sysctl command.\nThis calls for sysctl. Kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo sysctl vm.nr_hugepages=512"
+  },
+  {
+    "instruction": "Check THP zero page status",
+    "output": "<think>\nSo we need to check THP zero page status.\nLet me reason through this.\nI'll reach for cat here because cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/use_zero_page"
+  },
+  {
+    "instruction": "Set 1GB hugepage count to 4",
+    "output": "<think>\nAlright, we need to set 1GB hugepage count to 4.\nLet me think through this step by step.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\necho 4 | sudo tee /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up a cron job to check disk space and email alert",
+    "output": "echo '0 * * * * df -h | mail -s \"Disk usage\" admin@example.com' | crontab -"
+  },
+  {
+    "instruction": "Create a simple bash monitoring script",
+    "output": "echo -e '"
+  },
+  {
+    "instruction": "Set up a dead man's switch cron",
+    "output": "echo '*/5 * * * * curl -fsS --retry 3 https://hc-ping.com/my-uuid > /dev/null' | crontab -"
+  },
+  {
+    "instruction": "Monitor a log file for specific keywords and alert",
+    "output": "echo -e '"
+  },
+  {
+    "instruction": "Use monit for process monitoring",
+    "output": "apt install -y monit && cat > /etc/monit/conf.d/nginx << 'EOF'\ncheck process nginx with pidfile /run/nginx.pid\n  start program = \"/usr/sbin/nginx\"\n  stop program = \"/usr/sbin/nginx -s stop\"\n  if failed port 80 protocol http then restart\n  if 5 restarts within 5 cycles then timeout\nEOF && monit reload && monit start nginx"
+  },
+  {
+    "instruction": "Check monit status",
+    "output": "monit status"
+  },
+  {
+    "instruction": "Start all monit monitored processes",
+    "output": "monit start all"
+  },
+  {
+    "instruction": "Use god (process monitor in Ruby)",
+    "output": "gem install god && cat > /etc/god/conf.god << 'EOF'\nGod.watch do |w|\n  w.name = \"nginx\"\n  w.start = \"nginx\"\n  w.restart = \"nginx -s reload\"\n  w.keepalive\nend\nEOF && god start"
+  },
+  {
+    "instruction": "Install supervisor (process control system)",
+    "output": "apt install -y supervisor && systemctl enable --now supervisor"
+  },
+  {
+    "instruction": "Add a supervisor program config",
+    "output": "cat > /etc/supervisor/conf.d/myapp.conf << 'EOF'\n[program:myapp]\ncommand=/usr/local/bin/myapp\nuser=john\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/myapp.err.log\nstdout_logfile=/var/log/myapp.out.log\nEOF && supervisorctl update"
+  },
+  {
+    "instruction": "Check supervisor program status",
+    "output": "supervisorctl status"
+  },
+  {
+    "instruction": "Restart a supervisor program",
+    "output": "supervisorctl restart myapp"
+  },
+  {
+    "instruction": "Stop a supervisor program",
+    "output": "supervisorctl stop myapp"
+  },
+  {
+    "instruction": "Check if any service is consuming too much memory",
+    "output": "ps aux --sort=-%mem | awk 'NR>1{if($4>10) print $11\" uses \"$4\"% memory\"}'"
+  },
+  {
+    "instruction": "Check if any process is using swap heavily",
+    "output": "for f in /proc/*/status; do awk '/VmSwap|Name/{printf \"%s \", $2} END {print \"\"}' $f 2>/dev/null; done | sort -k2 -rh | head -10"
+  },
+  {
+    "instruction": "Check the number of running processes",
+    "output": "ps aux | wc -l"
+  },
+  {
+    "instruction": "Check the number of open file handles system-wide",
+    "output": "cat /proc/sys/fs/file-nr | awk '{print \"Open: \" $1 \" Max: \" $3}'"
+  },
+  {
+    "instruction": "Check TCP connection states counts",
+    "output": "netstat -ant | awk '{print $6}' | sort | uniq -c | sort -rh"
+  },
+  {
+    "instruction": "Check the number of users currently logged in",
+    "output": "who | wc -l"
+  },
+  {
+    "instruction": "Check system uptime trend over last week",
+    "output": "last -x | grep reboot | tail -7"
+  },
+  {
+    "instruction": "Install and run mtr for network path quality",
+    "output": "apt install -y mtr-tiny && mtr --report -c 10 8.8.8.8"
+  },
+  {
+    "instruction": "Install and run smokeping (latency graphing)",
+    "output": "apt install -y smokeping && systemctl enable --now smokeping"
+  },
+  {
+    "instruction": "Check Smokeping targets",
+    "output": "cat /etc/smokeping/config.d/Targets | head -30"
+  },
+  {
+    "instruction": "Install and run Icinga Web 2",
+    "output": "apt install -y icingaweb2 icingacli && icingacli setup token create"
+  },
+  {
+    "instruction": "Get Icinga Web 2 setup token",
+    "output": "icingacli setup token show"
+  }
+]

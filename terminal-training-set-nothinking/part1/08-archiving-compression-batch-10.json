@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a compressed tar with progress bar",
+    "output": "tar czf - ./dir/ | pv -s $(du -sb ./dir/ | awk '{print $1}') > archive.tar.gz"
+  },
+  {
+    "instruction": "Extract a tar.gz with progress bar",
+    "output": "pv archive.tar.gz | tar xzf - -C /target/"
+  },
+  {
+    "instruction": "Create a tar of many small files with parallel processing",
+    "output": "find ./dir/ -type f -print0 | parallel -0 --will-cite 'tar rf /tmp/bundle.tar' && gzip /tmp/bundle.tar"
+  },
+  {
+    "instruction": "Use tar with multi-volume support",
+    "output": "tar -M -L 1G -F 'echo next volume' -cf volume.tar ./dir/"
+  },
+  {
+    "instruction": "Compress a file with ppmd algorithm (7z extreme)",
+    "output": "7z a -m0=PPMd -mx=9 archive.7z file.txt"
+  },
+  {
+    "instruction": "Show the default compression level of gzip",
+    "output": "gzip --fast --best 2>&1 | head -1 || man gzip | col -b | grep -A2 '-"
+  },
+  {
+    "instruction": "Compress a file with the fastest gzip level (1)",
+    "output": "gzip -1 fastfile.txt"
+  },
+  {
+    "instruction": "Compress a file with level 3 (balanced)",
+    "output": "gzip -3 file.txt"
+  },
+  {
+    "instruction": "Compress a file with level 6 (default)",
+    "output": "gzip -6 file.txt"
+  },
+  {
+    "instruction": "Compress a file with level 9 (best)",
+    "output": "gzip -9 file.txt"
+  },
+  {
+    "instruction": "Recompress a directory from gz to bz2 (smaller)",
+    "output": "for f in *.tar.gz; do gzip -dc \"$f\" | bzip2 > \"${f%.tar.gz}.tar.bz2\"; done"
+  },
+  {
+    "instruction": "Recompress from bz2 to xz (even smaller)",
+    "output": "for f in *.tar.bz2; do bzip2 -dc \"$f\" | xz > \"${f%.tar.bz2}.tar.xz\"; done"
+  },
+  {
+    "instruction": "Compare sizes of compression algorithms on the same data",
+    "output": "tar cf /tmp/test.tar ./testdata/ && for algo in gzip bzip2 xz zstd; do time \"$algo\" -c /tmp/test.tar > /tmp/test.tar.\"$algo\" && ls -lh /tmp/test.tar.\"$algo\"; done"
+  },
+  {
+    "instruction": "Create a tar without the directory's parent path",
+    "output": "tar czf archive.tar.gz -C /full/path/to/dir ."
+  },
+  {
+    "instruction": "Extract a tar removing the top-level directory",
+    "output": "tar xzf archive.tar.gz --strip-components=1 -C /target/dir/"
+  },
+  {
+    "instruction": "Create a tar with verbose file list",
+    "output": "tar czvf archive.tar.gz ./dir/ > file_list.txt 2>&1"
+  },
+  {
+    "instruction": "Create a tar listing files that would be included (dry-run)",
+    "output": "tar czvf - ./dir/ > /dev/null 2>&1; echo done"
+  },
+  {
+    "instruction": "Check if the system supports a compression tool",
+    "output": "which gzip bzip2 xz zstd lz4 2>/dev/null | xargs -n1 basename"
+  },
+  {
+    "instruction": "Install all common archiving tools",
+    "output": "apt install -y gzip bzip2 xz-utils zstd lz4 p7zip-full unrar zip unzip"
+  },
+  {
+    "instruction": "Install compression development libraries",
+    "output": "apt install -y zlib1g-dev libbz2-dev liblzma-dev libzstd-dev liblz4-dev"
+  },
+  {
+    "instruction": "Compress a file and stream it to S3 (AWS CLI)",
+    "output": "tar czf - ./dir/ | aws s3 cp - s3://mybucket/backup.tar.gz"
+  },
+  {
+    "instruction": "Compress and upload with gsutil (GCS)",
+    "output": "tar czf - ./dir/ | gsutil cp - gs://mybucket/backup.tar.gz"
+  },
+  {
+    "instruction": "Create an encrypted backup with age encryption",
+    "output": "tar czf - ./dir/ | age -r age1publickey -o backup.tar.gz.age"
+  },
+  {
+    "instruction": "Decrypt and extract age-encrypted backup",
+    "output": "age -d backup.tar.gz.age | tar xzf - -C /restore/"
+  },
+  {
+    "instruction": "Create a tar archive with GPG symmetric encryption and compression",
+    "output": "tar cf - ./dir/ | gpg --symmetric --cipher-algo AES256 --batch --passphrase 'secret' -o encrypted.tar.gz.gpg"
+  }
+]

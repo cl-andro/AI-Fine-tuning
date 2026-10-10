@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Install and configure HAProxy with automatic failover",
+    "output": "<think>\nThe task requires us to install and configure HAProxy with automatic failover.\nHere's how I'd approach this.\nThis calls for cat. Cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\ncat > /etc/haproxy/haproxy.cfg << 'EOF'\ndefaults\n  log global\n  option httplog\n  timeout connect 5s\n  timeout client 50s\n  timeout server 50s\nfrontend main\n  bind *:80\n  default_backend app\nbackend app\n  option httpchk GET /health\n  server app1 192.168.1.10:80 check fall 3 rise 2\n  server app2 192.168.1.11:80 check fall 3 rise 2 backup\nEOF && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up HAProxy with ACL-based routing",
+    "output": "<think>\nThe task requires us to set up HAProxy with ACL-based routing.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/haproxy/haproxy.cfg << 'EOF'\nfrontend http-in\n  bind *:80\n  acl is_api path_beg /api\n  acl is_static path_beg /static\n  use_backend api if is_api\n  use_backend static if is_static\n  default_backend web\nbackend api\n  server api1 127.0.0.1:3000 check\nbackend static\n  server static1 127.0.0.1:8000 check\nbackend web\n  server web1 127.0.0.1:8080 check\nEOF && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up HAProxy with TCP health checks",
+    "output": "<think>\nWe're being asked to set up HAProxy with TCP health checks.\nLet me think about the best approach.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'backend db\\n  option tcp-check\\n  tcp-check connect\\n  tcp-check send PING\\n  tcp-check expect string +PONG\\n  server db1 192.168.1.10:6379 check inter 3s' >> /etc/haproxy/haproxy.cfg && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Install Keepalived for HAProxy high availability",
+    "output": "<think>\nWe should install Keepalived for HAProxy high availability.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y keepalived && cat > /etc/keepalived/keepalived.conf << 'EOF'\nvrrp_instance VI_1 {\n  interface eth0\n  state MASTER\n  virtual_router_id 51\n  priority 100\n  advert_int 1\n  authentication { auth_type PASS; auth_pass mypass; }\n  virtual_ipaddress { 192.168.1.200/24 dev eth0 }\n}\nEOF && systemctl restart keepalived"
+  },
+  {
+    "instruction": "Check Keepalived status",
+    "output": "<think>\nThis is asking us to check Keepalived status.\nLet me reason through this.\nFor this, ip is the right tool — network interface configuration.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\nip addr show eth0 | grep 192.168.1.200 && echo VIP up || echo VIP down"
+  },
+  {
+    "instruction": "Install and configure Pound (reverse proxy)",
+    "output": "<think>\nNeed to install and configure Pound (reverse proxy).\nLet me think about the best approach.\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y pound && cat > /etc/pound/pound.cfg << 'EOF'\nListenHTTP\n  Address 0.0.0.0\n  Port 80\n  Service\n    BackEnd\n      Address 127.0.0.1\n      Port 8080\n    End\n  End\nEOF && systemctl restart pound"
+  },
+  {
+    "instruction": "Install and configure Pen (load balancer)",
+    "output": "<think>\nThe user wants to install and configure Pen (load balancer).\nHere's how I'd approach this.\nI'd use apt for this — apt operations.\nI've added -l to long format with details — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y pen && pen -l /var/log/pen.log 80 192.168.1.10:80 192.168.1.11:80"
+  },
+  {
+    "instruction": "Install and configure Balance (TCP proxy)",
+    "output": "<think>\nSo we need to install and configure Balance (TCP proxy).\nI'll reach for apt here because apt operations.\nI've added -b to brief output — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y balance && balance -b 80 192.168.1.10:80 192.168.1.11:80"
+  },
+  {
+    "instruction": "Install and configure nginx_ldap_auth for Nginx",
+    "output": "<think>\nWe're being asked to install and configure nginx_ldap_auth for Nginx.\nFirst, let me understand what's needed here.\nThe tool for this job is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y nginx-extras && echo -e 'location / {\\n  auth_ldap \"Restricted\";\\n  auth_ldap_servers ldap1;\\n  proxy_pass http://backend;\\n}' >> /etc/nginx/sites-available/default"
+  },
+  {
+    "instruction": "Install and configure Passenger for Nginx (Ruby/Python)",
+    "output": "<think>\nThe goal is to install and configure Passenger for Nginx (Ruby/Python).\nLet me reason through this.\nI'll reach for apt here because apt operations.\nWhy -e? Edit or executable. important to get the expected behavior.\nThe -s flag handles summarize or silent mode. Important because without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y passenger libnginx-mod-http-passenger && echo -e 'passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;\\nserver {\\n  listen 80;\\n  root /var/www/myapp/public;\\n  passenger_enabled on;\\n}' > /etc/nginx/sites-available/passenger && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Nginx with ModSecurity WAF",
+    "output": "<think>\nWe should set up Nginx with ModSecurity WAF.\nI'll reach for apt here because apt operations.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nWhy -s? Summarize or silent mode. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y libnginx-mod-http-modsecurity && sed -i 's/modsecurity on;/modsecurity on;\\nmodsecurity_rules_file /etc/nginx/modsecurity.conf;/' /etc/nginx/nginx.conf && cp /etc/modsecurity/modsecurity.conf-recommended /etc/nginx/modsecurity.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Nginx with fail2ban to block bad requests",
+    "output": "<think>\nThe user wants to set up Nginx with fail2ban to block bad requests.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > /etc/fail2ban/jail.d/nginx.conf << 'EOF'\n[nginx-http-auth]\nenabled = true\nport = http,https\nlogpath = %(nginx_error_log)s\nmaxretry = 5\nbantime = 3600\nEOF && systemctl restart fail2ban"
+  },
+  {
+    "instruction": "Create an Nginx geoip blocklist",
+    "output": "<think>\nWe should create an Nginx geoip blocklist.\nFirst, let me understand what's needed here.\nBest tool here is apt — apt operations.\nWhy -e? Edit or executable. this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y libnginx-mod-http-geoip && echo -e 'geoip_country /usr/share/GeoIP/GeoIP.dat;\\nif ($geoip_country_code ~ (CN|RU|KP)) { return 403; }' >> /etc/nginx/nginx.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Install and configure GoAccess (real-time web log analyzer)",
+    "output": "<think>\nNeed to install and configure GoAccess (real-time web log analyzer).\nLet me reason through this.\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y goaccess && goaccess /var/log/nginx/access.log -o /var/www/html/report.html --log-format=COMBINED"
+  },
+  {
+    "instruction": "Generate a GoAccess report for any log format",
+    "output": "<think>\nThe task requires us to generate a GoAccess report for any log format.\nHere's how I'd approach this.\nBest tool here is goaccess — goaccess operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ngoaccess /var/log/nginx/access.log --log-format='%h %^[%d:%t %^] \"%r\" %s %b \"%R\" \"%u\"' -o report.html"
+  },
+  {
+    "instruction": "Analyze Apache logs with GoAccess",
+    "output": "<think>\nThe task requires us to analyze Apache logs with GoAccess.\nLet me reason through this.\nI'd use goaccess for this — goaccess operations.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ngoaccess /var/log/apache2/access.log -o report.html --log-format=COMBINED"
+  },
+  {
+    "instruction": "Install NetData for real-time web server monitoring",
+    "output": "<think>\nNeed to install NetData for real-time web server monitoring.\nThe tool for this job is bash — bash operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nbash <(curl -Ss https://my-netdata.io/kickstart.sh) --non-interactive"
+  },
+  {
+    "instruction": "Set up Nginx to disable directory listing",
+    "output": "<think>\nThe user wants to set up Nginx to disable directory listing.\nWhy -e? Edit or executable. without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho -e 'location / {\\n  autoindex off;\\n}' >> /etc/nginx/sites-available/default && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Apache to disable directory listing",
+    "output": "<think>\nThe user wants to set up Apache to disable directory listing.\nLet me reason through this.\nFor this, sed is the right tool — text stream editing.\nI've added -i to interactive, prompt before action — standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\nsed -i 's/Options Indexes/Options -Indexes/' /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Hide Nginx version string",
+    "output": "<think>\nWe're being asked to hide Nginx version string.\nHere's how I'd approach this.\nFor this, sed is the right tool — text stream editing.\nThe -i flag handles interactive, prompt before action. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsed -i 's/"
+  },
+  {
+    "instruction": "Hide Apache version string",
+    "output": "<think>\nNeed to hide Apache version string.\nLet me reason through this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'ServerTokens Prod\\nServerSignature Off' >> /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Set up Nginx to limit request body size for uploads",
+    "output": "<think>\nAlright, we need to set up Nginx to limit request body size for uploads.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'client_max_body_size 50M;' >> /etc/nginx/nginx.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Apache to limit request body size",
+    "output": "<think>\nThis is asking us to set up Apache to limit request body size.\nLet me reason through this.\nWhy -e? Edit or executable. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e '<Directory /var/www/html>\\n  LimitRequestBody 52428800\\n</Directory>' >> /etc/apache2/apache2.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Configure Apache with mod_evasive (DoS protection)",
+    "output": "<think>\nWe should configure Apache with mod_evasive (DoS protection).\nLet me think about the best approach.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y libapache2-mod-evasive && mkdir -p /var/log/apache2/mod_evasive && chown www-data:www-data /var/log/apache2/mod_evasive && a2enmod evasive && systemctl restart apache2"
+  }
+]

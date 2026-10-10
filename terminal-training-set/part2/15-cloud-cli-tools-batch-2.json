@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "List all AWS EC2 instances with tags",
+    "output": "<think>\nThe goal is to list all AWS EC2 instances with tags.\nFirst, let me understand what's needed here.\nThe tool for this job is aws — AWS cloud management.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\naws ec2 describe-instances --query 'Reservations[].Instances[].{ID:InstanceId,Type:InstanceType,Name:Tags[?Key==`Name`]|[0].Value}'"
+  },
+  {
+    "instruction": "Create an AWS EC2 key pair",
+    "output": "<think>\nThe task requires us to create an AWS EC2 key pair.\nLet me consider what makes sense here.\nFor this, aws is the right tool — AWS cloud management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\naws ec2 create-key-pair --key-name mykey --query 'KeyMaterial' --output text > mykey.pem && chmod 400 mykey.pem"
+  },
+  {
+    "instruction": "Launch an AWS EC2 instance",
+    "output": "<think>\nWe should launch an AWS EC2 instance.\nLet me break this down.\nThe tool for this job is aws — AWS cloud management.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\naws ec2 run-instances --image-id ami-0c55b159cbfafe1f0 --instance-type t2.micro --key-name mykey --security-group-ids sg-xxx --subnet-id subnet-xxx --associate-public-ip-address"
+  },
+  {
+    "instruction": "Terminate an EC2 instance",
+    "output": "<think>\nThe user wants to terminate an EC2 instance.\nLet me think about the best approach.\nThe tool for this job is aws — AWS cloud management.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\naws ec2 terminate-instances --instance-ids i-1234567890abcdef0"
+  },
+  {
+    "instruction": "List all AWS S3 buckets with creation date",
+    "output": "<think>\nNeed to list all AWS S3 buckets with creation date.\nLet me reason through this.\nI'll reach for aws here because AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\naws s3 ls"
+  },
+  {
+    "instruction": "Create an S3 bucket",
+    "output": "<think>\nThe task requires us to create an S3 bucket.\nLet me reason through this.\nFor this, aws is the right tool — AWS cloud management.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\naws s3 mb s3://my-unique-bucket-123"
+  },
+  {
+    "instruction": "Delete an S3 bucket (must be empty)",
+    "output": "<think>\nSo we need to delete an S3 bucket (must be empty).\nFor this, aws is the right tool — AWS cloud management.\nWhy --force? Override warnings. important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\n</think>\naws s3 rb s3://my-bucket --force"
+  },
+  {
+    "instruction": "Sync S3 bucket to a local folder",
+    "output": "<think>\nWe're being asked to sync S3 bucket to a local folder.\nFirst, let me understand what's needed here.\naws is what we need — AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\n</think>\naws s3 sync s3://mybucket/ ./local-folder/"
+  },
+  {
+    "instruction": "List all objects in an S3 bucket with human-readable sizes",
+    "output": "<think>\nAlright, we need to list all objects in an S3 bucket with human-readable sizes.\nI'd use aws for this — AWS cloud management.\n</think>\naws s3 ls --human-readable --summarize s3://mybucket/"
+  },
+  {
+    "instruction": "Set a bucket policy on S3 (make public)",
+    "output": "<think>\nWe should set a bucket policy on S3 (make public).\nLet me think about the best approach.\nI'd use cat for this — cat operations.\n</think>\ncat > policy.json << 'EOF'\n{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::my-bucket/*\"}]}\nEOF\naws s3api put-bucket-policy --bucket my-bucket --policy file://policy.json"
+  },
+  {
+    "instruction": "Enable versioning on an S3 bucket",
+    "output": "<think>\nNeed to enable versioning on an S3 bucket.\nLet me think about the best approach.\nI'll reach for aws here because AWS cloud management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\naws s3api put-bucket-versioning --bucket my-bucket --versioning-configuration Status=Enabled"
+  },
+  {
+    "instruction": "List AWS Lambda functions with runtime",
+    "output": "<think>\nSo the request is to list AWS Lambda functions with runtime.\naws is what we need — AWS cloud management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\naws lambda list-functions --query 'Functions[].{Name:FunctionName,Runtime:Runtime}'"
+  },
+  {
+    "instruction": "Invoke a Lambda function with a payload",
+    "output": "<think>\nAlright, we need to invoke a Lambda function with a payload.\nLet me break this down.\nI'll reach for aws here because AWS cloud management.\nOne command does the job. Simple is better.\n</think>\naws lambda invoke --function-name my-function --payload '{\"key\":\"value\"}' response.json"
+  },
+  {
+    "instruction": "Create an AWS Lambda function",
+    "output": "<think>\nWe should create an AWS Lambda function.\nLet me think about the best approach.\nzip is what we need — file compression.\nI've added -r to recursive operation (descend into subdirectories) — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nzip -r function.zip index.js && aws lambda create-function --function-name my-function --runtime nodejs20.x --role arn:aws:iam::1234567890:role/lambda-role --handler index.handler --zip-file fileb://function.zip"
+  },
+  {
+    "instruction": "List AWS IAM users with creation date",
+    "output": "<think>\nSo the request is to list AWS IAM users with creation date.\nI'll reach for aws here because AWS cloud management.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\naws iam list-users --query 'Users[].{Name:UserName,Created:CreateDate}'"
+  },
+  {
+    "instruction": "Create an AWS IAM user",
+    "output": "<think>\nSo the request is to create an AWS IAM user.\nLet me think about the best approach.\nI'll reach for aws here because AWS cloud management.\nThe -user flag handles filter by owner. Important because important to get the expected behavior.\nI'll check the output to make sure it did what we expected.\n</think>\naws iam create-user --user-name john"
+  },
+  {
+    "instruction": "Create an AWS IAM access key",
+    "output": "<think>\nThe goal is to create an AWS IAM access key.\nI'd use aws for this — AWS cloud management.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\naws iam create-access-key --user-name john"
+  },
+  {
+    "instruction": "Attach a policy to an IAM user",
+    "output": "<think>\nThe goal is to attach a policy to an IAM user.\nLet me think through this step by step.\nI'll reach for aws here because AWS cloud management.\nI'm using -user for filter by owner — needed for this specific use case.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\naws iam attach-user-policy --user-name john --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+  },
+  {
+    "instruction": "List AWS CloudFormation stacks",
+    "output": "<think>\nThe goal is to list AWS CloudFormation stacks.\nI'd use aws for this — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\naws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE"
+  },
+  {
+    "instruction": "Create a CloudFormation stack",
+    "output": "<think>\nWe should create a CloudFormation stack.\nLet me consider what makes sense here.\nI'll reach for aws here because AWS cloud management.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\naws cloudformation create-stack --stack-name my-stack --template-body file://template.yaml"
+  },
+  {
+    "instruction": "List AWS RDS instances",
+    "output": "<think>\nThis is asking us to list AWS RDS instances.\nLet me consider what makes sense here.\nThe tool for this job is aws — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\naws rds describe-db-instances --query 'DBInstances[].{ID:DBInstanceIdentifier,Class:DBInstanceClass,Engine:Engine}'"
+  },
+  {
+    "instruction": "Create an RDS MySQL instance",
+    "output": "<think>\nNeed to create an RDS MySQL instance.\nLet me consider what makes sense here.\nThis calls for aws. AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\naws rds create-db-instance --db-instance-identifier mydb --db-instance-class db.t3.micro --engine mysql --master-username admin --master-user-password password --allocated-storage 20"
+  },
+  {
+    "instruction": "Create a CloudWatch alarm for high CPU",
+    "output": "<think>\nWe're being asked to create a CloudWatch alarm for high CPU.\nLet me reason through this.\nBest tool here is aws — AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\n</think>\naws cloudwatch put-metric-alarm --alarm-name high-cpu --alarm-description \"CPU > 80%\" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 80 --comparison-operator GreaterThanThreshold --dimensions Name=InstanceId,Value=i-123 --evaluation-periods 2 --alarm-actions arn:aws:sns:us-east-1:1234567890:alert"
+  },
+  {
+    "instruction": "List CloudWatch log groups",
+    "output": "<think>\nThe user wants to list CloudWatch log groups.\nThe tool for this job is aws — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\naws logs describe-log-groups"
+  },
+  {
+    "instruction": "Tail CloudWatch log stream",
+    "output": "<think>\nWe're being asked to tail CloudWatch log stream.\nThis calls for aws. AWS cloud management.\nOne command does the job. Simple is better.\n</think>\naws logs tail /aws/lambda/my-function --follow"
+  }
+]

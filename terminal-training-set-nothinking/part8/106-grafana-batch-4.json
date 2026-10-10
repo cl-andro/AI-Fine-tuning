@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Grafana alert rule via provisioning API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/v1/provisioning/alert-rules -H 'Content-Type: application/json' -d '{\"title\":\"HighCPU\",\"condition\":\"avg() OF query(A) IS ABOVE 0.9\",\"data\":[{\"refId\":\"A\",\"relativeTimeRange\":{\"from\":600,\"to\":0},\"datasourceUid\":\"prom\",\"model\":{\"expr\":\"node_cpu_seconds_total > 0.9\",\"intervalMs\":1000,\"maxDataPoints\":100}}],\"ruleGroup\":\"default\",\"noDataState\":\"NoData\",\"execErrState\":\"Alerting\",\"for\":\"5m\"}'"
+  },
+  {
+    "instruction": "Create a Grafana contact point via provisioning API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/v1/provisioning/contact-points -H 'Content-Type: application/json' -d '{\"name\":\"Slack\",\"type\":\"slack\",\"settings\":{\"url\":\"https://hooks.slack.com/xxx\"},\"disableResolveMessage\":false}'"
+  },
+  {
+    "instruction": "Create Grafana notification policy via provisioning API",
+    "output": "curl -X PUT http://admin:admin@localhost:3000/api/v1/provisioning/policies -H 'Content-Type: application/json' -d '{\"receiver\":\"Slack\",\"group_by\":[\"alertname\"],\"group_wait\":\"30s\",\"group_interval\":\"5m\",\"repeat_interval\":\"4h\"}'"
+  },
+  {
+    "instruction": "Export a Grafana dashboard as JSON",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/my-dashboard | jq '.dashboard' > dashboard.json"
+  },
+  {
+    "instruction": "Import a Grafana dashboard via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @dashboard.json"
+  },
+  {
+    "instruction": "Migrate Grafana between instances via API",
+    "output": "curl -s http://source:3000/api/dashboards/uid/my-dashboard | jq '.dashboard' | curl -X POST http://dest:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Set Grafana admin password via CLI",
+    "output": "grafana-cli admin reset-admin-password newpass"
+  },
+  {
+    "instruction": "Reset Grafana admin password via env",
+    "output": "docker run -e GF_SECURITY_ADMIN_PASSWORD=newpass grafana/grafana"
+  },
+  {
+    "instruction": "Enable Grafana anonymous access",
+    "output": "echo '[auth.anonymous] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana OAuth with GitHub",
+    "output": "echo '[auth.github] enabled = true client_id = xxx client_secret = yyy allow_sign_up = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana LDAP authentication",
+    "output": "echo '[auth.ldap] enabled = true config_file = /etc/grafana/ldap.toml' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana session timeout",
+    "output": "echo '[auth] login_maximum_inactive_lifetime_days = 7' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana SMTP for email alerts",
+    "output": "echo '[smtp] enabled = true host = smtp.example.com:587 user = admin password = pass from_address = grafana@example.com' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana unified alerting",
+    "output": "echo '[unified_alerting] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana reporting",
+    "output": "echo '[reporting] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana log level",
+    "output": "echo '[log] level = debug' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana database (MySQL)",
+    "output": "echo '[database] type = mysql host = mysql:3306 name = grafana user = grafana password = pass' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana database (PostgreSQL)",
+    "output": "echo '[database] type = postgres host = postgres:5432 name = grafana user = grafana password = pass' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana server root URL",
+    "output": "echo '[server] domain = grafana.example.com root_url = https://grafana.example.com/' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana HTTPS",
+    "output": "echo '[server] protocol = https cert_file = /etc/grafana/grafana.crt cert_key = /etc/grafana/grafana.key' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana plugin analytics",
+    "output": "echo '[analytics] reporting_enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana custom branding",
+    "output": "echo '[branding] login_title = My Company' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana explore mode",
+    "output": "echo '[explore] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Install Grafana with specific version in Docker",
+    "output": "docker run -d --name grafana -p 3000:3000 grafana/grafana:10.4.0"
+  },
+  {
+    "instruction": "Install Grafana plugins in Docker via env",
+    "output": "docker run -d --name grafana -p 3000:3000 -e GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel grafana/grafana"
+  }
+]

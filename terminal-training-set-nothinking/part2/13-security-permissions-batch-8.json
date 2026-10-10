@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Run Lynis hardening index scan",
+    "output": "lynis audit system --quick"
+  },
+  {
+    "instruction": "Show Lynis hardening details",
+    "output": "lynis show details"
+  },
+  {
+    "instruction": "Update rkhunter properties and run check",
+    "output": "rkhunter --propupd && rkhunter --check --skip-keypress"
+  },
+  {
+    "instruction": "Run chkrootkit in quiet mode",
+    "output": "chkrootkit -q"
+  },
+  {
+    "instruction": "Scan only /etc with ClamAV recursively",
+    "output": "clamscan -r /etc --log=clamav-report.log"
+  },
+  {
+    "instruction": "Update ClamAV virus definitions",
+    "output": "freshclam --stdout"
+  },
+  {
+    "instruction": "Parse and enforce an AppArmor profile",
+    "output": "apparmor_parser -r /etc/apparmor.d/usr.bin.nginx"
+  },
+  {
+    "instruction": "List AppArmor processes with profiles",
+    "output": "aa-status --enabled && ps auxZ | grep -v '^unconfined' | head -10"
+  },
+  {
+    "instruction": "Generate SELinux policy from audit log",
+    "output": "audit2allow -a -M mylocalpolicy && semodule -i mylocalpolicy.pp"
+  },
+  {
+    "instruction": "Check SELinux denial details from audit log",
+    "output": "ausearch -m avc --start today | audit2why"
+  },
+  {
+    "instruction": "Create SELinux file context mapping",
+    "output": "semanage fcontext -a -t httpd_sys_content_t '/srv/web(/.*)?' && restorecon -Rv /srv/web"
+  },
+  {
+    "instruction": "Set SELinux boolean persistently",
+    "output": "setsebool -P httpd_can_network_connect on"
+  },
+  {
+    "instruction": "Install and configure fail2ban for Apache",
+    "output": "cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local && sed -i 's/^"
+  },
+  {
+    "instruction": "Block an IP address with iptables and log it",
+    "output": "iptables -A INPUT -s 10.0.0.99 -j LOG --log-prefix 'BLOCKED ' && iptables -A INPUT -s 10.0.0.99 -j DROP"
+  },
+  {
+    "instruction": "Set default umask to restrictive value",
+    "output": "echo 'umask 027' >> /etc/profile && source /etc/profile"
+  },
+  {
+    "instruction": "Check current umask value",
+    "output": "umask -S"
+  },
+  {
+    "instruction": "Set sticky bit on a shared directory",
+    "output": "chmod +t /shared && ls -ld /shared"
+  },
+  {
+    "instruction": "Remove write permission from group and others",
+    "output": "chmod go-w /path/to/protected/file"
+  },
+  {
+    "instruction": "Set SUID bit on a binary",
+    "output": "chmod u+s /usr/bin/program && ls -l /usr/bin/program"
+  },
+  {
+    "instruction": "Remove SUID bit from all files in a directory",
+    "output": "chmod -R u-s /path/to/dir"
+  },
+  {
+    "instruction": "Change file owner and group recursively",
+    "output": "chown -R www-data:www-data /var/www/html"
+  },
+  {
+    "instruction": "List ACLs for a file",
+    "output": "getfacl /path/to/file"
+  },
+  {
+    "instruction": "Grant read ACL to a specific user",
+    "output": "setfacl -m u:john:r /path/to/file"
+  },
+  {
+    "instruction": "Remove a specific user ACL entry",
+    "output": "setfacl -x u:john /path/to/file"
+  },
+  {
+    "instruction": "Grant default ACL for a directory",
+    "output": "setfacl -d -m u:john:rwx /shared/dir"
+  },
+  {
+    "instruction": "Copy ACLs from one file to another",
+    "output": "getfacl /source/file | setfacl --set-file=- /dest/file"
+  }
+]

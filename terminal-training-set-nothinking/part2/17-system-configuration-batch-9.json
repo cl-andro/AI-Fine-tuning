@@ -1,0 +1,23 @@
+[
+  {"instruction": "Configure PAM to use SHA512 password hashing", "output": "sed -i 's/pam_unix.so.*/pam_unix.so sha512 shadow/' /etc/pam.d/common-password"},
+  {"instruction": "Configure PAM to remember last 5 passwords", "output": "echo 'password required pam_pwhistory.so remember=5' >> /etc/pam.d/common-password"},
+  {"instruction": "Set PAM password minimum length to 14 characters", "output": "echo 'password requisite pam_pwquality.so retry=3 minlen=14' >> /etc/pam.d/common-password"},
+  {"instruction": "Configure PAM to lock account after 3 failed SSH logins", "output": "echo -e 'auth required pam_tally2.so deny=3 unlock_time=600 onerr=succeed\\naccount required pam_tally2.so' >> /etc/pam.d/sshd"},
+  {"instruction": "Configure the nsswitch.conf to check systemd for hosts", "output": "echo 'hosts: files mymachines resolve myhostname' > /etc/nsswitch.conf"},
+  {"instruction": "Set nsswitch to use LDAP for user/group lookups", "output": "echo -e 'passwd: files ldap\\ngroup: files ldap\\nshadow: files ldap' > /etc/nsswitch.conf"},
+  {"instruction": "Set system-wide PATH variable in /etc/environment", "output": "echo 'PATH=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"' > /etc/environment"},
+  {"instruction": "Set system-wide proxy variables in /etc/environment", "output": "echo -e 'http_proxy=\"http://proxy.example.com:8080\"\\nhttps_proxy=\"http://proxy.example.com:8080\"' > /etc/environment"},
+  {"instruction": "Set default umask for all users via profile.d", "output": "echo 'umask 027' > /etc/profile.d/umask.sh && chmod +x /etc/profile.d/umask.sh"},
+  {"instruction": "Set TMOUT for automatic logout of idle users", "output": "echo 'export TMOUT=900' > /etc/profile.d/timeout.sh && chmod +x /etc/profile.d/timeout.sh"},
+  {"instruction": "Set system-wide history settings in bash.bashrc", "output": "echo -e 'HISTTIMEFORMAT=\"%F %T \"\\nHISTSIZE=10000\\nHISTFILESIZE=20000' >> /etc/bash.bashrc"},
+  {"instruction": "Populate /etc/skel with default config files for new users", "output": "echo -e 'alias ll=\"ls -la\"\\nexport EDITOR=vim\\numask 022' > /etc/skel/.bashrc"},
+  {"instruction": "Set hard and soft limits for a user in limits.conf", "output": "echo -e 'john soft nofile 4096\\njohn hard nofile 16384\\njohn soft nproc 1024\\njohn hard nproc 2048' >> /etc/security/limits.conf"},
+  {"instruction": "Set limits for a group in limits.d directory", "output": "echo -e '@developers soft nofile 8192\\n@developers hard nofile 32768' > /etc/security/limits.d/developers.conf"},
+  {"instruction": "Set core dump limits for all users", "output": "echo -e '* soft core 0\\n* hard core 0' > /etc/security/limits.d/core-disable.conf"},
+  {"instruction": "Check current ulimit values running process", "output": "cat /proc/$(pgrep -u root | head -1)/limits 2>/dev/null || echo 'Process not found'"},
+  {"instruction": "Set ulimit for the current shell session", "output": "ulimit -n 65536 && ulimit -u 4096"},
+  {"instruction": "Create /etc/nologin to prevent non-root logins", "output": "echo 'System is down for maintenance. Please try again later.' > /etc/nologin"},
+  {"instruction": "Set the pre-login message in /etc/issue", "output": "echo -e 'Debian GNU/Linux 12 \\\\n \\\\l\\n\\nAuthorized use only.' > /etc/issue"},
+  {"instruction": "Set the SSH banner message in /etc/issue.net", "output": "echo 'Authorized access only. All activity is monitored.' > /etc/issue.net"},
+  {"instruction": "Set the post-login message of the day", "output": "echo 'Welcome to $(hostname -f). All commands are logged.' > /etc/motd"}
+]

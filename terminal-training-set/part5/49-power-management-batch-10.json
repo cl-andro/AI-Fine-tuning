@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show available system power states via sysfs",
+    "output": "<think>\nThe goal is to show available system power states via sysfs.\nBest tool here is cat — cat operations.\n</think>\ncat /sys/power/state"
+  },
+  {
+    "instruction": "Suspend to RAM (S3) via sysfs",
+    "output": "<think>\nNeed to suspend to RAM (S3) via sysfs.\nLet me break this down.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho mem | sudo tee /sys/power/state"
+  },
+  {
+    "instruction": "Suspend to disk (hibernate S4) via sysfs",
+    "output": "<think>\nNeed to suspend to disk (hibernate S4) via sysfs.\nLet me reason through this.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\necho disk | sudo tee /sys/power/state"
+  },
+  {
+    "instruction": "Standby (S1) sleep via sysfs",
+    "output": "<think>\nThe task requires us to standby (S1) sleep via sysfs.\nLet me think about the best approach.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho standby | sudo tee /sys/power/state"
+  },
+  {
+    "instruction": "Show available mem sleep modes (deep vs s2idle)",
+    "output": "<think>\nNeed to show available mem sleep modes (deep vs s2idle).\nLet me think about the best approach.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/power/mem_sleep"
+  },
+  {
+    "instruction": "Force deep sleep mode for S3 via sysfs",
+    "output": "<think>\nSo the request is to force deep sleep mode for S3 via sysfs.\nLet me think about the best approach.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho deep | sudo tee /sys/power/mem_sleep"
+  },
+  {
+    "instruction": "Force s2idle mode for suspend via sysfs",
+    "output": "<think>\nThe task requires us to force s2idle mode for suspend via sysfs.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho s2idle | sudo tee /sys/power/mem_sleep"
+  },
+  {
+    "instruction": "Set the system wakeup alarm in seconds from now",
+    "output": "<think>\nSo we need to set the system wakeup alarm in seconds from now.\nLet me think about the best approach.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho +300 | sudo tee /sys/class/rtc/rtc0/wakealarm"
+  },
+  {
+    "instruction": "Clear the wakealarm for the system RTC",
+    "output": "<think>\nWe should clear the wakealarm for the system RTC.\nLet me break this down.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 0 | sudo tee /sys/class/rtc/rtc0/wakealarm"
+  },
+  {
+    "instruction": "Read the currently set wakealarm value",
+    "output": "<think>\nSo we need to read the currently set wakealarm value.\nFor this, cat is the right tool — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /sys/class/rtc/rtc0/wakealarm"
+  },
+  {
+    "instruction": "Read the RTC time in Unix epoch format",
+    "output": "<think>\nAlright, we need to read the RTC time in Unix epoch format.\nFor this, cat is the right tool — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /sys/class/rtc/rtc0/since_epoch"
+  },
+  {
+    "instruction": "Get the maximum wakealarm offset supported by the RTC",
+    "output": "<think>\nThe goal is to get the maximum wakealarm offset supported by the RTC.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/class/rtc/rtc0/max_user_freq"
+  },
+  {
+    "instruction": "Suspend the system for 60 seconds using rtcwake",
+    "output": "<think>\nWe should suspend the system for 60 seconds using rtcwake.\nLet me break this down.\nI'll reach for rtcwake here because rtcwake operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo rtcwake -m mem -s 60"
+  },
+  {
+    "instruction": "Suspend to disk for 120 seconds using rtcwake",
+    "output": "<think>\nWe should suspend to disk for 120 seconds using rtcwake.\nrtcwake is what we need — rtcwake operations.\nThe -s flag handles summarize or silent mode. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo rtcwake -m disk -s 120"
+  },
+  {
+    "instruction": "Standby for 30 seconds using rtcwake",
+    "output": "<think>\nThis is asking us to standby for 30 seconds using rtcwake.\nLet me think through this step by step.\nrtcwake is what we need — rtcwake operations.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo rtcwake -m standby -s 30"
+  },
+  {
+    "instruction": "Wake the system at a specific date and time via rtcwake",
+    "output": "<think>\nAlright, we need to wake the system at a specific date and time via rtcwake.\nI'll reach for rtcwake here because rtcwake operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo rtcwake -m no -t $(date +%s -d 'tomorrow 08:00')"
+  },
+  {
+    "instruction": "Set rtcwake to wake at a specific absolute time",
+    "output": "<think>\nAlright, we need to set rtcwake to wake at a specific absolute time.\nLet me reason through this.\nThis calls for rtcwake. Rtcwake operations.\nI'm using -t for sort by modification time — needed for this specific use case.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo rtcwake -m mem -t 1734567890"
+  },
+  {
+    "instruction": "Use rtcwake in no-suspend mode to just set the alarm",
+    "output": "<think>\nSo we need to use rtcwake in no-suspend mode to just set the alarm.\nThe tool for this job is rtcwake — rtcwake operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo rtcwake -m no -s 300"
+  },
+  {
+    "instruction": "Suspend to RAM and disable the alarm after wake",
+    "output": "<think>\nThe user wants to suspend to RAM and disable the alarm after wake.\nThe tool for this job is rtcwake — rtcwake operations.\nI've added -s to summarize or silent mode — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo rtcwake -m mem -s 60 && sudo rtcwake -m disable"
+  },
+  {
+    "instruction": "Disable any previously set RTC wake alarm",
+    "output": "<think>\nSo we need to disable any previously set RTC wake alarm.\nFor this, rtcwake is the right tool — rtcwake operations.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo rtcwake -m disable"
+  },
+  {
+    "instruction": "Show rtcwake version and capabilities",
+    "output": "<think>\nWe're being asked to show rtcwake version and capabilities.\nrtcwake is what we need — rtcwake operations.\nWhy --version? Show version info. needed for this specific use case.\n</think>\nrtcwake --version"
+  },
+  {
+    "instruction": "Show rtcwake help information",
+    "output": "<think>\nAlright, we need to show rtcwake help information.\nLet me think about the best approach.\nThis calls for rtcwake. Rtcwake operations.\nThe --help flag handles show usage information. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nrtcwake --help"
+  },
+  {
+    "instruction": "Check the current RTC time via hwclock",
+    "output": "<think>\nSo the request is to check the current RTC time via hwclock.\nI'd use hwclock for this — hwclock operations.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo hwclock --show"
+  },
+  {
+    "instruction": "Check if an RTC wakeup device is available",
+    "output": "<think>\nNeed to check if an RTC wakeup device is available.\nLet me think about the best approach.\nBest tool here is ls — ls operations.\n</think>\nls /sys/class/rtc/"
+  },
+  {
+    "instruction": "Read RTC device name from sysfs",
+    "output": "<think>\nWe should read RTC device name from sysfs.\nHere's how I'd approach this.\nI'd use cat for this — cat operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /sys/class/rtc/rtc0/name"
+  }
+]

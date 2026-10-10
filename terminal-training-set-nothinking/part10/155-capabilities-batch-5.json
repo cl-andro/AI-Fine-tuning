@@ -1,0 +1,23 @@
+[
+  {"instruction": "Show effective capability mask as hex", "output": "cat /proc/self/status | grep CapEff"},
+  {"instruction": "Show inheritable capability mask", "output": "cat /proc/self/status | grep CapInh"},
+  {"instruction": "Show permitted capability mask", "output": "cat /proc/self/status | grep CapPrm"},
+  {"instruction": "Show bounding capability set", "output": "cat /proc/self/status | grep CapBnd"},
+  {"instruction": "Show ambient capability set", "output": "cat /proc/self/status | grep CapAmb"},
+  {"instruction": "Decode all capability masks for PID", "output": "for cap in CapEff CapInh CapPrm CapBnd CapAmb; do mask=$(grep $cap /proc/1234/status | awk '{print $2}'); echo \"$cap ($mask) -> $(capsh --decode=$mask)\"; done"},
+  {"instruction": "Write simple script to decode process caps", "output": "cat > /usr/local/bin/decode-caps.sh << 'EOF'\n#!/bin/bash\nPID=${1:-$$}\nfor cap in CapEff CapInh CapPrm CapBnd CapAmb; do\n    if mask=$(grep $cap /proc/$PID/status 2>/dev/null | awk '{print $2}'); then\n        echo \"$cap ($mask): $(capsh --decode=$mask 2>/dev/null || echo 'unknown')\"\n    fi\ndone\nEOF\nchmod +x /usr/local/bin/decode-caps.sh"},
+  {"instruction": "Run decode-caps on PID", "output": "bash /usr/local/bin/decode-caps.sh 1"},
+  {"instruction": "Check if specific cap is in effective set", "output": "grep CapEff /proc/self/status | awk '{print $2}' | xargs -I{} sh -c 'capsh --has-cap=cap_net_raw -- -c \"echo yes\" 2>/dev/null || echo no'"},
+  {"instruction": "Compare bounding set to permitted set", "output": "capsh --print 2>&1 | grep -E 'Bounding|Permitted'"},
+  {"instruction": "View capability difference between users", "output": "su -c 'capsh --print | grep Current' nobody; capsh --print | grep Current"},
+  {"instruction": "Permissions for running file with capability", "output": "chmod u+s /bin/ping && getcap /bin/ping"},
+  {"instruction": "Setcap on script file (shebang)", "output": "setcap cap_net_raw+ep /usr/local/bin/myscript.py"},
+  {"instruction": "Remove suid and use capabilities instead", "output": "chmod u-s /bin/ping; setcap cap_net_raw+ep /bin/ping"},
+  {"instruction": "Check cap vs suid precedence", "output": "getcap /bin/ping; ls -la /bin/ping"},
+  {"instruction": "Compare binary with and without cap set", "output": "getcap /bin/ping && echo 'has cap'; cp /bin/ping /tmp/ping.nocap && setcap -r /tmp/ping.nocap && getcap /tmp/ping.nocap"},
+  {"instruction": "Grant cap to binary inside container", "output": "docker run --rm -v /bin/ping:/ping ubuntu setcap cap_net_raw+ep /ping"},
+  {"instruction": "Restrict setcap to user namespace", "output": "unshare -Ur setcap cap_net_raw+ep /bin/ping"},
+  {"instruction": "Test if user namespace has CAP_SETUID", "output": "unshare -Ur capsh --has-cap=cap_setuid$$"},
+  {"instruction": "Capabilities inside flatpak sandbox", "output": "flatpak run --command=bash org.gnome.Epiphany -c 'capsh --print'"},
+  {"instruction": "Snap confinement and capabilities", "output": "snap run --shell firefox && capsh --print"}
+]

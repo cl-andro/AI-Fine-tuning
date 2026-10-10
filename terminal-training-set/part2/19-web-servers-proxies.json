@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Start Nginx and enable on boot",
+    "output": "<think>\nAlright, we need to start Nginx and enable on boot.\nFirst, let me understand what's needed here.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl enable --now nginx"
+  },
+  {
+    "instruction": "Reload Nginx configuration gracefully",
+    "output": "<think>\nThe task requires us to reload Nginx configuration gracefully.\nnginx is what we need — web server and reverse proxy.\nAfter running, I'll confirm the result looks right.\n</think>\nnginx -s reload"
+  },
+  {
+    "instruction": "Test Nginx configuration syntax",
+    "output": "<think>\nWe're being asked to test Nginx configuration syntax.\nLet me think about the best approach.\nI'd use nginx for this — web server and reverse proxy.\nLet me verify afterward that it worked correctly.\n</think>\nnginx -t"
+  },
+  {
+    "instruction": "Check Nginx status and version",
+    "output": "<think>\nNeed to check Nginx status and version.\nThe tool for this job is nginx — web server and reverse proxy.\nI'm using -v for verbose output — this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\nnginx -v && systemctl status nginx --no-pager | head -5"
+  },
+  {
+    "instruction": "Create a simple Nginx virtual host",
+    "output": "<think>\nAlright, we need to create a simple Nginx virtual host.\nI'd use cat for this — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /etc/nginx/sites-available/myapp << 'EOF'\nserver {\n    listen 80;\n    server_name myapp.example.com;\n    root /var/www/myapp;\n    index index.html;\n}\nEOF && ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/ && nginx -s reload"
+  },
+  {
+    "instruction": "Enable HTTPS with a self-signed cert in Nginx",
+    "output": "<think>\nWe're being asked to enable HTTPS with a self-signed cert in Nginx.\nopenssl is what we need — cryptographic operations and certificate management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nQuick verification after execution to be safe.\n</think>\nopenssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj '/CN=localhost' && sed -i 's/listen 80;/listen 443 ssl;/' /etc/nginx/sites-available/default && sed -i '/server_name/a\\tssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;\\n\\tssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;' /etc/nginx/sites-available/default && nginx -s reload"
+  },
+  {
+    "instruction": "Set up Nginx as a reverse proxy",
+    "output": "<think>\nNeed to set up Nginx as a reverse proxy.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncat > /etc/nginx/sites-available/proxy << 'EOF'\nserver {\n    listen 80;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n    }\n}\nEOF && ln -sf /etc/nginx/sites-available/proxy /etc/nginx/sites-enabled/ && nginx -s reload"
+  },
+  {
+    "instruction": "Enable gzip compression in Nginx",
+    "output": "<think>\nSo the request is to enable gzip compression in Nginx.\nThe tool for this job is sed — text stream editing.\nI'm using -i for interactive, prompt before action — needed for this specific use case.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsed -i '/gzip on;/s/^#//' /etc/nginx/nginx.conf && nginx -s reload"
+  },
+  {
+    "instruction": "Rate limit requests in Nginx",
+    "output": "<think>\nThe task requires us to rate limit requests in Nginx.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nWhy -s? Summarize or silent mode. standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'limit_req_zone $binary_remote_addr zone=mylimit:10m rate=10r/s;\\nserver {\\n    location /login {\\n        limit_req zone=mylimit;\\n        proxy_pass http://backend;\\n    }\\n}' > /etc/nginx/sites-available/ratelimited && nginx -s reload"
+  },
+  {
+    "instruction": "Start Apache and enable on boot",
+    "output": "<think>\nWe're being asked to start Apache and enable on boot.\nLet me consider what makes sense here.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl enable --now apache2"
+  },
+  {
+    "instruction": "Reload Apache configuration",
+    "output": "<think>\nThe goal is to reload Apache configuration.\napache2ctl is what we need — apache2ctl operations.\n</think>\napache2ctl graceful"
+  },
+  {
+    "instruction": "Test Apache config syntax",
+    "output": "<think>\nWe're being asked to test Apache config syntax.\napache2ctl is what we need — apache2ctl operations.\n</think>\napache2ctl configtest"
+  },
+  {
+    "instruction": "Enable an Apache module (rewrite)",
+    "output": "<think>\nThe user wants to enable an Apache module (rewrite).\nLet me think through this step by step.\nThe tool for this job is a2enmod — a2enmod operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\na2enmod rewrite && systemctl restart apache2"
+  },
+  {
+    "instruction": "Create an Apache virtual host",
+    "output": "<think>\nThe user wants to create an Apache virtual host.\nI'll reach for cat here because cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/apache2/sites-available/myapp.conf << 'EOF'\n<VirtualHost *:80>\n    ServerName myapp.example.com\n    DocumentRoot /var/www/myapp\n</VirtualHost>\nEOF && a2ensite myapp.conf && systemctl reload apache2"
+  },
+  {
+    "instruction": "Start HAProxy",
+    "output": "<think>\nThe task requires us to start HAProxy.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl enable --now haproxy"
+  },
+  {
+    "instruction": "Check HAProxy configuration syntax",
+    "output": "<think>\nAlright, we need to check HAProxy configuration syntax.\nI'll reach for haproxy here because TCP/HTTP load balancer configuration.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nThe -f flag handles force, suppress errors. Important because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\nhaproxy -c -f /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "Create a basic HAProxy load balancer config",
+    "output": "<think>\nThe task requires us to create a basic HAProxy load balancer config.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat > /etc/haproxy/haproxy.cfg << 'EOF'\nglobal\n    log /dev/log local0\n    maxconn 4096\ndefaults\n    log global\n    mode http\n    option httplog\n    timeout connect 5000ms\n    timeout client 50000ms\n    timeout server 50000ms\nfrontend http-in\n    bind *:80\n    default_backend webservers\nbackend webservers\n    balance roundrobin\n    server web1 192.168.1.10:80 check\n    server web2 192.168.1.11:80 check\nEOF && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Start Varnish cache",
+    "output": "<think>\nWe're being asked to start Varnish cache.\nsystemctl is what we need — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl enable --now varnish"
+  },
+  {
+    "instruction": "Check Varnish configuration",
+    "output": "<think>\nWe should check Varnish configuration.\nI'd use varnishadm for this — Varnish cache administration.\nI've added -S to sort by size — important to get the expected behavior.\nI'm using -T for print filesystem type in df — this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nvarnishadm -S /etc/varnish/secret -T 127.0.0.1:6082 ping"
+  },
+  {
+    "instruction": "Check Varnish cache hit rate",
+    "output": "<think>\nSo the request is to check Varnish cache hit rate.\nThis calls for varnishstat. Varnishstat operations.\nThe -f flag means force, suppress errors, which matters here because this controls how the output is formatted.\n</think>\nvarnishstat -f MAIN.cache_hit -f MAIN.cache_miss -1"
+  },
+  {
+    "instruction": "Purge Varnish cache for a URL",
+    "output": "<think>\nSo the request is to purge Varnish cache for a URL.\nLet me reason through this.\nThe tool for this job is varnishadm — Varnish cache administration.\nWhy -S? Sort by size. important to get the expected behavior.\nI'm using -T for print filesystem type in df — important to get the expected behavior.\nQuick verification after execution to be safe.\n</think>\nvarnishadm -S /etc/varnish/secret -T 127.0.0.1:6082 ban req.url ~ '^/'"
+  },
+  {
+    "instruction": "Set up Caddy web server",
+    "output": "<think>\nWe should set up Caddy web server.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y caddy && systemctl start caddy"
+  },
+  {
+    "instruction": "Enable Let's Encrypt auto SSL with Certbot",
+    "output": "<think>\nThe goal is to enable Let's Encrypt auto SSL with Certbot.\ncertbot is what we need — Let's Encrypt certificate management.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nAfter running, I'll confirm the result looks right.\n</think>\ncertbot --nginx -d example.com -d www.example.com"
+  },
+  {
+    "instruction": "Check Certbot certificate expiration",
+    "output": "<think>\nThe task requires us to check Certbot certificate expiration.\nFirst, let me understand what's needed here.\nI'll reach for certbot here because Let's Encrypt certificate management.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ncertbot certificates"
+  },
+  {
+    "instruction": "Renew all Let's Encrypt certificates",
+    "output": "<think>\nThe goal is to renew all Let's Encrypt certificates.\ncertbot is what we need — Let's Encrypt certificate management.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nAfter running, I'll confirm the result looks right.\n</think>\ncertbot renew"
+  },
+  {
+    "instruction": "Test HTTP/2 support in curl",
+    "output": "<think>\nSo we need to test HTTP/2 support in curl.\nLet me break this down.\nI'll reach for curl here because making HTTP requests.\nThe -i flag means interactive, prompt before action, which matters here because needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -sI --http2 https://example.com | grep -i 'HTTP/2'"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Snapshot Prometheus TSDB via API",
+    "output": "<think>\nSo we need to snapshot Prometheus TSDB via API.\nLet me break this down.\nThis calls for curl. Making HTTP requests.\nCheck the output for errors before proceeding to the next step.\n</think>\ncurl -X POST 'http://localhost:9090/api/v1/admin/tsdb/snapshot'"
+  },
+  {
+    "instruction": "Delete series via Prometheus admin API",
+    "output": "<think>\nThe user wants to delete series via Prometheus admin API.\nLet me break this down.\nThe tool for this job is curl — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST -g 'http://localhost:9090/api/v1/admin/tsdb/delete_series?match[]=up{job=\"node\"}'"
+  },
+  {
+    "instruction": "Clean tombstones in Prometheus TSDB",
+    "output": "<think>\nWe're being asked to clean tombstones in Prometheus TSDB.\nLet me think through this step by step.\nI'll reach for curl here because making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X POST 'http://localhost:9090/api/v1/admin/tsdb/clean_tombstones'"
+  },
+  {
+    "instruction": "Start Prometheus with retention size",
+    "output": "<think>\nSo the request is to start Prometheus with retention size.\nLet me break this down.\nI'll reach for prometheus here because prometheus operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nprometheus --config.file prometheus.yml --storage.tsdb.retention.size 100GB"
+  },
+  {
+    "instruction": "Start Prometheus with WAL compression",
+    "output": "<think>\nSo we need to start Prometheus with WAL compression.\nprometheus is what we need — prometheus operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nprometheus --config.file prometheus.yml --storage.tsdb.wal-compression"
+  },
+  {
+    "instruction": "Start Prometheus without TSDB locks",
+    "output": "<think>\nSo we need to start Prometheus without TSDB locks.\nLet me break this down.\nFor this, prometheus is the right tool — prometheus operations.\n</think>\nprometheus --config.file prometheus.yml --storage.tsdb.no-lockfile"
+  },
+  {
+    "instruction": "Start Prometheus with max block duration",
+    "output": "<think>\nSo we need to start Prometheus with max block duration.\nprometheus is what we need — prometheus operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nprometheus --config.file prometheus.yml --storage.tsdb.max-block-duration 2h"
+  },
+  {
+    "instruction": "Start Prometheus with min block duration",
+    "output": "<think>\nNeed to start Prometheus with min block duration.\nLet me think about the best approach.\nI'd use prometheus for this — prometheus operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nprometheus --config.file prometheus.yml --storage.tsdb.min-block-duration 30m"
+  },
+  {
+    "instruction": "Install node_exporter as a service",
+    "output": "<think>\nNeed to install node_exporter as a service.\ncurl is what we need — making HTTP requests.\nWhy -L? Follow symlinks when processing. without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -L https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz | tar xz && sudo ./node_exporter-1.8.2.linux-amd64/node_exporter"
+  },
+  {
+    "instruction": "Run node_exporter with disabled collectors",
+    "output": "<think>\nWe should run node_exporter with disabled collectors.\nFirst, let me understand what's needed here.\nThe tool for this job is node_exporter — node_exporter operations.\nI'll check the output to make sure it did what we expected.\n</think>\nnode_exporter --no-collector.mdadm --no-collector.zfs"
+  },
+  {
+    "instruction": "Run node_exporter with specific collectors",
+    "output": "<think>\nAlright, we need to run node_exporter with specific collectors.\nLet me think about the best approach.\nnode_exporter is what we need — node_exporter operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nnode_exporter --collector.diskstats --collector.filesystem --collector.cpu --collector.network --collector.meminfo"
+  },
+  {
+    "instruction": "Run node_exporter with custom listen port",
+    "output": "<think>\nWe should run node_exporter with custom listen port.\nLet me think through this step by step.\nFor this, node_exporter is the right tool — node_exporter operations.\n</think>\nnode_exporter --web.listen-address :9101"
+  },
+  {
+    "instruction": "Run node_exporter with custom path prefix",
+    "output": "<think>\nAlright, we need to run node_exporter with custom path prefix.\nI'd use node_exporter for this — node_exporter operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nnode_exporter --web.telemetry-path /node-metrics"
+  },
+  {
+    "instruction": "Run node_exporter with rootfs for disk stats",
+    "output": "<think>\nThe task requires us to run node_exporter with rootfs for disk stats.\nLet me reason through this.\nFor this, node_exporter is the right tool — node_exporter operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nnode_exporter --path.rootfs /host"
+  },
+  {
+    "instruction": "Run node_exporter with systemd collector",
+    "output": "<think>\nThis is asking us to run node_exporter with systemd collector.\nLet me reason through this.\nI'll reach for node_exporter here because node_exporter operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nnode_exporter --collector.systemd --collector.systemd.unit-whitelist=\"(docker|sshd|nginx)\\.service\""
+  },
+  {
+    "instruction": "Run node_exporter with textfile collector",
+    "output": "<think>\nWe're being asked to run node_exporter with textfile collector.\nLet me think through this step by step.\nnode_exporter is what we need — node_exporter operations.\nLet me verify afterward that it worked correctly.\n</think>\nnode_exporter --collector.textfile.directory /var/lib/node_exporter/textfile"
+  },
+  {
+    "instruction": "Install blackbox_exporter",
+    "output": "<think>\nWe're being asked to install blackbox_exporter.\nLet me think about the best approach.\nI'd use curl for this — making HTTP requests.\nThe -L flag means follow symlinks when processing, which matters here because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -L https://github.com/prometheus/blackbox_exporter/releases/download/v0.25.0/blackbox_exporter-0.25.0.linux-amd64.tar.gz | tar xz && ./blackbox_exporter-0.25.0.linux-amd64/blackbox_exporter"
+  },
+  {
+    "instruction": "Scrape blackbox_exporter for HTTP probe",
+    "output": "<think>\nThe goal is to scrape blackbox_exporter for HTTP probe.\nLet me think through this step by step.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'scrape_configs: - job_name: http_probe params: module: [http_2xx] target: [\"https://example.com\"] static_configs: - targets: - blackbox:9115' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure blackbox ICMP probe module",
+    "output": "<think>\nThe goal is to configure blackbox ICMP probe module.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'modules: icmp: prober: icmp timeout: 5s icmp: preferred_ip_protocol: ip4' > blackbox.yml"
+  },
+  {
+    "instruction": "Configure blackbox TCP probe module",
+    "output": "<think>\nThe task requires us to configure blackbox TCP probe module.\nLet me reason through this.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'modules: tcp_connect: prober: tcp timeout: 5s tcp: query_response: []' >> blackbox.yml"
+  },
+  {
+    "instruction": "Install Prometheus in Docker",
+    "output": "<think>\nSo we need to install Prometheus in Docker.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker run -d --name prometheus -p 9090:9090 -v $PWD/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus"
+  },
+  {
+    "instruction": "Install node_exporter in Docker",
+    "output": "<think>\nWe're being asked to install node_exporter in Docker.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name node_exporter -p 9100:9100 -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro prom/node-exporter --path.rootfs /host"
+  },
+  {
+    "instruction": "Install Alertmanager in Docker",
+    "output": "<think>\nThe goal is to install Alertmanager in Docker.\nLet me reason through this.\nI'd use docker for this — container management.\nWhy -d? Directory listing, don't descend. needed for this specific use case.\nWhy -p? Create parent directories as needed. without it the command won't work as we need.\nI'm using -v for verbose output — this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name alertmanager -p 9093:9093 -v $PWD/alertmanager.yml:/etc/alertmanager/alertmanager.yml prom/alertmanager"
+  },
+  {
+    "instruction": "Upgrade Prometheus by replacing binary",
+    "output": "<think>\nAlright, we need to upgrade Prometheus by replacing binary.\nFirst, let me understand what's needed here.\ncurl is what we need — making HTTP requests.\nI'm using -L for follow symlinks when processing — needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -L https://github.com/prometheus/prometheus/releases/download/v2.54.0/prometheus-2.54.0.linux-amd64.tar.gz | tar xz && sudo cp prometheus-2.54.0.linux-amd64/prometheus /usr/local/bin/ && sudo systemctl restart prometheus"
+  },
+  {
+    "instruction": "Start Prometheus in debug logging mode",
+    "output": "<think>\nSo the request is to start Prometheus in debug logging mode.\nFirst, let me understand what's needed here.\nThe tool for this job is prometheus — prometheus operations.\nI'll check the output to make sure it did what we expected.\n</think>\nprometheus --config.file prometheus.yml --log.level debug"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Reindex data from one index to another",
+    "output": "curl -X POST 'localhost:9200/_reindex?pretty' -H 'Content-Type: application/json' -d '{\"source\": {\"index\": \"old_index\"}, \"dest\": {\"index\": \"new_index\"}}'"
+  },
+  {
+    "instruction": "Reindex with a query filter",
+    "output": "curl -X POST 'localhost:9200/_reindex?pretty' -H 'Content-Type: application/json' -d '{\"source\": {\"index\": \"old_index\", \"query\": {\"match\": {\"status\": \"active\"}}}, \"dest\": {\"index\": \"new_index\"}}'"
+  },
+  {
+    "instruction": "Bulk index documents (NDJSON format)",
+    "output": "curl -X POST 'localhost:9200/_bulk' -H 'Content-Type: application/x-ndjson' -d $'{\"index\": {\"_index\": \"myindex\", \"_id\": \"1\"}}\\n{\"title\": \"Doc 1\", \"body\": \"Content 1\"}\\n{\"index\": {\"_index\": \"myindex\", \"_id\": \"2\"}}\\n{\"title\": \"Doc 2\", \"body\": \"Content 2\"}\\n'"
+  },
+  {
+    "instruction": "Bulk update and delete operations",
+    "output": "curl -X POST 'localhost:9200/_bulk' -H 'Content-Type: application/x-ndjson' -d $'{\"update\": {\"_index\": \"myindex\", \"_id\": \"1\"}}\\n{\"doc\": {\"title\": \"Updated Doc\"}}\\n{\"delete\": {\"_index\": \"myindex\", \"_id\": \"2\"}}\\n'"
+  },
+  {
+    "instruction": "Index a single document with auto ID",
+    "output": "curl -X POST 'localhost:9200/myindex/_doc' -H 'Content-Type: application/json' -d '{\"title\": \"Hello World\", \"content\": \"This is my first document\"}'"
+  },
+  {
+    "instruction": "Index a document with specific ID",
+    "output": "curl -X PUT 'localhost:9200/myindex/_doc/1' -H 'Content-Type: application/json' -d '{\"title\": \"Hello World\", \"content\": \"This is my first document\"}'"
+  },
+  {
+    "instruction": "Get a document by ID",
+    "output": "curl -X GET 'localhost:9200/myindex/_doc/1?pretty'"
+  },
+  {
+    "instruction": "Check if a document exists (HEAD)",
+    "output": "curl -X HEAD 'localhost:9200/myindex/_doc/1'"
+  },
+  {
+    "instruction": "Update a document with partial data",
+    "output": "curl -X POST 'localhost:9200/myindex/_update/1' -H 'Content-Type: application/json' -d '{\"doc\": {\"title\": \"Updated Title\"}}'"
+  },
+  {
+    "instruction": "Delete a document by ID",
+    "output": "curl -X DELETE 'localhost:9200/myindex/_doc/1'"
+  },
+  {
+    "instruction": "Add an alias to an index",
+    "output": "curl -X POST 'localhost:9200/_aliases' -H 'Content-Type: application/json' -d '{\"actions\": [{\"add\": {\"index\": \"myindex\", \"alias\": \"myalias\"}}]}'"
+  },
+  {
+    "instruction": "Remove an alias from an index",
+    "output": "curl -X POST 'localhost:9200/_aliases' -H 'Content-Type: application/json' -d '{\"actions\": [{\"remove\": {\"index\": \"myindex\", \"alias\": \"myalias\"}}]}'"
+  },
+  {
+    "instruction": "Swap alias for zero-downtime reindex",
+    "output": "curl -X POST 'localhost:9200/_aliases' -H 'Content-Type: application/json' -d '{\"actions\": [{\"remove\": {\"index\": \"old_index\", \"alias\": \"myalias\"}}, {\"add\": {\"index\": \"new_index\", \"alias\": \"myalias\"}}]}'"
+  },
+  {
+    "instruction": "Start a scroll search",
+    "output": "curl -X GET 'localhost:9200/myindex/_search?scroll=5m&pretty' -H 'Content-Type: application/json' -d '{\"size\": 100, \"query\": {\"match_all\": {}}}'"
+  },
+  {
+    "instruction": "Continue a scroll with scroll_id",
+    "output": "curl -X POST 'localhost:9200/_search/scroll?pretty' -H 'Content-Type: application/json' -d '{\"scroll\": \"5m\", \"scroll_id\": \"<scroll_id>\"}'"
+  },
+  {
+    "instruction": "Clear a scroll search context",
+    "output": "curl -X DELETE 'localhost:9200/_search/scroll' -H 'Content-Type: application/json' -d '{\"scroll_id\": \"<scroll_id>\"}'"
+  },
+  {
+    "instruction": "Create an index template for log indices",
+    "output": "curl -X PUT 'localhost:9200/_index_template/my_template' -H 'Content-Type: application/json' -d '{\"index_patterns\": [\"logs-*\"], \"template\": {\"settings\": {\"number_of_shards\": 2}, \"mappings\": {\"properties\": {\"@timestamp\": {\"type\": \"date\"}, \"message\": {\"type\": \"text\"}}}}}'"
+  },
+  {
+    "instruction": "Create a component template",
+    "output": "curl -X PUT 'localhost:9200/_component_template/settings_template' -H 'Content-Type: application/json' -d '{\"template\": {\"settings\": {\"number_of_shards\": 1, \"number_of_replicas\": 1}}}'"
+  },
+  {
+    "instruction": "Create an ingest pipeline",
+    "output": "curl -X PUT 'localhost:9200/_ingest/pipeline/my_pipeline' -H 'Content-Type: application/json' -d '{\"description\": \"Add timestamp\", \"processors\": [{\"set\": {\"field\": \"@timestamp\", \"value\": \"{{_ingest.timestamp}}\"}}]}'"
+  },
+  {
+    "instruction": "Simulate an ingest pipeline",
+    "output": "curl -X GET 'localhost:9200/_ingest/pipeline/my_pipeline/_simulate?pretty' -H 'Content-Type: application/json' -d '{\"docs\": [{\"_source\": {\"message\": \"Test log\"}}]}'"
+  },
+  {
+    "instruction": "Delete an ingest pipeline",
+    "output": "curl -X DELETE 'localhost:9200/_ingest/pipeline/my_pipeline'"
+  },
+  {
+    "instruction": "Create an ILM policy with rollover and delete",
+    "output": "curl -X PUT 'localhost:9200/_ilm/policy/my_policy' -H 'Content-Type: application/json' -d '{\"policy\": {\"phases\": {\"hot\": {\"actions\": {\"rollover\": {\"max_size\": \"50gb\", \"max_age\": \"30d\"}}}, \"delete\": {\"min_age\": \"90d\", \"actions\": {\"delete\": {}}}}}}'"
+  }
+]

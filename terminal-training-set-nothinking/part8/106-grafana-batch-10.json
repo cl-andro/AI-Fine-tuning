@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Start Grafana service",
+    "output": "sudo systemctl start grafana-server"
+  },
+  {
+    "instruction": "Enable Grafana on boot",
+    "output": "sudo systemctl enable grafana-server"
+  },
+  {
+    "instruction": "Check Grafana service status",
+    "output": "sudo systemctl status grafana-server"
+  },
+  {
+    "instruction": "Check Grafana logs",
+    "output": "sudo journalctl -u grafana-server -f"
+  },
+  {
+    "instruction": "Install Grafana Enterprise",
+    "output": "sudo apt-get install -y grafana-enterprise"
+  },
+  {
+    "instruction": "Generate Grafana API token via ENV for provisioning",
+    "output": "export GRAFANA_TOKEN=glsa_abc123 && curl -H \"Authorization: Bearer $GRAFANA_TOKEN\" http://localhost:3000/api/dashboards/uid/abc"
+  },
+  {
+    "instruction": "Use Grafana API with service account token",
+    "output": "curl -H \"Authorization: Bearer glsa_abc123\" http://localhost:3000/api/search"
+  },
+  {
+    "instruction": "Get Grafana datasource ID by UID via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/datasources/uid/prom-uid | jq '.id'"
+  },
+  {
+    "instruction": "Check if Grafana datasource exists via API",
+    "output": "curl -s -o /dev/null -w '%{http_code}' http://admin:admin@localhost:3000/api/datasources/name/prometheus"
+  },
+  {
+    "instruction": "Bulk create dashboards from directory via API",
+    "output": "for f in /dashboards/*.json; do curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d \"{\\\"dashboard\\\":$(cat $f),\\\"overwrite\\\":true}\"; done"
+  },
+  {
+    "instruction": "Delete expired Grafana snapshots via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/snapshots | jq -r '.[].key' | while read key; do curl -X DELETE \"http://admin:admin@localhost:3000/api/snapshots/$key\"; done"
+  },
+  {
+    "instruction": "Get Grafana dashboard list with UIDs and titles",
+    "output": "curl -s http://admin:admin@localhost:3000/api/search | jq -r '.[] | \"\\(.uid) \\(.title)\"'"
+  },
+  {
+    "instruction": "Clone a Grafana dashboard by UID",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc | jq '.dashboard + {\"title\": \"Clone of Dashboard\"}' | curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Export all Grafana dashboards",
+    "output": "curl -s http://admin:admin@localhost:3000/api/search?type=dash-db | jq -r '.[].uid' | while read uid; do curl -s http://admin:admin@localhost:3000/api/dashboards/uid/$uid | jq '.dashboard' > \"${uid}.json\"; done"
+  },
+  {
+    "instruction": "Import all dashboards from directory",
+    "output": "for f in *.json; do uid=$(jq -r '.uid' $f); curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d \"{\\\"dashboard\\\":$(cat $f),\\\"overwrite\\\":true,\\\"message\\\":\\\"imported\\\"}\"; done"
+  },
+  {
+    "instruction": "Get Grafana org creation date via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/orgs/1 | jq '.createdAt'"
+  },
+  {
+    "instruction": "Restrict Grafana dashboard access by IP",
+    "output": "echo '[auth.proxy] enabled = true header_name = X-EMAIL header_property = email' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana dashboard version history",
+    "output": "echo '[versions] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana session with Redis",
+    "output": "echo '[sessions] provider = redis provider_config = addr=redis:6379,pool_size=100' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana feature toggles",
+    "output": "echo '[feature_toggles] enable = transformations newVizTooltip' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana max dashboard import size",
+    "output": "echo '[server] enable_gzip = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana custom auth proxy header",
+    "output": "echo '[auth.proxy] enabled = true header_name = X-WEBAUTH-USER auto_sign_up = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana rate limiting",
+    "output": "echo '[rate_limiting] enabled = true rate = 50' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana oauth2 generic OIDC",
+    "output": "echo '[auth.generic_oauth] enabled = true client_id = oidc_client client_secret = secret scopes = openid,profile,email auth_url = https://idp.example.com/auth token_url = https://idp.example.com/token api_url = https://idp.example.com/userinfo' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana SAML authentication",
+    "output": "echo '[auth.saml] enabled = true idp_metadata_url = https://idp.example.com/metadata' >> /etc/grafana/grafana.ini"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an S3 bucket with Pulumi (Python)",
+    "output": "pulumi config set aws:region us-east-1 && cat > __main__.py << 'EOF' import pulumi_aws as aws; bucket = aws.s3.Bucket('my-bucket'); pulumi.export('bucket_name', bucket.id) EOF"
+  },
+  {
+    "instruction": "Deploy the S3 bucket Python program",
+    "output": "pulumi up -y"
+  },
+  {
+    "instruction": "Create a VPC with subnets in Pulumi",
+    "output": "echo 'from pulumi_aws import ec2; vpc = ec2.Vpc(\"main\", cidr_block=\"10.0.0.0/16\"); subnet = ec2.Subnet(\"public\", vpc_id=vpc.id, cidr_block=\"10.0.1.0/24\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an EC2 instance in Pulumi using AMI lookup",
+    "output": "echo 'import pulumi_aws as aws; ami = aws.ec2.get_ami(most_recent=True, filters=[{\"name\":\"name\",\"values\":[\"ubuntu-*22.04*\"]}]); instance = aws.ec2.Instance(\"web\", ami=ami.id, instance_type=\"t3.micro\")' > __main__.py"
+  },
+  {
+    "instruction": "Create a security group with ingress rules",
+    "output": "echo 'sg = aws.ec2.SecurityGroup(\"web\", ingress=[{\"protocol\":\"tcp\",\"from_port\":80,\"to_port\":80,\"cidr_blocks\":[\"0.0.0.0/0\"]}])' > sg.py"
+  },
+  {
+    "instruction": "Create an RDS instance with Pulumi",
+    "output": "echo 'db = aws.rds.Instance(\"main\", engine=\"postgres\", engine_version=\"16\", instance_class=\"db.t3.micro\", allocated_storage=20, db_name=\"myapp\", username=\"admin\", password=\"secret123\")' > __main__.py"
+  },
+  {
+    "instruction": "Create a Lambda function with Pulumi",
+    "output": "echo 'fn = aws.lambda_.Function(\"fn\", role=iam_role.arn, handler=\"index.handler\", runtime=\"python3.12\", filename=\"lambda.zip\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an ECS Fargate service with Pulumi",
+    "output": "echo 'cluster = aws.ecs.Cluster(\"main\"); task_def = aws.ecs.TaskDefinition(\"app\", family=\"app\", network_mode=\"awsvpc\", requires_compatibilities=[\"FARGATE\"], cpu=\"256\", memory=\"512\", container_definitions=json.dumps([{\"name\":\"app\",\"image\":\"nginx:latest\"}])); service = aws.ecs.Service(\"svc\", cluster=cluster.arn, task_definition=task_def.arn, desired_count=2, launch_type=\"FARGATE\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an EKS cluster with Pulumi",
+    "output": "echo 'cluster = aws.eks.Cluster(\"main\", role_arn=aws.iam.Role(\"eks\", assume_role_policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})).arn); aws.eks.NodeGroup(\"nodes\", cluster_name=cluster.name, node_role_arn=aws.iam.Role(\"node\", assume_role_policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})).arn, scaling_config={\"desired_size\":3,\"max_size\":10,\"min_size\":2})' > eks.py"
+  },
+  {
+    "instruction": "Create a Route53 DNS record with Pulumi",
+    "output": "echo 'record = aws.route53.Record(\"www\", zone_id=\"Z123456\", name=\"www.example.com\", type=\"A\", ttl=300, records=[\"203.0.113.1\"])' > __main__.py"
+  },
+  {
+    "instruction": "Export output values in Pulumi",
+    "output": "echo 'pulumi.export(\"instance_ip\", instance.public_ip); pulumi.export(\"bucket_arn\", bucket.arn)' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.interpolate for string formatting",
+    "output": "echo 'url = pulumi.Output.concat(\"https://\", lb.dns_name)' > __main__.py"
+  },
+  {
+    "instruction": "Use apply() to transform Pulumi outputs",
+    "output": "echo 'instance_id = instance.id.apply(lambda id: f\"ec2-{id}\")' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.Config to read configuration",
+    "output": "echo 'config = pulumi.Config(); env = config.require(\"environment\"); region = config.get(\"region\", \"us-east-1\")' > config_example.py"
+  },
+  {
+    "instruction": "Use pulumi.Config.require_secret for sensitive config",
+    "output": "echo 'config = pulumi.Config(); db_pass = config.require_secret(\"db_password\")' > config_example.py"
+  },
+  {
+    "instruction": "Use StackReference to get another stack's outputs",
+    "output": "echo 'infra = pulumi.StackReference(\"infra/prod\"); vpc_id = infra.require_output(\"vpc_id\")' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for depends_on",
+    "output": "echo 'instance = aws.ec2.Instance(\"web\", opts=pulumi.ResourceOptions(depends_on=[sg]))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions with protect",
+    "output": "echo 'db = aws.rds.Instance(\"main\", opts=pulumi.ResourceOptions(protect=True))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions import to adopt resources",
+    "output": "echo 'bucket = aws.s3.Bucket(\"existing\", opts=pulumi.ResourceOptions(import=\"existing-bucket-name\"))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for deleteBeforeReplace",
+    "output": "echo 'instance = aws.ec2.Instance(\"web\", opts=pulumi.ResourceOptions(delete_before_replace=True))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for aliases (rename migration)",
+    "output": "echo 'service = aws.ecs.Service(\"app-svc\", opts=pulumi.ResourceOptions(aliases=[\"old-alias-urn\"]))' > __main__.py"
+  },
+  {
+    "instruction": "Create a Pulumi component resource class",
+    "output": "echo 'class WebServer(pulumi.ComponentResource): def __init__(self, name, opts=None): super().__init__(\"my:component:WebServer\", name, None, opts)' > components.py"
+  },
+  {
+    "instruction": "Add resources inside a component resource",
+    "output": "echo 'class WebServer(pulumi.ComponentResource): def __init__(self, name, opts=None): super().__init__(\"my:component:WebServer\", name, None, opts); self.instance = aws.ec2.Instance(f\"{name}-ec2\", opts=pulumi.ResourceOptions(parent=self))' > components.py"
+  },
+  {
+    "instruction": "Export outputs from a component",
+    "output": "echo 'class WebServer(pulumi.ComponentResource): def __init__(self): super().__init__(\"my:ws\", \"web\", None); self.register_outputs({\"ip\": self.instance.public_ip})' > components.py"
+  },
+  {
+    "instruction": "Create a Pulumi dynamic provider for custom resources",
+    "output": "echo 'from pulumi.dynamic import Resource, ResourceProvider; class MyProvider(ResourceProvider): def create(self, props): return {\"id\": \"1\", \"outs\": {\"result\": props[\"input\"]}}; class MyResource(Resource): def __init__(self, name, input, opts=None): super().__init__(MyProvider(), name, {\"input\": input}, opts)' > dynamic.py"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Restart wg0 iteration 22",
+    "output": "wg-quick down wg0 && wg-quick up wg0"
+  },
+  {
+    "instruction": "Add peer with allowed-ips",
+    "output": "wg set wg0 peer abc123def456... allowed-ips 10.0.0.2/32"
+  },
+  {
+    "instruction": "Add peer with endpoint and keepalive",
+    "output": "wg set wg0 peer abc123def456... allowed-ips 10.0.0.2/32 endpoint 203.0.113.5:51820 persistent-keepalive 25"
+  },
+  {
+    "instruction": "Remove a peer",
+    "output": "wg set wg0 peer abc123def456... remove"
+  },
+  {
+    "instruction": "Set private key",
+    "output": "wg set wg0 private-key /etc/wireguard/privatekey"
+  },
+  {
+    "instruction": "Set listen port",
+    "output": "wg set wg0 listen-port 51820"
+  },
+  {
+    "instruction": "Set MTU",
+    "output": "wg set wg0 mtu 1420"
+  },
+  {
+    "instruction": "Set fwmark",
+    "output": "wg set wg0 fwmark 0xca6c"
+  },
+  {
+    "instruction": "Set routing table",
+    "output": "wg set wg0 table 51820"
+  },
+  {
+    "instruction": "Create server config",
+    "output": "echo -e \"[Interface]\\nPrivateKey = $(cat privatekey)\\nAddress = 10.0.0.1/24\\nListenPort = 51820\\nSaveConfig = true\" > /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add peer to config",
+    "output": "echo -e \"\\n[Peer]\\nPublicKey = $(cat peer1.pub)\\nAllowedIPs = 10.0.0.2/32\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add PostUp iptables rule",
+    "output": "echo \"PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Add PreDown iptables rule",
+    "output": "echo \"PreDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\" >> /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Create client config",
+    "output": "echo -e \"[Interface]\\nPrivateKey = $(cat client-priv)\\nAddress = 10.0.0.2/32\\nDNS = 1.1.1.1\\n\\n[Peer]\\nPublicKey = $(cat server-pub)\\nEndpoint = server.example.com:51820\\nAllowedIPs = 0.0.0.0/0\\nPersistentKeepalive = 25\" > /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Check transfer stats",
+    "output": "wg show wg0 transfer"
+  },
+  {
+    "instruction": "Check latest handshakes",
+    "output": "wg show wg0 latest-handshakes"
+  },
+  {
+    "instruction": "Check allowed-ips for peers",
+    "output": "wg show wg0 allowed-ips"
+  },
+  {
+    "instruction": "Enable IP forwarding",
+    "output": "sysctl -w net.ipv4.ip_forward=1"
+  },
+  {
+    "instruction": "Make IP forwarding permanent",
+    "output": "echo \"net.ipv4.ip_forward=1\" >> /etc/sysctl.d/99-wireguard.conf"
+  },
+  {
+    "instruction": "Save running config",
+    "output": "wg-quick save wg0"
+  },
+  {
+    "instruction": "Dump all in JSON",
+    "output": "wg show all dump"
+  },
+  {
+    "instruction": "Generate QR code for client config",
+    "output": "qrencode -t ansiutf8 < /etc/wireguard/wg0.conf"
+  },
+  {
+    "instruction": "Show peers with public keys",
+    "output": "wg show wg0 peers"
+  },
+  {
+    "instruction": "Strip private key from show",
+    "output": "wg show wg0 --no-private"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to install BIND9 on Debian",
+    "output": "<think>\nAlright, we need to install BIND9 on Debian.\nLet me consider what makes sense here.\napt is what we need — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\napt install bind9 bind9utils bind9-doc"
+  },
+  {
+    "instruction": "How to start BIND9 service",
+    "output": "<think>\nThis is asking us to start BIND9 service.\nBest tool here is systemctl — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl start named"
+  },
+  {
+    "instruction": "How to enable BIND9 at boot",
+    "output": "<think>\nNeed to enable BIND9 at boot.\nLet me reason through this.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl enable named"
+  },
+  {
+    "instruction": "How to check BIND9 service status",
+    "output": "<think>\nNeed to check BIND9 service status.\nLet me think about the best approach.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status named"
+  },
+  {
+    "instruction": "How to view BIND version",
+    "output": "<think>\nSo we need to view BIND version.\nLet me think about the best approach.\nBest tool here is named — BIND9 DNS server control.\nThe -v flag handles verbose output. Important because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nnamed -v"
+  },
+  {
+    "instruction": "How to validate all zones on server",
+    "output": "<think>\nThis is asking us to validate all zones on server.\nLet me break this down.\nFor this, named-checkconf is the right tool — named-checkconf operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nnamed-checkconf -z"
+  },
+  {
+    "instruction": "How to add ACLL in named.conf",
+    "output": "<think>\nThis is asking us to add ACLL in named.conf.\nLet me reason through this.\n</think>\necho 'acl trusted { 10.0.0.0/8; 192.168.0.0/16; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to use ACL in allow-query",
+    "output": "<think>\nThe goal is to use ACL in allow-query.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'options { allow-query { trusted; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set dnssec-enable in named.conf",
+    "output": "<think>\nThe user wants to set dnssec-enable in named.conf.\n</think>\necho 'dnssec-enable yes;' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set DNSSEC lookaside validation",
+    "output": "<think>\nThis is asking us to set DNSSEC lookaside validation.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'dnssec-lookaside auto;' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to sign a zone offline with dnssec-signzone",
+    "output": "<think>\nSo the request is to sign a zone offline with dnssec-signzone.\nThe tool for this job is dnssec-signzone — dnssec-signzone operations.\nThe -c flag handles count or create. Important because this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\ndnssec-signzone -A -3 $(head -c 16 /dev/urandom | xxd -p) -o example.com /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to generate a NSEC3 salt",
+    "output": "<think>\nThe task requires us to generate a NSEC3 salt.\nHere's how I'd approach this.\nBest tool here is dnssec-keygen — dnssec-keygen operations.\nThe -f flag means force, suppress errors, which matters here because needed for this specific use case.\nThe -a flag means AND operator in find, which matters here because without it the command won't work as we need.\nI'm using -b for brief output — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ndnssec-keygen -f KSK -a RSASHA256 -b 2048 -n ZONE example.com"
+  },
+  {
+    "instruction": "How to set up a DNSSEC policy",
+    "output": "<think>\nThe task requires us to set up a DNSSEC policy.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'dnssec-policy \"default\" { keys { ksk key-directory lifetime unlimited algorithm rsasha256 size 2048; zsk key-directory lifetime 90d algorithm rsasha256 size 1024; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to perform an AXFR transfer",
+    "output": "<think>\nThe goal is to perform an AXFR transfer.\nHere's how I'd approach this.\nI'll reach for dig here because DNS querying.\nQuick verification after execution to be safe.\n</think>\ndig @ns1.example.com example.com AXFR"
+  },
+  {
+    "instruction": "How to set up catalog zones",
+    "output": "<think>\nThe task requires us to set up catalog zones.\nQuick verification after execution to be safe.\n</think>\necho 'zone \"catalog.example.com\" { type master; file \"/etc/bind/db.catalog\"; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to disable recursion on authoritative server",
+    "output": "<think>\nWe should disable recursion on authoritative server.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'options { recursion no; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to run named in debug mode",
+    "output": "<think>\nThe task requires us to run named in debug mode.\nLet me break this down.\nFor this, named is the right tool — BIND9 DNS server control.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nnamed -g -d 1"
+  },
+  {
+    "instruction": "How to set up log rotation for BIND",
+    "output": "<think>\nNeed to set up log rotation for BIND.\nLet me reason through this.\nQuick verification after execution to be safe.\n</think>\necho 'logging { channel detail_log { file \"/var/log/named/detail.log\" versions 3 size 20m; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to report BIND DNSSEC key status",
+    "output": "<think>\nThe goal is to report BIND DNSSEC key status.\nLet me think through this step by step.\nBest tool here is dnssec-settime — dnssec-settime operations.\nThe -p flag handles create parent directories as needed. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ndnssec-settime -p all Kexample.com.+008+12345.key"
+  },
+  {
+    "instruction": "How to view DNSSEC keys in a directory",
+    "output": "<think>\nThis is asking us to view DNSSEC keys in a directory.\nLet me break this down.\nI'll reach for ls here because ls operations.\nI've added -la to detailed listing including hidden files — important to get the expected behavior.\n</think>\nls -la Kexample.com*"
+  },
+  {
+    "instruction": "How to remove a DNSSEC key",
+    "output": "<think>\nNeed to remove a DNSSEC key.\nLet me think about the best approach.\nFor this, rm is the right tool — file deletion.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nrm Kexample.com.+008+12345.key Kexample.com.+008+12345.private"
+  },
+  {
+    "instruction": "How to add multiple A records for load balancing",
+    "output": "<think>\nSo the request is to add multiple A records for load balancing.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'www IN A 192.168.1.11' >> /etc/bind/db.example.com && echo 'www IN A 192.168.1.12' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to set up a redirect MX record",
+    "output": "<think>\nThe user wants to set up a redirect MX record.\nLet me consider what makes sense here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '@ IN MX 10 mail.example.com.' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to add a static NAPTR record",
+    "output": "<think>\nThe goal is to add a static NAPTR record.\nQuick verification after execution to be safe.\n</think>\necho '@ IN NAPTR 100 10 \"u\" \"E2U+sip\" \"!^.*$!sip:info@example.com!i\" .' >> /etc/bind/db.example.com"
+  }
+]

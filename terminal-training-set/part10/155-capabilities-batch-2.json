@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Check capabilities on system binaries",
+    "output": "<think>\nAlright, we need to check capabilities on system binaries.\nLet me think through this step by step.\nI'll reach for getcap here because getcap operations.\nI'll check the output to make sure it did what we expected.\n</think>\ngetcap /usr/bin/* /bin/* 2>/dev/null"
+  },
+  {
+    "instruction": "Find files with setuid AND capabilities",
+    "output": "<think>\nSo we need to find files with setuid AND capabilities.\ngetcap is what we need — getcap operations.\nI'm using -r for recursive operation (descend into subdirectories) — standard practice for this kind of operation.\nThe -v flag means verbose output, which matters here because needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ngetcap -r / 2>/dev/null | grep -v '=' | head -20"
+  },
+  {
+    "instruction": "Find all files with capabilities set",
+    "output": "<think>\nSo the request is to find all files with capabilities set.\nLet me consider what makes sense here.\nThis calls for getcap. Getcap operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because standard practice for this kind of operation.\nThe -v flag handles verbose output. Important because without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\ngetcap -r / 2>/dev/null | grep -v 'no capabilities'"
+  },
+  {
+    "instruction": "Check capabilities of a running process by name",
+    "output": "<think>\nThe goal is to check capabilities of a running process by name.\nLet me consider what makes sense here.\nI'd use getpcaps for this — getpcaps operations.\n</think>\ngetpcaps $(pgrep -x sshd)"
+  },
+  {
+    "instruction": "Display all process capabilities decoded",
+    "output": "<think>\nNeed to display all process capabilities decoded.\nFor this, grep is the right tool — pattern searching.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ngrep Cap /proc/1/status | while read l; do echo \"$l -> $(capsh --decode=$(echo $l|awk '{print $2}'))\"; done"
+  },
+  {
+    "instruction": "Drop all capabilities for a command",
+    "output": "<think>\nThe goal is to drop all capabilities for a command.\nLet me reason through this.\nFor this, capsh is the right tool — capsh operations.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncapsh --drop=all -- -c \"echo 'running with no caps'\""
+  },
+  {
+    "instruction": "Keep permitted set across exec",
+    "output": "<think>\nWe're being asked to keep permitted set across exec.\nThis calls for capsh. Capsh operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ncapsh --keep=1 -- -c \"/usr/bin/getpcaps $$\""
+  },
+  {
+    "instruction": "Ambient capabilities for non-root user",
+    "output": "<think>\nThis is asking us to ambient capabilities for non-root user.\nHere's how I'd approach this.\nBest tool here is capsh — capsh operations.\nI'm using -c for count or create — standard practice for this kind of operation.\nQuick verification after execution to be safe.\n</think>\ncapsh --keep=1 --user=nobody --addamb=cap_net_raw -- -c \"capsh --print\""
+  },
+  {
+    "instruction": "Set ambient cap for ping from non-root",
+    "output": "<think>\nThe user wants to set ambient cap for ping from non-root.\nFirst, let me understand what's needed here.\nThis calls for capsh. Capsh operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\ncapsh --keep=1 --user=nobody --addamb=cap_net_raw -- -c \"/bin/ping -c 1 127.0.0.1\""
+  },
+  {
+    "instruction": "Drop capability from bounding set",
+    "output": "<think>\nSo we need to drop capability from bounding set.\ncapsh is what we need — capsh operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ncapsh --drop=cap_sys_admin -- -c \"capsh --print | grep Bounding\""
+  },
+  {
+    "instruction": "Lock the bounding set (cannot regain)",
+    "output": "<think>\nWe're being asked to lock the bounding set (cannot regain).\nLet me reason through this.\ncapsh is what we need — capsh operations.\nWhy -c? Count or create. without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ncapsh --drop=cap_sys_module --locked -- -c \"echo locked\""
+  },
+  {
+    "instruction": "Check cap_last_cap for kernel limit",
+    "output": "<think>\nThe task requires us to check cap_last_cap for kernel limit.\nThe tool for this job is cat — cat operations.\n</think>\ncat /proc/sys/kernel/cap_last_cap"
+  },
+  {
+    "instruction": "Decode specific capability bits",
+    "output": "<think>\nNeed to decode specific capability bits.\nI'll reach for python3 here because Python interpreter for scripting and automation.\nThe -c flag handles count or create. Important because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npython3 -c \"caps=open('/proc/self/status').read().split('\\n'); print(\\\"\\n\\\".join([l for l in caps if 'Cap' in l]))\""
+  },
+  {
+    "instruction": "Set file cap and verify with getcap",
+    "output": "<think>\nWe should set file cap and verify with getcap.\nI'll reach for setcap here because setcap operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\nsetcap cap_net_raw+ep /bin/ping && getcap /bin/ping"
+  },
+  {
+    "instruction": "Remove capability from file silently",
+    "output": "<think>\nWe should remove capability from file silently.\nThe tool for this job is setcap — setcap operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsetcap -r /bin/ping 2>/dev/null"
+  },
+  {
+    "instruction": "Set capability with no effective bit",
+    "output": "<think>\nThe task requires us to set capability with no effective bit.\nThe tool for this job is setcap — setcap operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nsetcap cap_net_raw+p /bin/myapp"
+  },
+  {
+    "instruction": "Test if current process has CAP_NET_ADMIN",
+    "output": "<think>\nWe're being asked to test if current process has CAP_NET_ADMIN.\nFirst, let me understand what's needed here.\ncapsh is what we need — capsh operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncapsh --has-cap=cap_net_admin && echo 'yes' || echo 'no'"
+  },
+  {
+    "instruction": "Current process effective capability check",
+    "output": "<think>\nThe user wants to current process effective capability check.\nHere's how I'd approach this.\nI'd use capsh for this — capsh operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncapsh --has-cap=cap_net_raw$$"
+  },
+  {
+    "instruction": "Display human readable process capabilities",
+    "output": "<think>\nWe're being asked to display human readable process capabilities.\nLet me break this down.\nBest tool here is capsh — capsh operations.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\ncapsh --print 2>&1 | grep -E 'Current|Bounding|Secure|Ambient'"
+  },
+  {
+    "instruction": "Compare two capability sets",
+    "output": "<think>\nSo we need to compare two capability sets.\nHere's how I'd approach this.\nThe tool for this job is capsh — capsh operations.\nWhy -c? Count or create. important to get the expected behavior.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\ncapsh --drop=cap_chown -- -c \"capsh --print | grep Current\""
+  },
+  {
+    "instruction": "Set capability with specific file flags",
+    "output": "<think>\nThe user wants to set capability with specific file flags.\nThis calls for setcap. Setcap operations.\n</think>\nsetcap cap_net_raw=ep /bin/ping"
+  },
+  {
+    "instruction": "View capabilities in hex",
+    "output": "<think>\nSo we need to view capabilities in hex.\nHere's how I'd approach this.\nThe tool for this job is cat — cat operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /proc/self/status | grep CapEff"
+  }
+]

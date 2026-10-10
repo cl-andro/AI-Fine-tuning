@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | head -50",
+    "output": "global\n  log /dev/log local0\n  log /dev/log local1 notice\n  chroot /var/lib/haproxy\n  stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners\n  stats timeout 30s\n  user haproxy\n  group haproxy\n  daemon\n  maxconn 10000\n  tune.ssl.default-dh-param 2048\n  ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256\n  ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11\n\ndefaults\n  log global\n  mode http\n  option httplog\n  option dontlognull\n  timeout connect 5000\n  timeout client 50000\n  timeout server 50000\n  timeout http-request 10000\n  errorfile 400 /etc/haproxy/errors/400.http\n  errorfile 403 /etc/haproxy/errors/403.http\n  errorfile 404 /etc/haproxy/errors/404.http\n  errorfile 500 /etc/haproxy/errors/500.http\n  errorfile 502 /etc/haproxy/errors/502.http\n  errorfile 503 /etc/haproxy/errors/503.http\n  errorfile 504 /etc/haproxy/errors/504.http\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 20 'frontend web'",
+    "output": "frontend web\n  bind *:80\n  bind *:443 ssl crt /etc/haproxy/ssl/combined.pem\n  http-request set-header X-Forwarded-Proto https if { ssl_fc }\n  redirect scheme https if !{ ssl_fc }\n  acl is_api path_beg /api/\n  acl is_static path_beg /static/\n  acl is_admin path_beg /admin\n  acl whitelisted src 10.0.0.0/8 172.16.0.0/12\n  http-request deny if !whitelisted is_admin\n  use_backend api_servers if is_api\n  use_backend static_servers if is_static\n  default_backend web_servers\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 15 'backend web_servers'",
+    "output": "backend web_servers\n  balance roundrobin\n  option httpchk GET /health HTTP/1.1\\r\\nHost:\\ health.example.com\n  http-check expect status 200\n  default-server inter 5s fall 3 rise 2\n  server srv1 10.0.0.10:8080 check weight 100\n  server srv2 10.0.0.11:8080 check weight 100\n  server srv3 10.0.0.12:8080 check backup\n  stick-table type ip size 100k expire 30m\n  stick on src\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 20 'backend api_servers'",
+    "output": "backend api_servers\n  balance leastconn\n  option httpchk GET /api/health HTTP/1.1\\r\\nHost:\\ api.example.com\n  http-check expect status 200\n  default-server inter 2s fall 2 rise 2\n  server api1 10.0.0.20:8080 check weight 50\n  server api2 10.0.0.21:8080 check weight 50\n  http-request rate-limit buckets 100k rate 1000\n  http-request track-sc0 src table web_servers\n"
+  },
+  {
+    "instruction": "openssl req -new -x509 -nodes -days 365 -keyout /etc/haproxy/ssl/server.key -out /etc/haproxy/ssl/server.crt -subj '/CN=example.com'",
+    "output": "openssl req -new -x509 -nodes -days 365 -keyout /etc/haproxy/ssl/server.key -out /etc/haproxy/ssl/server.crt -subj '/CN=example.com'"
+  },
+  {
+    "instruction": "cat /etc/haproxy/ssl/server.crt /etc/haproxy/ssl/server.key > /etc/haproxy/ssl/combined.pem",
+    "output": "cat /etc/haproxy/ssl/server.crt /etc/haproxy/ssl/server.key > /etc/haproxy/ssl/combined.pem"
+  },
+  {
+    "instruction": "chmod 600 /etc/haproxy/ssl/*.pem && chown -R haproxy:haproxy /etc/haproxy/ssl/",
+    "output": "chmod 600 /etc/haproxy/ssl/*.pem && chown -R haproxy:haproxy /etc/haproxy/ssl/"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 10 'listen stats'",
+    "output": "listen stats\n  bind *:8080\n  stats enable\n  stats uri /haproxy-stats\n  stats realm HAProxy\\ Statistics\n  stats auth admin:password123\n  stats admin if LOCALHOST\n  stats refresh 5s\n"
+  },
+  {
+    "instruction": "curl -I http://localhost/",
+    "output": "HTTP/1.1 200 OK\nserver: haproxy\ncontent-length: 1234\ncontent-type: text/html\n"
+  },
+  {
+    "instruction": "curl -I -k https://localhost/",
+    "output": "HTTP/1.1 200 OK\nserver: haproxy\nstrict-transport-security: max-age=31536000\ncontent-length: 1234\ncontent-type: text/html\n"
+  },
+  {
+    "instruction": "ab -n 1000 -c 100 http://localhost/ 2>&1 | tail -10",
+    "output": "Concurrency Level:      100\nTime taken for tests:   2.345 seconds\nComplete requests:      1000\nFailed requests:        0\nRequests per second:    426.45 [#/sec] (mean)\nTime per request:       234.456 [ms] (mean)\nTransfer rate:          543.21 [Kbytes/sec] received\n"
+  },
+  {
+    "instruction": "iptables -L -n | grep 443",
+    "output": "ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:443\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 5 'backend canary'",
+    "output": "backend canary\n  balance roundrobin\n  server stable 10.0.0.10:8080 check weight 90\n  server canary-v1 10.0.0.100:8080 check weight 10\n  http-request set-header X-Canary canary if { rand(100) lt 10 }\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 8 'listen tcp_lb'",
+    "output": "listen tcp_lb\n  bind *:3306\n  mode tcp\n  option tcplog\n  balance leastconn\n  server db1 10.0.0.30:3306 check inter 2s fall 3 rise 2\n  server db2 10.0.0.31:3306 check inter 2s fall 3 rise 2 backup\n  stick-table type ip size 100k expire 30m\n  stick on src\n"
+  },
+  {
+    "instruction": "haproxy -c -f /etc/haproxy/haproxy.cfg 2>&1",
+    "output": "Configuration file is valid\n[NOTICE] (1) : haproxy version is 2.8.5-1~deb12u1"
+  },
+  {
+    "instruction": "systemctl restart haproxy && systemctl status haproxy --no-pager -l | head -5",
+    "output": "\u25cf haproxy.service - HAProxy Load Balancer\n     Loaded: loaded (/lib/systemd/system/haproxy.service; enabled; preset: enabled)\n     Active: active (running) since Sat 2026-07-25 10:10:00 UTC; 1s ago\n    Process: 5678 ExecReload=/usr/sbin/haproxy -c -f $CONFIG (code=exited, status=0/SUCCESS)\n   Main PID: 7890 (haproxy)\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 15 'frontend https_frontend'",
+    "output": "frontend https_frontend\n  bind *:443 ssl crt /etc/haproxy/ssl/example.com.pem alpn h2,http/1.1\n  http-response set-header Strict-Transport-Security max-age=31536000;\n  redirect scheme https if !{ ssl_fc }\n  acl has_custom_header req.hdr(X-Custom) -m found\n  http-request set-var(txn.backend) req.hdr(X-Backend)\n  use_backend %[var(txn.backend)] if has_custom_header\n  default_backend web_servers\n  option forwardfor\n  http-request add-header X-Forwarded-Proto https\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 12 'backend bluegreen'",
+    "output": "backend bluegreen\n  balance roundrobin\n  option httpchk GET /health\n  http-check expect status 200\n  cookie SRV insert indirect nocache\n  default-server inter 3s fall 3 rise 2\n  server blue 10.0.0.50:8080 check weight 100 cookie blue\n  server green 10.0.0.51:8080 check weight 0 cookie green\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 15 'backend ssl_backend'",
+    "output": "backend ssl_backend\n  balance roundrobin\n  option ssl-hello-chk\n  server ssl1 10.0.0.60:8443 check ssl verify none\n  server ssl2 10.0.0.61:8443 check ssl verify none\n  server ssl3 10.0.0.62:8443 check ssl verify required ca-file /etc/haproxy/ssl/ca.pem\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 8 'backend rate_limited'",
+    "output": "backend rate_limited\n  balance roundrobin\n  stick-table type ip size 1m expire 10s store http_req_rate(5s)\n  acl abuse src_http_req_rate(rate_limited) ge 100\n  http-request deny if abuse\n  server srv1 10.0.0.10:8080 check\n  server srv2 10.0.0.11:8080 check\n"
+  },
+  {
+    "instruction": "echo 'show backend' | socat /var/run/haproxy/admin.sock stdio",
+    "output": "backend_http\nbackend_api\nbackend_ssl_backend\nbackend_rate_limited\nbackend_bluegreen\nbackend_canary\nbackend_tcp_lb\n"
+  }
+]

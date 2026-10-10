@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows where total is above the average",
+    "output": "SELECT * FROM orders WHERE total > (SELECT AVG(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRow with the highest total",
+    "output": "SELECT * FROM orders WHERE total = (SELECT MAX(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRow with the lowest total",
+    "output": "SELECT * FROM orders WHERE total = (SELECT MIN(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows where id is in a subquery from orders",
+    "output": "SELECT * FROM orders WHERE id IN (SELECT DISTINCT id FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows where id is not in the set of values 1 and 2",
+    "output": "SELECT * FROM orders WHERE id NOT IN (1, 2);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nUse EXISTS to find rows where a id appears more than once",
+    "output": "SELECT * FROM orders t WHERE EXISTS (SELECT 1 FROM orders t2 WHERE t2.id = t.id GROUP BY t2.id HAVING COUNT(*) > 1);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery in SELECT returning count per id",
+    "output": "SELECT t.*, (SELECT COUNT(*) FROM orders t2 WHERE t2.id = t.id) AS cnt FROM orders t;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows where total > the maximum of customer_id plus 100 in subquery",
+    "output": "SELECT * FROM orders WHERE total > ((SELECT MAX(total) FROM orders) + 100);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSecond highest total using subquery",
+    "output": "SELECT MAX(total) FROM orders WHERE total < (SELECT MAX(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nCorrelated subquery: rows whose total is above the avg of their id",
+    "output": "SELECT * FROM orders t WHERE total > (SELECT AVG(total) FROM orders t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nColumns where total is greater than average in their group",
+    "output": "SELECT * FROM orders t WHERE total >= (SELECT AVG(total) FROM orders t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nDerived table returning count per id",
+    "output": "SELECT sub.id, sub.cnt FROM (SELECT id, COUNT(*) AS cnt FROM orders GROUP BY id) sub WHERE sub.cnt > 2;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery filtering rows with ANY operator",
+    "output": "SELECT * FROM orders WHERE total = ANY (SELECT total FROM orders WHERE total < 50);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery filtering rows with ALL operator",
+    "output": "SELECT * FROM orders WHERE total > ALL (SELECT AVG(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nScalar subquery for a single value",
+    "output": "SELECT (SELECT AVG(total) FROM orders) AS avg_val;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows matching set from a subquery using IN",
+    "output": "SELECT * FROM orders WHERE id IN (SELECT id FROM orders GROUP BY id HAVING COUNT(*) >= 3);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nLargest value strictly less than the global maximum",
+    "output": "SELECT total FROM orders ORDER BY total DESC LIMIT 1 OFFSET 1;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nNested subquery: top values per group based on derived ranking",
+    "output": "SELECT t.* FROM orders t WHERE t.total = (SELECT MAX(total) FROM orders t2 WHERE t2.id = t.id);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nRows where customer_id not present in a sub table",
+    "output": "SELECT * FROM orders WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE total > 90);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery used to compare against the overall total",
+    "output": "SELECT id, SUM(total) AS part FROM orders GROUP BY id HAVING SUM(total) > (SELECT AVG(total) FROM orders);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nUse a subquery to compute rolling reference count",
+    "output": "SELECT t.id, (SELECT COUNT(*) FROM orders t2 WHERE t2.id <= t.id) AS running FROM orders t;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nEXISTS correlated check to its own table values",
+    "output": "SELECT * FROM orders t WHERE EXISTS (SELECT 1 FROM orders t2 WHERE t2.id = t.id AND t2.total > t.total);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery comparing to the minimum plus a constant",
+    "output": "SELECT * FROM orders WHERE total > (SELECT MIN(total) FROM orders) + 10;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery returning rows for a top slice group",
+    "output": "SELECT * FROM orders WHERE total IN (SELECT total FROM orders ORDER BY total DESC LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nSubquery joining a derived aggregate",
+    "output": "SELECT t.* FROM orders t JOIN (SELECT id, MAX(total) mx FROM orders GROUP BY id) a ON a.id = t.id AND a.mx = t.total;"
+  }
+]

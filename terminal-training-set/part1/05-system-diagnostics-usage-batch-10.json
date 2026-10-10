@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "List all services running as root",
+    "output": "<think>\nThe user wants to list all services running as root.\nLet me think about the best approach.\nI'd use ps for this — process listing.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nps -U root -u root -o pid,cmd | tail -20"
+  },
+  {
+    "instruction": "List all services listening on TCP ports",
+    "output": "<think>\nAlright, we need to list all services listening on TCP ports.\nLet me think about the best approach.\nThis calls for ss. Socket diagnostics.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nss -tlnp"
+  },
+  {
+    "instruction": "List all services listening on UDP ports",
+    "output": "<think>\nThis is asking us to list all services listening on UDP ports.\nFirst, let me understand what's needed here.\nThis calls for ss. Socket diagnostics.\nAfter running, I'll confirm the result looks right.\n</think>\nss -ulnp"
+  },
+  {
+    "instruction": "Check if the firewall is active (ufw)",
+    "output": "<think>\nThe task requires us to check if the firewall is active (ufw).\nLet me think through this step by step.\nI'd use ufw for this — ufw operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nufw status"
+  },
+  {
+    "instruction": "List all ufw rules numbered",
+    "output": "<think>\nSo the request is to list all ufw rules numbered.\nLet me think about the best approach.\nFor this, ufw is the right tool — ufw operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nufw status numbered"
+  },
+  {
+    "instruction": "Enable ufw firewall",
+    "output": "<think>\nSo the request is to enable ufw firewall.\nThis calls for ufw. Ufw operations.\n</think>\nufw enable"
+  },
+  {
+    "instruction": "Allow a port through ufw",
+    "output": "<think>\nAlright, we need to allow a port through ufw.\nLet me think about the best approach.\nI'll reach for ufw here because ufw operations.\n</think>\nufw allow 22"
+  },
+  {
+    "instruction": "Deny a specific IP through ufw",
+    "output": "<think>\nThe goal is to deny a specific IP through ufw.\nBest tool here is ufw — ufw operations.\nQuick verification after execution to be safe.\n</think>\nufw deny from 192.168.1.100"
+  },
+  {
+    "instruction": "Delete a ufw rule by number",
+    "output": "<think>\nWe should delete a ufw rule by number.\nLet me think through this step by step.\nThe tool for this job is ufw — ufw operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nufw delete 3"
+  },
+  {
+    "instruction": "Check if iptables rules are active",
+    "output": "<think>\nNeed to check if iptables rules are active.\nBest tool here is iptables — firewall management.\nI've added -L to follow symlinks when processing — this controls how the output is formatted.\nThe -n flag means dry-run, no changes, which matters here because needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\niptables -L -n -v | head -30"
+  },
+  {
+    "instruction": "Flush all iptables rules",
+    "output": "<think>\nThe user wants to flush all iptables rules.\nLet me think about the best approach.\nThis calls for iptables. Firewall management.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -F"
+  },
+  {
+    "instruction": "Show iptables NAT rules",
+    "output": "<think>\nThis is asking us to show iptables NAT rules.\nLet me reason through this.\nI'd use iptables for this — firewall management.\nThe -t flag means sort by modification time, which matters here because needed for this specific use case.\nThe -L flag means follow symlinks when processing, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -t nat -L -n"
+  },
+  {
+    "instruction": "Save iptables rules to a file",
+    "output": "<think>\nThe goal is to save iptables rules to a file.\nLet me consider what makes sense here.\nFor this, iptables-save is the right tool — iptables-save operations.\nI'll check the output to make sure it did what we expected.\n</think>\niptables-save > /etc/iptables/rules.v4"
+  },
+  {
+    "instruction": "Restore iptables rules from file",
+    "output": "<think>\nAlright, we need to restore iptables rules from file.\nLet me consider what makes sense here.\nI'd use iptables-restore for this — iptables-restore operations.\nAfter running, I'll confirm the result looks right.\n</think>\niptables-restore < /etc/iptables/rules.v4"
+  },
+  {
+    "instruction": "Show nftables rule set",
+    "output": "<think>\nThe user wants to show nftables rule set.\nLet me think about the best approach.\nI'd use nft for this — nftables firewall management.\nLet me verify afterward that it worked correctly.\n</think>\nnft list ruleset"
+  },
+  {
+    "instruction": "Check if auditd is running",
+    "output": "<think>\nNeed to check if auditd is running.\nLet me think about the best approach.\nThis calls for systemctl. Managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl is-active auditd"
+  },
+  {
+    "instruction": "List all audit rules",
+    "output": "<think>\nThe task requires us to list all audit rules.\nHere's how I'd approach this.\nauditctl is what we need — auditctl operations.\nI'm using -l for long format with details — this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nauditctl -l"
+  },
+  {
+    "instruction": "Add a file watch audit rule",
+    "output": "<think>\nThe task requires us to add a file watch audit rule.\nFor this, auditctl is the right tool — auditctl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nauditctl -w /etc/passwd -p wa -k passwd_changes"
+  },
+  {
+    "instruction": "Search audit logs for a specific key",
+    "output": "<think>\nWe should search audit logs for a specific key.\nLet me consider what makes sense here.\nThis calls for ausearch. Ausearch operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nausearch -k passwd_changes"
+  },
+  {
+    "instruction": "Generate an audit report",
+    "output": "<think>\nThe task requires us to generate an audit report.\nLet me think through this step by step.\nThis calls for aureport. Aureport operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\naureport --summary"
+  },
+  {
+    "instruction": "Show all Linux Security Module (LSM) status",
+    "output": "<think>\nSo the request is to show all Linux Security Module (LSM) status.\nI'll reach for cat here because cat operations.\n</think>\ncat /sys/kernel/security/lsm"
+  },
+  {
+    "instruction": "Check if TPM (Trusted Platform Module) is available",
+    "output": "<think>\nThe task requires us to check if TPM (Trusted Platform Module) is available.\nLet me consider what makes sense here.\nBest tool here is ls — ls operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nls /dev/tpm* 2>/dev/null || echo no TPM"
+  },
+  {
+    "instruction": "Show TPM version",
+    "output": "<think>\nThe goal is to show TPM version.\nFor this, cat is the right tool — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncat /sys/class/tpm/tpm0/tpm_version_major 2>/dev/null || echo no TPM"
+  },
+  {
+    "instruction": "Show SecureBoot status",
+    "output": "<think>\nWe should show SecureBoot status.\nFirst, let me understand what's needed here.\nI'd use mokutil for this — mokutil operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nmokutil --sb-state 2>/dev/null || echo no SecureBoot info"
+  },
+  {
+    "instruction": "Check if Unified Kernel Image is in use",
+    "output": "<think>\nSo the request is to check if Unified Kernel Image is in use.\nLet me consider what makes sense here.\nI'll reach for ls here because ls operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nls /boot/EFI/Linux/*.efi 2>/dev/null || echo no UKI"
+  }
+]

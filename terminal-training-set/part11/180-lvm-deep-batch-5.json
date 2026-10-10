@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to scan for logical volumes",
+    "output": "<think>\nWe should scan for logical volumes.\nLet me consider what makes sense here.\nThis calls for lvscan. Lvscan operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nlvscan"
+  },
+  {
+    "instruction": "How to extend a logical volume by a specified size",
+    "output": "<think>\nThis is asking us to extend a logical volume by a specified size.\nBest tool here is lvextend — lvextend operations.\nLet me verify afterward that it worked correctly.\n</think>\nlvextend -L +20G /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to extend a logical volume to an exact size",
+    "output": "<think>\nWe should extend a logical volume to an exact size.\nThe tool for this job is lvextend — lvextend operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlvextend -L 100G /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to extend a logical volume using all free extents",
+    "output": "<think>\nThe task requires us to extend a logical volume using all free extents.\nFor this, lvextend is the right tool — lvextend operations.\nWhy -l? Long format with details. needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nlvextend -l +100%FREE /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to resize a logical volume to shrink it",
+    "output": "<think>\nWe're being asked to resize a logical volume to shrink it.\nHere's how I'd approach this.\nFor this, lvresize is the right tool — lvresize operations.\nOne command does the job. Simple is better.\n</think>\nlvresize -L -10G /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to resize a logical volume to a specific size",
+    "output": "<think>\nThe goal is to resize a logical volume to a specific size.\nLet me think through this step by step.\nFor this, lvresize is the right tool — lvresize operations.\nI'm using -L for follow symlinks when processing — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nlvresize -L 80G /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to rename a logical volume",
+    "output": "<think>\nNeed to rename a logical volume.\nLet me reason through this.\nThe tool for this job is lvrename — lvrename operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nlvrename vg_data lv_old lv_new"
+  },
+  {
+    "instruction": "How to remove a logical volume",
+    "output": "<think>\nSo we need to remove a logical volume.\nLet me think through this step by step.\nlvremove is what we need — lvremove operations.\nLet me verify afterward that it worked correctly.\n</think>\nlvremove /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to create a thin pool",
+    "output": "<think>\nSo we need to create a thin pool.\nFor this, lvcreate is the right tool — LVM volume creation.\nWhy -n? Dry-run, no changes. without it the command won't work as we need.\nI've added -L to follow symlinks when processing — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nlvcreate -n thin_pool -L 100G --type thin-pool vg_data"
+  },
+  {
+    "instruction": "How to create a thin logical volume",
+    "output": "<think>\nThe task requires us to create a thin logical volume.\nLet me break this down.\nThe tool for this job is lvcreate — LVM volume creation.\n</think>\nlvcreate -n thin_vol -V 500G --thin-pool vg_data/thin_pool"
+  },
+  {
+    "instruction": "How to extend a thin pool",
+    "output": "<think>\nNeed to extend a thin pool.\nFor this, lvextend is the right tool — lvextend operations.\nWhy -L? Follow symlinks when processing. this controls how the output is formatted.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nlvextend -L +50G /dev/vg_data/thin_pool"
+  },
+  {
+    "instruction": "How to create a RAID1 logical volume",
+    "output": "<think>\nSo the request is to create a RAID1 logical volume.\nLet me think about the best approach.\nThe tool for this job is lvcreate — LVM volume creation.\nThe -n flag handles dry-run, no changes. Important because this controls how the output is formatted.\nI've added -L to follow symlinks when processing — needed for this specific use case.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nlvcreate -n lv_raid1 -L 50G --type raid1 vg_data"
+  },
+  {
+    "instruction": "How to create a RAID5 logical volume",
+    "output": "<think>\nThe user wants to create a RAID5 logical volume.\nI'll reach for lvcreate here because LVM volume creation.\nQuick verification after execution to be safe.\n</think>\nlvcreate -n lv_raid5 -L 100G --type raid5 -i 3 vg_data"
+  },
+  {
+    "instruction": "How to create a RAID6 logical volume",
+    "output": "<think>\nSo we need to create a RAID6 logical volume.\nLet me reason through this.\nI'd use lvcreate for this — LVM volume creation.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nlvcreate -n lv_raid6 -L 150G --type raid6 -i 4 vg_data"
+  },
+  {
+    "instruction": "How to create a RAID10 logical volume",
+    "output": "<think>\nNeed to create a RAID10 logical volume.\nLet me break this down.\nlvcreate is what we need — LVM volume creation.\nAfter running, confirm it worked as expected before moving on.\n</think>\nlvcreate -n lv_raid10 -L 100G --type raid10 -i 4 vg_data"
+  },
+  {
+    "instruction": "How to convert a linear LV to RAID1",
+    "output": "<think>\nWe're being asked to convert a linear LV to RAID1.\nHere's how I'd approach this.\nThe tool for this job is lvconvert — lvconvert operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nlvconvert --type raid1 -m1 /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to convert a RAID LV to a different level",
+    "output": "<think>\nNeed to convert a RAID LV to a different level.\nLet me break this down.\nFor this, lvconvert is the right tool — lvconvert operations.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nlvconvert --type raid5 -i 3 /dev/vg_data/lv_raid1"
+  },
+  {
+    "instruction": "How to repair a RAID logical volume",
+    "output": "<think>\nThe user wants to repair a RAID logical volume.\nI'd use lvconvert for this — lvconvert operations.\n</think>\nlvconvert --repair /dev/vg_data/lv_raid1"
+  },
+  {
+    "instruction": "How to replace a failed PV in a RAID LV",
+    "output": "<think>\nThis is asking us to replace a failed PV in a RAID LV.\nlvconvert is what we need — lvconvert operations.\nI'll check the output to make sure it did what we expected.\n</think>\nlvconvert --replace /dev/sda1 /dev/vg_data/lv_raid1"
+  },
+  {
+    "instruction": "How to set up lvmcache with an SSD",
+    "output": "<think>\nThis is asking us to set up lvmcache with an SSD.\nlvcreate is what we need — LVM volume creation.\nThe -n flag handles dry-run, no changes. Important because this controls how the output is formatted.\nI'm using -L for follow symlinks when processing — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nlvcreate -n cache_pool -L 20G vg_data /dev/sdd"
+  },
+  {
+    "instruction": "How to attach a cache pool to a logical volume",
+    "output": "<think>\nSo the request is to attach a cache pool to a logical volume.\nLet me break this down.\nThis calls for lvconvert. Lvconvert operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nlvconvert --type cache --cachepool vg_data/cache_pool vg_data/lv_home"
+  },
+  {
+    "instruction": "How to detach a cache from a logical volume",
+    "output": "<think>\nSo the request is to detach a cache from a logical volume.\nLet me reason through this.\nFor this, lvconvert is the right tool — lvconvert operations.\n</think>\nlvconvert --uncache /dev/vg_data/lv_home"
+  },
+  {
+    "instruction": "How to create a cache pool with metadata and data LVs",
+    "output": "<think>\nNeed to create a cache pool with metadata and data LVs.\nI'll reach for lvcreate here because LVM volume creation.\nThe -n flag means dry-run, no changes, which matters here because needed for this specific use case.\nI've added -L to follow symlinks when processing — important to get the expected behavior.\nThe -n flag means dry-run, no changes, which matters here because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nlvcreate -n cache_meta -L 1G vg_data /dev/sdd && lvcreate -n cache_data -L 20G vg_data /dev/sdd"
+  },
+  {
+    "instruction": "How to convert an LV to a thin snapshot",
+    "output": "<think>\nThe user wants to convert an LV to a thin snapshot.\nFirst, let me understand what's needed here.\nBest tool here is lvcreate — LVM volume creation.\nI'm using -s for summarize or silent mode — needed for this specific use case.\nI've added -n to dry-run, no changes — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nlvcreate -s -n snap_home -L 10G /dev/vg_data/lv_home"
+  }
+]

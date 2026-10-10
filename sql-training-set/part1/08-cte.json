@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet departments with average salary above company average using CTE",
+    "output": "WITH dept_avg AS (SELECT department_id, AVG(salary) AS avg_sal FROM employees GROUP BY department_id), company_avg AS (SELECT AVG(salary) AS comp_avg FROM employees) SELECT d.department_id FROM dept_avg d CROSS JOIN company_avg c WHERE d.avg_sal > c.comp_avg;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nGet users who have more than 5 orders using CTE",
+    "output": "WITH order_counts AS (SELECT user_id, COUNT(*) AS cnt FROM orders GROUP BY user_id) SELECT user_id FROM order_counts WHERE cnt > 5;"
+  },
+  {
+    "instruction": "Schema: categories(id, name, parent_id)\nGet all categories and their subcategories recursively",
+    "output": "WITH RECURSIVE cat_tree AS (SELECT id, name, parent_id FROM categories WHERE parent_id IS NULL UNION ALL SELECT c.id, c.name, c.parent_id FROM categories c JOIN cat_tree ct ON c.parent_id = ct.id) SELECT * FROM cat_tree;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, manager_id)\nGet full reporting hierarchy starting from CEO",
+    "output": "WITH RECURSIVE org AS (SELECT id, name, manager_id, 1 AS level FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, o.level + 1 FROM employees e JOIN org o ON e.manager_id = o.id) SELECT * FROM org ORDER BY level;"
+  },
+  {
+    "instruction": "Schema: sales(id, product_id, amount, sale_date)\nGet monthly totals and then yearly totals using multiple CTEs",
+    "output": "WITH monthly AS (SELECT EXTRACT(YEAR FROM sale_date) AS yr, EXTRACT(MONTH FROM sale_date) AS mo, SUM(amount) AS total FROM sales GROUP BY yr, mo) SELECT yr, SUM(total) AS yearly_total FROM monthly GROUP BY yr;"
+  },
+  {
+    "instruction": "Schema: users(id, name), orders(id, user_id, total)\nGet top spender per user using CTE",
+    "output": "WITH user_totals AS (SELECT user_id, SUM(total) AS spent FROM orders GROUP BY user_id) SELECT u.name, ut.spent FROM users u JOIN user_totals ut ON u.id = ut.user_id ORDER BY ut.spent DESC LIMIT 1;"
+  },
+  {
+    "instruction": "Schema: products(id, name, category_id), categories(id, name)\nGet product count per category using CTE",
+    "output": "WITH cat_counts AS (SELECT category_id, COUNT(*) AS cnt FROM products GROUP BY category_id) SELECT c.name, cc.cnt FROM categories c JOIN cat_counts cc ON c.id = cc.category_id;"
+  },
+  {
+    "instruction": "Schema: transactions(id, account_id, amount, type)\nGet accounts with more deposits than withdrawals using CTE",
+    "output": "WITH dep AS (SELECT account_id, SUM(amount) AS deposits FROM transactions WHERE type = 'deposit' GROUP BY account_id), wit AS (SELECT account_id, SUM(amount) AS withdrawals FROM transactions WHERE type = 'withdrawal' GROUP BY account_id) SELECT d.account_id FROM dep d JOIN wit w ON d.account_id = w.account_id WHERE d.deposits > w.withdrawals;"
+  },
+  {
+    "instruction": "Schema: students(id, name, class_id)\nFind classes with exactly 25 students using CTE",
+    "output": "WITH class_sizes AS (SELECT class_id, COUNT(*) AS size FROM students GROUP BY class_id) SELECT class_id FROM class_sizes WHERE size = 25;"
+  },
+  {
+    "instruction": "Schema: flights(id, origin, destination, price)\nFind cheapest route with up to 2 layovers using recursive CTE",
+    "output": "WITH RECURSIVE routes AS (SELECT origin, destination, price, 0 AS stops FROM flights UNION ALL SELECT r.origin, f.destination, r.price + f.price, r.stops + 1 FROM routes r JOIN flights f ON r.destination = f.origin WHERE r.stops < 2) SELECT origin, destination, MIN(price) FROM routes GROUP BY origin, destination;"
+  },
+  {
+    "instruction": "Schema: logs(id, user_id, action, ts)\nGet first action per user using CTE with ROW_NUMBER",
+    "output": "WITH ranked AS (SELECT user_id, action, ts, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY ts) AS rn FROM logs) SELECT user_id, action, ts FROM ranked WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: inventory(product_id, warehouse_id, qty)\nGet products available in all warehouses using CTE",
+    "output": "WITH wh_count AS (SELECT COUNT(*) AS total FROM warehouses), prod_wh AS (SELECT product_id, COUNT(DISTINCT warehouse_id) AS cnt FROM inventory GROUP BY product_id) SELECT p.product_id FROM prod_wh p JOIN wh_count w ON p.cnt = w.total;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, hire_date)\nGet employees hired in the same year as the most recent hire using CTE",
+    "output": "WITH latest AS (SELECT MAX(hire_date) AS max_date FROM employees) SELECT e.* FROM employees e JOIN latest l ON EXTRACT(YEAR FROM e.hire_date) = EXTRACT(YEAR FROM l.max_date);"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total, order_date)\nGet users whose every order is above 100 using CTE",
+    "output": "WITH user_min AS (SELECT user_id, MIN(total) AS min_total FROM orders GROUP BY user_id) SELECT user_id FROM user_min WHERE min_total > 100;"
+  },
+  {
+    "instruction": "Schema: tasks(id, project_id, status)\nGet projects where all tasks are completed using CTE",
+    "output": "WITH incomplete AS (SELECT DISTINCT project_id FROM tasks WHERE status != 'completed') SELECT project_id FROM tasks WHERE project_id NOT IN (SELECT project_id FROM incomplete) GROUP BY project_id;"
+  },
+  {
+    "instruction": "Schema: reviews(user_id, product_id, rating)\nGet users who reviewed every product using CTE",
+    "output": "WITH prod_count AS (SELECT COUNT(*) AS total FROM products), user_reviews AS (SELECT user_id, COUNT(DISTINCT product_id) AS cnt FROM reviews GROUP BY user_id) SELECT user_id FROM user_reviews JOIN prod_count ON cnt = total;"
+  },
+  {
+    "instruction": "Schema: parts(id, name, parent_id)\nGet all sub-parts of part id 1 recursively",
+    "output": "WITH RECURSIVE subparts AS (SELECT id, name, parent_id FROM parts WHERE id = 1 UNION ALL SELECT p.id, p.name, p.parent_id FROM parts p JOIN subparts s ON p.parent_id = s.id) SELECT * FROM subparts;"
+  },
+  {
+    "instruction": "Schema: sessions(id, user_id, start_time, end_time)\nGet overlapping sessions for same user using CTE",
+    "output": "WITH pairs AS (SELECT a.id AS s1, b.id AS s2, a.user_id FROM sessions a JOIN sessions b ON a.user_id = b.user_id AND a.id < b.id WHERE a.start_time < b.end_time AND b.start_time < a.end_time) SELECT * FROM pairs;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, subject, score)\nGet students who scored above average in every subject using CTE",
+    "output": "WITH subj_avg AS (SELECT subject, AVG(score) AS avg_score FROM scores GROUP BY subject), above AS (SELECT s.student_id, s.subject FROM scores s JOIN subj_avg sa ON s.subject = sa.subject WHERE s.score > sa.avg_score) SELECT student_id FROM above GROUP BY student_id HAVING COUNT(subject) = (SELECT COUNT(DISTINCT subject) FROM scores);"
+  },
+  {
+    "instruction": "Schema: graph(node_from, node_to, weight)\nFind shortest path from node A using recursive CTE",
+    "output": "WITH RECURSIVE paths AS (SELECT node_from, node_to, weight AS total_weight FROM graph WHERE node_from = 'A' UNION ALL SELECT p.node_from, g.node_to, p.total_weight + g.weight FROM paths p JOIN graph g ON p.node_to = g.node_from WHERE p.total_weight + g.weight < 10000) SELECT node_to, MIN(total_weight) FROM paths GROUP BY node_to;"
+  },
+  {
+    "instruction": "Schema: events(id, user_id, event_type, ts)\nGet time between consecutive events per user using CTE",
+    "output": "WITH lagged AS (SELECT user_id, event_type, ts, LAG(ts) OVER (PARTITION BY user_id ORDER BY ts) AS prev_ts FROM events) SELECT user_id, event_type, ts - prev_ts AS gap FROM lagged WHERE prev_ts IS NOT NULL;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total)\nGet customers whose total spending is in top 10% using CTE",
+    "output": "WITH totals AS (SELECT customer_id, SUM(total) AS spent FROM orders GROUP BY customer_id), ranked AS (SELECT customer_id, spent, PERCENT_RANK() OVER (ORDER BY spent DESC) AS pct FROM totals) SELECT customer_id, spent FROM ranked WHERE pct <= 0.1;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, department_id, salary)\nGet employees earning more than their department median using CTE",
+    "output": "WITH medians AS (SELECT department_id, PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS median_sal FROM employees GROUP BY department_id) SELECT e.* FROM employees e JOIN medians m ON e.department_id = m.department_id WHERE e.salary > m.median_sal;"
+  },
+  {
+    "instruction": "Schema: files(id, name, parent_id, size)\nCalculate total size of each folder recursively using CTE",
+    "output": "WITH RECURSIVE tree AS (SELECT id, name, parent_id, size FROM files UNION ALL SELECT t.id, t.name, f.parent_id, t.size FROM tree t JOIN files f ON t.parent_id = f.id) SELECT parent_id, SUM(size) AS total_size FROM tree GROUP BY parent_id;"
+  },
+  {
+    "instruction": "Schema: reservations(room_id, guest_id, check_in, check_out)\nFind rooms with no gaps between consecutive bookings using CTE",
+    "output": "WITH ordered AS (SELECT room_id, check_in, check_out, LEAD(check_in) OVER (PARTITION BY room_id ORDER BY check_in) AS next_in FROM reservations) SELECT room_id FROM ordered WHERE next_in IS NOT NULL AND next_in != check_out;"
+  }
+]

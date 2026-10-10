@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Mount a remote directory via SSHFS",
+    "output": "<think>\nThe task requires us to mount a remote directory via SSHFS.\nLet me think about the best approach.\nBest tool here is sshfs — sshfs operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nsshfs user@remote.example.com:/home/user/projects ~/mnt/remote-projects"
+  },
+  {
+    "instruction": "Unmount an SSHFS mount and auto-reconnect on failure",
+    "output": "<think>\nWe're being asked to unmount an SSHFS mount and auto-reconnect on failure.\nLet me consider what makes sense here.\nI'll reach for fusermount here because fusermount operations.\nWhy -u? Show or sort by access time. without it the command won't work as we need.\n</think>\nfusermount -u ~/mnt/remote-projects"
+  },
+  {
+    "instruction": "Mount SSHFS with compression and allow_other",
+    "output": "<think>\nSo we need to mount SSHFS with compression and allow_other.\nLet me think through this step by step.\nThe tool for this job is sshfs — sshfs operations.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nAfter running, I'll confirm the result looks right.\n</think>\nsshfs user@remote.example.com:/var/www ~/mnt/www -o Cipher=chacha20-poly1305@openssh.com,Compression=yes,allow_other,default_permissions"
+  },
+  {
+    "instruction": "Sync a local directory to remote with rsync over SSH, preserving symlinks and permissions",
+    "output": "<think>\nNeed to sync a local directory to remote with rsync over SSH, preserving symlinks and permissions.\nHere's how I'd approach this.\nI'd use rsync for this — efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avzP --delete --links --perms --owner --group -e ssh /local/data/ user@remote.example.com:/backup/data/"
+  },
+  {
+    "instruction": "Use rsync with --dry-run to preview changes before actually syncing",
+    "output": "<think>\nWe should use rsync with --dry-run to preview changes before actually syncing.\nLet me break this down.\nThe tool for this job is rsync — efficient file synchronization.\nOne command does the job. Simple is better.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nI'll check the output to make sure it did what we expected.\n</think>\nrsync -avz --dry-run --delete -e 'ssh -p 2222' ~/documents/ user@remote.example.com:~/backup-docs/"
+  },
+  {
+    "instruction": "Rsync a large dataset with partial progress and bandwidth limit",
+    "output": "<think>\nWe should rsync a large dataset with partial progress and bandwidth limit.\nrsync is what we need — efficient file synchronization.\nI've added -e to edit or executable — important to get the expected behavior.\nOne command does the job. Simple is better.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nQuick verification after execution to be safe.\n</think>\nrsync -avzP --bwlimit=5000 --partial-dir=.partial -e ssh user@remote.example.com:/video/large-file.mp4 /local/path/"
+  },
+  {
+    "instruction": "Perform a remote-to-remote rsync via a local host as intermediary",
+    "output": "<think>\nWe're being asked to perform a remote-to-remote rsync via a local host as intermediary.\nLet me think about the best approach.\nI'd use rsync for this — efficient file synchronization.\nI've added -e to edit or executable — without it the command won't work as we need.\nOne command does the job. Simple is better.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nQuick verification after execution to be safe.\n</think>\nrsync -avz -e ssh user@src-host:/path user@dst-host:/path"
+  },
+  {
+    "instruction": "Initialize a rdiff-backup archive to a remote server",
+    "output": "<think>\nThe user wants to initialize a rdiff-backup archive to a remote server.\nLet me consider what makes sense here.\nThe tool for this job is rdiff-backup — rdiff-backup operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nrdiff-backup --remote-schema 'ssh -C %s' /local/data user@remote.example.com::/backup/archive"
+  },
+  {
+    "instruction": "List rdiff-backup increments on a remote repository",
+    "output": "<think>\nAlright, we need to list rdiff-backup increments on a remote repository.\nFirst, let me understand what's needed here.\nI'd use rdiff-backup for this — rdiff-backup operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nrdiff-backup --list-increments --remote-schema 'ssh -p 2222 %s' user@remote.example.com::/backup/archive"
+  },
+  {
+    "instruction": "Restore a rdiff-backup snapshot from 7 days ago to a target directory",
+    "output": "<think>\nSo the request is to restore a rdiff-backup snapshot from 7 days ago to a target directory.\nLet me break this down.\nFor this, rdiff-backup is the right tool — rdiff-backup operations.\nWhy -r? Recursive operation (descend into subdirectories). standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nrdiff-backup -r 7D --remote-schema 'ssh %s' user@remote.example.com::/backup/archive /tmp/restored"
+  },
+  {
+    "instruction": "Remove rdiff-backup increments older than 30 days",
+    "output": "<think>\nThis is asking us to remove rdiff-backup increments older than 30 days.\nI'd use rdiff-backup for this — rdiff-backup operations.\nWhy --force? Override warnings. this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nrdiff-backup --remove-older-than 30D --force --remote-schema 'ssh %s' user@remote.example.com::/backup/archive"
+  },
+  {
+    "instruction": "Run duplicity backup with GPG encryption to a remote SSH target",
+    "output": "<think>\nWe're being asked to run duplicity backup with GPG encryption to a remote SSH target.\nThe tool for this job is duplicity — duplicity operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nduplicity --encrypt-key 0xDEADBEEF --sign-key 0xDEADBEEF /home/user scp://user@remote.example.com/backup/duplicity/"
+  },
+  {
+    "instruction": "List the available backup sets in a duplicity remote repository",
+    "output": "<think>\nWe should list the available backup sets in a duplicity remote repository.\nThe tool for this job is duplicity — duplicity operations.\n</think>\nduplicity list-current-files scp://user@remote.example.com/backup/duplicity/"
+  },
+  {
+    "instruction": "Restore duplicity backup to a specific date",
+    "output": "<think>\nWe're being asked to restore duplicity backup to a specific date.\nI'll reach for duplicity here because duplicity operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nduplicity restore --time '2026-06-01' scp://user@remote.example.com/backup/duplicity/ /tmp/restored"
+  },
+  {
+    "instruction": "Remove duplicity backups older than 60 days",
+    "output": "<think>\nWe should remove duplicity backups older than 60 days.\nLet me think through this step by step.\nduplicity is what we need — duplicity operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nduplicity remove-older-than 60D --force scp://user@remote.example.com/backup/duplicity/"
+  },
+  {
+    "instruction": "Initialize a BorgBackup repository on a remote server over SSH",
+    "output": "<think>\nSo we need to initialize a BorgBackup repository on a remote server over SSH.\nLet me think through this step by step.\nI'll reach for borg here because deduplicating backups.\nQuick verification after execution to be safe.\n</think>\nborg init --encryption=repokey-blake2 user@remote.example.com:/backup/borg-repo"
+  },
+  {
+    "instruction": "Create a BorgBackup archive of /etc and /home with compression",
+    "output": "<think>\nAlright, we need to create a BorgBackup archive of /etc and /home with compression.\nI'll reach for borg here because deduplicating backups.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nborg create --compression lz4 --progress user@remote.example.com:/backup/borg-repo::etc-home-{now:%Y-%m-%d} /etc /home"
+  },
+  {
+    "instruction": "List all Borg archives in a remote repository",
+    "output": "<think>\nThe user wants to list all Borg archives in a remote repository.\nLet me reason through this.\nI'll reach for borg here because deduplicating backups.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nborg list user@remote.example.com:/backup/borg-repo"
+  },
+  {
+    "instruction": "Extract a specific Borg archive to a temporary directory",
+    "output": "<think>\nSo the request is to extract a specific Borg archive to a temporary directory.\nHere's how I'd approach this.\nborg is what we need — deduplicating backups.\nI'll check the output to make sure it did what we expected.\n</think>\nborg extract user@remote.example.com:/backup/borg-repo::etc-home-2026-07-20 /tmp/borg-restore"
+  },
+  {
+    "instruction": "Prune Borg archives keeping only daily/weekly/monthly snapshots",
+    "output": "<think>\nThis is asking us to prune Borg archives keeping only daily/weekly/monthly snapshots.\nborg is what we need — deduplicating backups.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nborg prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6 user@remote.example.com:/backup/borg-repo"
+  },
+  {
+    "instruction": "Initialize a Restic repository on a remote SFTP server",
+    "output": "<think>\nNeed to initialize a Restic repository on a remote SFTP server.\nFirst, let me understand what's needed here.\nI'd use restic for this — encrypted backups.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrestic init --repo sftp:user@remote.example.com:/backup/restic-repo"
+  },
+  {
+    "instruction": "Backup multiple directories with Restic to a remote repo",
+    "output": "<think>\nThe user wants to backup multiple directories with Restic to a remote repo.\nHere's how I'd approach this.\nBest tool here is restic — encrypted backups.\nLet me verify afterward that it worked correctly.\n</think>\nrestic backup --repo sftp:user@remote.example.com:/backup/restic-repo /etc /home --tag system-config"
+  },
+  {
+    "instruction": "List all Restic snapshots in the remote repository",
+    "output": "<think>\nThis is asking us to list all Restic snapshots in the remote repository.\nFirst, let me understand what's needed here.\nI'd use restic for this — encrypted backups.\nLet me verify afterward that it worked correctly.\n</think>\nrestic snapshots --repo sftp:user@remote.example.com:/backup/restic-repo"
+  },
+  {
+    "instruction": "Restore a Restic snapshot to a specific path",
+    "output": "<think>\nThe goal is to restore a Restic snapshot to a specific path.\nLet me think through this step by step.\nBest tool here is restic — encrypted backups.\n</think>\nrestic restore latest --target /tmp/restore --repo sftp:user@remote.example.com:/backup/restic-repo"
+  },
+  {
+    "instruction": "Apply retention policy to Restic snapshots",
+    "output": "<think>\nThis is asking us to apply retention policy to Restic snapshots.\nLet me consider what makes sense here.\nThis calls for restic. Encrypted backups.\n</think>\nrestic forget --keep-last 5 --keep-daily 7 --keep-weekly 4 --prune --repo sftp:user@remote.example.com:/backup/restic-repo"
+  }
+]

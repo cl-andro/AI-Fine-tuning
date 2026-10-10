@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write bpftrace script for disk I/O tracing",
+    "output": "<think>\nThe user wants to write bpftrace script for disk I/O tracing.\nI'd use cat for this — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /tmp/diskio.bt << 'EOF'\n#!/usr/bin/bpftrace\nkprobe:blk_account_io_start\n{\n    @start[tid] = nsecs;\n    @size = args->rq_sectors;\n}\nkprobe:blk_account_io_completion\n/tid in @start/\n{\n    $us = (nsecs - @start[tid]) / 1000;\n    printf(\"disk I/O: %d sectors, %d us\\n\", @size, $us);\n    delete(@start[tid]);\n    delete(@size);\n}\nEOF\nchmod +x /tmp/diskio.bt"
+  },
+  {
+    "instruction": "Write bpftrace script for TCP monitoring",
+    "output": "<think>\nSo the request is to write bpftrace script for TCP monitoring.\nFirst, let me understand what's needed here.\nThe tool for this job is cat — cat operations.\n</think>\ncat > /tmp/tcpmon.bt << 'EOF'\n#!/usr/bin/bpftrace\nkprobe:tcp_connect\n{\n    printf(\"TCP connect from %s to %s\\n\", ntop(args->sk->__sk_common.skc_saddr), ntop(args->sk->__sk_common.skc_daddr));\n}\nEOF\nchmod +x /tmp/tcpmon.bt"
+  },
+  {
+    "instruction": "Run custom bpftrace script",
+    "output": "<think>\nAlright, we need to run custom bpftrace script.\nThe tool for this job is bpftrace — bpftrace operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace /tmp/tcpmon.bt"
+  },
+  {
+    "instruction": "Run bpftrace script with USDT probe",
+    "output": "<think>\nThis is asking us to run bpftrace script with USDT probe.\nThe tool for this job is bpftrace — bpftrace operations.\nI've added -e to edit or executable — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'usdt:/usr/sbin/mysqld:mysql:* { printf(\"mysql: %s\\n\", probe); }'"
+  },
+  {
+    "instruction": "Trace Python function calls via USDT",
+    "output": "<think>\nSo we need to trace Python function calls via USDT.\nFirst, let me understand what's needed here.\nI'd use bpftrace for this — bpftrace operations.\nI'm using -e for edit or executable — important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'usdt:/usr/bin/python3:function__entry { printf(\"python func: %s\\n\", str(arg0)); }'"
+  },
+  {
+    "instruction": "Trace Node.js GC events via USDT",
+    "output": "<think>\nAlright, we need to trace Node.js GC events via USDT.\nHere's how I'd approach this.\nI'll reach for bpftrace here because bpftrace operations.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'usdt:/usr/bin/node:gc:* { printf(\"GC: %s\\n\", probe); }'"
+  },
+  {
+    "instruction": "Monitor PostgreSQL query start via USDT",
+    "output": "<think>\nNeed to monitor PostgreSQL query start via USDT.\nLet me think through this step by step.\nI'd use bpftrace for this — bpftrace operations.\nI've added -e to edit or executable — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nbpftrace -e 'usdt:/usr/lib/postgresql/*/bin/postgres:query__start { printf(\"query: %s\\n\", str(arg0)); }'"
+  },
+  {
+    "instruction": "Count BPF helper function usage",
+    "output": "<think>\nThe user wants to count BPF helper function usage.\nLet me reason through this.\nThis calls for bpftrace. Bpftrace operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'kprobe:__bpf_trace_run { @ = count(); } interval:s:5 { print(@); clear(@); }'"
+  },
+  {
+    "instruction": "Measure BPF program execution time",
+    "output": "<think>\nWe're being asked to measure BPF program execution time.\nLet me think through this step by step.\nBest tool here is bpftrace — bpftrace operations.\nI'm using -e for edit or executable — without it the command won't work as we need.\n</think>\nbpftrace -e 'kprobe:bpf_prog_run { @start[tid] = nsecs; } kprobe:bpf_prog_run { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"
+  },
+  {
+    "instruction": "Track MAP update operations in BPF",
+    "output": "<think>\nThe task requires us to track MAP update operations in BPF.\nLet me think about the best approach.\nI'll reach for bpftrace here because bpftrace operations.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'kprobe:bpf_map_update_value { printf(\"map update by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Monitor BPF verifier activity",
+    "output": "<think>\nSo the request is to monitor BPF verifier activity.\nFor this, bpftrace is the right tool — bpftrace operations.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'kprobe:bpf_check { printf(\"BPF verifier running for %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Track loaded BPF programs by name",
+    "output": "<think>\nWe're being asked to track loaded BPF programs by name.\nLet me reason through this.\nBest tool here is bpftrace — bpftrace operations.\nI've added -e to edit or executable — without it the command won't work as we need.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'kprobe:bpf_prog_load { printf(\"BPF prog loaded: \\n\"); }'"
+  },
+  {
+    "instruction": "Count BPF map lookups",
+    "output": "<think>\nWe're being asked to count BPF map lookups.\nBest tool here is bpftrace — bpftrace operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\n</think>\nbpftrace -e 'kprobe:bpf_map_lookup_elem { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Monitor bpf() syscall usage",
+    "output": "<think>\nSo the request is to monitor bpf() syscall usage.\nFirst, let me understand what's needed here.\nThis calls for bpftrace. Bpftrace operations.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_bpf { printf(\"bpf() by %s cmd=%d\\n\", comm, args->cmd); }'"
+  },
+  {
+    "instruction": "Show BPF program types",
+    "output": "<think>\nThis is asking us to show BPF program types.\nBest tool here is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_bpf /args->cmd == 5/ { printf(\"BPF_PROG_LOAD\\n\"); }'"
+  },
+  {
+    "instruction": "Trace ethtool operations",
+    "output": "<think>\nThe task requires us to trace ethtool operations.\nHere's how I'd approach this.\nbpftrace is what we need — bpftrace operations.\nI'm using -e for edit or executable — needed for this specific use case.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:dev_ethtool { printf(\"ethtool op on %s\\n\", args->dev->name); }'"
+  },
+  {
+    "instruction": "Monitor network interface changes",
+    "output": "<think>\nSo we need to monitor network interface changes.\nI'd use bpftrace for this — bpftrace operations.\nI'm using -e for edit or executable — important to get the expected behavior.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'kprobe:dev_change_flags { printf(\"flags changed on %s\\n\", args->dev->name); }'"
+  },
+  {
+    "instruction": "Track ARP cache operations",
+    "output": "<think>\nAlright, we need to track ARP cache operations.\nI'll reach for bpftrace here because bpftrace operations.\nWhy -e? Edit or executable. needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'kprobe:neigh_update { printf(\"ARP update for %s\\n\", ntop(args->neigh->primary_key)); }'"
+  },
+  {
+    "instruction": "Monitor routing table changes",
+    "output": "<think>\nThe user wants to monitor routing table changes.\nLet me consider what makes sense here.\nI'd use bpftrace for this — bpftrace operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:fib_table_insert { printf(\"route added: %s\\n\", ntop(args->key->addr)); }'"
+  },
+  {
+    "instruction": "Trace iptables rule matches",
+    "output": "<think>\nSo we need to trace iptables rule matches.\nBest tool here is bpftrace — bpftrace operations.\n</think>\nbpftrace -e 'kprobe:ipt_do_table { printf(\"iptables match on %s\\n\", comm); }'"
+  }
+]

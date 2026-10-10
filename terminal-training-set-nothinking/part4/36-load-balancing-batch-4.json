@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "cat /etc/nginx/nginx.conf | grep -A 20 'upstream backend'",
+    "output": "upstream backend {\n    least_conn;\n    server 10.0.0.10:8080 weight=3 max_fails=3 fail_timeout=30s;\n    server 10.0.0.11:8080 weight=2 max_fails=3 fail_timeout=30s;\n    server 10.0.0.12:8080 backup;\n    keepalive 32;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream api'",
+    "output": "upstream api {\n    ip_hash;\n    server 10.0.0.20:8080;\n    server 10.0.0.21:8080;\n    server 10.0.0.22:8080 down;\n    keepalive 64;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 15 'upstream static'",
+    "output": "upstream static {\n    random two least_conn;\n    server 10.0.0.30:8080;\n    server 10.0.0.31:8080;\n    server 10.0.0.32:8080;\n    keepalive 16;\n}"
+  },
+  {
+    "instruction": "nginx -t",
+    "output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful"
+  },
+  {
+    "instruction": "nginx -s reload",
+    "output": "nginx -s reload"
+  },
+  {
+    "instruction": "systemctl status nginx",
+    "output": "\u25cf nginx.service - A high performance web server and a reverse proxy server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; preset: enabled)\n     Active: active (running) since Sat 2026-07-25 10:15:00 UTC; 1h ago\n   Main PID: 12345 (nginx)\n      Tasks: 3 (limit: 23042)\n     Memory: 12.5M\n     CGroup: /system.slice/nginx.service\n             \u251c\u250012345 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;\n             \u251c\u250012346 nginx: worker process\n             \u2514\u250012347 nginx: worker process"
+  },
+  {
+    "instruction": "curl -I http://localhost/",
+    "output": "HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\nContent-Length: 1234\nConnection: keep-alive"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream websocket'",
+    "output": "upstream websocket {\n    hash $remote_addr consistent;\n    server 10.0.0.40:8080;\n    server 10.0.0.41:8080;\n    keepalive 8;\n}"
+  },
+  {
+    "instruction": "nginx -V 2>&1",
+    "output": "nginx version: nginx/1.24.0\nbuilt by gcc 12.2.0 (Debian 12.2.0-14)\nbuilt with OpenSSL 3.0.11 19 Sep 2023\nTLS SNI support enabled\nconfigure arguments: --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_stub_status_module --with-stream --with-stream_ssl_module --with-stream_realip_module"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 15 'upstream grpc'",
+    "output": "upstream grpc {\n    least_time header;\n    server 10.0.0.50:50051;\n    server 10.0.0.51:50051;\n    keepalive 32;\n    keepalive_requests 1000;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'server {'",
+    "output": "server {\n    listen 80;\n    server_name example.com;\n    location / {\n        proxy_pass http://backend;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n}"
+  },
+  {
+    "instruction": "echo 'upstream canary { server 10.0.0.10:8080 weight=90; server 10.0.0.100:8080 weight=10; }' >> /etc/nginx/conf.d/canary.conf && nginx -t",
+    "output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful"
+  },
+  {
+    "instruction": "curl -H 'X-Canary: canary' http://localhost/",
+    "output": "<!DOCTYPE html>\n<html>\n<head><title>Canary Response</title></head>\n<body>Canary v1.2.3</body>\n</html>"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 20 'upstream tcp_backend'",
+    "output": "upstream tcp_backend {\n    zone tcp_lb 64k;\n    least_conn;\n    server 10.0.0.60:3306;\n    server 10.0.0.61:3306;\n    server 10.0.0.62:3306 backup;\n}"
+  },
+  {
+    "instruction": "systemctl reload nginx",
+    "output": "systemctl reload nginx"
+  },
+  {
+    "instruction": "curl -s http://localhost/nginx_status",
+    "output": "Active connections: 23\nserver accepts handled requests\n 45678 45678 98765\nReading: 0 Writing: 2 Waiting: 21"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 10 'split_clients'",
+    "output": "split_clients \"${remote_addr}\" $variant {\n    10%     \"canary\";\n    90%     \"stable\";\n}"
+  },
+  {
+    "instruction": "nginx -s quit && sleep 1 && nginx",
+    "output": "nginx -s quit && sleep 1 && nginx"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 15 'upstream backup_example'",
+    "output": "upstream backup_example {\n    server 10.0.0.10:8080;\n    server 10.0.0.11:8080;\n    server 10.0.0.12:8080 backup;\n    server 10.0.0.13:8080 backup;\n}"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/lb.conf | grep -A 15 'upstream hash_example'",
+    "output": "upstream hash_example {\n    hash $request_uri consistent;\n    server 10.0.0.70:8080;\n    server 10.0.0.71:8080;\n    server 10.0.0.72:8080;\n}"
+  },
+  {
+    "instruction": "nginx -T 2>&1 | grep 'server_name' | head -5",
+    "output": "    server_name example.com;\n    server_name health.example.com;\n    server_name zone.example.com;\n    server_name _;"
+  }
+]

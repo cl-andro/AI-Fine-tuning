@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Perform FTS5 full-text search",
+    "output": "sqlite3 mydb.db \"SELECT * FROM articles WHERE content MATCH 'search term'\""
+  },
+  {
+    "instruction": "Create an FTS5 virtual table",
+    "output": "sqlite3 mydb.db \"CREATE VIRTUAL TABLE articles_fts USING fts5(title, content, content=articles, content_rowid=id);\""
+  },
+  {
+    "instruction": "Rebuild an FTS5 index",
+    "output": "sqlite3 mydb.db \"INSERT INTO articles_fts(articles_fts) VALUES('rebuild');\""
+  },
+  {
+    "instruction": "Create a regular index on a table",
+    "output": "sqlite3 mydb.db \"CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);\""
+  },
+  {
+    "instruction": "Create a unique index",
+    "output": "sqlite3 mydb.db \"CREATE UNIQUE INDEX idx_users_username ON users(username);\""
+  },
+  {
+    "instruction": "Create a partial index on a condition",
+    "output": "sqlite3 mydb.db \"CREATE INDEX idx_active_users ON users(email) WHERE active = 1;\""
+  },
+  {
+    "instruction": "Drop an existing index",
+    "output": "sqlite3 mydb.db \"DROP INDEX IF EXISTS idx_old_index;\""
+  },
+  {
+    "instruction": "Show the query plan for a SELECT",
+    "output": "sqlite3 mydb.db \"EXPLAIN QUERY PLAN SELECT * FROM users JOIN orders ON users.id = orders.user_id WHERE users.active = 1;\""
+  },
+  {
+    "instruction": "Enable full query plan output",
+    "output": "sqlite3 mydb.db \".eqp full\" \"SELECT * FROM users WHERE email LIKE '%@example.com';\""
+  },
+  {
+    "instruction": "Attach another SQLite database",
+    "output": "sqlite3 mydb.db \"ATTACH DATABASE 'other.db' AS other;\" \"SELECT * FROM other.products;\""
+  },
+  {
+    "instruction": "Detach an attached database",
+    "output": "sqlite3 mydb.db \"DETACH DATABASE other;\""
+  },
+  {
+    "instruction": "Add a generated column to a table",
+    "output": "sqlite3 mydb.db \"ALTER TABLE users ADD COLUMN full_name TEXT GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED;\""
+  },
+  {
+    "instruction": "Create an in-memory database and run queries",
+    "output": "sqlite3 :memory: \"CREATE TABLE test(id INT); INSERT INTO test VALUES(1); SELECT * FROM test;\""
+  },
+  {
+    "instruction": "Export the database to an SQL file",
+    "output": "sqlite3 mydb.db \".output /tmp/db.sql\" \".dump\" \".output stdout\""
+  },
+  {
+    "instruction": "Enable case-insensitive LIKE comparisons",
+    "output": "sqlite3 mydb.db \"PRAGMA case_sensitive_like=OFF;\""
+  },
+  {
+    "instruction": "Create a TRIGGER for audit logging",
+    "output": "sqlite3 mydb.db \"CREATE TRIGGER IF NOT EXISTS audit_users AFTER UPDATE ON users BEGIN INSERT INTO audit(table_name, action, old_data, new_data) VALUES('users', 'UPDATE', old.email, new.email); END;\""
+  },
+  {
+    "instruction": "Create a VIEW",
+    "output": "sqlite3 mydb.db \"CREATE VIEW IF NOT EXISTS active_orders AS SELECT * FROM orders WHERE status != 'cancelled';\""
+  },
+  {
+    "instruction": "Delete all rows from a table and VACUUM",
+    "output": "sqlite3 mydb.db \"DELETE FROM temp_logs;\" \"VACUUM;\""
+  },
+  {
+    "instruction": "Use a correlated subquery in SELECT",
+    "output": "sqlite3 mydb.db \"SELECT name, (SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id) AS order_count FROM users;\""
+  },
+  {
+    "instruction": "Use recursive CTE for tree traversal",
+    "output": "sqlite3 mydb.db \"WITH RECURSIVE org_tree AS (SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id FROM employees e JOIN org_tree t ON e.manager_id = t.id) SELECT * FROM org_tree;\""
+  },
+  {
+    "instruction": "Format dates with STRFTIME",
+    "output": "sqlite3 mydb.db \"SELECT strftime('%Y-%m-%d', 'now') AS today;\""
+  },
+  {
+    "instruction": "Extract values from JSON with json_extract",
+    "output": "sqlite3 mydb.db \"SELECT json_extract('{\\\"name\\\": \\\"John\\\"}', '$.name');\""
+  }
+]

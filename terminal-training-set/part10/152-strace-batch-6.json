@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Monitor file writes with full data dump",
+    "output": "<think>\nAlright, we need to monitor file writes with full data dump.\nI'd use strace for this — system call tracing.\nI've added -e to edit or executable — needed for this specific use case.\nWhy -s? Summarize or silent mode. important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nstrace -e write -s 4096 -xx ls 2>&1 | head -30"
+  },
+  {
+    "instruction": "Show read return values only",
+    "output": "<think>\nThe goal is to show read return values only.\nThe tool for this job is strace — system call tracing.\n</think>\nstrace -e trace=read -e status=successful ls"
+  },
+  {
+    "instruction": "Show failed syscalls only",
+    "output": "<think>\nThe task requires us to show failed syscalls only.\nI'd use strace for this — system call tracing.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nstrace -e trace=openat -e status=failed ls /nonexistent"
+  },
+  {
+    "instruction": "Summarize failed syscalls across run",
+    "output": "<think>\nAlright, we need to summarize failed syscalls across run.\nHere's how I'd approach this.\nFor this, strace is the right tool — system call tracing.\nWhy -c? Count or create. needed for this specific use case.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nstrace -c -e status=bad ls /nonexistent 2>&1"
+  },
+  {
+    "instruction": "Inject delay to simulate slow I/O",
+    "output": "<think>\nNeed to inject delay to simulate slow I/O.\nLet me think through this step by step.\nI'll reach for strace here because system call tracing.\nI'm using -e for edit or executable — standard practice for this kind of operation.\n</think>\nstrace -e inject=read:delay_us=1000 cat /tmp/test.txt"
+  },
+  {
+    "instruction": "Fault injection on specific syscall",
+    "output": "<think>\nSo the request is to fault injection on specific syscall.\nFirst, let me understand what's needed here.\nFor this, strace is the right tool — system call tracing.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e fault=openat:error=ENOENT cat /tmp/nonexistent"
+  },
+  {
+    "instruction": "Inject multiple errors selectively",
+    "output": "<think>\nWe should inject multiple errors selectively.\nLet me reason through this.\nThe tool for this job is strace — system call tracing.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nI'm using -e for edit or executable — important to get the expected behavior.\n</think>\nstrace -e trace=openat -e fault=openat:error=EACCES:when=3 cat /dev/null"
+  },
+  {
+    "instruction": "Retry failed syscall three times",
+    "output": "<think>\nThe user wants to retry failed syscall three times.\nstrace is what we need — system call tracing.\nI'm using -e for edit or executable — needed for this specific use case.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nstrace -e trace=openat -e inject=openat:retry=3 ls"
+  },
+  {
+    "instruction": "Error injection with probability",
+    "output": "<think>\nWe should error injection with probability.\nstrace is what we need — system call tracing.\nI've added -e to edit or executable — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -e fault=openat:error=ENOENT:when=50% ls"
+  },
+  {
+    "instruction": "Simulate ENOSPC on write",
+    "output": "<think>\nThe task requires us to simulate ENOSPC on write.\nThis calls for strace. System call tracing.\nI've added -e to edit or executable — without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -e inject=write:error=ENOSPC:when=5 dd if=/dev/zero of=/tmp/test bs=1 count=10"
+  },
+  {
+    "instruction": "Delay every openat by 500ms",
+    "output": "<think>\nThe user wants to delay every openat by 500ms.\nLet me consider what makes sense here.\nstrace is what we need — system call tracing.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -e inject=openat:delay_us=500000 ls"
+  },
+  {
+    "instruction": "Inject ENOMEM on malloc (ltrace)",
+    "output": "<think>\nSo we need to inject ENOMEM on malloc (ltrace).\nHere's how I'd approach this.\nThis calls for ltrace. Ltrace operations.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nI've added -e to edit or executable — this controls how the output is formatted.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nltrace -e malloc -e fault=malloc:error=ENOMEM:when=1 ls"
+  },
+  {
+    "instruction": "Fault injection on connect syscall",
+    "output": "<think>\nAlright, we need to fault injection on connect syscall.\nHere's how I'd approach this.\nI'll reach for strace here because system call tracing.\nI've added -e to edit or executable — needed for this specific use case.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e fault=connect:error=ECONNREFUSED:when=1 curl http://example.com"
+  },
+  {
+    "instruction": "Track signal delivery to process",
+    "output": "<think>\nAlright, we need to track signal delivery to process.\nLet me think through this step by step.\nstrace is what we need — system call tracing.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=kill,tkill,tgkill sleep 10 & sleep 1; kill -INT %1"
+  },
+  {
+    "instruction": "Show signal dispositions",
+    "output": "<think>\nSo the request is to show signal dispositions.\nLet me think about the best approach.\nThis calls for strace. System call tracing.\nI've added -e to edit or executable — this controls how the output is formatted.\n</think>\nstrace -e trace=rt_sigaction,signal sleep 1"
+  },
+  {
+    "instruction": "Monitor signal masks",
+    "output": "<think>\nThe goal is to monitor signal masks.\nThis calls for strace. System call tracing.\nQuick verification after execution to be safe.\n</think>\nstrace -e trace=rt_sigprocmask sleep 1"
+  },
+  {
+    "instruction": "Trace real-time signal usage",
+    "output": "<think>\nThe goal is to trace real-time signal usage.\nLet me reason through this.\nFor this, strace is the right tool — system call tracing.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=rt_sigqueueinfo ls"
+  },
+  {
+    "instruction": "Decode sigset_t in output",
+    "output": "<think>\nSo we need to decode sigset_t in output.\nThis calls for strace. System call tracing.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -v -e trace=rt_sigaction sleep 1 2>&1 | head -15"
+  },
+  {
+    "instruction": "Show pending signals list",
+    "output": "<think>\nThe goal is to show pending signals list.\nstrace is what we need — system call tracing.\nI've added -e to edit or executable — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -e trace=rt_sigpending sleep 1 2>&1 | head -10"
+  },
+  {
+    "instruction": "Trace sigsuspend and sigwaitinfo",
+    "output": "<think>\nWe should trace sigsuspend and sigwaitinfo.\nLet me think through this step by step.\nI'll reach for strace here because system call tracing.\nI've added -e to edit or executable — without it the command won't work as we need.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -e trace=rt_sigsuspend,rt_sigtimedwait sleep 1"
+  },
+  {
+    "instruction": "Track sigaltstack changes",
+    "output": "<think>\nThe goal is to track sigaltstack changes.\nLet me consider what makes sense here.\nThis calls for strace. System call tracing.\nThe -e flag means edit or executable, which matters here because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nstrace -e trace=sigaltstack ls"
+  },
+  {
+    "instruction": "Monitor pselect6 with signal mask",
+    "output": "<think>\nWe should monitor pselect6 with signal mask.\nLet me consider what makes sense here.\nBest tool here is strace — system call tracing.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=pselect6 sleep 1"
+  }
+]

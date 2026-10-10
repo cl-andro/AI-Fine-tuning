@@ -1,0 +1,23 @@
+[
+  {"instruction": "Generate report with timestamped filename", "output": "goaccess access.log -a -o report-$(date +%Y%m%d-%H%M%S).html"},
+  {"instruction": "Automate weekly report generation with script", "output": "cat > /usr/local/bin/goaccess-weekly.sh << 'EOF'\n#!/bin/bash\nREPORT_DIR=/var/www/html/reports\nmkdir -p $REPORT_DIR\ngoaccess /var/log/nginx/access.log -a -o $REPORT_DIR/report-$(date +%Y-%m-%d).html\nEOF\nchmod +x /usr/local/bin/goaccess-weekly.sh"},
+  {"instruction": "Stream real-time analytics with websocket", "output": "goaccess access.log --real-time-html --ws-url=ws://localhost:7890 -o /var/www/html/realtime.html"},
+  {"instruction": "Run GoAccess with daemon mode for persistent dashboard", "output": "goaccess access.log --real-time-html --daemonize --daemonize-pid=/run/goaccess.pid -o /var/www/html/report.html"},
+  {"instruction": "Stop GoAccess daemon", "output": "kill $(cat /run/goaccess.pid) 2>/dev/null && rm -f /run/goaccess.pid"},
+  {"instruction": "Check if GoAccess daemon is running", "output": "ps aux | grep goaccess | grep -v grep"},
+  {"instruction": "Create systemd service for GoAccess daemon", "output": "cat > /etc/systemd/system/goaccess.service << 'EOF'\n[Unit]\nDescription=GoAccess Dashboard\nAfter=network.target\n[Service]\nExecStart=/usr/bin/goaccess /var/log/nginx/access.log --real-time-html -o /var/www/html/report.html\nRestart=always\nUser=www-data\n[Install]\nWantedBy=multi-user.target\nEOF"},
+  {"instruction": "Update GoAccess to latest version", "output": "apt-get update && apt-get install -y goaccess"},
+  {"instruction": "Install GoAccess with GeoIP support on Debian", "output": "apt-get install -y goaccess libgeoip2-dev libmaxminddb-dev"},
+  {"instruction": "Compile GoAccess with Bzip2 support", "output": "./configure --enable-utf8 --enable-bzip2 && make && make install"},
+  {"instruction": "Verify GeoIP database is compatible", "output": "goaccess --geoip-database=/usr/share/GeoIP/GeoLite2-City.mmdb access.log -a -o geo-test.html 2>&1"},
+  {"instruction": "Test GoAccess with sample log data", "output": "echo '192.168.1.1 - - [15/Mar/2025:10:30:00 +0000] \"GET /index.html HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"' | goaccess -a -o test-report.html"},
+  {"instruction": "Measure GoAccess parsing speed", "output": "time goaccess access.log -a -o /dev/null"},
+  {"instruction": "Parse large log files efficiently", "output": "goaccess access.log -a -o report.html --no-query-string --no-tls 2>&1"},
+  {"instruction": "Limit memory usage during parsing", "output": "goaccess access.log --max-items=10 --no-geoip -a -o report.html"},
+  {"instruction": "Parse gzipped logs without decompressing to disk", "output": "zcat /var/log/nginx/access.log.*.gz | goaccess -a -o report.html"},
+  {"instruction": "Merge and deduplicate log files", "output": "cat access.log.1 access.log.2 | sort -u | goaccess -a -o report.html"},
+  {"instruction": "Process log files in reverse chronological order", "output": "ls -tr /var/log/nginx/access.log.* | xargs cat | goaccess -a -o report.html"},
+  {"instruction": "Monitor access log with watch and refresh report", "output": "watch -n 60 'goaccess /var/log/nginx/access.log -a -o /var/www/html/report.html --no-progress'"},
+  {"instruction": "Run GoAccess with pipeline for continuous analysis", "output": "tail -f access.log | goaccess --log-format=COMBINED -o realtime.html --real-time-html -"},
+  {"instruction": "Generate comparative reports for different periods", "output": "for period in $(ls -d /var/log/nginx/access.log.*); do echo $period; done | xargs -I{} goaccess {} -a -o {}.html"}
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Start Grafana service",
+    "output": "<think>\nThis is asking us to start Grafana service.\nI'd use systemctl for this — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl start grafana-server"
+  },
+  {
+    "instruction": "Enable Grafana on boot",
+    "output": "<think>\nThe task requires us to enable Grafana on boot.\nLet me consider what makes sense here.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl enable grafana-server"
+  },
+  {
+    "instruction": "Check Grafana service status",
+    "output": "<think>\nThe task requires us to check Grafana service status.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsudo systemctl status grafana-server"
+  },
+  {
+    "instruction": "Check Grafana logs",
+    "output": "<think>\nSo we need to check Grafana logs.\nLet me think through this step by step.\nI'd use journalctl for this — checking systemd logs.\nThe -u flag means show or sort by access time, which matters here because without it the command won't work as we need.\nThe -f flag handles force, suppress errors. Important because important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo journalctl -u grafana-server -f"
+  },
+  {
+    "instruction": "Install Grafana Enterprise",
+    "output": "<think>\nThe task requires us to install Grafana Enterprise.\nLet me consider what makes sense here.\nI'd use apt-get for this — apt-get operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt-get install -y grafana-enterprise"
+  },
+  {
+    "instruction": "Generate Grafana API token via ENV for provisioning",
+    "output": "<think>\nThis is asking us to generate Grafana API token via ENV for provisioning.\nLet me think through this step by step.\nThe tool for this job is export — export operations.\nI've added -H to follow symlinks on command line only — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nexport GRAFANA_TOKEN=glsa_abc123 && curl -H \"Authorization: Bearer $GRAFANA_TOKEN\" http://localhost:3000/api/dashboards/uid/abc"
+  },
+  {
+    "instruction": "Use Grafana API with service account token",
+    "output": "<think>\nThis is asking us to use Grafana API with service account token.\nFirst, let me understand what's needed here.\nThis calls for curl. Making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -H \"Authorization: Bearer glsa_abc123\" http://localhost:3000/api/search"
+  },
+  {
+    "instruction": "Get Grafana datasource ID by UID via API",
+    "output": "<think>\nWe should get Grafana datasource ID by UID via API.\nHere's how I'd approach this.\ncurl is what we need — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because without it the command won't work as we need.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/datasources/uid/prom-uid | jq '.id'"
+  },
+  {
+    "instruction": "Check if Grafana datasource exists via API",
+    "output": "<think>\nThe task requires us to check if Grafana datasource exists via API.\nHere's how I'd approach this.\nI'll reach for curl here because making HTTP requests.\nWhy -s? Summarize or silent mode. standard practice for this kind of operation.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s -o /dev/null -w '%{http_code}' http://admin:admin@localhost:3000/api/datasources/name/prometheus"
+  },
+  {
+    "instruction": "Bulk create dashboards from directory via API",
+    "output": "<think>\nThe task requires us to bulk create dashboards from directory via API.\nThe tool for this job is for — for operations.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nThe -d flag means directory listing, don't descend, which matters here because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nfor f in /dashboards/*.json; do curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d \"{\\\"dashboard\\\":$(cat $f),\\\"overwrite\\\":true}\"; done"
+  },
+  {
+    "instruction": "Delete expired Grafana snapshots via API",
+    "output": "<think>\nSo we need to delete expired Grafana snapshots via API.\ncurl is what we need — making HTTP requests.\nI'm using -s for summarize or silent mode — without it the command won't work as we need.\nThe -r flag handles recursive operation (descend into subdirectories). Important because standard practice for this kind of operation.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/snapshots | jq -r '.[].key' | while read key; do curl -X DELETE \"http://admin:admin@localhost:3000/api/snapshots/$key\"; done"
+  },
+  {
+    "instruction": "Get Grafana dashboard list with UIDs and titles",
+    "output": "<think>\nWe're being asked to get Grafana dashboard list with UIDs and titles.\nI'd use curl for this — making HTTP requests.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nThe -r flag handles recursive operation (descend into subdirectories). Important because important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/search | jq -r '.[] | \"\\(.uid) \\(.title)\"'"
+  },
+  {
+    "instruction": "Clone a Grafana dashboard by UID",
+    "output": "<think>\nThe task requires us to clone a Grafana dashboard by UID.\nThis calls for curl. Making HTTP requests.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc | jq '.dashboard + {\"title\": \"Clone of Dashboard\"}' | curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Export all Grafana dashboards",
+    "output": "<think>\nSo the request is to export all Grafana dashboards.\nI'd use curl for this — making HTTP requests.\nWhy -s? Summarize or silent mode. this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/search?type=dash-db | jq -r '.[].uid' | while read uid; do curl -s http://admin:admin@localhost:3000/api/dashboards/uid/$uid | jq '.dashboard' > \"${uid}.json\"; done"
+  },
+  {
+    "instruction": "Import all dashboards from directory",
+    "output": "<think>\nWe're being asked to import all dashboards from directory.\nBest tool here is for — for operations.\nI've added -r to recursive operation (descend into subdirectories) — needed for this specific use case.\nI've added -H to follow symlinks on command line only — without it the command won't work as we need.\nI've added -d to directory listing, don't descend — needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\n</think>\nfor f in *.json; do uid=$(jq -r '.uid' $f); curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d \"{\\\"dashboard\\\":$(cat $f),\\\"overwrite\\\":true,\\\"message\\\":\\\"imported\\\"}\"; done"
+  },
+  {
+    "instruction": "Get Grafana org creation date via API",
+    "output": "<think>\nThe task requires us to get Grafana org creation date via API.\nLet me reason through this.\nFor this, curl is the right tool — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because important to get the expected behavior.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/orgs/1 | jq '.createdAt'"
+  },
+  {
+    "instruction": "Restrict Grafana dashboard access by IP",
+    "output": "<think>\nThe user wants to restrict Grafana dashboard access by IP.\nAfter running, I'll confirm the result looks right.\n</think>\necho '[auth.proxy] enabled = true header_name = X-EMAIL header_property = email' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana dashboard version history",
+    "output": "<think>\nSo the request is to enable Grafana dashboard version history.\nLet me break this down.\n</think>\necho '[versions] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana session with Redis",
+    "output": "<think>\nSo we need to configure Grafana session with Redis.\nI'll check the output to make sure it did what we expected.\n</think>\necho '[sessions] provider = redis provider_config = addr=redis:6379,pool_size=100' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana feature toggles",
+    "output": "<think>\nNeed to configure Grafana feature toggles.\nLet me reason through this.\n</think>\necho '[feature_toggles] enable = transformations newVizTooltip' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana max dashboard import size",
+    "output": "<think>\nThe task requires us to set Grafana max dashboard import size.\nLet me think through this step by step.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\necho '[server] enable_gzip = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana custom auth proxy header",
+    "output": "<think>\nSo the request is to configure Grafana custom auth proxy header.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\necho '[auth.proxy] enabled = true header_name = X-WEBAUTH-USER auto_sign_up = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana rate limiting",
+    "output": "<think>\nWe're being asked to set Grafana rate limiting.\n</think>\necho '[rate_limiting] enabled = true rate = 50' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana oauth2 generic OIDC",
+    "output": "<think>\nWe should enable Grafana oauth2 generic OIDC.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho '[auth.generic_oauth] enabled = true client_id = oidc_client client_secret = secret scopes = openid,profile,email auth_url = https://idp.example.com/auth token_url = https://idp.example.com/token api_url = https://idp.example.com/userinfo' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana SAML authentication",
+    "output": "<think>\nWe're being asked to configure Grafana SAML authentication.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho '[auth.saml] enabled = true idp_metadata_url = https://idp.example.com/metadata' >> /etc/grafana/grafana.ini"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Check cluster health",
+    "output": "curl -X GET 'localhost:9200/_cluster/health?pretty'"
+  },
+  {
+    "instruction": "Check cluster health at index level",
+    "output": "curl -X GET 'localhost:9200/_cluster/health?level=indices&pretty'"
+  },
+  {
+    "instruction": "List all indices with sort",
+    "output": "curl -X GET 'localhost:9200/_cat/indices?v&s=index'"
+  },
+  {
+    "instruction": "List indices sorted by storage size",
+    "output": "curl -X GET 'localhost:9200/_cat/indices?v&h=index,health,status,pri,rep,store.size,docs.count&s=store.size:desc'"
+  },
+  {
+    "instruction": "List all nodes in the cluster",
+    "output": "curl -X GET 'localhost:9200/_cat/nodes?v'"
+  },
+  {
+    "instruction": "List nodes with detailed resource info",
+    "output": "curl -X GET 'localhost:9200/_cat/nodes?v&h=name,node.role,ip,heap.percent,ram.percent,cpu,load_1m'"
+  },
+  {
+    "instruction": "Show shard allocation across nodes",
+    "output": "curl -X GET 'localhost:9200/_cat/allocation?v'"
+  },
+  {
+    "instruction": "Show cluster settings (flat format)",
+    "output": "curl -X GET 'localhost:9200/_cluster/settings?pretty&flat_settings=true'"
+  },
+  {
+    "instruction": "Search with query string",
+    "output": "curl -X GET 'localhost:9200/myindex/_search?q=field:value&pretty'"
+  },
+  {
+    "instruction": "Search with JSON query body",
+    "output": "curl -X GET 'localhost:9200/myindex/_search?pretty' -H 'Content-Type: application/json' -d '{\"query\": {\"match\": {\"field\": \"value\"}}}'"
+  },
+  {
+    "instruction": "Search with bool query and filter",
+    "output": "curl -X GET 'localhost:9200/orders/_search?pretty' -H 'Content-Type: application/json' -d '{\"query\": {\"bool\": {\"must\": {\"match\": {\"status\": \"completed\"}}, \"filter\": {\"range\": {\"total\": {\"gte\": 100}}}}}}'"
+  },
+  {
+    "instruction": "Terms bucket aggregation",
+    "output": "curl -X GET 'localhost:9200/orders/_search?pretty' -H 'Content-Type: application/json' -d '{\"size\": 0, \"aggs\": {\"by_status\": {\"terms\": {\"field\": \"status\"}}}}'"
+  },
+  {
+    "instruction": "Date histogram aggregation",
+    "output": "curl -X GET 'localhost:9200/orders/_search?pretty' -H 'Content-Type: application/json' -d '{\"size\": 0, \"aggs\": {\"over_time\": {\"date_histogram\": {\"field\": \"created_at\", \"calendar_interval\": \"month\"}}}}'"
+  },
+  {
+    "instruction": "Stats aggregation on a numeric field",
+    "output": "curl -X GET 'localhost:9200/orders/_search?pretty' -H 'Content-Type: application/json' -d '{\"size\": 0, \"aggs\": {\"stats_total\": {\"stats\": {\"field\": \"total\"}}}}'"
+  },
+  {
+    "instruction": "Nested aggregation with average",
+    "output": "curl -X GET 'localhost:9200/orders/_search?pretty' -H 'Content-Type: application/json' -d '{\"size\": 0, \"aggs\": {\"by_status\": {\"terms\": {\"field\": \"status\"}, \"aggs\": {\"avg_total\": {\"avg\": {\"field\": \"total\"}}}}}}'"
+  },
+  {
+    "instruction": "Create an index with settings and mappings",
+    "output": "curl -X PUT 'localhost:9200/myindex' -H 'Content-Type: application/json' -d '{\"settings\": {\"number_of_shards\": 3, \"number_of_replicas\": 2}, \"mappings\": {\"properties\": {\"name\": {\"type\": \"text\"}, \"price\": {\"type\": \"float\"}, \"created_at\": {\"type\": \"date\"}}}}'"
+  },
+  {
+    "instruction": "Delete an index",
+    "output": "curl -X DELETE 'localhost:9200/myindex'"
+  },
+  {
+    "instruction": "Check if an index exists (HEAD)",
+    "output": "curl -X HEAD 'localhost:9200/myindex'"
+  },
+  {
+    "instruction": "Get the mapping of an index",
+    "output": "curl -X GET 'localhost:9200/myindex/_mapping?pretty'"
+  },
+  {
+    "instruction": "Get index settings",
+    "output": "curl -X GET 'localhost:9200/myindex/_settings?pretty'"
+  },
+  {
+    "instruction": "Update index number_of_replicas",
+    "output": "curl -X PUT 'localhost:9200/myindex/_settings' -H 'Content-Type: application/json' -d '{\"index\": {\"number_of_replicas\": 3}}'"
+  },
+  {
+    "instruction": "Put mapping to add a new field",
+    "output": "curl -X PUT 'localhost:9200/myindex/_mapping' -H 'Content-Type: application/json' -d '{\"properties\": {\"description\": {\"type\": \"text\"}}}'"
+  }
+]

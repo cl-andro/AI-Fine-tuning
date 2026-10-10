@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a systemd timer that runs daily at 3 AM",
+    "output": "<think>\nThe user wants to create a systemd timer that runs daily at 3 AM.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/daily-backup.timer <<'EOF'\n[Unit]\nDescription=Daily backup timer\n\n[Timer]\nOnCalendar=daily\nPersistent=true\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a service unit triggered by the daily timer",
+    "output": "<think>\nWe should create a service unit triggered by the daily timer.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo tee /etc/systemd/system/daily-backup.service <<'EOF'\n[Unit]\nDescription=Daily backup job\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/backup.sh\nEOF"
+  },
+  {
+    "instruction": "Create a timer that runs 15 minutes after boot",
+    "output": "<think>\nSo the request is to create a timer that runs 15 minutes after boot.\nHere's how I'd approach this.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/ondelay.timer <<'EOF'\n[Timer]\nOnBootSec=15min\nUnit=myapp.service\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a timer that runs every hour with jitter",
+    "output": "<think>\nAlright, we need to create a timer that runs every hour with jitter.\nFirst, let me understand what's needed here.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/hourly-check.timer <<'EOF'\n[Timer]\nOnCalendar=hourly\nRandomizedDelaySec=300\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a timer that runs every Monday at midnight",
+    "output": "<think>\nNeed to create a timer that runs every Monday at midnight.\nLet me think through this step by step.\nI'd use tee for this — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/weekly-report.timer <<'EOF'\n[Timer]\nOnCalendar=Mon *-*-* 00:00:00\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a path unit that watches a directory for changes",
+    "output": "<think>\nSo the request is to create a path unit that watches a directory for changes.\nLet me reason through this.\nBest tool here is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/watchdir.path <<'EOF'\n[Unit]\nDescription=Watch /data/incoming\n\n[Path]\nPathModified=/data/incoming\nUnit=proc-incoming.service\n\n[Install]\nWantedBy=paths.target\nEOF"
+  },
+  {
+    "instruction": "Create a service triggered by the path watcher",
+    "output": "<think>\nThe goal is to create a service triggered by the path watcher.\nLet me think through this step by step.\nI'll reach for tee here because tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/proc-incoming.service <<'EOF'\n[Unit]\nDescription=Process incoming files\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/process.sh\nEOF"
+  },
+  {
+    "instruction": "Create a path unit that triggers on file creation only",
+    "output": "<think>\nWe should create a path unit that triggers on file creation only.\nLet me consider what makes sense here.\nI'd use tee for this — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo tee /etc/systemd/system/oncreate.path <<'EOF'\n[Path]\nPathExists=/data/signal.txt\nUnit=oncreate-handler.service\n\n[Install]\nWantedBy=paths.target\nEOF"
+  },
+  {
+    "instruction": "Create a socket unit for a systemd-activated service",
+    "output": "<think>\nWe're being asked to create a socket unit for a systemd-activated service.\nI'd use tee for this — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/echo.socket <<'EOF'\n[Unit]\nDescription=Echo socket\n\n[Socket]\nListenStream=7777\nAccept=yes\n\n[Install]\nWantedBy=sockets.target\nEOF"
+  },
+  {
+    "instruction": "Create a service for socket-activated echo server",
+    "output": "<think>\nWe should create a service for socket-activated echo server.\nI'll reach for tee here because tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/echo@.service <<'EOF'\n[Unit]\nDescription=Echo connection %i\n\n[Service]\nExecStart=/usr/bin/cat\nStandardInput=socket\nStandardOutput=socket\nEOF"
+  },
+  {
+    "instruction": "Create a socket unit listening on a Unix socket",
+    "output": "<think>\nWe should create a socket unit listening on a Unix socket.\nLet me think through this step by step.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/myapp.socket <<'EOF'\n[Socket]\nListenStream=/run/myapp.sock\nSocketMode=0660\nSocketUser=myapp\n\n[Install]\nWantedBy=sockets.target\nEOF"
+  },
+  {
+    "instruction": "Activate and start all timer units",
+    "output": "<think>\nNeed to activate and start all timer units.\nLet me consider what makes sense here.\nI'd use systemctl for this — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl enable --now daily-backup.timer"
+  },
+  {
+    "instruction": "List all timer units with their next elapse time",
+    "output": "<think>\nNeed to list all timer units with their next elapse time.\nLet me think about the best approach.\nI'll reach for systemctl here because managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsystemctl list-timers --all"
+  },
+  {
+    "instruction": "Show detailed timer properties",
+    "output": "<think>\nThe goal is to show detailed timer properties.\nLet me think about the best approach.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show daily-backup.timer"
+  },
+  {
+    "instruction": "Test what a calendar expression would resolve to",
+    "output": "<think>\nAlright, we need to test what a calendar expression would resolve to.\nLet me break this down.\nThis calls for systemd-analyze. Systemd-analyze operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemd-analyze calendar '*-*-* 00,12:00:00'"
+  },
+  {
+    "instruction": "Show timer calendar expressions in verbose format",
+    "output": "<think>\nThe goal is to show timer calendar expressions in verbose format.\nLet me think through this step by step.\nThis calls for systemctl. Managing systemd services.\nThe -p flag handles create parent directories as needed. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nsystemctl show daily-backup.timer -p OnCalendar --value"
+  },
+  {
+    "instruction": "Create a monotonic timer that runs 1 hour after boot",
+    "output": "<think>\nThe user wants to create a monotonic timer that runs 1 hour after boot.\nLet me consider what makes sense here.\nBest tool here is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo tee /etc/systemd/system/boot-delay.timer <<'EOF'\n[Timer]\nOnBootSec=1h\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a timer that runs after the previous invocation completes plus 30 min",
+    "output": "<think>\nThe user wants to create a timer that runs after the previous invocation completes plus 30 min.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo tee /etc/systemd/system/interval.timer <<'EOF'\n[Timer]\nOnUnitActiveSec=30min\n\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Activate a path unit immediately",
+    "output": "<think>\nThe task requires us to activate a path unit immediately.\nLet me think about the best approach.\nBest tool here is systemctl — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsudo systemctl enable --now watchdir.path"
+  },
+  {
+    "instruction": "Start a socket unit and make it listen",
+    "output": "<think>\nThe user wants to start a socket unit and make it listen.\nLet me break this down.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl start echo.socket"
+  },
+  {
+    "instruction": "Check if a socket unit is listening",
+    "output": "<think>\nSo we need to check if a socket unit is listening.\nHere's how I'd approach this.\nI'd use ss for this — socket diagnostics.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nss -tlnp | grep 7777"
+  },
+  {
+    "instruction": "Disable and stop a timer permanently",
+    "output": "<think>\nNeed to disable and stop a timer permanently.\nLet me break this down.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemctl disable --now daily-backup.timer"
+  },
+  {
+    "instruction": "Re-generate all timer symlinks without enabling",
+    "output": "<think>\nWe should re-generate all timer symlinks without enabling.\nFirst, let me understand what's needed here.\nBest tool here is systemctl — managing systemd services.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl daemon-reload && sudo systemctl reenable daily-backup.timer"
+  },
+  {
+    "instruction": "Create a path unit that watches a file then stops triggering",
+    "output": "<think>\nThe task requires us to create a path unit that watches a file then stops triggering.\nLet me think through this step by step.\nThis calls for tee. Tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo tee /etc/systemd/system/watchnot.path <<'EOF'\n[Path]\nPathChanged=/tmp/watchfile\nMadeDirectory=/tmp/watchdir\n\n[Install]\nWantedBy=paths.target\nEOF"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show details of a specific file descriptor",
+    "output": "<think>\nWe're being asked to show details of a specific file descriptor.\nLet me think through this step by step.\nI'll reach for stat here because stat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nstat /proc/1234/fd/3"
+  },
+  {
+    "instruction": "Show stdin/stdout/stderr of a process",
+    "output": "<think>\nThe task requires us to show stdin/stdout/stderr of a process.\nLet me reason through this.\nFor this, ls is the right tool — ls operations.\nThe -la flag means detailed listing including hidden files, which matters here because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nls -la /proc/1234/fd/{0,1,2}"
+  },
+  {
+    "instruction": "Watch stdin of a process in real time",
+    "output": "<think>\nThe goal is to watch stdin of a process in real time.\nLet me reason through this.\nBest tool here is cat — cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /proc/1234/fd/0"
+  },
+  {
+    "instruction": "Write to stdin of a running process",
+    "output": "<think>\nNeed to write to stdin of a running process.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho \"command\" > /proc/1234/fd/0"
+  },
+  {
+    "instruction": "Show the control group of a process",
+    "output": "<think>\nThis is asking us to show the control group of a process.\nThis calls for cat. Cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/1234/cgroup"
+  },
+  {
+    "instruction": "Show process scheduling class",
+    "output": "<think>\nWe should show process scheduling class.\nLet me break this down.\nBest tool here is chrt — chrt operations.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nchrt -p 1234 2>/dev/null; cat /proc/1234/sched | head -3"
+  },
+  {
+    "instruction": "Show process security context (SELinux)",
+    "output": "<think>\nWe're being asked to show process security context (SELinux).\nFirst, let me understand what's needed here.\nThis calls for cat. Cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/1234/attr/current"
+  },
+  {
+    "instruction": "Show the capabilities of a process",
+    "output": "<think>\nSo we need to show the capabilities of a process.\nLet me think about the best approach.\nI'll reach for cat here because cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ncat /proc/1234/status | grep Cap"
+  },
+  {
+    "instruction": "Decode process capabilities",
+    "output": "<think>\nSo we need to decode process capabilities.\nFirst, let me understand what's needed here.\nBest tool here is capsh — capsh operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ncapsh --decode=$(cat /proc/1234/status | grep CapEff | awk '{print $2}')"
+  },
+  {
+    "instruction": "Show process namespace IDs",
+    "output": "<think>\nSo the request is to show process namespace IDs.\nThe tool for this job is ls — ls operations.\n</think>\nls -la /proc/1234/ns/"
+  },
+  {
+    "instruction": "Enter the namespace of another process",
+    "output": "<think>\nThe user wants to enter the namespace of another process.\nLet me think about the best approach.\nBest tool here is nsenter — nsenter operations.\nI've added -t to sort by modification time — without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\nnsenter -t 1234 -a /bin/bash"
+  },
+  {
+    "instruction": "Show the PID namespace hierarchy",
+    "output": "<think>\nThe task requires us to show the PID namespace hierarchy.\nI'd use cat for this — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\ncat /proc/1234/status | grep NSpid"
+  },
+  {
+    "instruction": "Check if a process is running inside a container",
+    "output": "<think>\nThe task requires us to check if a process is running inside a container.\nI'll reach for cat here because cat operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /proc/1/cgroup | grep -q docker && echo in Docker || echo native"
+  },
+  {
+    "instruction": "Show all PIDs in the current PID namespace",
+    "output": "<think>\nThis is asking us to show all PIDs in the current PID namespace.\nI'll reach for ls here because ls operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nls /proc/ | grep -E '^[0-9]+$' | sort -n"
+  },
+  {
+    "instruction": "Show the process with highest threads count",
+    "output": "<think>\nThe goal is to show the process with highest threads count.\nps is what we need — process listing.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nps -eo nlwp,pid,cmd | sort -rh | head -5"
+  },
+  {
+    "instruction": "Show the thread pool size of a process",
+    "output": "<think>\nThe user wants to show the thread pool size of a process.\nLet me reason through this.\nI'll reach for ls here because ls operations.\nThe -l flag handles long format with details. Important because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nls /proc/1234/task/ | wc -l"
+  },
+  {
+    "instruction": "List all threads of a process",
+    "output": "<think>\nSo the request is to list all threads of a process.\nI'll reach for ps here because process listing.\nThe -T flag means print filesystem type in df, which matters here because without it the command won't work as we need.\nI'm using -p for create parent directories as needed — without it the command won't work as we need.\nLet me verify afterward that it worked correctly.\n</think>\nps -T -p 1234"
+  },
+  {
+    "instruction": "Show thread IDs in a tree",
+    "output": "<think>\nThe goal is to show thread IDs in a tree.\nThis calls for ps. Process listing.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nps -eLf | grep 1234"
+  },
+  {
+    "instruction": "Check real-time thread priority dispatching",
+    "output": "<think>\nThis is asking us to check real-time thread priority dispatching.\nThe tool for this job is chrt — chrt operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nchrt -m"
+  },
+  {
+    "instruction": "Check if real-time group scheduling is enabled",
+    "output": "<think>\nThe goal is to check if real-time group scheduling is enabled.\nThis calls for cat. Cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/sys/kernel/sched_rt_runtime_us"
+  },
+  {
+    "instruction": "Show CPU time spent by a process",
+    "output": "<think>\nThe task requires us to show CPU time spent by a process.\nLet me think about the best approach.\nI'll reach for cat here because cat operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/1234/stat | awk '{print \"utime=\"$14 \" stime=\"$15}'"
+  },
+  {
+    "instruction": "Show process start time in jiffies",
+    "output": "<think>\nSo the request is to show process start time in jiffies.\nBest tool here is cat — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/1234/stat | awk '{print \"starttime=\"$22}'"
+  },
+  {
+    "instruction": "Show process signal masks",
+    "output": "<think>\nWe're being asked to show process signal masks.\nI'd use cat for this — cat operations.\nI'm using -E for extended regex — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/1234/status | grep -E 'Sig'"
+  },
+  {
+    "instruction": "Show the list of pending signals",
+    "output": "<think>\nSo we need to show the list of pending signals.\nLet me consider what makes sense here.\nBest tool here is cat — cat operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\ncat /proc/1234/status | grep Pending"
+  },
+  {
+    "instruction": "Send a signal-based notification to a process",
+    "output": "<think>\nWe should send a signal-based notification to a process.\nFirst, let me understand what's needed here.\nI'll reach for kill here because process termination.\nOne command does the job. Simple is better.\nkill -9 should be a last resort — if the process ignores SIGTERM, then escalate to SIGKILL.\nAfter running, I'll confirm the result looks right.\n</think>\nkill -USR2 $(pgrep -x myapp)"
+  }
+]

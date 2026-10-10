@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Enable IP forwarding via /proc",
+    "output": "<think>\nThe goal is to enable IP forwarding via /proc.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 1 > /proc/sys/net/ipv4/ip_forward"
+  },
+  {
+    "instruction": "Disable IPv6 via sysctl parameter",
+    "output": "<think>\nThe user wants to disable IPv6 via sysctl parameter.\nLet me verify afterward that it worked correctly.\n</think>\necho 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6"
+  },
+  {
+    "instruction": "Set swappiness to 10 via proc",
+    "output": "<think>\nWe should set swappiness to 10 via proc.\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 10 > /proc/sys/vm/swappiness"
+  },
+  {
+    "instruction": "Enable kernel panic on OOM",
+    "output": "<think>\nAlright, we need to enable kernel panic on OOM.\nLet me think about the best approach.\nLet me verify afterward that it worked correctly.\n</think>\necho 1 > /proc/sys/vm/panic_on_oom"
+  },
+  {
+    "instruction": "Set max user watches for inotify",
+    "output": "<think>\nSo the request is to set max user watches for inotify.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 524288 > /proc/sys/fs/inotify/max_user_watches"
+  },
+  {
+    "instruction": "Create a sysctl config for vm settings",
+    "output": "<think>\nSo the request is to create a sysctl config for vm settings.\nQuick verification after execution to be safe.\n</think>\necho 'vm.swappiness=10' > /etc/sysctl.d/99-swap.conf"
+  },
+  {
+    "instruction": "Create sysctl config for network hardening",
+    "output": "<think>\nSo the request is to create sysctl config for network hardening.\nFirst, let me understand what's needed here.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho -e 'net.ipv4.conf.all.rp_filter=1\\nnet.ipv4.tcp_syncookies=1' > /etc/sysctl.d/99-network.conf"
+  },
+  {
+    "instruction": "Apply all sysctl parameters from /etc/sysctl.d/",
+    "output": "<think>\nAlright, we need to apply all sysctl parameters from /etc/sysctl.d/.\nI'll reach for sysctl here because kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl --system"
+  },
+  {
+    "instruction": "Apply a single sysctl parameter immediately",
+    "output": "<think>\nSo the request is to apply a single sysctl parameter immediately.\nLet me think through this step by step.\nThe tool for this job is sysctl — kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nsysctl -w vm.swappiness=10"
+  },
+  {
+    "instruction": "Query current value of a sysctl parameter",
+    "output": "<think>\nAlright, we need to query current value of a sysctl parameter.\nBest tool here is sysctl — kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nsysctl net.ipv4.ip_forward"
+  },
+  {
+    "instruction": "Query all sysctl parameters matching 'vm'",
+    "output": "<think>\nNeed to query all sysctl parameters matching 'vm'.\nBest tool here is sysctl — kernel parameter tuning.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsysctl -a | grep '^vm\\.'"
+  },
+  {
+    "instruction": "List all sysctl parameter names",
+    "output": "<think>\nThe goal is to list all sysctl parameter names.\nHere's how I'd approach this.\nBest tool here is sysctl — kernel parameter tuning.\nThe -l flag means long format with details, which matters here because this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -aN | wc -l"
+  },
+  {
+    "instruction": "Reload sysctl from specific file",
+    "output": "<think>\nThe task requires us to reload sysctl from specific file.\nThis calls for sysctl. Kernel parameter tuning.\n</think>\nsysctl -p /etc/sysctl.d/99-swap.conf"
+  },
+  {
+    "instruction": "Set kernel hostname via /proc",
+    "output": "<think>\nAlright, we need to set kernel hostname via /proc.\n</think>\necho 'myhost' > /proc/sys/kernel/hostname"
+  },
+  {
+    "instruction": "Enable TCP BBR congestion control",
+    "output": "<think>\nThe goal is to enable TCP BBR congestion control.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'net.core.default_qdisc=fq' > /etc/sysctl.d/99-bbr.conf && echo 'net.ipv4.tcp_congestion_control=bbr' >> /etc/sysctl.d/99-bbr.conf"
+  },
+  {
+    "instruction": "Set kernel panic timeout to 5 seconds",
+    "output": "<think>\nSo the request is to set kernel panic timeout to 5 seconds.\nAfter running, I'll confirm the result looks right.\n</think>\necho 5 > /proc/sys/kernel/panic"
+  },
+  {
+    "instruction": "Set kernel printk level to suppress debug",
+    "output": "<think>\nNeed to set kernel printk level to suppress debug.\nLet me consider what makes sense here.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho '4 4 1 7' > /proc/sys/kernel/printk"
+  },
+  {
+    "instruction": "Set max number of open files system-wide",
+    "output": "<think>\nThe user wants to set max number of open files system-wide.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'fs.file-max=200000' > /etc/sysctl.d/99-limits.conf"
+  },
+  {
+    "instruction": "Enable kernel core dump with pipe to systemd-coredump",
+    "output": "<think>\nSo the request is to enable kernel core dump with pipe to systemd-coredump.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'kernel.core_pattern=|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h' > /etc/sysctl.d/99-coredump.conf"
+  },
+  {
+    "instruction": "Set shared memory max (SHMMAX) to 16GiB",
+    "output": "<think>\nThe task requires us to set shared memory max (SHMMAX) to 16GiB.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'kernel.shmmax=17179869184' > /etc/sysctl.d/99-shm.conf"
+  },
+  {
+    "instruction": "Set max number of user namespaces",
+    "output": "<think>\nThis is asking us to set max number of user namespaces.\nLet me think through this step by step.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'user.max_user_namespaces=10000' > /etc/sysctl.d/99-userns.conf"
+  },
+  {
+    "instruction": "Disable magic SysRq key",
+    "output": "<think>\nWe should disable magic SysRq key.\nLet me think through this step by step.\n</think>\necho 0 > /proc/sys/kernel/sysrq"
+  },
+  {
+    "instruction": "Set vm.dirty_ratio to 30%",
+    "output": "<think>\nThe user wants to set vm.dirty_ratio to 30%.\nFirst, let me understand what's needed here.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 30 > /proc/sys/vm/dirty_ratio"
+  },
+  {
+    "instruction": "Set vm.vfs_cache_pressure to 50",
+    "output": "<think>\nThe user wants to set vm.vfs_cache_pressure to 50.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\necho 50 > /proc/sys/vm/vfs_cache_pressure"
+  },
+  {
+    "instruction": "Persist kernel.exec-shield via sysctl",
+    "output": "<think>\nSo we need to persist kernel.exec-shield via sysctl.\nThe -exec flag means execute command on each match, which matters here because this controls how the output is formatted.\nLet me verify afterward that it worked correctly.\n</think>\necho 'kernel.exec-shield=1' > /etc/sysctl.d/99-exec-shield.conf"
+  },
+  {
+    "instruction": "Load a custom sysctl file without reboot",
+    "output": "<think>\nWe should load a custom sysctl file without reboot.\nsysctl is what we need — kernel parameter tuning.\nThe -f flag handles force, suppress errors. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsysctl -f /etc/sysctl.d/99-custom.conf"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Run a GIMP batch script",
+    "output": "gimp -i -b '(batch-duplicate-layer \"input.xcf\" \"output.xcf\")' -b '(gimp-quit 0)'"
+  },
+  {
+    "instruction": "Convert XCF to PNG using GIMP batch",
+    "output": "gimp -i -b '(let* ((img (car (gimp-file-load RUN-NONINTERACTIVE \"input.xcf\" \"input.xcf\"))) (drawable (car (gimp-image-merge-visible-layers img CLIP-TO-IMAGE)))) (file-png-save RUN-NONINTERACTIVE img drawable \"output.png\" \"output.png\" 0 0 0 0 0 0 0))' -b '(gimp-quit 0)'"
+  },
+  {
+    "instruction": "GIMP batch resize to 50%",
+    "output": "gimp -i -b '(let* ((img (car (gimp-file-load RUN-NONINTERACTIVE \"input.jpg\" \"input.jpg\"))) (drawable (car (gimp-image-get-active-layer img)))) (gimp-image-scale img 800 600) (file-jpeg-save RUN-NONINTERACTIVE img drawable \"out.jpg\" \"out.jpg\" 0.85 0 0 0 \"\" 0 1 0 0))' -b '(gimp-quit 0)'"
+  },
+  {
+    "instruction": "Trace a bitmap to SVG with potrace",
+    "output": "potrace input.bmp -s -o output.svg"
+  },
+  {
+    "instruction": "Potrace with black/white threshold",
+    "output": "potrace input.pnm -t 0.5 -o output.svg"
+  },
+  {
+    "instruction": "Potrace with tight curves optimization",
+    "output": "potrace input.bmp -u 1 -o output.svg"
+  },
+  {
+    "instruction": "Potrace produce EPS output",
+    "output": "potrace input.bmp -e -o output.eps"
+  },
+  {
+    "instruction": "Potrace with posterization levels",
+    "output": "potrace input.bmp -P 4 -o output.svg"
+  },
+  {
+    "instruction": "Convert PNM to PPM with netpbm",
+    "output": "pnmtopng input.pnm > output.png"
+  },
+  {
+    "instruction": "NetPBM: convert JPEG to PNM",
+    "output": "jpegtopnm input.jpg > output.pnm"
+  },
+  {
+    "instruction": "NetPBM: scale a PPM image",
+    "output": "pamscale 0.5 input.ppm > output.ppm"
+  },
+  {
+    "instruction": "NetPBM: rotate a PNM image 90",
+    "output": "pamflip -rotate90 input.pnm > output.pnm"
+  },
+  {
+    "instruction": "NetPBM: composite two images",
+    "output": "pamcomp -alpha overlay.png background.png > output.png"
+  },
+  {
+    "instruction": "Extract EXIF data from image",
+    "output": "exiftool input.jpg"
+  },
+  {
+    "instruction": "ExifTool: read only date created",
+    "output": "exiftool -DateTimeOriginal input.jpg"
+  },
+  {
+    "instruction": "ExifTool: strip all metadata",
+    "output": "exiftool -all= input.jpg"
+  },
+  {
+    "instruction": "ExifTool: set author metadata",
+    "output": "exiftool -Author='John Doe' input.jpg"
+  },
+  {
+    "instruction": "ExifTool: export metadata to CSV",
+    "output": "exiftool -csv input.jpg > metadata.csv"
+  },
+  {
+    "instruction": "ExifTool: extract thumbnail to file",
+    "output": "exiftool -b -ThumbnailImage input.jpg > thumb.jpg"
+  },
+  {
+    "instruction": "ExifTool: rename files by date",
+    "output": "exiftool '-FileName<DateTimeOriginal' -d '%Y%m%d_%H%M%S%%-c.%%e' *.jpg"
+  },
+  {
+    "instruction": "NetPBM: convert a batch of images",
+    "output": "for f in *.jpg; do jpegtopnm \"$f\" | pnmscale 0.5 | pnmtopng > \"${f%.jpg}_thumb.png\"; done"
+  }
+]

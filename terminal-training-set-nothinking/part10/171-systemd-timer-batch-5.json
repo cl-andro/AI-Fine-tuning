@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Clean timer runtime state",
+    "output": "systemctl clean backup.timer"
+  },
+  {
+    "instruction": "Create a daily persistent timer unit",
+    "output": "cat > /etc/systemd/system/backup.timer << 'EOF'\n[Unit]\nDescription=Daily backup\n[Timer]\nOnCalendar=daily\nPersistent=true\n[Install]\nWantedBy=timers.target\nEOF"
+  },
+  {
+    "instruction": "Create a transient timer for midnight echo",
+    "output": "systemd-run --on-calendar='*-*-* 00:00:00' systemd-cat echo \"midnight\""
+  },
+  {
+    "instruction": "List all timers including inactive",
+    "output": "systemctl list-timers --all"
+  },
+  {
+    "instruction": "Create timer schedule with seconds precision",
+    "output": "systemd-analyze calendar '*-*-* *:*:30'"
+  },
+  {
+    "instruction": "List active timers only",
+    "output": "systemctl list-timers --state=active"
+  },
+  {
+    "instruction": "View timer target wants symlink",
+    "output": "ls -l /etc/systemd/system/timers.target.wants/backup.timer"
+  },
+  {
+    "instruction": "Disable a timer",
+    "output": "systemctl disable backup.timer"
+  },
+  {
+    "instruction": "Analyze custom calendar: first of month at 4 AM",
+    "output": "systemd-analyze calendar '*-*-01 04:00:00'"
+  },
+  {
+    "instruction": "Check if timer is enabled",
+    "output": "systemctl is-enabled backup.timer"
+  },
+  {
+    "instruction": "List timers without pager",
+    "output": "systemctl list-timers --no-pager"
+  },
+  {
+    "instruction": "Show all timer properties",
+    "output": "systemctl show backup.timer"
+  },
+  {
+    "instruction": "Run a command daily at 2 AM via transient timer",
+    "output": "systemd-run --on-calendar='*-*-* 02:00:00' /usr/bin/backup.sh"
+  },
+  {
+    "instruction": "Run a command 5 minutes after boot",
+    "output": "systemd-run --on-startup=5m /usr/bin/delayed-start.sh"
+  },
+  {
+    "instruction": "Create timer with randomized delay",
+    "output": "systemd-run --on-calendar='daily' --timer-property=RandomizedDelaySec=1h /usr/bin/random-backup.sh"
+  },
+  {
+    "instruction": "Create timer for every 6 hours",
+    "output": "systemd-run --on-calendar='*-*-* */6:00:00' /usr/bin/every-6-hours.sh"
+  },
+  {
+    "instruction": "Reenable a timer",
+    "output": "systemctl reenable backup.timer"
+  },
+  {
+    "instruction": "List dependencies of a timer",
+    "output": "systemctl list-dependencies backup.timer"
+  },
+  {
+    "instruction": "List system timer unit files",
+    "output": "ls /etc/systemd/system/*.timer"
+  },
+  {
+    "instruction": "Mask a timer",
+    "output": "systemctl mask backup.timer"
+  },
+  {
+    "instruction": "List reverse dependencies of a timer",
+    "output": "systemctl list-dependencies --reverse backup.timer"
+  },
+  {
+    "instruction": "Create timer that fires every 15 minutes",
+    "output": "systemd-run --on-active=15m --unit=quarterly /usr/bin/quarterly-check.sh"
+  },
+  {
+    "instruction": "List timers in JSON format",
+    "output": "systemctl list-timers --json=pretty"
+  },
+  {
+    "instruction": "Check timer status",
+    "output": "systemctl status backup.timer"
+  }
+]

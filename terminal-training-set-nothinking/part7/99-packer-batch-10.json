@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Golden AMI pipeline using Packer and GitHub Actions",
+    "output": "echo 'name: build-ami\non: push\njobs: build: runs-on: ubuntu-latest steps: - uses: actions/checkout@v4 - run: packer init . - run: packer build -var-file=prod.pkrvars.hcl template.pkr.hcl' > .github/workflows/packer.yml"
+  },
+  {
+    "instruction": "Use the amazon-chroot builder to create an AMI from an existing instance",
+    "output": "echo 'source \"amazon-chroot\" \"ubuntu\" { source_ami = var.base_ami }' > chroot.pkr.hcl"
+  },
+  {
+    "instruction": "Set up a CI pipeline for Windows AMI building",
+    "output": "echo 'job: build-win: runs-on: windows-latest steps: - run: choco install packer - run: packer build win-template.pkr.hcl' > win-ci.yml"
+  },
+  {
+    "instruction": "Use a post-processor to export AMI as a VM image",
+    "output": "echo 'post-processor \"amazon-export\" { output_path = \"s3://my-bucket/exports/\" }' > export.pkr.hcl"
+  },
+  {
+    "instruction": "Export a GCP image to a storage bucket",
+    "output": "echo 'build { sources = [\"source.googlecompute.ubuntu\"] post-processor \"googlecompute-export\" { paths = [\"gs://my-bucket/images/{{timestamp}}\"] } }' > gcp-export.pkr.hcl"
+  },
+  {
+    "instruction": "Import a RAW image into AWS as an AMI",
+    "output": "echo 'post-processor \"amazon-import\" { s3_bucket_name = \"import-bucket\" license_type = \"BYOL\" }' > import.pkr.hcl"
+  },
+  {
+    "instruction": "Create an Azure managed image from Packer",
+    "output": "echo 'source \"azure-arm\" \"ubuntu\" { managed_image_resource_group_name = \"packer-images\" managed_image_name = \"ubuntu-22.04\" }' > azure-manged.pkr.hcl"
+  },
+  {
+    "instruction": "Create a shared image gallery version in Azure",
+    "output": "echo 'source \"azure-arm\" \"ubuntu\" { shared_image_gallery { subscription = var.arm_subscription resource_group = \"sig-rg\" gallery_name = \"myGallery\" image_name = \"ubuntu\" image_version = \"1.0.0\" } }' > azure-sig.pkr.hcl"
+  },
+  {
+    "instruction": "Create a VHD in Azure from Packer",
+    "output": "echo 'source \"azure-arm\" \"ubuntu\" { capture_container_name = \"vhd-store\" capture_name_prefix = \"ubuntu\" }' > azure-vhd.pkr.hcl"
+  },
+  {
+    "instruction": "Tag the Azure managed image with metadata",
+    "output": "echo 'build { sources = [\"source.azure-arm.ubuntu\"] provisioner \"shell\" { inline = [\"echo built\"] } post-processor \"azure-arm-tag\" { tags = { Environment = \"prod\" Version = var.version } } }' > azure-tag.pkr.hcl"
+  },
+  {
+    "instruction": "Use the azure-arm builder with temporary resource group",
+    "output": "echo 'source \"azure-arm\" \"ubuntu\" { temporary_resource_group_name = \"packer-temp\" }' > azure-temp-rg.pkr.hcl"
+  },
+  {
+    "instruction": "Create a DigitalOcean snapshot via Packer",
+    "output": "echo 'source \"digitalocean\" \"ubuntu\" { snapshot_name = \"ubuntu-base-{{timestamp}}\" }' > do-snapshot.pkr.hcl"
+  },
+  {
+    "instruction": "Build an image and automatically tag it with git commit",
+    "output": "echo 'locals { git_sha = env(\"GITHUB_SHA\") } source \"amazon-ebs\" \"ubuntu\" { tags = { Commit = local.git_sha } }' > git-tag.pkr.hcl"
+  },
+  {
+    "instruction": "Create a CI check that validates Packer templates",
+    "output": "packer fmt -check -recursive . && packer validate template.pkr.hcl"
+  },
+  {
+    "instruction": "Build and push a Docker image in one Packer template",
+    "output": "echo 'source \"docker\" \"app\" { image = \"ubuntu:22.04\" commit = true } build { sources = [\"source.docker.app\"] provisioner \"shell\" { inline = [\"apt update && apt install -y nginx\"] } post-processors { post-processor \"docker-tag\" { repository = \"registry.example.com/app\" tags = [\"latest\"] } post-processor \"docker-push\" {} } }' > docker-push.pkr.hcl"
+  },
+  {
+    "instruction": "Export a Docker image and import as AWS AMI",
+    "output": "echo 'source \"docker\" \"app\" { image = \"nginx:latest\" commit = true } build { post-processor \"docker-save\" { output = \"nginx.tar\" } post-processor \"amazon-import\" { s3_bucket_name = \"import-bucket\" } }' > docker-to-ami.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Terraform provisioner to apply infra during build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"terraform init && terraform apply -auto-approve\"] }' > terraform-provisioner.pkr.hcl"
+  },
+  {
+    "instruction": "Run a Packer build from a CI/CD pipeline with versioned AMIs",
+    "output": "packer build -var='version=1.2.3' -var='git_commit=$(git rev-parse HEAD)' template.pkr.hcl"
+  },
+  {
+    "instruction": "List all the AMIs created by a specific Packer template",
+    "output": "aws ec2 describe-images --owners self --filters 'Name=tag:Name,Values=packer-*' --query 'Images[*].{ID:ImageId,Name:Name}' --output table"
+  },
+  {
+    "instruction": "Deregister old AMIs based on a Packer template tag",
+    "output": "aws ec2 describe-images --owners self --filters 'Name=tag:Template,Values=ubuntu-base' --query 'Images[*].ImageId' --output text | xargs -n1 aws ec2 deregister-image --image-id"
+  },
+  {
+    "instruction": "Clean up old Packer build snapshots in AWS",
+    "output": "aws ec2 describe-snapshots --owner self --filters 'Name=description,Values=*packer*' --query 'Snapshots[*].SnapshotId' --output text | xargs -n1 aws ec2 delete-snapshot --snapshot-id"
+  },
+  {
+    "instruction": "Build an image with Packer in parallel across regions",
+    "output": "packer build -parallel-builds=3 -var-file=regions.pkrvars.hcl multi-region.pkr.hcl"
+  },
+  {
+    "instruction": "Set up a scheduled Packer build via cron",
+    "output": "echo '0 2 * * 0 cd /infra/packer && packer build -var-file=prod.pkrvars.hcl template.pkr.hcl' | crontab -"
+  },
+  {
+    "instruction": "Build with debug and pause after each step for inspection",
+    "output": "packer build -debug -on-error=ask template.pkr.hcl"
+  },
+  {
+    "instruction": "Use Packer with a Vault token for dynamic secrets",
+    "output": "VAULT_TOKEN=$(vault token create -ttl=1h -field=token) packer build template.pkr.hcl"
+  }
+]

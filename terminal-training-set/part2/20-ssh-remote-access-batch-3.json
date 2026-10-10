@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an SSH key with a comment",
+    "output": "<think>\nThe task requires us to create an SSH key with a comment.\nLet me think about the best approach.\nI'll reach for ssh-keygen here because SSH key pair generation.\nI'm using -t for sort by modification time — this controls how the output is formatted.\n</think>\nssh-keygen -t ed25519 -C \"deploy-key@myserver\" -f ~/.ssh/deploy_key"
+  },
+  {
+    "instruction": "Create an SSH key with a passphrase",
+    "output": "<think>\nAlright, we need to create an SSH key with a passphrase.\nLet me think through this step by step.\nThe tool for this job is ssh-keygen — SSH key pair generation.\nWhy -t? Sort by modification time. this controls how the output is formatted.\nThe -b flag handles brief output. Important because important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\n</think>\nssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N 'mypassphrase'"
+  },
+  {
+    "instruction": "Convert SSH key format (PEM to OpenSSH)",
+    "output": "<think>\nSo the request is to convert SSH key format (PEM to OpenSSH).\nFor this, ssh-keygen is the right tool — SSH key pair generation.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nssh-keygen -p -m PEM -f ~/.ssh/id_rsa"
+  },
+  {
+    "instruction": "Show the SSH fingerprint of a remote host",
+    "output": "<think>\nWe're being asked to show the SSH fingerprint of a remote host.\nHere's how I'd approach this.\nFor this, ssh-keyscan is the right tool — ssh-keyscan operations.\nThe -t flag means sort by modification time, which matters here because standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nssh-keyscan -t ed25519 example.com 2>/dev/null | ssh-keygen -lf -"
+  },
+  {
+    "instruction": "Add remote host to known_hosts automatically",
+    "output": "<think>\nSo we need to add remote host to known_hosts automatically.\nLet me reason through this.\nFor this, ssh-keyscan is the right tool — ssh-keyscan operations.\nI'm using -H for follow symlinks on command line only — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nssh-keyscan -H example.com >> ~/.ssh/known_hosts"
+  },
+  {
+    "instruction": "Remove a host from known_hosts (if key changed)",
+    "output": "<think>\nNeed to remove a host from known_hosts (if key changed).\nFor this, ssh-keygen is the right tool — SSH key pair generation.\n</think>\nssh-keygen -R example.com"
+  },
+  {
+    "instruction": "Check known_hosts for a specific host",
+    "output": "<think>\nSo the request is to check known_hosts for a specific host.\nBest tool here is ssh-keygen — SSH key pair generation.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-keygen -F example.com"
+  },
+  {
+    "instruction": "Verify SSH host key fingerprint",
+    "output": "<think>\nThe user wants to verify SSH host key fingerprint.\nHere's how I'd approach this.\nFor this, ssh is the right tool — remote system access.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\nssh -o FingerprintHash=md5 user@host 'echo OK' 2>&1 | grep -oE 'MD5:[^ ]+'"
+  },
+  {
+    "instruction": "Create an SSH config file with a jump host",
+    "output": "<think>\nThe goal is to create an SSH config file with a jump host.\nLet me think about the best approach.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\necho -e 'Host internal\\n\\tHostName 10.0.1.100\\n\\tUser john\\n\\tProxyJump bastion.example.com\\n\\tIdentityFile ~/.ssh/internal_key' >> ~/.ssh/config"
+  },
+  {
+    "instruction": "Set up SSH agent with timeout",
+    "output": "<think>\nThis is asking us to set up SSH agent with timeout.\nI'd use ssh-agent for this — ssh-agent operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nssh-agent -t 3600 && ssh-add ~/.ssh/id_ed25519"
+  },
+  {
+    "instruction": "Forward SSH agent to remote",
+    "output": "<think>\nAlright, we need to forward SSH agent to remote.\nLet me break this down.\nI'll reach for ssh here because remote system access.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nssh -A user@host && ssh user@target"
+  },
+  {
+    "instruction": "Check if SSH agent has keys",
+    "output": "<think>\nThis is asking us to check if SSH agent has keys.\nHere's how I'd approach this.\nThis calls for ssh-add. Ssh-add operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nssh-add -l"
+  },
+  {
+    "instruction": "Lock and unlock SSH agent",
+    "output": "<think>\nThe user wants to lock and unlock SSH agent.\nFor this, ssh-add is the right tool — ssh-add operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nssh-add -x && ssh-add -X"
+  },
+  {
+    "instruction": "Remove a specific key from SSH agent",
+    "output": "<think>\nThe user wants to remove a specific key from SSH agent.\nLet me consider what makes sense here.\nI'll reach for ssh-add here because ssh-add operations.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\n</think>\nssh-add -d ~/.ssh/id_ed25519"
+  },
+  {
+    "instruction": "Temporarily add an SSH key for a single command",
+    "output": "<think>\nAlright, we need to temporarily add an SSH key for a single command.\nLet me break this down.\nBest tool here is ssh-agent — ssh-agent operations.\nI'm using -c for count or create — standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-agent sh -c 'ssh-add ~/.ssh/deploy_key && git push deploy main'"
+  },
+  {
+    "instruction": "Set SSH timeouts in config",
+    "output": "<think>\nThis is asking us to set SSH timeouts in config.\nFirst, let me understand what's needed here.\nI've added -e to edit or executable — important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\n</think>\necho -e 'Host *\\n\\tServerAliveInterval 30\\n\\tServerAliveCountMax 3\\n\\tConnectTimeout 10' >> ~/.ssh/config"
+  },
+  {
+    "instruction": "Disable SSH host key checking (insecure, dev only)",
+    "output": "<think>\nThe goal is to disable SSH host key checking (insecure, dev only).\nssh is what we need — remote system access.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null user@host"
+  },
+  {
+    "instruction": "Compress SSH traffic for slow links",
+    "output": "<think>\nWe should compress SSH traffic for slow links.\nThe tool for this job is ssh — remote system access.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nssh -C user@host"
+  },
+  {
+    "instruction": "Enable X11 forwarding over SSH (trusted)",
+    "output": "<think>\nAlright, we need to enable X11 forwarding over SSH (trusted).\nThe tool for this job is ssh — remote system access.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nssh -Y user@host"
+  },
+  {
+    "instruction": "Forward a local port to remote with SSH",
+    "output": "<think>\nThe task requires us to forward a local port to remote with SSH.\nI'd use ssh for this — remote system access.\nThe -L flag means follow symlinks when processing, which matters here because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nssh -L 5900:localhost:5900 user@host"
+  },
+  {
+    "instruction": "Forward a remote port to local with SSH",
+    "output": "<think>\nThe task requires us to forward a remote port to local with SSH.\nI'd use ssh for this — remote system access.\n</think>\nssh -R 5900:localhost:5900 user@host"
+  },
+  {
+    "instruction": "Create a multi-hop tunnel (localhost -> jump -> target)",
+    "output": "<think>\nAlright, we need to create a multi-hop tunnel (localhost -> jump -> target).\nFirst, let me understand what's needed here.\nI'll reach for ssh here because remote system access.\nWhy -L? Follow symlinks when processing. important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nssh -J user@jump -L 8080:localhost:80 user@target"
+  },
+  {
+    "instruction": "SSH with a non-default identity file",
+    "output": "<think>\nAlright, we need to sSH with a non-default identity file.\nFirst, let me understand what's needed here.\nFor this, ssh is the right tool — remote system access.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nAfter running, I'll confirm the result looks right.\n</think>\nssh -i ~/.ssh/custom_key user@host"
+  },
+  {
+    "instruction": "SSH with debug mode and log to file",
+    "output": "<think>\nSo we need to sSH with debug mode and log to file.\nFor this, ssh is the right tool — remote system access.\nThe -E flag means extended regex, which matters here because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nssh -vvv -E /tmp/ssh.log user@host"
+  },
+  {
+    "instruction": "Check SSH connection quality",
+    "output": "<think>\nWe should check SSH connection quality.\nHere's how I'd approach this.\nFor this, ssh is the right tool — remote system access.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nssh -o ConnectTimeout=5 user@host 'exit' && echo SSH OK || echo SSH FAIL"
+  }
+]

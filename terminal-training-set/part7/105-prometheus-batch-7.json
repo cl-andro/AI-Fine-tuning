@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Check Prometheus targets page",
+    "output": "<think>\nThe user wants to check Prometheus targets page.\nHere's how I'd approach this.\nBest tool here is curl — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job, health, scrapeUrl}'"
+  },
+  {
+    "instruction": "Check Prometheus rules via promtool with health",
+    "output": "<think>\nThis is asking us to check Prometheus rules via promtool with health.\nLet me think through this step by step.\nFor this, promtool is the right tool — Prometheus management.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\npromtool check rules --lint-errors rules.yml"
+  },
+  {
+    "instruction": "Promtool check web config hashing",
+    "output": "<think>\nSo the request is to promtool check web config hashing.\nHere's how I'd approach this.\nI'd use promtool for this — Prometheus management.\n</think>\npromtool check web-config web.yml"
+  },
+  {
+    "instruction": "Generate password hash for basic auth",
+    "output": "<think>\nThis is asking us to generate password hash for basic auth.\nThis calls for promtool. Prometheus management.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\npromtool generate-password-hash mypassword"
+  },
+  {
+    "instruction": "Create a web config for Prometheus basic auth",
+    "output": "<think>\nNeed to create a web config for Prometheus basic auth.\nLet me think through this step by step.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'basic_auth_users: prom: <hashed_password>' > web.yml"
+  },
+  {
+    "instruction": "Start Prometheus with web config for auth",
+    "output": "<think>\nWe're being asked to start Prometheus with web config for auth.\nThe tool for this job is prometheus — prometheus operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nprometheus --config.file prometheus.yml --web.config.file web.yml"
+  },
+  {
+    "instruction": "Enable TLS for Prometheus web",
+    "output": "<think>\nWe should enable TLS for Prometheus web.\nHere's how I'd approach this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'tls_server_config: cert_file: server.crt key_file: server.key' > web.yml"
+  },
+  {
+    "instruction": "Use HTTP/2 for Prometheus web server",
+    "output": "<think>\nThe user wants to use HTTP/2 for Prometheus web server.\nThis calls for prometheus. Prometheus operations.\n</think>\nprometheus --config.file prometheus.yml --web.config.file web.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager Slack receiver",
+    "output": "<think>\nNeed to configure Alertmanager Slack receiver.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'receivers: - name: slack slack_configs: - api_url: https://hooks.slack.com/services/T00/B00/xxx channel: \"#alerts\" send_resolved: true' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager email receiver",
+    "output": "<think>\nSo the request is to configure Alertmanager email receiver.\nHere's how I'd approach this.\n</think>\necho 'receivers: - name: email email_configs: - to: admin@example.com from: alert@example.com smarthost: smtp.example.com:587 auth_username: user auth_password: pass' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager PagerDuty receiver",
+    "output": "<think>\nWe should configure Alertmanager PagerDuty receiver.\nLet me think through this step by step.\n</think>\necho 'receivers: - name: pagerduty pagerduty_configs: - routing_key: abc123' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager OpsGenie receiver",
+    "output": "<think>\nSo the request is to configure Alertmanager OpsGenie receiver.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'receivers: - name: opsgenie opsgenie_configs: - api_key: abc123 responders: - name: team type: team' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager VictorOps receiver",
+    "output": "<think>\nThe task requires us to configure Alertmanager VictorOps receiver.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'receivers: - name: victorops victorops_configs: - api_key: abc123 routing_key: devops' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager Webhook receiver",
+    "output": "<think>\nThe task requires us to configure Alertmanager Webhook receiver.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'receivers: - name: webhook webhook_configs: - url: https://hooks.example.com/alerts send_resolved: true' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set group_wait in Alertmanager route",
+    "output": "<think>\nWe should set group_wait in Alertmanager route.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'route: group_by: [alertname] group_wait: 30s group_interval: 5m repeat_interval: 4h receiver: default' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set Alertmanager time-based inhibition",
+    "output": "<think>\nAlright, we need to set Alertmanager time-based inhibition.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'inhibit_rules: - source_match: alertname: InstanceDown target_match: alertname: InstanceNetworkEqual: [instance]' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set Alertmanager mute time intervals",
+    "output": "<think>\nAlright, we need to set Alertmanager mute time intervals.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'mute_time_intervals: - name: maintenance time_intervals: - times: - start: \"02:00\" end: \"04:00\" weekdays: [saturday, sunday]' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager with multiple routes",
+    "output": "<think>\nWe should configure Alertmanager with multiple routes.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'route: routes: - receiver: team-A match: severity: critical - receiver: team-B match: severity: warning' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager route by regex",
+    "output": "<think>\nAlright, we need to configure Alertmanager route by regex.\nLet me think through this step by step.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\necho 'route: routes: - receiver: db match_re: service: \"(mysql|postgres|redis)\"' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Start Alertmanager with custom storage",
+    "output": "<think>\nThis is asking us to start Alertmanager with custom storage.\nFirst, let me understand what's needed here.\nFor this, alertmanager is the right tool — alertmanager operations.\nOne command does the job. Simple is better.\n</think>\nalertmanager --config.file alertmanager.yml --storage.path /data/alertmanager"
+  },
+  {
+    "instruction": "Start Alertmanager with cluster peers",
+    "output": "<think>\nThis is asking us to start Alertmanager with cluster peers.\nalertmanager is what we need — alertmanager operations.\n</think>\nalertmanager --config.file alertmanager.yml --cluster.listen-address 0.0.0.0:9094 --cluster.peer alert1:9094,alert2:9094"
+  },
+  {
+    "instruction": "Start Alertmanager without clustering",
+    "output": "<think>\nThe user wants to start Alertmanager without clustering.\nI'd use alertmanager for this — alertmanager operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nalertmanager --config.file alertmanager.yml --cluster.listen-address="
+  },
+  {
+    "instruction": "Reload Alertmanager config via API",
+    "output": "<think>\nSo the request is to reload Alertmanager config via API.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ncurl -X POST http://localhost:9093/-/reload"
+  },
+  {
+    "instruction": "Check Alertmanager status via API",
+    "output": "<think>\nThe task requires us to check Alertmanager status via API.\nLet me think about the best approach.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl http://localhost:9093/api/v2/status"
+  }
+]

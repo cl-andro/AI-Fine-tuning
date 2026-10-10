@@ -1,0 +1,23 @@
+[
+  {"instruction": "kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092", "output": ">hello\n>world\n>^C"},
+  {"instruction": "kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092 --property parse.key=true --property key.separator=:", "output": ">key1:value1\n>key2:value2\n>^C"},
+  {"instruction": "kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092 --producer-property acks=all", "output": ">message1\n>message2\n>^C"},
+  {"instruction": "kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092 --sync", "output": ">test\n>test2\n>^C"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092", "output": "hello\nworld\nmessage1\n^CProcessed a total of 3 messages"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --group my-group", "output": "hello\nworld\n^CProcessed a total of 2 messages"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --from-beginning", "output": "hello\nworld\nmessage1\nkey1:value1\nkey2:value2\n^CProcessed a total of 5 messages"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --partition 0", "output": "hello\nmessage1\n^CProcessed a total of 2 messages"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --offset 10", "output": "message5\nmessage6\n^C"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --max-messages 5", "output": "msg1\nmsg2\nmsg3\nmsg4\nmsg5\nProcessed a total of 5 messages"},
+  {"instruction": "kafka-console-consumer.sh --bootstrap-server localhost:9092 --whitelist 'my.*'", "output": "hello\n^C"},
+  {"instruction": "kafka-consumer-groups.sh --list --bootstrap-server localhost:9092", "output": "my-group\nconsole-consumer-12345\nmy-app-group"},
+  {"instruction": "kafka-consumer-groups.sh --describe --group my-group --bootstrap-server localhost:9092", "output": "GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG   CONSUMER-ID     HOST            CLIENT-ID\nmy-group        my-topic        0          12              15              3     consumer-1      /127.0.0.1      consumer-1\nmy-group        my-topic        1          10              12              2     consumer-1      /127.0.0.1      consumer-1"},
+  {"instruction": "kafka-consumer-groups.sh --delete --group my-group --bootstrap-server localhost:9092", "output": "Delete for group my-group succeeded."},
+  {"instruction": "kafka-consumer-groups.sh --reset-offsets --group my-group --topic my-topic --to-earliest --bootstrap-server localhost:9092", "output": "GROUP           TOPIC           PARTITION  NEW-OFFSET\nmy-group        my-topic        0          0\nmy-group        my-topic        1          0"},
+  {"instruction": "kafka-consumer-groups.sh --reset-offsets --group my-group --topic my-topic --to-latest --bootstrap-server localhost:9092 --execute", "output": "GROUP           TOPIC           PARTITION  NEW-OFFSET\nmy-group        my-topic        0          15\nmy-group        my-topic        1          12"},
+  {"instruction": "kafka-consumer-groups.sh --reset-offsets --group my-group --topic my-topic --shift-by -10 --bootstrap-server localhost:9092 --execute", "output": "GROUP           TOPIC           PARTITION  NEW-OFFSET\nmy-group        my-topic        0          2\nmy-group        my-topic        1          0"},
+  {"instruction": "kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092 --compression-codec gzip", "output": ">compressed message\n>^C"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --timeout-ms 5000", "output": "hello\nworld\n^CProcessed a total of 2 messages"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --isolation-level read_committed", "output": "committed_message_1\ncommitted_message_2\n^C"},
+  {"instruction": "kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --skip-message-on-error", "output": "msg1\nmsg3\n^CProcessed a total of 2 messages (skipped 1)"}
+]

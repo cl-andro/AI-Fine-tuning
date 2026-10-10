@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to generate an ECDH certificate",
+    "output": "<think>\nAlright, we need to generate an ECDH certificate.\nLet me break this down.\nThis calls for openssl. Cryptographic operations and certificate management.\nI've added -name to filter by filename pattern — important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl ecparam -genkey -name secp256r1 -out ecdh-key.pem && openssl req -x509 -new -key ecdh-key.pem -out ecdh-cert.pem -days 365 -subj '/CN=ecdh'"
+  },
+  {
+    "instruction": "How to verify an ECDSA signature",
+    "output": "<think>\nThe user wants to verify an ECDSA signature.\nLet me break this down.\nThis calls for openssl. Cryptographic operations and certificate management.\nNo need for complex pipelines here — one command is sufficient.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nQuick verification after execution to be safe.\n</think>\nopenssl dgst -sha256 -verify ec-public.pem -signature file.sig file.txt"
+  },
+  {
+    "instruction": "How to sign a CSR with a specific digest",
+    "output": "<think>\nThe goal is to sign a CSR with a specific digest.\nLet me think through this step by step.\nI'll reach for openssl here because cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -req -sha512 -in req.csr -CA ca.pem -CAkey ca.key -out cert.pem -days 365"
+  },
+  {
+    "instruction": "How to create a certificate with a custom serial",
+    "output": "<think>\nWe should create a certificate with a custom serial.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -req -in req.csr -CA ca.pem -CAkey ca.key -set_serial 12345 -out cert.pem"
+  },
+  {
+    "instruction": "How to create a certificate with a random serial",
+    "output": "<think>\nThe task requires us to create a certificate with a random serial.\nLet me break this down.\nBest tool here is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -req -in req.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out cert.pem"
+  },
+  {
+    "instruction": "How to show the certificate policy extensions",
+    "output": "<think>\nThe goal is to show the certificate policy extensions.\nBest tool here is openssl — cryptographic operations and certificate management.\nI'm piping because each stage transforms the data before passing it to the next.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep -A 10 'Certificate Policies'"
+  },
+  {
+    "instruction": "How to add a custom policy extension to a cert",
+    "output": "<think>\nThe user wants to add a custom policy extension to a cert.\nLet me consider what makes sense here.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\n</think>\nopenssl req -x509 -new -key key.pem -out cert.pem -days 365 -set_serial 0 -addext 'certificatePolicies=2.5.29.32.0'"
+  },
+  {
+    "instruction": "How to check the certificate authority information access",
+    "output": "<think>\nThis is asking us to check the certificate authority information access.\nBest tool here is openssl — cryptographic operations and certificate management.\nEach pipe stage handles one transformation, keeping the logic composable.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep -A 5 'Authority Information Access'"
+  },
+  {
+    "instruction": "How to create a certificate with AIA extension",
+    "output": "<think>\nThe task requires us to create a certificate with AIA extension.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl req -x509 -new -key key.pem -out cert.pem -days 365 -addext 'authorityInfoAccess=OCSP;URI:http://ocsp.example.com'"
+  },
+  {
+    "instruction": "How to create a root CA with proper extensions",
+    "output": "<think>\nWe're being asked to create a root CA with proper extensions.\nLet me break this down.\nBest tool here is openssl — cryptographic operations and certificate management.\nOne command does the job. Simple is better.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl req -x509 -new -key ca-key.pem -out ca.pem -days 3650 -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign'"
+  },
+  {
+    "instruction": "How to create an intermediate CA cert",
+    "output": "<think>\nWe should create an intermediate CA cert.\nFirst, let me understand what's needed here.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl req -new -key int-key.pem -out int-req.csr -subj '/CN=Intermediate CA' && openssl x509 -req -in int-req.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out int.pem -days 1825 -extensions v3_intermediate_ca"
+  },
+  {
+    "instruction": "How to check if a certificate is a CA",
+    "output": "<think>\nThe user wants to check if a certificate is a CA.\nLet me reason through this.\nBest tool here is openssl — cryptographic operations and certificate management.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl x509 -in cert.pem -purpose -noout | grep 'CA'"
+  },
+  {
+    "instruction": "How to check the basic constraints of a cert",
+    "output": "<think>\nThis is asking us to check the basic constraints of a cert.\nLet me reason through this.\nI'd use openssl for this — cryptographic operations and certificate management.\nPipes let me chain these operations efficiently without writing temp files.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep 'CA:'"
+  },
+  {
+    "instruction": "How to create a cross-signed certificate",
+    "output": "<think>\nThe goal is to create a cross-signed certificate.\nHere's how I'd approach this.\nI'd use openssl for this — cryptographic operations and certificate management.\nA single command handles this cleanly — no need to overcomplicate it.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nI'll check the output to make sure it did what we expected.\n</think>\nopenssl x509 -req -in req.csr -CA old-ca.pem -CAkey old-ca-key.pem -out cross-signed.pem -days 365"
+  },
+  {
+    "instruction": "How to create a self-signed certificate from a CSR",
+    "output": "<think>\nSo we need to create a self-signed certificate from a CSR.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nNo need for complex pipelines here — one command is sufficient.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -req -days 365 -in req.csr -signkey key.pem -out self-signed.pem"
+  },
+  {
+    "instruction": "How to check the public key algorithm of a cert",
+    "output": "<think>\nThe task requires us to check the public key algorithm of a cert.\nLet me consider what makes sense here.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nPipes let me chain these operations efficiently without writing temp files.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nAfter running, I'll confirm the result looks right.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep 'Public Key Algorithm'"
+  },
+  {
+    "instruction": "How to check the signature algorithm of a cert",
+    "output": "<think>\nSo the request is to check the signature algorithm of a cert.\nFirst, let me understand what's needed here.\nI'll reach for openssl here because cryptographic operations and certificate management.\nEach pipe stage handles one transformation, keeping the logic composable.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep 'Signature Algorithm'"
+  },
+  {
+    "instruction": "How to check the X509v3 extensions of a cert",
+    "output": "<think>\nAlright, we need to check the X509v3 extensions of a cert.\nBest tool here is openssl — cryptographic operations and certificate management.\nPipes let me chain these operations efficiently without writing temp files.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl x509 -in cert.pem -text -noout | grep -A 30 'X509v3 extensions'"
+  },
+  {
+    "instruction": "How to remove the passphrase from a key non-interactively",
+    "output": "<think>\nSo we need to remove the passphrase from a key non-interactively.\nI'll reach for openssl here because cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nI'll check the output to make sure it did what we expected.\n</think>\nopenssl pkey -in encrypted-key.pem -passin pass:oldpass -out decrypted-key.pem"
+  },
+  {
+    "instruction": "How to add a passphrase to an unencrypted key",
+    "output": "<think>\nAlright, we need to add a passphrase to an unencrypted key.\nFirst, let me understand what's needed here.\nBest tool here is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl pkey -in key.pem -aes256 -out encrypted-key.pem -passout pass:newpass"
+  },
+  {
+    "instruction": "How to convert a private key between PEM and DER",
+    "output": "<think>\nWe're being asked to convert a private key between PEM and DER.\nLet me break this down.\nopenssl is what we need — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl pkey -in key.pem -outform DER -out key.der"
+  },
+  {
+    "instruction": "How to convert a public key between PEM and DER",
+    "output": "<think>\nSo the request is to convert a public key between PEM and DER.\nBest tool here is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl pkey -in key.pem -pubout -outform DER -out pub.der"
+  },
+  {
+    "instruction": "How to extract the modulus from an RSA key",
+    "output": "<think>\nSo the request is to extract the modulus from an RSA key.\nHere's how I'd approach this.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl rsa -in key.pem -modulus -noout"
+  },
+  {
+    "instruction": "How to extract the public exponent from an RSA key",
+    "output": "<think>\nWe're being asked to extract the public exponent from an RSA key.\nFirst, let me understand what's needed here.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nLet me verify afterward that it worked correctly.\n</think>\nopenssl rsa -in key.pem -text -noout | grep publicExponent"
+  },
+  {
+    "instruction": "How to get the EC point encoding from an EC key",
+    "output": "<think>\nThis is asking us to get the EC point encoding from an EC key.\nLet me consider what makes sense here.\nI'd use openssl for this — cryptographic operations and certificate management.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl ec -in ec-key.pem -text -noout | grep 'priv:' -A 5"
+  }
+]

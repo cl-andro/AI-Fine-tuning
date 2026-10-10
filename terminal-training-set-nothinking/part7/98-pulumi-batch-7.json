@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an S3 bucket with server-side encryption",
+    "output": "echo 'bucket = aws.s3.Bucket(\"secure\", server_side_encryption_configuration=aws.s3.BucketServerSideEncryptionConfigurationArgs(rule=aws.s3.BucketServerSideEncryptionConfigurationRuleArgs(apply_server_side_encryption_by_default=aws.s3.BucketServerSideEncryptionConfigurationRuleApplyServerSideEncryptionByDefaultArgs(sse_algorithm=\"AES256\"))))' > s3-encrypt.py"
+  },
+  {
+    "instruction": "Set S3 bucket public access block",
+    "output": "echo 'block = aws.s3.BucketPublicAccessBlock(\"block\", bucket=bucket.id, block_public_acls=True, block_public_policy=True, ignore_public_acls=True, restrict_public_buckets=True)' > s3-security.py"
+  },
+  {
+    "instruction": "Create an IAM instance profile with roles",
+    "output": "echo 'profile = aws.iam.InstanceProfile(\"ec2\", role=role.name)' > profile.py"
+  },
+  {
+    "instruction": "Create a security group with computed ingress from another SG",
+    "output": "echo 'sg_app = aws.ec2.SecurityGroup(\"app\", vpc_id=vpc.id, ingress=[aws.ec2.SecurityGroupIngressArgs(from_port=443, to_port=443, protocol=\"tcp\", security_groups=[sg_lb.id])])' > sg-advanced.py"
+  },
+  {
+    "instruction": "Create a VPC endpoint for SSM",
+    "output": "echo 'ssm_endpoint = aws.ec2.VpcEndpoint(\"ssm\", vpc_id=vpc.id, service_name=f\"com.amazonaws.{region}.ssm\", subnet_ids=private_subnet_ids, security_group_ids=[sg_vpc_endpoint.id])' > vpc-endpoint.py"
+  },
+  {
+    "instruction": "Create a transitive gateway attachment",
+    "output": "echo 'tgw = aws.ec2transitgateway.TransitGateway(\"main\"); attachment = aws.ec2transitgateway.VpcAttachment(\"attach\", subnet_ids=subnet_ids, transit_gateway_id=tgw.id, vpc_id=vpc.id)' > tgw.py"
+  },
+  {
+    "instruction": "Mount an EFS filesystem on EC2 user-data",
+    "output": "echo 'instance = aws.ec2.Instance(\"app\", user_data=f\"#!/bin/bash\\nmkdir -p /mnt/efs\\nmount -t nfs4 {fs.dns_name}:/ /mnt/efs\\necho \\\"{fs.dns_name}:/ /mnt/efs nfs4 defaults,_netdev 0 0\\\" >> /etc/fstab\")' > efs-mount.py"
+  },
+  {
+    "instruction": "Create a CloudWatch log group with retention",
+    "output": "echo 'log_group = aws.cloudwatch.LogGroup(\"app\", name=\"/aws/lambda/my-function\", retention_in_days=30)' > logs.py"
+  },
+  {
+    "instruction": "Create a CloudWatch log subscription to Lambda",
+    "output": "echo 'sub = aws.cloudwatch.LogSubscriptionFilter(\"filter\", log_group=log_group.name, destination_arn=fn.arn, filter_pattern=\"ERROR\")' > log-sub.py"
+  },
+  {
+    "instruction": "Add a CloudWatch metric filter to log group",
+    "output": "echo 'filter = aws.cloudwatch.LogMetricFilter(\"errors\", log_group_name=log_group.name, pattern=\"ERROR\", metric_transformation=aws.cloudwatch.LogMetricFilterMetricTransformationArgs(name=\"ErrorCount\", namespace=\"App\", value=\"1\"))' > metric-filter.py"
+  },
+  {
+    "instruction": "Set a budget alert in Pulumi",
+    "output": "echo 'budget = aws.budgets.Budget(\"monthly\", budget_type=\"COST\", limit_amount=\"500\", limit_unit=\"USD\", time_period_start=\"2025-01-01_00:00\", time_unit=\"MONTHLY\", notification=[aws.budgets.BudgetNotificationArgs(comparison_operator=\"GREATER_THAN\", threshold=80, threshold_type=\"PERCENTAGE\", notification_type=\"ACTUAL\", subscriber_email_addresses=[\"team@example.com\"])])' > budget.py"
+  },
+  {
+    "instruction": "Output filtered tags in pulumi stack export",
+    "output": "pulumi stack export --file state.json && jq '.checkpoint.latest.resources[] | select(.type | startswith(\"aws\")) | .urn' state.json"
+  },
+  {
+    "instruction": "Find all resources of a specific type in state",
+    "output": "pulumi stack export | jq '.checkpoint.latest.resources[] | select(.type == \"aws:s3/bucket:Bucket\")'"
+  },
+  {
+    "instruction": "Debug a stack's configuration from exported JSON",
+    "output": "pulumi stack export | jq '.checkpoint.latest.config'"
+  },
+  {
+    "instruction": "Create a Pulumi YAML program with an S3 bucket",
+    "output": "echo 'name: infra\nruntime: yaml\nresources:\n  my-bucket:\n    type: aws:s3/bucket:Bucket' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Add a security group to the Pulumi YAML program",
+    "output": "echo '  web-sg:\n    type: aws:ec2/securityGroup:SecurityGroup\n    properties:\n      ingress:\n        - protocol: tcp\n          fromPort: 80\n          toPort: 80\n          cidrBlocks: [\"0.0.0.0/0\"]' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Add stack outputs in Pulumi YAML",
+    "output": "echo 'outputs:\n  bucketName: ${my-bucket.id}' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Use Pulumi YAML template function",
+    "output": "echo '  config:\n    env:\n      type: String\n      default: prod' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Create an EC2 instance in Pulumi YAML",
+    "output": "echo '  web:\n    type: aws:ec2/instance:Instance\n    properties:\n      ami: ami-1234\n      instanceType: t3.micro' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Export a stack output in Pulumi YAML",
+    "output": "echo 'outputs:\n  publicIp: ${web.publicIp}' >> Pulumi.yaml"
+  },
+  {
+    "instruction": "Set a variable in Pulumi YAML",
+    "output": "echo 'variables:\n  vpcId:\n    fn::invoke:\n      function: aws:ec2/getVpc:getVpc\n      arguments:\n        default: true' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Use conditionals in Pulumi YAML with fn::if",
+    "output": "echo '  count:\n    fn::if:\n      - ${env == \"prod\"}\n      - 3\n      - 1' > Pulumi.yaml"
+  },
+  {
+    "instruction": "Install Pulumi CLI via script",
+    "output": "curl -fsSL https://get.pulumi.com | sh"
+  },
+  {
+    "instruction": "Install a specific version of Pulumi",
+    "output": "curl -fsSL https://get.pulumi.com/ | sh -s -- --version 3.120.0"
+  },
+  {
+    "instruction": "Upgrade Pulumi CLI to latest",
+    "output": "pulumi version && pulumi plugin ls"
+  }
+]

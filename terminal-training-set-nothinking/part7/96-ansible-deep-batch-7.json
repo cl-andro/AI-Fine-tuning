@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use a registered variable in an ad-hoc command",
+    "output": "ansible all -m shell -a 'uptime' --register result -a 'echo \"{{ result.stdout }}\"'"
+  },
+  {
+    "instruction": "Set a custom fact on a host",
+    "output": "ansible all -m set_fact -a 'app_version=2.5.1 deploy_ts={{ ansible_date_time.iso8601 }}'"
+  },
+  {
+    "instruction": "Run a shell command and store stdout to a variable implicitly",
+    "output": "ansible all -m command -a 'cat /proc/uptime'"
+  },
+  {
+    "instruction": "Ignore errors on a task and continue",
+    "output": "ansible all -m command -a 'some_command_that_may_fail' --ignore-errors"
+  },
+  {
+    "instruction": "Poll async job id for status",
+    "output": "ansible all -m async_status -a 'jid=1234567890.1234'"
+  },
+  {
+    "instruction": "Run a playbook with a concurrency of 1 (linear strategy)",
+    "output": "ansible-playbook site.yml --forks 1"
+  },
+  {
+    "instruction": "Use the free strategy to run tasks per host independently",
+    "output": "ansible-playbook site.yml --strategy free"
+  },
+  {
+    "instruction": "Use host_pinned serial strategy",
+    "output": "ansible-playbook site.yml --serial '1,5,100%'"
+  },
+  {
+    "instruction": "Use a custom callback plugin via environment variable",
+    "output": "ANSIBLE_CALLBACK_WHITELIST=profile_tasks ansible-playbook site.yml"
+  },
+  {
+    "instruction": "Enable timer callback plugin for timing output",
+    "output": "ANSIBLE_CALLBACK_WHITELIST=timer ansible-playbook site.yml"
+  },
+  {
+    "instruction": "Enable actionable callback to reduce output",
+    "output": "ANSIBLE_CALLBACK_WHITELIST=actionable ansible-playbook site.yml"
+  },
+  {
+    "instruction": "Enable json callback for machine-readable output",
+    "output": "ANSIBLE_STDOUT_CALLBACK=json ansible-playbook site.yml"
+  },
+  {
+    "instruction": "Enable yaml callback for structured output",
+    "output": "ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook site.yml"
+  },
+  {
+    "instruction": "Generate a retry file for failed hosts",
+    "output": "ansible-playbook site.yml --retry-files-enabled --retry-files-save-filename=retry.txt"
+  },
+  {
+    "instruction": "Set maximum number of retries in ansible configuration",
+    "output": "ansible-config set DEFAULT_RETRIES 5"
+  },
+  {
+    "instruction": "Enable gathering of facts only on specific subset",
+    "output": "ansible all -m setup -a 'gather_subset=!all,!min,network'"
+  },
+  {
+    "instruction": "Filter gathered facts by specific key",
+    "output": "ansible all -m setup -a 'filter=ansible_eth*'"
+  },
+  {
+    "instruction": "Set hostname with the hostname module",
+    "output": "ansible all -m hostname -a 'name=web01.example.com' -b"
+  },
+  {
+    "instruction": "Set locale using locale_gen module",
+    "output": "ansible all -m locale_gen -a 'name=en_US.UTF-8 state=present' -b"
+  },
+  {
+    "instruction": "Manage timezone using the timezone module",
+    "output": "ansible all -m timezone -a 'name=America/New_York' -b"
+  },
+  {
+    "instruction": "Configure an NTP server via ansible",
+    "output": "ansible all -m package -a 'name=chrony state=present' -b"
+  },
+  {
+    "instruction": "Generate a CSR with openssl module",
+    "output": "ansible localhost -m openssl_csr -a 'common_name=example.com privatekey_path=/tmp/key.pem path=/tmp/csr.csr'"
+  },
+  {
+    "instruction": "Self-signed certificate with openssl module",
+    "output": "ansible localhost -m openssl_certificate -a 'path=/tmp/cert.pem privatekey_path=/tmp/key.pem csr_path=/tmp/csr.csr provider=selfsigned'"
+  },
+  {
+    "instruction": "Fetch Let's Encrypt cert via acme_certificate module",
+    "output": "ansible localhost -m acme_certificate -a 'acme_directory=https://acme-v02.api.letsencrypt.org/directory account_key_src=/etc/ssl/account.key challenge=dns csr=/etc/ssl/csr.pem dest=/etc/ssl/cert.pem'"
+  },
+  {
+    "instruction": "Use the known_hosts module to add a host key",
+    "output": "ansible all -m known_hosts -a 'name=github.com state=present key=\"{{ lookup(\"pipe\", \"ssh-keyscan github.com\") }}\"'"
+  }
+]

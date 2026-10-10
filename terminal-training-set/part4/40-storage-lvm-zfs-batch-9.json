@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Format /dev/sdb as a LUKS2 encrypted partition",
+    "output": "<think>\nWe should format /dev/sdb as a LUKS2 encrypted partition.\nLet me think about the best approach.\nThe tool for this job is cryptsetup — disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup luksFormat --type luks2 /dev/sdb"
+  },
+  {
+    "instruction": "Open a LUKS2 encrypted device /dev/sdb and map it as crypt_root",
+    "output": "<think>\nNeed to open a LUKS2 encrypted device /dev/sdb and map it as crypt_root.\nFirst, let me understand what's needed here.\nI'll reach for cryptsetup here because disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup open /dev/sdb crypt_root"
+  },
+  {
+    "instruction": "Close a LUKS2 mapped device crypt_root",
+    "output": "<think>\nWe're being asked to close a LUKS2 mapped device crypt_root.\nI'll reach for cryptsetup here because disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup close crypt_root"
+  },
+  {
+    "instruction": "Display LUKS2 header information for /dev/sdb",
+    "output": "<think>\nThe task requires us to display LUKS2 header information for /dev/sdb.\ncryptsetup is what we need — disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup luksDump /dev/sdb"
+  },
+  {
+    "instruction": "Change the passphrase on LUKS2 device /dev/sdb",
+    "output": "<think>\nThis is asking us to change the passphrase on LUKS2 device /dev/sdb.\nLet me break this down.\nThe tool for this job is cryptsetup — disk encryption management.\nOne command does the job. Simple is better.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup luksChangeKey /dev/sdb"
+  },
+  {
+    "instruction": "Add a keyslot to LUKS2 device /dev/sdb using a keyfile",
+    "output": "<think>\nThe task requires us to add a keyslot to LUKS2 device /dev/sdb using a keyfile.\nThe tool for this job is cryptsetup — disk encryption management.\nOne command does the job. Simple is better.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup luksAddKey /dev/sdb /root/keyfile"
+  },
+  {
+    "instruction": "Remove keyslot 2 from LUKS2 device /dev/sdb",
+    "output": "<think>\nThe user wants to remove keyslot 2 from LUKS2 device /dev/sdb.\nLet me break this down.\nI'll reach for cryptsetup here because disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup luksKillSlot /dev/sdb 2"
+  },
+  {
+    "instruction": "Erase all LUKS2 headers on /dev/sdb (dangerous)",
+    "output": "<think>\nSo we need to erase all LUKS2 headers on /dev/sdb (dangerous).\nI'll reach for cryptsetup here because disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup luksErase /dev/sdb"
+  },
+  {
+    "instruction": "Convert a LUKS1 header to LUKS2 on /dev/sdb",
+    "output": "<think>\nSo we need to convert a LUKS1 header to LUKS2 on /dev/sdb.\nThis calls for cryptsetup. Disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\nQuick verification after execution to be safe.\n</think>\nsudo cryptsetup convert --type luks2 /dev/sdb"
+  },
+  {
+    "instruction": "Backup the LUKS2 header of /dev/sdb to a file",
+    "output": "<think>\nThe task requires us to backup the LUKS2 header of /dev/sdb to a file.\nThe tool for this job is cryptsetup — disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup luksHeaderBackup /dev/sdb --header-backup-file /root/luks-header-backup"
+  },
+  {
+    "instruction": "Restore the LUKS2 header on /dev/sdb from a backup file",
+    "output": "<think>\nSo we need to restore the LUKS2 header on /dev/sdb from a backup file.\nLet me think through this step by step.\ncryptsetup is what we need — disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup luksHeaderRestore /dev/sdb --header-backup-file /root/luks-header-backup"
+  },
+  {
+    "instruction": "Initialize /dev/sdb as a physical volume for LVM",
+    "output": "<think>\nSo we need to initialize /dev/sdb as a physical volume for LVM.\nHere's how I'd approach this.\npvcreate is what we need — LVM physical volume setup.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo pvcreate /dev/mapper/crypt_root"
+  },
+  {
+    "instruction": "Create a volume group vg_encrypted on top of the LUKS mapped device",
+    "output": "<think>\nThis is asking us to create a volume group vg_encrypted on top of the LUKS mapped device.\nHere's how I'd approach this.\nI'll reach for vgcreate here because vgcreate operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo vgcreate vg_encrypted /dev/mapper/crypt_root"
+  },
+  {
+    "instruction": "Create a logical volume lv_secure of size 20G in vg_encrypted",
+    "output": "<think>\nThis is asking us to create a logical volume lv_secure of size 20G in vg_encrypted.\nHere's how I'd approach this.\nThe tool for this job is lvcreate — LVM volume creation.\nThe -n flag means dry-run, no changes, which matters here because this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo lvcreate -n lv_secure -L 20G vg_encrypted"
+  },
+  {
+    "instruction": "Format the encrypted logical volume with ext4",
+    "output": "<think>\nSo we need to format the encrypted logical volume with ext4.\nLet me think about the best approach.\nThis calls for mkfs.ext4. Mkfs.ext4 operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo mkfs.ext4 /dev/vg_encrypted/lv_secure"
+  },
+  {
+    "instruction": "Mount the encrypted logical volume at /mnt/secure",
+    "output": "<think>\nWe're being asked to mount the encrypted logical volume at /mnt/secure.\nI'd use mount for this — filesystem mounting.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mount /dev/vg_encrypted/lv_secure /mnt/secure"
+  },
+  {
+    "instruction": "Create a LUKS2 device with a detached header on a separate device",
+    "output": "<think>\nThe task requires us to create a LUKS2 device with a detached header on a separate device.\nLet me think through this step by step.\ncryptsetup is what we need — disk encryption management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo cryptsetup luksFormat --type luks2 --header /dev/sdc /dev/sdb"
+  },
+  {
+    "instruction": "Open a LUKS2 device with a detached header stored on /dev/sdc",
+    "output": "<think>\nWe should open a LUKS2 device with a detached header stored on /dev/sdc.\nLet me reason through this.\nBest tool here is cryptsetup — disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\nLet me verify afterward that it worked correctly.\n</think>\nsudo cryptsetup open --header /dev/sdc /dev/sdb crypt_detached"
+  },
+  {
+    "instruction": "Resume a suspended LUKS2 device to allow I/O again",
+    "output": "<think>\nSo we need to resume a suspended LUKS2 device to allow I/O again.\nLet me consider what makes sense here.\nBest tool here is cryptsetup — disk encryption management.\nOne command does the job. Simple is better.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup resume crypt_root"
+  },
+  {
+    "instruction": "Suspend a LUKS2 device to lock all I/O until resume",
+    "output": "<think>\nThe user wants to suspend a LUKS2 device to lock all I/O until resume.\nLet me break this down.\nI'll reach for cryptsetup here because disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup suspend crypt_root"
+  },
+  {
+    "instruction": "Resize the LUKS2 device to match a larger underlying block device",
+    "output": "<think>\nThe user wants to resize the LUKS2 device to match a larger underlying block device.\nLet me break this down.\nThe tool for this job is cryptsetup — disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\n</think>\nsudo cryptsetup resize crypt_root"
+  },
+  {
+    "instruction": "Add a LUKS2 token for integration with systemd-cryptenroll",
+    "output": "<think>\nThis is asking us to add a LUKS2 token for integration with systemd-cryptenroll.\nLet me think about the best approach.\nBest tool here is cryptsetup — disk encryption management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo cryptsetup token add --token-id 0 --pin 123456 /dev/sdb"
+  },
+  {
+    "instruction": "List all LUKS2 tokens on /dev/sdb",
+    "output": "<think>\nThe user wants to list all LUKS2 tokens on /dev/sdb.\nHere's how I'd approach this.\nFor this, cryptsetup is the right tool — disk encryption management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo cryptsetup token list /dev/sdb"
+  },
+  {
+    "instruction": "Enable the LUKS2 discards (TRIM) pass-through on an open device",
+    "output": "<think>\nAlright, we need to enable the LUKS2 discards (TRIM) pass-through on an open device.\nFirst, let me understand what's needed here.\nFor this, cryptsetup is the right tool — disk encryption management.\nluksFormat destroys all data on the device. Triple-check the device path.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo cryptsetup --allow-discards open /dev/sdb crypt_root"
+  },
+  {
+    "instruction": "Set up LUKS2 with Argon2 PBKDF parameters for slower key derivation",
+    "output": "<think>\nThe user wants to set up LUKS2 with Argon2 PBKDF parameters for slower key derivation.\nLet me break this down.\nFor this, cryptsetup is the right tool — disk encryption management.\nNo need for complex pipelines here — one command is sufficient.\nluksFormat destroys all data on the device. Triple-check the device path.\nQuick verification after execution to be safe.\n</think>\nsudo cryptsetup luksFormat --type luks2 --pbkdf argon2id --pbkdf-memory 1048576 --pbkdf-parallel 4 /dev/sdb"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to set up IPsec using EAP-MSCHAPv2 (username/password)",
+    "output": "<think>\nThe goal is to set up IPsec using EAP-MSCHAPv2 (username/password).\nHere's how I'd approach this.\n</think>\necho 'connections {\n  eap-mschapv2 {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    pools = vpn-pool\n    local {\n      auth = pubkey\n      certs = server.crt\n      id = server.example.com\n    }\n    remote {\n      auth = eap-mschapv2\n      eap_id = %any\n    }\n    children {\n      net {\n        local_ts = 0.0.0.0/0\n      }\n    }\n  }\n  pools {\n    vpn-pool {\n      addrs = 10.5.0.0/24\n      dns = 8.8.8.8\n    }\n  }\n}' > /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up EAP-TLS in strongSwan",
+    "output": "<think>\nWe're being asked to set up EAP-TLS in strongSwan.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'connections {\n  eap-tls {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    pools = vpn-pool\n    local {\n      auth = pubkey\n      certs = server.crt\n      id = server.example.com\n    }\n    remote {\n      auth = eap-tls\n      eap_id = %any\n    }\n    children {\n      net {\n        local_ts = 0.0.0.0/0\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up EAP-PEAP in strongSwan",
+    "output": "<think>\nThe goal is to set up EAP-PEAP in strongSwan.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'connections {\n  eap-peap {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    pools = vpn-pool\n    local {\n      auth = pubkey\n      certs = server.crt\n    }\n    remote {\n      auth = eap-peap\n      eap_id = %any\n    }\n    children {\n      net {}\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up strongSwan with LDAP auth",
+    "output": "<think>\nThis is asking us to set up strongSwan with LDAP auth.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'charon {\n  plugins {\n    eap-radius {\n      servers {\n        primary {\n          address = 192.168.1.10\n          secret = radiussecret\n        }\n      }\n    }\n  }\n}' >> /etc/strongswan.d/charon-radius.conf"
+  },
+  {
+    "instruction": "How to enable RADIUS accounting for strongSwan",
+    "output": "<think>\nThis is asking us to enable RADIUS accounting for strongSwan.\nLet me think about the best approach.\n</think>\necho 'charon {\n  plugins {\n    eap-radius {\n      accounting = yes\n      servers {\n        primary {\n          address = 192.168.1.11\n          secret = radiussecret\n          acct_port = 1813\n        }\n      }\n    }\n  }\n}' >> /etc/strongswan.d/charon-radius.conf"
+  },
+  {
+    "instruction": "How to install the strongSwan RADIUS plugin",
+    "output": "<think>\nThe task requires us to install the strongSwan RADIUS plugin.\nHere's how I'd approach this.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install strongswan-plugin-eap-radius"
+  },
+  {
+    "instruction": "How to set up strongSwan with NetworkManager",
+    "output": "<think>\nThe task requires us to set up strongSwan with NetworkManager.\nThe tool for this job is apt — apt operations.\nNo need for complex pipelines here — one command is sufficient.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install network-manager-strongswan"
+  },
+  {
+    "instruction": "How to test strongSwan connection with swanctl",
+    "output": "<think>\nWe should test strongSwan connection with swanctl.\nI'll reach for swanctl here because swanctl operations.\n</think>\nswanctl --initiate --child net"
+  },
+  {
+    "instruction": "How to re-authenticate IPsec connection",
+    "output": "<think>\nThe task requires us to re-authenticate IPsec connection.\nLet me break this down.\nI'd use swanctl for this — swanctl operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nswanctl --rekey --ike my-connection && swanctl --rekey --child net"
+  },
+  {
+    "instruction": "How to redirect IPsec to a different gateway",
+    "output": "<think>\nNeed to redirect IPsec to a different gateway.\nLet me reason through this.\nFor this, swanctl is the right tool — swanctl operations.\nLet me verify afterward that it worked correctly.\n</think>\nswanctl --redirect --ike my-connection --new-remote 192.168.2.20"
+  },
+  {
+    "instruction": "How to list strongSwan log entries per connection",
+    "output": "<think>\nNeed to list strongSwan log entries per connection.\nI'd use journalctl for this — checking systemd logs.\nI'm using -u for show or sort by access time — without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u strongswan-starter | grep my-connection"
+  },
+  {
+    "instruction": "How to check IPsec install path",
+    "output": "<think>\nNeed to check IPsec install path.\nLet me break this down.\nThis calls for which. Which operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nwhich ipsec && which swanctl"
+  },
+  {
+    "instruction": "How to check charon plugin list",
+    "output": "<think>\nThe task requires us to check charon plugin list.\nLet me break this down.\nThis calls for ipsec. IPsec VPN tunnel management.\nCheck the output for errors before proceeding to the next step.\n</think>\nipsec listplugins"
+  },
+  {
+    "instruction": "How to enable strongSwan plugin for testing",
+    "output": "<think>\nThis is asking us to enable strongSwan plugin for testing.\nFirst, let me understand what's needed here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'charon {\n  load_test = yes\n}' >> /etc/strongswan.d/charon.conf"
+  },
+  {
+    "instruction": "How to enable the kernel-netlink plugin",
+    "output": "<think>\nThe goal is to enable the kernel-netlink plugin.\n</think>\necho 'charon {\n  load_modular = yes\n  plugins {\n    include strongswan.d/charon/kernel-netlink.conf\n  }\n}' >> /etc/strongswan.d/charon.conf"
+  },
+  {
+    "instruction": "How to configure strongSwan virtual IP pool",
+    "output": "<think>\nThe task requires us to configure strongSwan virtual IP pool.\nLet me reason through this.\n</think>\necho 'pools {\n  office-pool {\n    addrs = 10.8.0.0/24\n    subnet = 10.8.0.0/24\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set DNS via virtual IP pool",
+    "output": "<think>\nThis is asking us to set DNS via virtual IP pool.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'pools {\n  office-pool {\n    dns = 8.8.8.8, 1.1.1.1\n    nbns = 192.168.1.10\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to assign attribute via swanctl pool",
+    "output": "<think>\nThe task requires us to assign attribute via swanctl pool.\nLet me think about the best approach.\n</think>\necho 'pools {\n  office-pool {\n    attr {\n      dhcp-server = 192.168.1.1\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to check strongSwan pool usage",
+    "output": "<think>\nWe're being asked to check strongSwan pool usage.\nLet me think through this step by step.\nI'll reach for swanctl here because swanctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nswanctl --list-pools --leases"
+  },
+  {
+    "instruction": "How to release a specific lease from pool",
+    "output": "<think>\nThe goal is to release a specific lease from pool.\nHere's how I'd approach this.\nI'd use swanctl for this — swanctl operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nswanctl --release --pool office-pool --address 10.8.0.5"
+  },
+  {
+    "instruction": "How to enable XAuth authentication in strongSwan",
+    "output": "<think>\nNeed to enable XAuth authentication in strongSwan.\nLet me consider what makes sense here.\n</think>\necho 'connections {\n  xauth {\n    version = 1\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    local {\n      auth = psk\n    }\n    remote {\n      auth = xauth\n    }\n    children {\n      net {}\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to combine XAuth with EAP",
+    "output": "<think>\nSo we need to combine XAuth with EAP.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'connections {\n  hybrid {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = %any\n    local {\n      auth = pubkey\n    }\n    remote {\n      auth = eap-mschapv2\n      xauth = yes\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IPsec with 3rd-party certs",
+    "output": "<think>\nThe user wants to configure IPsec with 3rd-party certs.\ncp is what we need — file copying.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\nLet me verify afterward that it worked correctly.\n</think>\ncp mycert.crt /etc/swanctl/x509/ && cp mykey.key /etc/swanctl/private/ && swanctl --load-creds"
+  },
+  {
+    "instruction": "How to convert OpenVPN cert for strongSwan",
+    "output": "<think>\nWe're being asked to convert OpenVPN cert for strongSwan.\nLet me break this down.\nI'll reach for openssl here because cryptographic operations and certificate management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in client.crt -out client.pem -outform PEM && openssl rsa -in client.key -out client.pem -outform PEM"
+  }
+]

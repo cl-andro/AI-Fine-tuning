@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create WebDAV user with davfs2 secrets and mount as normal user",
+    "output": "<think>\nThe user wants to create WebDAV user with davfs2 secrets and mount as normal user.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\necho 'http://localhost/webdav alice secret123' > ~/.davfs2/secrets && chmod 600 ~/.davfs2/secrets && mount.davfs http://localhost/webdav ~/webdav"
+  },
+  {
+    "instruction": "Configure davfs2 to not use locks",
+    "output": "<think>\nThe user wants to configure davfs2 to not use locks.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'use_locks 0' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "Set davfs2 cache size",
+    "output": "<think>\nThe task requires us to set davfs2 cache size.\nLet me think through this step by step.\n</think>\necho 'cache_size 100' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "Enable davfs2 debug logging",
+    "output": "<think>\nSo we need to enable davfs2 debug logging.\nLet me verify afterward that it worked correctly.\n</think>\necho 'debug 1' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "Set davfs2 table size for large directories",
+    "output": "<think>\nThe goal is to set davfs2 table size for large directories.\nHere's how I'd approach this.\n</think>\necho 'table_size 4096' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "Set davfs2 timeout for slow connections",
+    "output": "<think>\nNeed to set davfs2 timeout for slow connections.\nFirst, let me understand what's needed here.\n</think>\necho 'timeout 300' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "Disable davfs2 if_match header",
+    "output": "<think>\nSo we need to disable davfs2 if_match header.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'if_match_bug_workaround 1' >> ~/.davfs2/davfs2.conf"
+  },
+  {
+    "instruction": "List all WebDAV methods supported with curl OPTIONS",
+    "output": "<think>\nThe task requires us to list all WebDAV methods supported with curl OPTIONS.\nLet me break this down.\nFor this, curl is the right tool — making HTTP requests.\nThe -I flag means ignore case, which matters here because this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncurl -X OPTIONS http://localhost/webdav/ --user alice:secretpass -I 2>&1 | grep -i '^Allow:' | tr ',' '\\n'"
+  },
+  {
+    "instruction": "Create and lock a file on WebDAV, then unlock in sequence",
+    "output": "<think>\nNeed to create and lock a file on WebDAV, then unlock in sequence.\nLet me reason through this.\nI've added -H to follow symlinks on command line only — standard practice for this kind of operation.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nI'm using -i for interactive, prompt before action — needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'Content' > /tmp/test.txt && curl -X PUT http://localhost/webdav/test.txt --data-binary @/tmp/test.txt --user alice:secretpass && LOCK_TOKEN=$(curl -X LOCK http://localhost/webdav/test.txt --user alice:secretpass -H 'Content-Type: text/xml' -d '<D:lockinfo xmlns:D=\"DAV:\"><D:lockscope><D:exclusive/></D:lockscope><D:locktype><D:write/></D:locktype></D:lockinfo>' -D - 2>/dev/null | grep -i 'Lock-Token' | tr -d '\\r') && curl -X UNLOCK http://localhost/webdav/test.txt --user alice:secretpass -H \"Lock-Token: $LOCK_TOKEN\""
+  },
+  {
+    "instruction": "Set Apache DAVMinProp directive globally",
+    "output": "<think>\nThe task requires us to set Apache DAVMinProp directive globally.\nLet me reason through this.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'DAVMinPropTimeOut 120' | sudo tee /etc/apache2/conf-available/dav-minprop-global.conf && sudo a2enconf dav-minprop-global && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Run ownCloud occ command to update app from marketplace",
+    "output": "<think>\nSo the request is to run ownCloud occ command to update app from marketplace.\nLet me think about the best approach.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data php /var/www/owncloud/occ app:install calendar"
+  },
+  {
+    "instruction": "Remove ownCloud app via occ",
+    "output": "<think>\nSo the request is to remove ownCloud app via occ.\nLet me reason through this.\nI've added -u to show or sort by access time — standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ app:remove calendar"
+  },
+  {
+    "instruction": "Configure ownCloud email via occ",
+    "output": "<think>\nThe goal is to configure ownCloud email via occ.\nLet me reason through this.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ config:system:set mail_domain --value=example.com && sudo -u www-data php /var/www/owncloud/occ config:system:set mail_from_address --value=noreply"
+  },
+  {
+    "instruction": "Test ownCloud email via occ",
+    "output": "<think>\nAlright, we need to test ownCloud email via occ.\nWhy -u? Show or sort by access time. standard practice for this kind of operation.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data php /var/www/owncloud/occ notification:test-push alice"
+  },
+  {
+    "instruction": "Enable Nextcloud app with occ",
+    "output": "<think>\nThe user wants to enable Nextcloud app with occ.\nLet me consider what makes sense here.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data nextcloud.occ app:enable files_pdfviewer"
+  },
+  {
+    "instruction": "Disable Nextcloud app with occ",
+    "output": "<think>\nThe task requires us to disable Nextcloud app with occ.\nLet me break this down.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ app:disable files_pdfviewer"
+  },
+  {
+    "instruction": "List enabled Nextcloud apps",
+    "output": "<think>\nThe user wants to list enabled Nextcloud apps.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ app:list --enabled"
+  },
+  {
+    "instruction": "List disabled Nextcloud apps",
+    "output": "<think>\nThe user wants to list disabled Nextcloud apps.\nI'm using -u for show or sort by access time — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ app:list --disabled"
+  },
+  {
+    "instruction": "Get occ command help for files:scan",
+    "output": "<think>\nNeed to get occ command help for files:scan.\nLet me break this down.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data nextcloud.occ help files:scan"
+  },
+  {
+    "instruction": "Get occ command help for user:add",
+    "output": "<think>\nThe user wants to get occ command help for user:add.\nLet me consider what makes sense here.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ help user:add"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Use range aggregation rate",
+    "output": "logcli query 'rate({job=\"nginx\"} |= \"error\"[5m])'"
+  },
+  {
+    "instruction": "Count logs per level with sum by",
+    "output": "logcli query 'sum by (level) (count_over_time({job=\"app\"} | json [1m]))'"
+  },
+  {
+    "instruction": "Get top 5 error types with topk",
+    "output": "logcli query 'topk(5, count_over_time({job=\"app\"} |= \"error\" [5m]))'"
+  },
+  {
+    "instruction": "Check absent_over_time for missing service",
+    "output": "logcli query 'absent_over_time({job=\"worker\"}[10m])'"
+  },
+  {
+    "instruction": "Query raw output format",
+    "output": "logcli query '{job=\"nginx\"}' --output raw"
+  },
+  {
+    "instruction": "Query JSON output format",
+    "output": "logcli query '{job=\"nginx\"}' --output json"
+  },
+  {
+    "instruction": "Query with specific time range",
+    "output": "logcli query '{job=\"nginx\"}' --from \"2025-01-01T00:00:00Z\" --to \"2025-01-02T00:00:00Z\""
+  },
+  {
+    "instruction": "Compute bytes per second rate",
+    "output": "logcli query 'rate({job=\"nginx\"} | json | unwrap bytes_sent [1m])'"
+  },
+  {
+    "instruction": "Count logs per host",
+    "output": "logcli query 'count by (host) (count_over_time({job=\"nginx\"}[5m]))'"
+  },
+  {
+    "instruction": "Query with multiple label matchers",
+    "output": "logcli query '{job=\"nginx\", env=\"production\"} |= \"error\"'"
+  },
+  {
+    "instruction": "Stream selector with regex on labels",
+    "output": "logcli query '{job=~\"nginx|apache\"} |= \"error\"'"
+  },
+  {
+    "instruction": "Extract label with label_format",
+    "output": "logcli query '{job=\"app\"} | logfmt | label_format hostname=host'"
+  },
+  {
+    "instruction": "Calculate quantile of request duration",
+    "output": "logcli query 'quantile_over_time(0.95, {job=\"nginx\"} | json | unwrap request_time [1h])'"
+  },
+  {
+    "instruction": "Filter logs by JSON field value",
+    "output": "logcli query '{job=\"app\"} | json | status >= 500'"
+  },
+  {
+    "instruction": "Detect missing cron job",
+    "output": "logcli query 'absent_over_time({job=\"cron\"}[15m])'"
+  },
+  {
+    "instruction": "Average request duration by host",
+    "output": "logcli query 'avg by (host) (rate({job=\"nginx\"} | json | unwrap request_time [5m]))'"
+  },
+  {
+    "instruction": "Count error logs as metric vector",
+    "output": "logcli query 'sum(rate({job=\"nginx\"} |= \"error\" [5m]))'"
+  },
+  {
+    "instruction": "Use LogQL metric query for status codes",
+    "output": "logcli query 'count by (status) (rate({job=\"nginx\"} | json [1m]))'"
+  },
+  {
+    "instruction": "Compute apdex score from request times",
+    "output": "logcli query 'apdex(0.25, 0.5, {job=\"nginx\"} | json | unwrap request_time [5m])'"
+  },
+  {
+    "instruction": "Use absent_over_time for metric alert",
+    "output": "logcli query 'absent_over_time({job=\"exporter\"}[5m])'"
+  },
+  {
+    "instruction": "Get min/ max/ avg latency",
+    "output": "logcli query 'min by (host) (rate({job=\"nginx\"} | json | unwrap request_time [5m]))'"
+  },
+  {
+    "instruction": "Use bottomk for slowest endpoints",
+    "output": "logcli query 'bottomk(5, avg by (path) (rate({job=\"nginx\"} | json | unwrap request_time [5m])))'"
+  }
+]

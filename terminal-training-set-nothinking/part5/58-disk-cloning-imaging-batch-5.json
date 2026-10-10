@@ -1,0 +1,22 @@
+[
+  {"instruction": "Clone ext4 partition partclone with force overwriting existing image", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img -f"},
+  {"instruction": "Restore ext4 with original fs UUID preserved", "output": "partclone.ext4 -r -s sda1.img -o /dev/sda1 -O"},
+  {"instruction": "Clone XFS with buffer size of 1MiB", "output": "partclone.xfs -c -s /dev/sda2 -o sda2.img -b 1M"},
+  {"instruction": "Restore NTFS image with logfile and progress", "output": "partclone.ntfs -r -s sda5.img -o /dev/sda5 -L restore.log"},
+  {"instruction": "Clone from stdin and output to device", "output": "cat sda1.img | partclone.ext4 -r -o /dev/sda1"},
+  {"instruction": "Clone to stdout piped to gzip compression", "output": "partclone.ext4 -c -s /dev/sda1 -o - | gzip -c > sda1.img.gz"},
+  {"instruction": "Restore compressed partclone image through gunzip", "output": "gunzip -c sda1.img.gz | partclone.ext4 -r -o /dev/sda1"},
+  {"instruction": "Show partclone buffer size default", "output": "partclone.ext4 --help | grep -i buffer"},
+  {"instruction": "Clone FAT32 partition with I/O error skip", "output": "partclone.fat32 -c -s /dev/sda4 -o sda4.img -b -e"},
+  {"instruction": "Restore FAT32 partition overwriting if device exists", "output": "partclone.fat32 -r -s sda4.img -o /dev/sda4 -f"},
+  {"instruction": "Clone btrfs subvolume using partclone", "output": "partclone.btrfs -c -s /dev/sda3 -o sda3.img -L btrfs_clone.log"},
+  {"instruction": "Restore partclone image with raw write and no buffering", "output": "partclone.ext4 --restore_raw -s sda1.img -o /dev/sda1 -b"},
+  {"instruction": "Clone partition with custom output chunk size", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img -b 512K"},
+  {"instruction": "Check partclone output image integrity", "output": "partclone.ext4 -r -s sda1.img -o /dev/null -C"},
+  {"instruction": "Clone partition excluding free blocks to save space", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img -z"},
+  {"instruction": "Compress output image to level 9 using internal gzip", "output": "partclone.ext4 -c -s /dev/sda1 -o - | gzip -9 > sda1_min.img.gz"},
+  {"instruction": "Clone partition with null encryption header", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img -N"},
+  {"instruction": "Clone a tar-stream of filesystem metadata header", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img --tar"},
+  {"instruction": "Restore partclone image from compressed backup", "output": "zcat sda1.img.gz | partclone.ext4 -r -o /dev/sda1"},
+  {"instruction": "Clone with domain list (selective file inclusion)", "output": "partclone.ext4 -c -s /dev/sda1 -o sda1.img --domain_file=domain.txt"}
+]

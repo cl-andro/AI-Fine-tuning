@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to check OpenVPN AUTH_FAILED log entries",
+    "output": "<think>\nThe task requires us to check OpenVPN AUTH_FAILED log entries.\nLet me consider what makes sense here.\nThis calls for journalctl. Checking systemd logs.\nThe -u flag handles show or sort by access time. Important because standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nOld logs can be large — add --since to limit the range and avoid huge output.\nLet me verify afterward that it worked correctly.\n</think>\njournalctl -u openvpn@server | grep AUTH_FAILED"
+  },
+  {
+    "instruction": "How to check OpenVPN TLS errors",
+    "output": "<think>\nSo we need to check OpenVPN TLS errors.\nI'd use journalctl for this — checking systemd logs.\nI've added -u to show or sort by access time — standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nOld logs can be large — add --since to limit the range and avoid huge output.\nLet me verify afterward that it worked correctly.\n</think>\njournalctl -u openvpn@server | grep TLS"
+  },
+  {
+    "instruction": "How to verify client certificate against CRL",
+    "output": "<think>\nNeed to verify client certificate against CRL.\nLet me break this down.\nI'd use openssl for this — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nI'll check the output to make sure it did what we expected.\n</think>\nopenssl verify -crl_check -CAfile <(cat ca.crt crl.pem) client.crt"
+  },
+  {
+    "instruction": "How to show OpenVPN routing table",
+    "output": "<think>\nThe user wants to show OpenVPN routing table.\nHere's how I'd approach this.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\necho 'route' | nc 127.0.0.1 7505"
+  },
+  {
+    "instruction": "How to list connected clients from CLI",
+    "output": "<think>\nThe user wants to list connected clients from CLI.\nHere's how I'd approach this.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'status 3' | nc 127.0.0.1 7505"
+  },
+  {
+    "instruction": "How to push a reroute-gateway to clients",
+    "output": "<think>\nSo the request is to push a reroute-gateway to clients.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'push \"redirect-gateway def1\"' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to use auto-generated client certificate",
+    "output": "<think>\nSo we need to use auto-generated client certificate.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'ifconfig-pool-persist ipp.txt' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to fix OpenVPN disconnect issues by adjusting keepalive",
+    "output": "<think>\nWe're being asked to fix OpenVPN disconnect issues by adjusting keepalive.\nHere's how I'd approach this.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'keepalive 5 30' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set OpenVPN to use specific user/group",
+    "output": "<think>\nSo we need to set OpenVPN to use specific user/group.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'user nobody\ngroup nogroup' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to open firewall for OpenVPN",
+    "output": "<think>\nThis is asking us to open firewall for OpenVPN.\nHere's how I'd approach this.\nFor this, iptables is the right tool — firewall management.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\niptables -A INPUT -p udp --dport 1194 -j ACCEPT"
+  },
+  {
+    "instruction": "How to add iptables masquerade for VPN clients",
+    "output": "<think>\nSo the request is to add iptables masquerade for VPN clients.\nLet me break this down.\nI'd use iptables for this — firewall management.\nWhy -t? Sort by modification time. needed for this specific use case.\nThe -s flag handles summarize or silent mode. Important because standard practice for this kind of operation.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "How to enable IP forwarding for OpenVPN",
+    "output": "<think>\nAlright, we need to enable IP forwarding for OpenVPN.\nLet me consider what makes sense here.\nBest tool here is sysctl — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w net.ipv4.ip_forward=1"
+  },
+  {
+    "instruction": "How to persist IP forwarding across reboots",
+    "output": "<think>\nNeed to persist IP forwarding across reboots.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "How to block client-to-client traffic in OpenVPN",
+    "output": "<think>\nThe goal is to block client-to-client traffic in OpenVPN.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'client-to-client' >> /etc/openvpn/server.conf && iptables -I FORWARD -i tun0 -o tun0 -j DROP"
+  },
+  {
+    "instruction": "How to isolate clients from LAN with OpenVPN",
+    "output": "<think>\nSo the request is to isolate clients from LAN with OpenVPN.\nLet me consider what makes sense here.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'client-isolate' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set bandwidth limit per client with OpenVPN",
+    "output": "<think>\nAlright, we need to set bandwidth limit per client with OpenVPN.\nBest tool here is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev tun0 root handle 1: htb default 30 && tc class add dev tun0 parent 1: classid 1:10 htb rate 1mbit"
+  },
+  {
+    "instruction": "How to customize OpenVPN ifconfig pool",
+    "output": "<think>\nThe goal is to customize OpenVPN ifconfig pool.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'ifconfig-pool 10.8.0.50 10.8.0.100' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to assign static IP to OpenVPN client",
+    "output": "<think>\nSo the request is to assign static IP to OpenVPN client.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'ifconfig-push 10.8.0.10 255.255.255.0' >> /etc/openvpn/client-common.txt"
+  },
+  {
+    "instruction": "How to add client-config-dir in OpenVPN",
+    "output": "<think>\nThis is asking us to add client-config-dir in OpenVPN.\nLet me break this down.\nI'll reach for mkdir here because directory creation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nmkdir -p /etc/openvpn/ccd && echo 'client-config-dir /etc/openvpn/ccd' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to create a per-client config file in ccd",
+    "output": "<think>\nThe task requires us to create a per-client config file in ccd.\nHere's how I'd approach this.\n</think>\necho 'ifconfig-push 10.8.0.20 255.255.255.0\npush \"route 192.168.1.0 255.255.255.0\"' > /etc/openvpn/ccd/client1"
+  },
+  {
+    "instruction": "How to use the management interface in client mode",
+    "output": "<think>\nThe task requires us to use the management interface in client mode.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'management 127.0.0.1 7506' >> client.conf"
+  },
+  {
+    "instruction": "How to enable socks proxy in OpenVPN client",
+    "output": "<think>\nThis is asking us to enable socks proxy in OpenVPN client.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'socks-proxy 127.0.0.1 1080' >> client.ovpn"
+  },
+  {
+    "instruction": "How to set HTTP proxy in OpenVPN client",
+    "output": "<think>\nThe goal is to set HTTP proxy in OpenVPN client.\nFirst, let me understand what's needed here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'http-proxy 192.168.1.100 8080' >> client.ovpn"
+  },
+  {
+    "instruction": "How to use HTTP proxy with auth in OpenVPN",
+    "output": "<think>\nSo we need to use HTTP proxy with auth in OpenVPN.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'http-proxy 192.168.1.100 8080 /etc/openvpn/auth.txt' >> client.ovpn"
+  },
+  {
+    "instruction": "How to connect through a jump host SSH tunnel",
+    "output": "<think>\nWe should connect through a jump host SSH tunnel.\nLet me think about the best approach.\nBest tool here is ssh — remote system access.\nThe -L flag means follow symlinks when processing, which matters here because standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -L 1194:127.0.0.1:1194 user@jumphost -N &"
+  }
+]

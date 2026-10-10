@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: employees(id, name, department_id), departments(id, dept_name)\nGet employee names with their department names",
+    "output": "SELECT e.name, d.dept_name FROM employees e JOIN departments d ON e.department_id = d.id;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total), users(id, name)\nGet all orders with user names",
+    "output": "SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total), users(id, name)\nGet all users even if they have no orders",
+    "output": "SELECT u.name, o.total FROM users u LEFT JOIN orders o ON u.id = o.user_id;"
+  },
+  {
+    "instruction": "Schema: students(id, name), enrollments(student_id, course_id), courses(id, title)\nGet student names with their course titles",
+    "output": "SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON e.course_id = c.id;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, manager_id)\nGet employees with their manager names",
+    "output": "SELECT e.name AS employee, m.name AS manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id;"
+  },
+  {
+    "instruction": "Schema: products(id, name, category_id), categories(id, cat_name)\nGet product names with category names",
+    "output": "SELECT p.name, c.cat_name FROM products p JOIN categories c ON p.category_id = c.id;"
+  },
+  {
+    "instruction": "Schema: authors(id, name), books(id, title, author_id)\nGet all authors including those without books",
+    "output": "SELECT a.name, b.title FROM authors a LEFT JOIN books b ON a.id = b.author_id;"
+  },
+  {
+    "instruction": "Schema: customers(id, name), orders(id, customer_id, total)\nGet customers who have never placed an order",
+    "output": "SELECT c.name FROM customers c LEFT JOIN orders o ON c.id = o.customer_id WHERE o.id IS NULL;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, dept_id), departments(id, dept_name)\nGet department names even if no employees exist",
+    "output": "SELECT d.dept_name, e.name FROM departments d LEFT JOIN employees e ON d.id = e.dept_id;"
+  },
+  {
+    "instruction": "Schema: users(id, name), roles(id, role_name), user_roles(user_id, role_id)\nGet users with their role names",
+    "output": "SELECT u.name, r.role_name FROM users u JOIN user_roles ur ON u.id = ur.user_id JOIN roles r ON ur.role_id = r.id;"
+  },
+  {
+    "instruction": "Schema: invoices(id, vendor_id, amount), vendors(id, name)\nGet invoice amounts with vendor names for invoices over 1000",
+    "output": "SELECT i.amount, v.name FROM invoices i JOIN vendors v ON i.vendor_id = v.id WHERE i.amount > 1000;"
+  },
+  {
+    "instruction": "Schema: posts(id, title, user_id), users(id, username)\nGet post titles with usernames sorted by title",
+    "output": "SELECT p.title, u.username FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.title;"
+  },
+  {
+    "instruction": "Schema: movies(id, title, director_id), directors(id, name)\nGet all movies with director names using right join",
+    "output": "SELECT m.title, d.name FROM directors d RIGHT JOIN movies m ON d.id = m.director_id;"
+  },
+  {
+    "instruction": "Schema: tags(id, tag_name), articles(id, title), article_tags(article_id, tag_id)\nGet article titles with their tags",
+    "output": "SELECT a.title, t.tag_name FROM articles a JOIN article_tags at ON a.id = at.article_id JOIN tags t ON at.tag_id = t.id;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, dept_id), departments(id, dept_name)\nGet count of employees per department",
+    "output": "SELECT d.dept_name, COUNT(e.id) FROM departments d LEFT JOIN employees e ON d.id = e.dept_id GROUP BY d.dept_name;"
+  },
+  {
+    "instruction": "Schema: orders(id, customer_id, total), customers(id, name)\nGet total spending per customer",
+    "output": "SELECT c.name, SUM(o.total) FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.name;"
+  },
+  {
+    "instruction": "Schema: students(id, name), grades(student_id, score)\nGet students who scored above 90",
+    "output": "SELECT DISTINCT s.name FROM students s JOIN grades g ON s.id = g.student_id WHERE g.score > 90;"
+  },
+  {
+    "instruction": "Schema: products(id, name, supplier_id), suppliers(id, company_name)\nGet products with supplier company names where supplier is not null",
+    "output": "SELECT p.name, s.company_name FROM products p JOIN suppliers s ON p.supplier_id = s.id;"
+  },
+  {
+    "instruction": "Schema: flights(id, origin_id, dest_id), airports(id, code)\nGet flight origin and destination codes",
+    "output": "SELECT f.id, o.code AS origin, d.code AS destination FROM flights f JOIN airports o ON f.origin_id = o.id JOIN airports d ON f.dest_id = d.id;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, dept_id), departments(id, dept_name)\nGet departments with more than 5 employees",
+    "output": "SELECT d.dept_name FROM departments d JOIN employees e ON d.id = e.dept_id GROUP BY d.dept_name HAVING COUNT(e.id) > 5;"
+  },
+  {
+    "instruction": "Schema: users(id, name), sessions(user_id, login_at)\nGet users with their latest login time",
+    "output": "SELECT u.name, MAX(s.login_at) FROM users u JOIN sessions s ON u.id = s.user_id GROUP BY u.name;"
+  },
+  {
+    "instruction": "Schema: items(id, name, order_id), orders(id, order_date)\nGet item names ordered after 2024-01-01",
+    "output": "SELECT i.name FROM items i JOIN orders o ON i.order_id = o.id WHERE o.order_date > '2024-01-01';"
+  },
+  {
+    "instruction": "Schema: teachers(id, name), classes(id, subject, teacher_id)\nGet teachers who teach no classes",
+    "output": "SELECT t.name FROM teachers t LEFT JOIN classes c ON t.id = c.teacher_id WHERE c.id IS NULL;"
+  },
+  {
+    "instruction": "Schema: accounts(id, balance, branch_id), branches(id, city)\nGet account balances with branch cities",
+    "output": "SELECT a.balance, b.city FROM accounts a JOIN branches b ON a.branch_id = b.id;"
+  },
+  {
+    "instruction": "Schema: patients(id, name, doctor_id), doctors(id, name)\nGet patient names with their doctor names",
+    "output": "SELECT p.name AS patient, d.name AS doctor FROM patients p JOIN doctors d ON p.doctor_id = d.id;"
+  }
+]

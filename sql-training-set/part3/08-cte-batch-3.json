@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE returning count per caller_id",
+    "output": "WITH counts AS (SELECT caller_id, COUNT(*) c FROM calls GROUP BY caller_id) SELECT * FROM counts WHERE c > 2;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE computing average callee_id",
+    "output": "WITH avg_cte AS (SELECT AVG(callee_id) a FROM calls) SELECT * FROM calls WHERE callee_id > (SELECT a FROM avg_cte);"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nTwo CTEs joined together",
+    "output": "WITH a AS (SELECT caller_id, SUM(callee_id) s FROM calls GROUP BY caller_id), b AS (SELECT caller_id, COUNT(*) c FROM calls GROUP BY caller_id) SELECT a.caller_id, a.s FROM a JOIN b ON a.caller_id = b.caller_id WHERE b.c > 3;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nApply filters before entering a CTE",
+    "output": "WITH filtered AS (SELECT * FROM calls WHERE callee_id > 50) SELECT caller_id, COUNT(*) FROM filtered GROUP BY caller_id;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE then order by aggregate",
+    "output": "WITH total AS (SELECT caller_id, SUM(callee_id) s FROM calls GROUP BY caller_id) SELECT * FROM total ORDER BY s DESC;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nModify via CTE then select window rank",
+    "output": "WITH base AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY caller_id ORDER BY callee_id DESC) rn FROM calls) SELECT * FROM base WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nRecursive CTE to create a number sequence",
+    "output": "WITH RECURSIVE num(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM num WHERE n < 10) SELECT * FROM num;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nRecursive CTE walking a holiday-date chain",
+    "output": "WITH RECURSIVE dates(d) AS (SELECT '2024-01-01'::date UNION ALL SELECT (d + INTERVAL '1 day')::date FROM dates WHERE d < '2024-01-10') SELECT d FROM dates;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE combining two aggregates in one pass",
+    "output": "WITH agg AS (SELECT caller_id, SUM(callee_id) s, AVG(callee_id) a FROM calls GROUP BY caller_id) SELECT caller_id, s, a FROM agg WHERE s > 100;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nMultiple CTEs chained (a then b referencing a)",
+    "output": "WITH a AS (SELECT caller_id, COUNT(*) c FROM calls GROUP BY caller_id), b AS (SELECT * FROM a WHERE c > 1) SELECT COUNT(*) FROM b;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nSet expressions inside a CTE",
+    "output": "WITH c AS (SELECT caller_id FROM calls WHERE callee_id > 10 UNION SELECT caller_id FROM calls WHERE callee_id < 2) SELECT * FROM c;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE for deduplication using row number",
+    "output": "WITH dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY caller_id ORDER BY duration) rn FROM calls) SELECT * FROM dedup WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nRecursive hierarchy emulating parent-child with depth",
+    "output": "WITH RECURSIVE tree AS (SELECT id, caller_id FROM calls WHERE parent_id IS NULL UNION ALL SELECT c.id, c.caller_id FROM calls c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nMaterialize then refilter a CTE",
+    "output": "WITH m AS (SELECT caller_id, SUM(callee_id) s FROM calls GROUP BY caller_id HAVING SUM(callee_id) > 0) SELECT *, s * 1.0 / (SELECT SUM(s) FROM m) AS share FROM m;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nTally CTE feeding a LEFT JOIN to fill missing grouping rows",
+    "output": "WITH RECURSIVE grp AS (SELECT 1 g UNION ALL SELECT g + 1 FROM grp WHERE g < 10) SELECT g, COUNT(t.caller_id) FROM grp LEFT JOIN calls t ON t.caller_id = g GROUP BY g;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE with ordered window and outer filter on rank",
+    "output": "WITH r AS (SELECT *, RANK() OVER (PARTITION BY caller_id ORDER BY callee_id DESC) rk FROM calls) SELECT * FROM r WHERE rk <= 3;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE used twice via self reference pattern",
+    "output": "WITH c AS (SELECT caller_id, callee_id FROM calls WHERE callee_id IS NOT NULL) SELECT * FROM c WHERE callee_id > (SELECT AVG(callee_id) FROM c);"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nInline aggregate then filter in outer query",
+    "output": "WITH g AS (SELECT caller_id FROM calls GROUP BY caller_id HAVING COUNT(*) > 2) SELECT * FROM calls WHERE caller_id IN (SELECT * FROM g);"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nPivot-like pivot using multiple aggregate CTEs",
+    "output": "WITH wide AS (SELECT caller_id, SUM(CASE WHEN callee_id > 100 THEN 1 ELSE 0 END) over100, SUM(CASE WHEN callee_id <= 100 THEN 1 ELSE 0 END) under FROM calls GROUP BY caller_id) SELECT * FROM wide;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nRecursive CTE to expand an interval of ranges",
+    "output": "WITH RECURSIVE iv(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM iv WHERE n < 100) SELECT n FROM iv;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE for lead-lag difference",
+    "output": "WITH lg AS (SELECT caller_id, callee_id, LAG(callee_id) OVER (PARTITION BY caller_id ORDER BY duration) prev FROM calls) SELECT *, callee_id - COALESCE(prev,callee_id) AS delta FROM lg;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nChained CTEs for multi-stage business calc",
+    "output": "WITH step1 AS (SELECT caller_id, SUM(callee_id) s FROM calls GROUP BY caller_id), step2 AS (SELECT *, s * 2 doubled FROM step1) SELECT * FROM step2 WHERE doubled > 20;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE referencing a correlated subquery",
+    "output": "WITH big AS (SELECT caller_id FROM calls GROUP BY caller_id HAVING SUM(callee_id) > 100) SELECT * FROM calls t WHERE EXISTS (SELECT 1 FROM big b WHERE b.caller_id = t.caller_id);"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nRecursive CTE producing factorial numbers",
+    "output": "WITH RECURSIVE f(n, fact) AS (SELECT 1, 1 UNION ALL SELECT n+1, fact*(n+1) FROM f WHERE n < 10) SELECT * FROM f;"
+  },
+  {
+    "instruction": "Schema: calls(caller_id, callee_id, duration)\nCTE on itself to compute growth from prior period",
+    "output": "WITH p AS (SELECT caller_id, SUM(callee_id) cur FROM calls GROUP BY caller_id), q AS (SELECT *, LAG(cur) OVER (ORDER BY caller_id) prev FROM p) SELECT *, cur - prev AS growth FROM q;"
+  }
+]

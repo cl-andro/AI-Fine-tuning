@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Tag an EC2 instance",
+    "output": "<think>\nAlright, we need to tag an EC2 instance.\nThe tool for this job is aws — AWS cloud management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\naws ec2 create-tags --resources i-1234567890abcdef0 --tags Key=Name,Value=WebServer"
+  },
+  {
+    "instruction": "List running EC2 instances with name tag",
+    "output": "<think>\nThis is asking us to list running EC2 instances with name tag.\nI'll reach for aws here because AWS cloud management.\nI'm using -name for filter by filename pattern — this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\naws ec2 describe-instances --filters Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].[InstanceId,Tags[?Key==`Name`].Value|[0]]' --output table"
+  },
+  {
+    "instruction": "Get current AWS identity",
+    "output": "<think>\nThe user wants to get current AWS identity.\nLet me consider what makes sense here.\naws is what we need — AWS cloud management.\nLet me verify afterward that it worked correctly.\n</think>\naws sts get-caller-identity"
+  },
+  {
+    "instruction": "Associate Elastic IP",
+    "output": "<think>\nWe should associate Elastic IP.\nHere's how I'd approach this.\nI'll reach for aws here because AWS cloud management.\nAfter running, confirm it worked as expected before moving on.\n</think>\naws ec2 associate-address --instance-id i-1234567890abcdef0 --allocation-id eipalloc-12345678"
+  },
+  {
+    "instruction": "Create CloudWatch alarm",
+    "output": "<think>\nWe're being asked to create CloudWatch alarm.\nThe tool for this job is aws — AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\naws cloudwatch put-metric-alarm --alarm-name HighCPU --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 80 --comparison-operator GreaterThanThreshold"
+  },
+  {
+    "instruction": "List EBS volumes",
+    "output": "<think>\nSo the request is to list EBS volumes.\nLet me reason through this.\nI'd use aws for this — AWS cloud management.\n</think>\naws ec2 describe-volumes --query 'Volumes[*].[VolumeId,Size,State]' --output table"
+  },
+  {
+    "instruction": "List objects in a bucket with details",
+    "output": "<think>\nWe're being asked to list objects in a bucket with details.\nLet me reason through this.\nFor this, aws is the right tool — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\naws s3 ls s3://my-bucket/ --human-readable --summarize"
+  },
+  {
+    "instruction": "Describe SQS queue attributes",
+    "output": "<think>\nThe task requires us to describe SQS queue attributes.\nI'll reach for aws here because AWS cloud management.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\naws sqs get-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/my-queue --attribute-names All"
+  },
+  {
+    "instruction": "List available AMIs",
+    "output": "<think>\nThe goal is to list available AMIs.\nLet me think through this step by step.\naws is what we need — AWS cloud management.\nLet me verify afterward that it worked correctly.\n</think>\naws ec2 describe-images --owners self --query 'Images[*].[ImageId,Name]' --output table"
+  },
+  {
+    "instruction": "Receive messages from SQS",
+    "output": "<think>\nThe user wants to receive messages from SQS.\nLet me consider what makes sense here.\naws is what we need — AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\naws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/my-queue --attribute-names All --message-attribute-names All"
+  },
+  {
+    "instruction": "Copy file to S3",
+    "output": "<think>\nNeed to copy file to S3.\nThis calls for aws. AWS cloud management.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\naws s3 cp myfile.txt s3://my-bucket/"
+  },
+  {
+    "instruction": "Create Lambda function",
+    "output": "<think>\nSo the request is to create Lambda function.\nBest tool here is aws — AWS cloud management.\nAfter running, I'll confirm the result looks right.\n</think>\naws lambda create-function --function-name my-func --runtime python3.9 --role arn:aws:iam::123456789012:role/lambda-role --handler index.handler --zip-file fileb://func.zip"
+  },
+  {
+    "instruction": "Delete S3 bucket contents",
+    "output": "<think>\nThis is asking us to delete S3 bucket contents.\nI'll reach for aws here because AWS cloud management.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\naws s3 rm s3://my-bucket/ --recursive"
+  },
+  {
+    "instruction": "Set default region in config",
+    "output": "<think>\nSo we need to set default region in config.\nLet me break this down.\nI'd use aws for this — AWS cloud management.\n</think>\naws configure set region us-west-2"
+  },
+  {
+    "instruction": "Create Elastic IP",
+    "output": "<think>\nWe're being asked to create Elastic IP.\nLet me think about the best approach.\nI'll reach for aws here because AWS cloud management.\nA quick sanity check afterward saves debugging time later.\n</think>\naws ec2 allocate-address --domain vpc"
+  },
+  {
+    "instruction": "Send a message to an SQS queue",
+    "output": "<think>\nAlright, we need to send a message to an SQS queue.\nLet me think through this step by step.\nFor this, aws is the right tool — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\naws sqs send-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/my-queue --message-body 'Hello World'"
+  },
+  {
+    "instruction": "List CloudFormation stacks",
+    "output": "<think>\nThe goal is to list CloudFormation stacks.\nHere's how I'd approach this.\naws is what we need — AWS cloud management.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\naws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query 'StackSummaries[*].[StackName,CreationTime]' --output table"
+  },
+  {
+    "instruction": "Create SQS queue",
+    "output": "<think>\nAlright, we need to create SQS queue.\naws is what we need — AWS cloud management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\naws sqs create-queue --queue-name my-queue --attributes DelaySeconds=5"
+  },
+  {
+    "instruction": "List instances with pagination",
+    "output": "<think>\nAlright, we need to list instances with pagination.\nLet me think through this step by step.\nThis calls for aws. AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\naws ec2 describe-instances --max-items 50 --query 'Reservations[*].Instances[*].[InstanceId]' --output table"
+  },
+  {
+    "instruction": "Stop an EC2 instance",
+    "output": "<think>\nWe should stop an EC2 instance.\nI'll reach for aws here because AWS cloud management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\naws ec2 stop-instances --instance-ids i-1234567890abcdef0"
+  },
+  {
+    "instruction": "List Lambda event source mappings",
+    "output": "<think>\nSo the request is to list Lambda event source mappings.\nBest tool here is aws — AWS cloud management.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\naws lambda list-event-source-mappings --function-name my-function"
+  },
+  {
+    "instruction": "Attach EBS volume",
+    "output": "<think>\nSo we need to attach EBS volume.\nI'd use aws for this — AWS cloud management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\naws ec2 attach-volume --volume-id vol-1234567890abcdef0 --instance-id i-1234567890abcdef0 --device /dev/sdf"
+  },
+  {
+    "instruction": "Create an EC2 instance",
+    "output": "<think>\nThe user wants to create an EC2 instance.\nBest tool here is aws — AWS cloud management.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\naws ec2 run-instances --image-id ami-0abcdef1234567890 --instance-type t3.micro --key-name my-key"
+  },
+  {
+    "instruction": "List load balancers",
+    "output": "<think>\nThe task requires us to list load balancers.\nThe tool for this job is aws — AWS cloud management.\n</think>\naws elbv2 describe-load-balancers --query 'LoadBalancers[*].[LoadBalancerName,DNSName]' --output table"
+  },
+  {
+    "instruction": "Invoke a Lambda function",
+    "output": "<think>\nNeed to invoke a Lambda function.\nLet me reason through this.\nFor this, aws is the right tool — AWS cloud management.\n</think>\naws lambda invoke --function-name my-function --payload '{\"key\":\"value\"}' response.json"
+  },
+  {
+    "instruction": "Invoke Lambda async",
+    "output": "<think>\nSo we need to invoke Lambda async.\nLet me think about the best approach.\nThe tool for this job is aws — AWS cloud management.\nQuick verification after execution to be safe.\n</think>\naws lambda invoke --function-name my-function --invocation-type Event --payload '{}' /dev/null"
+  }
+]

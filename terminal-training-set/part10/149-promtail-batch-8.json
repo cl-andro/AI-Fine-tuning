@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Install logcli via snap",
+    "output": "<think>\nSo we need to install logcli via snap.\nFor this, snap is the right tool — Snap package management.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\n</think>\nsnap install logcli"
+  },
+  {
+    "instruction": "Query Loki for log streams count",
+    "output": "<think>\nThe user wants to query Loki for log streams count.\nI'll reach for logcli here because logcli operations.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nlogcli series '{job=\"nginx\"}' 2>&1 | wc -l"
+  },
+  {
+    "instruction": "Analyze log labels cardinality",
+    "output": "<think>\nThis is asking us to analyze log labels cardinality.\nThis calls for logcli. Logcli operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nlogcli series '{job=~\".+\"}' --analyze-labels 2>&1"
+  },
+  {
+    "instruction": "Get all distinct values for a label",
+    "output": "<think>\nSo the request is to get all distinct values for a label.\nLet me consider what makes sense here.\nBest tool here is logcli — logcli operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nlogcli labels job 2>&1"
+  },
+  {
+    "instruction": "Export Loki metrics to Prometheus format",
+    "output": "<think>\nThe task requires us to export Loki metrics to Prometheus format.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl http://localhost:3100/metrics > loki-metrics.txt"
+  },
+  {
+    "instruction": "Query top log producers by volume",
+    "output": "<think>\nThe goal is to query top log producers by volume.\nFirst, let me understand what's needed here.\nBest tool here is logcli — logcli operations.\n</think>\nlogcli query 'topk(10, sum by (job) (bytes_over_time({job=~\".+\"}[1h])))'"
+  },
+  {
+    "instruction": "Check log ingress rate to Loki",
+    "output": "<think>\nThe user wants to check log ingress rate to Loki.\nFirst, let me understand what's needed here.\nBest tool here is logcli — logcli operations.\n</think>\nlogcli query 'sum(rate({job=~\".+\"}[5m]))'"
+  },
+  {
+    "instruction": "Create alert rule for high error rate",
+    "output": "<think>\nSo the request is to create alert rule for high error rate.\nI'll reach for cat here because cat operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /etc/loki/rules/alert.yaml << 'EOF'\ngroups:\n- name: error-rate-alert\n  rules:\n  - alert: HighErrorRate\n    expr: sum(rate({job=\"nginx\"} |= \"error\" [5m])) / sum(rate({job=\"nginx\"}[5m])) > 0.05\n    for: 5m\n    annotations:\n      summary: High error rate detected on nginx\nEOF"
+  },
+  {
+    "instruction": "Create recording rule for error ratio",
+    "output": "<think>\nWe're being asked to create recording rule for error ratio.\nLet me break this down.\ncat is what we need — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/loki/rules/recording.yaml << 'EOF'\ngroups:\n- name: recording-rules\n  rules:\n  - record: job:nginx:error_ratio:5m\n    expr: sum(rate({job=\"nginx\"} |= \"error\" [5m])) / sum(rate({job=\"nginx\"}[5m]))\nEOF"
+  },
+  {
+    "instruction": "Test Loki alert rules",
+    "output": "<think>\nAlright, we need to test Loki alert rules.\nHere's how I'd approach this.\nThe tool for this job is curl — making HTTP requests.\nI'm using -H for follow symlinks on command line only — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST 'http://localhost:3100/ruler/rule' -H 'Content-Type: application/yaml' --data-binary @/etc/loki/rules/alert.yaml"
+  },
+  {
+    "instruction": "List installed ruler rules",
+    "output": "<think>\nWe're being asked to list installed ruler rules.\nLet me reason through this.\nThe tool for this job is curl — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl http://localhost:3100/ruler/rule"
+  },
+  {
+    "instruction": "Delete a Loki ruler rule",
+    "output": "<think>\nWe should delete a Loki ruler rule.\nHere's how I'd approach this.\nBest tool here is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X DELETE 'http://localhost:3100/ruler/rule/error-rate-alert'"
+  },
+  {
+    "instruction": "Reload Loki configuration without restart",
+    "output": "<think>\nThis is asking us to reload Loki configuration without restart.\nLet me break this down.\nThis calls for kill. Process termination.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nThe -d flag means directory listing, don't descend, which matters here because without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nkill -9 should be a last resort — if the process ignores SIGTERM, then escalate to SIGKILL.\nI'll check the output to make sure it did what we expected.\n</think>\nkill -HUP $(cat /var/run/loki/loki.pid 2>/dev/null || systemctl show -p MainPID loki | cut -d= -f2)"
+  },
+  {
+    "instruction": "Add Loki autoscaling config",
+    "output": "<think>\nThe goal is to add Loki autoscaling config.\nLet me reason through this.\ncat is what we need — cat operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nindex_gateway:\n  mode: simple\n  replicas: 2\nEOF"
+  },
+  {
+    "instruction": "Configure Loki for high availability",
+    "output": "<think>\nThe task requires us to configure Loki for high availability.\nLet me reason through this.\nFor this, cat is the right tool — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nfrontend_worker:\n  frontend_address: loki-query-frontend:9095\nEOF"
+  },
+  {
+    "instruction": "Add tail proxy for logcli",
+    "output": "<think>\nThe task requires us to add tail proxy for logcli.\ncat is what we need — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/loki/config.yml << 'EOF'\nqueryrange:\n  parallelise_shardable_queries: true\n  cache_results: true\nEOF"
+  },
+  {
+    "instruction": "Check Loki module health",
+    "output": "<think>\nNeed to check Loki module health.\nLet me think about the best approach.\nThe tool for this job is curl — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl http://localhost:3100/health"
+  },
+  {
+    "instruction": "View Loki built-in dashboard",
+    "output": "<think>\nSo we need to view Loki built-in dashboard.\nLet me think through this step by step.\nwget is what we need — downloading files.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nI'll check the output to make sure it did what we expected.\n</think>\nwget -O - http://localhost:3100/ 2>/dev/null || echo 'No web UI available'"
+  },
+  {
+    "instruction": "Enable Loki multi-tenancy",
+    "output": "<think>\nSo we need to enable Loki multi-tenancy.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/loki/config.yml << 'EOF'\nmulti_tenant_mode: true\nEOF"
+  },
+  {
+    "instruction": "Set tenant ID in logcli query",
+    "output": "<think>\nWe're being asked to set tenant ID in logcli query.\nLet me think about the best approach.\nThe tool for this job is logcli — logcli operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli --org-id=tenant1 query '{job=\"nginx\"}'"
+  },
+  {
+    "instruction": "Query across multiple tenants",
+    "output": "<think>\nThe task requires us to query across multiple tenants.\nLet me break this down.\nlogcli is what we need — logcli operations.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli --org-id=tenant1 --org-id=tenant2 query '{job=\"nginx\"}'"
+  }
+]

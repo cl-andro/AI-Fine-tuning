@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRank rows by distance within each player_id",
+    "output": "SELECT *, RANK() OVER (PARTITION BY player_id ORDER BY distance DESC) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nDense rank of rows by distance",
+    "output": "SELECT *, DENSE_RANK() OVER (ORDER BY distance DESC) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRow number per player_id ordered by run_date",
+    "output": "SELECT *, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRunning total of distance ordered by run_date",
+    "output": "SELECT *, SUM(distance) OVER (ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRunning total of distance per player_id",
+    "output": "SELECT *, SUM(distance) OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nAverage of distance over all rows",
+    "output": "SELECT *, AVG(distance) OVER () FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nPrevious distance value (lag) per player_id",
+    "output": "SELECT *, LAG(distance, 1) OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nNext distance value (lead) per player_id",
+    "output": "SELECT *, LEAD(distance, 1) OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nMaximum distance per player_id across all rows",
+    "output": "SELECT *, MAX(distance) OVER (PARTITION BY player_id) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nMinimum distance per player_id",
+    "output": "SELECT *, MIN(distance) OVER (PARTITION BY player_id) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nMoving average window of 3 rows per player_id",
+    "output": "SELECT *, AVG(distance) OVER (PARTITION BY player_id ORDER BY run_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nWindow frame from first row to current per player_id",
+    "output": "SELECT *, SUM(distance) OVER (PARTITION BY player_id ORDER BY run_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nFirst value of distance per player_id",
+    "output": "SELECT *, FIRST_VALUE(distance) OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nLast value of distance per player_id across full partition",
+    "output": "SELECT *, LAST_VALUE(distance) OVER (PARTITION BY player_id ORDER BY run_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nPercent rank of distance",
+    "output": "SELECT *, PERCENT_RANK() OVER (ORDER BY distance) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nCumulative distribution of distance",
+    "output": "SELECT *, CUME_DIST() OVER (ORDER BY distance) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nQuartile bucket using NTILE",
+    "output": "SELECT *, NTILE(4) OVER (ORDER BY distance) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nDifference of distance from its group max",
+    "output": "SELECT player_id, distance, distance - MAX(distance) OVER (PARTITION BY player_id) AS diff FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRank of distance with ties allowed to skip",
+    "output": "SELECT player_id, distance, RANK() OVER (ORDER BY distance DESC) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nSliding window of total over preceding 5 rows",
+    "output": "SELECT *, SUM(distance) OVER (ORDER BY run_date ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nRunning count per player_id",
+    "output": "SELECT *, COUNT(*) OVER (PARTITION BY player_id ORDER BY run_date) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nTop 2 by distance within each player_id using ROW_NUMBER",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY distance DESC) rn FROM runs) x WHERE rn <= 2;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nNth value of distance within partition",
+    "output": "SELECT *, NTH_VALUE(distance, 2) OVER (PARTITION BY player_id ORDER BY run_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nExpressed ratio of distance to group total",
+    "output": "SELECT player_id, distance, distance / SUM(distance) OVER (PARTITION BY player_id) AS ratio FROM runs;"
+  },
+  {
+    "instruction": "Schema: runs(player_id, distance, run_date)\nWindow with custom unbounded following frame",
+    "output": "SELECT *, SUM(distance) OVER (PARTITION BY player_id ORDER BY run_date ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM runs;"
+  }
+]

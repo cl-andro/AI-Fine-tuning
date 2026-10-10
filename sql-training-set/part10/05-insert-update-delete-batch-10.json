@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert a single row with recipient='John'",
+    "output": "INSERT INTO emails (recipient, status) VALUES ('John', 100);"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert multiple rows at once",
+    "output": "INSERT INTO emails (recipient, status) VALUES ('John', 1), ('Jane', 2), ('Jim', 3);"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert into emails from a select that filters sent_at",
+    "output": "INSERT INTO emails (recipient, status) SELECT recipient, status FROM emails_src WHERE sent_at = 'x';"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate the row with id=7",
+    "output": "UPDATE emails SET recipient = 'NewName' WHERE id = 7;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate all rows setting status to 0",
+    "output": "UPDATE emails SET status = 0;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate emails increasing all status by 10%",
+    "output": "UPDATE emails SET status = status * 1.1;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate rows where sent_at equals 'done'",
+    "output": "UPDATE emails SET recipient = 'Finished' WHERE sent_at = 'done';"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete a row by id 12",
+    "output": "DELETE FROM emails WHERE id = 12;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete rows where status is below 50",
+    "output": "DELETE FROM emails WHERE status < 50;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete rows where sent_at is NULL",
+    "output": "DELETE FROM emails WHERE sent_at IS NULL;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete all rows from emails",
+    "output": "DELETE FROM emails;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpsert: insert or update on conflict of the id",
+    "output": "INSERT INTO emails (id, recipient) VALUES (1, 'X') ON CONFLICT (id) DO UPDATE SET recipient = EXCLUDED.recipient;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nConditional update using CASE",
+    "output": "UPDATE emails SET status = CASE WHEN status > 100 THEN status - 10 ELSE status + 10 END;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate a join-based target using a subquery value",
+    "output": "UPDATE emails SET status = (SELECT MAX(status) FROM emails) WHERE status IS NULL;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete with a subquery filter",
+    "output": "DELETE FROM emails WHERE status IN (SELECT status FROM emails WHERE sent_at = 'skip');"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert with explicit column list and defaults",
+    "output": "INSERT INTO emails (recipient, status, sent_at) VALUES ('A', 5, 'active');"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate with a LIMIT to only change a few rows",
+    "output": "UPDATE emails SET status = status + 1 WHERE id IN (SELECT id FROM emails LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert ignoring duplicates",
+    "output": "INSERT OR IGNORE INTO emails (recipient) VALUES ('Dup');"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nDelete a range where status between two values",
+    "output": "DELETE FROM emails WHERE status BETWEEN 20 AND 30;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nUpdate setting multiple columns",
+    "output": "UPDATE emails SET recipient = 'Z', status = 0, sent_at = NULL WHERE id = 9;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nInsert a row returning its id",
+    "output": "INSERT INTO emails (recipient) VALUES ('Ret') RETURNING id;"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nReplace all occurrences in a string column",
+    "output": "UPDATE emails SET sent_at = REPLACE(sent_at, 'a', 'b');"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nTrim whitespace then update recipient",
+    "output": "UPDATE emails SET recipient = TRIM(recipient);"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nLowercase a text column in place",
+    "output": "UPDATE emails SET recipient = LOWER(recipient);"
+  },
+  {
+    "instruction": "Schema: emails(id, recipient, status, sent_at)\nBulk upsert with multiple rows",
+    "output": "INSERT INTO emails (id, recipient) VALUES (1, 'A'), (2, 'B') ON CONFLICT (id) DO UPDATE SET recipient = EXCLUDED.recipient;"
+  }
+]

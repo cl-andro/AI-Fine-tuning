@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a local apt repository from downloaded packages",
+    "output": "<think>\nThis is asking us to create a local apt repository from downloaded packages.\nFor this, mkdir is the right tool — directory creation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nmkdir -p /var/www/repo && dpkg-scanpackages . /dev/null | gzip -9c > /var/www/repo/Packages.gz"
+  },
+  {
+    "instruction": "Add local repository to sources list",
+    "output": "<think>\nWe're being asked to add local repository to sources list.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho \"deb [trusted=yes] file:/var/www/repo ./\" > /etc/apt/sources.list.d/local.list && apt update"
+  },
+  {
+    "instruction": "Download the complete list of available packages",
+    "output": "<think>\nWe should download the complete list of available packages.\nLet me think about the best approach.\nThis calls for apt-cache. Apt-cache operations.\nI'm using -l for long format with details — without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\napt-cache dumpavail | grep Package: | wc -l"
+  },
+  {
+    "instruction": "Export list of all installed packages to file",
+    "output": "<think>\nSo we need to export list of all installed packages to file.\nLet me reason through this.\nThis calls for dpkg. Dpkg operations.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndpkg --get-selections > installed-packages.txt"
+  },
+  {
+    "instruction": "Restore packages from exported list",
+    "output": "<think>\nThe task requires us to restore packages from exported list.\nBest tool here is dpkg — dpkg operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndpkg --set-selections < installed-packages.txt && apt dselect-upgrade -y"
+  },
+  {
+    "instruction": "Clone all packages from one system to another",
+    "output": "<think>\nSo we need to clone all packages from one system to another.\nI'll reach for dpkg here because dpkg operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\ndpkg --get-selections > packages.list && rsync -av packages.list user@host:~/ && ssh user@host \"dpkg --set-selections < packages.list && apt dselect-upgrade -y\""
+  },
+  {
+    "instruction": "List packages with priority required",
+    "output": "<think>\nThe user wants to list packages with priority required.\nThis calls for apt-cache. Apt-cache operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\napt-cache showpkg apt | grep -E '^Package|Priority'"
+  },
+  {
+    "instruction": "List packages marked as auto-installed",
+    "output": "<think>\nSo the request is to list packages marked as auto-installed.\nFirst, let me understand what's needed here.\napt-mark is what we need — apt-mark operations.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\napt-mark showauto | head -20"
+  },
+  {
+    "instruction": "Mark a package as manually installed",
+    "output": "<think>\nThe task requires us to mark a package as manually installed.\nLet me break this down.\nThe tool for this job is apt-mark — apt-mark operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\napt-mark manual nginx"
+  },
+  {
+    "instruction": "Mark all dependencies of nginx as auto",
+    "output": "<think>\nWe're being asked to mark all dependencies of nginx as auto.\nLet me reason through this.\nBest tool here is apt-mark — apt-mark operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\napt-mark auto $(apt-cache depends nginx | grep Depends | awk '{print $2}')"
+  },
+  {
+    "instruction": "Check if a package can be removed safely",
+    "output": "<think>\nNeed to check if a package can be removed safely.\nI'd use apt for this — apt operations.\nWhy --dry-run? Simulate without making changes. important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\napt remove --dry-run nginx"
+  },
+  {
+    "instruction": "Find packages that depend on a specific library",
+    "output": "<think>\nThe task requires us to find packages that depend on a specific library.\nLet me break this down.\nThis calls for apt. Apt operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\napt rdepends libssl3 | head -20"
+  },
+  {
+    "instruction": "Check package download size before installing",
+    "output": "<think>\nAlright, we need to check package download size before installing.\nFirst, let me understand what's needed here.\nI'd use apt for this — apt operations.\nI've added --dry-run to simulate without making changes — standard practice for this kind of operation.\nI'm using -E for extended regex — important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install --dry-run nginx | grep -E '^Inst|^Conf'"
+  },
+  {
+    "instruction": "Show detailed apt statistics about the cache",
+    "output": "<think>\nThe goal is to show detailed apt statistics about the cache.\nLet me consider what makes sense here.\nThe tool for this job is apt-cache — apt-cache operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\napt-cache stats"
+  },
+  {
+    "instruction": "Show unmet dependencies",
+    "output": "<think>\nSo the request is to show unmet dependencies.\nLet me think about the best approach.\nI'd use apt-get for this — apt-get operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\napt-get check 2>&1 | grep -E \"depends|breaks\""
+  },
+  {
+    "instruction": "Find packages with unsatisfied dependencies",
+    "output": "<think>\nThe user wants to find packages with unsatisfied dependencies.\nLet me consider what makes sense here.\nThe tool for this job is dpkg — dpkg operations.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\n</think>\ndpkg --audit"
+  },
+  {
+    "instruction": "List all orphaned packages (no dependencies)",
+    "output": "<think>\nWe should list all orphaned packages (no dependencies).\nThe tool for this job is deborphan — deborphan operations.\nOne command does the job. Simple is better.\n</think>\ndeborphan"
+  },
+  {
+    "instruction": "Remove orphaned packages automatically",
+    "output": "<think>\nThis is asking us to remove orphaned packages automatically.\nHere's how I'd approach this.\nI'll reach for deborphan here because deborphan operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndeborphan | xargs apt autoremove -y"
+  },
+  {
+    "instruction": "List packages installed by a specific task",
+    "output": "<think>\nSo we need to list packages installed by a specific task.\napt-cache is what we need — apt-cache operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\napt-cache show task-desktop | grep Depends | tr ',' '\\n'"
+  },
+  {
+    "instruction": "Show all installed metapackages",
+    "output": "<think>\nWe should show all installed metapackages.\nLet me think through this step by step.\napt-cache is what we need — apt-cache operations.\nThe -l flag handles long format with details. Important because important to get the expected behavior.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\napt-cache show $(dpkg -l | awk '/^ii/ {print $2}') 2>/dev/null | grep -B1 'Section: meta' | grep Package"
+  },
+  {
+    "instruction": "Find available kernels you can boot into",
+    "output": "<think>\nWe're being asked to find available kernels you can boot into.\nLet me think through this step by step.\nls is what we need — ls operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\nls /boot/vmlinuz-* | sed 's|/boot/vmlinuz-||'"
+  },
+  {
+    "instruction": "Remove old kernels not in use",
+    "output": "<think>\nWe should remove old kernels not in use.\nHere's how I'd approach this.\nThis calls for apt. Apt operations.\nNo need for complex pipelines here — one command is sufficient.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt autoremove --purge -y"
+  },
+  {
+    "instruction": "List all versions of an available package",
+    "output": "<think>\nWe should list all versions of an available package.\nFirst, let me understand what's needed here.\nThe tool for this job is apt-cache — apt-cache operations.\nI'll check the output to make sure it did what we expected.\n</think>\napt-cache madison nginx"
+  },
+  {
+    "instruction": "Install the previous version of a package",
+    "output": "<think>\nSo the request is to install the previous version of a package.\nLet me think about the best approach.\nI'll reach for apt here because apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install nginx=1.24.0-1"
+  },
+  {
+    "instruction": "Compare two package versions",
+    "output": "<think>\nThe user wants to compare two package versions.\nFirst, let me understand what's needed here.\nI'll reach for dpkg here because dpkg operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndpkg --compare-versions 2.0 gt 1.0 && echo yes || echo no"
+  }
+]

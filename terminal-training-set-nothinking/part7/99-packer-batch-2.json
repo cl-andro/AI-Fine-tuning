@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up an AWS builder in a Packer template",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ami_name = \"ubuntu-22.04-{{timestamp}}\" instance_type = \"t3.micro\" region = \"us-east-1\" source_ami_filter { filters = { name = \"ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*\" } owners = [\"099720109477\"] most_recent = true } ssh_username = \"ubuntu\" }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Add a shell provisioner that updates packages",
+    "output": "echo 'build { sources = [\"source.amazon-ebs.ubuntu\"] provisioner \"shell\" { inline = [\"sudo apt update\", \"sudo apt upgrade -y\"] } }' > build.pkr.hcl"
+  },
+  {
+    "instruction": "Add a file provisioner to upload a config",
+    "output": "echo 'provisioner \"file\" { source = \"app.conf\" destination = \"/tmp/app.conf\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Add a shell provisioner with a local script",
+    "output": "echo 'provisioner \"shell\" { script = \"scripts/setup.sh\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Run multiple inline shell commands in a provisioner",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt install -y nginx\", \"sudo systemctl enable nginx\", \"sudo systemctl start nginx\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the ansible provisioner in Packer",
+    "output": "echo 'provisioner \"ansible\" { playbook_file = \"playbooks/site.yml\" extra_arguments = [\"--extra-vars\", \"env=packer\"] }' > ansible.pkr.hcl"
+  },
+  {
+    "instruction": "Add a Chef provisioner in Packer",
+    "output": "echo 'provisioner \"chef-solo\" { cookbook_paths = [\"cookbooks\"] run_list = [\"recipe[nginx]\"] }' > chef.pkr.hcl"
+  },
+  {
+    "instruction": "Run a PowerShell provisioner for Windows images",
+    "output": "echo 'provisioner \"powershell\" { script = \"scripts/configure-iis.ps1\" }' > win-provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use a breakpoint provisioner for debugging",
+    "output": "echo 'provisioner \"breakpoint\" { note = \"Check SSH is working before continuing\" }' > debug.pkr.hcl"
+  },
+  {
+    "instruction": "Add a post-processor in Packer",
+    "output": "echo 'post-processor \"vagrant\" { output = \"builds/{{.BuildName}}-{{.Provider}}.box\" }' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Add the manifest post-processor for build metadata",
+    "output": "echo 'post-processor \"manifest\" { output = \"manifest.json\" strip_path = true }' > manifest.pkr.hcl"
+  },
+  {
+    "instruction": "Use the compress post-processor for artifact compression",
+    "output": "echo 'post-processor \"compress\" { output = \"builds/{{.BuildName}}.tar.gz\" }' > compress.pkr.hcl"
+  },
+  {
+    "instruction": "Tag the AMI with a post-processor",
+    "output": "echo 'post-processor \"amazon-import\" {}' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Add variables to a Packer template",
+    "output": "echo 'variable \"region\" { type = string default = \"us-east-1\" } variable \"instance_type\" { type = string default = \"t3.micro\" }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a variable in a source block",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { region = var.region instance_type = var.instance_type }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Define local variables in Packer",
+    "output": "echo 'locals { timestamp = regex_replace(timestamp(), \"[-: ]\", \"\") image_name = \"app-${local.timestamp}\" }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use a local variable for AMI name",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ami_name = local.image_name }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Packer variable file for prod",
+    "output": "echo 'region = \"us-west-2\" instance_type = \"t3.large\"' > prod.pkrvars.hcl"
+  },
+  {
+    "instruction": "Create a Packer variable file for dev",
+    "output": "echo 'region = \"us-east-1\" instance_type = \"t3.micro\"' > dev.pkrvars.hcl"
+  },
+  {
+    "instruction": "Set a Packer variable from environment variable",
+    "output": "echo 'variable \"ssh_key\" { type = string default = env(\"SSH_PRIVATE_KEY\") }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a sensitive variable in Packer",
+    "output": "echo 'variable \"db_password\" { type = string sensitive = true }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Validate a variable with custom condition",
+    "output": "echo 'variable \"region\" { type = string validation { condition = contains([\"us-east-1\", \"us-west-2\"], var.region) error_message = \"Region must be us-east-1 or us-west-2\" } }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a template variable in shell commands",
+    "output": "echo 'provisioner \"shell\" { environment_vars = [\"ENV={{env `ENVIRONMENT`}}\"] inline = [\"echo $ENV\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use keep_input_artifact for post-processors",
+    "output": "echo 'post-processor \"vagrant\" { keep_input_artifact = true }' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Create a source with custom tags",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { tags = { Name = \"packer-ubuntu\" Environment = \"production\" } }' > sources.pkr.hcl"
+  }
+]

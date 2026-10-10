@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "a2enmod proxy proxy_balancer proxy_http lbmethod_byrequests",
+    "output": "a2enmod proxy proxy_balancer proxy_http lbmethod_byrequests && a2ensite lb"
+  },
+  {
+    "instruction": "systemctl restart apache2",
+    "output": "systemctl restart apache2"
+  },
+  {
+    "instruction": "cat /etc/apache2/sites-available/lb.conf",
+    "output": "<VirtualHost *:80>\n    ServerName lb.example.com\n    <Proxy balancer://cluster>\n        BalancerMember http://10.0.0.10:8080\n        BalancerMember http://10.0.0.11:8080\n        BalancerMember http://10.0.0.12:8080 status=+H\n        ProxySet lbmethod=byrequests\n        ProxySet stickysession=ROUTEID\n    </Proxy>\n    ProxyPass /balancer-manager !\n    <Location /balancer-manager>\n        SetHandler balancer-manager\n        Require host localhost\n    </Location>\n    ProxyPass / balancer://cluster/\n    ProxyPassReverse / balancer://cluster/\n</VirtualHost>"
+  },
+  {
+    "instruction": "a2ensite lb.conf",
+    "output": "a2ensite lb"
+  },
+  {
+    "instruction": "systemctl reload apache2",
+    "output": "systemctl reload apache2"
+  },
+  {
+    "instruction": "curl -s http://localhost/balancer-manager | head -20",
+    "output": "<!DOCTYPE html>\n<html>\n<head><title>Apache Balancer Manager</title></head>\n<body>\n<h1>Load Balancer Manager for /balancer://cluster</h1>\n<table>\n<tr><th>StickySession</th><td>ROUTEID</td></tr>\n<tr><th>Timeout</th><td>0</td></tr>\n<tr><th>FailoverAttempts</th><td>0</td></tr>\n<tr><th>Method</th><td>byrequests</td></tr>\n<tr><th>Workers</th><td>3</td></tr>\n</table>\n<table>\n<tr><th>Worker URL</th><th>Route</th><th>RouteRedir</th><th>Status</th><th>Elected</th><th>Factor</th></tr>\n<tr><td>http://10.0.0.10:8080</td><td>-</td><td>-</td><td>Init Ok </td><td>12345</td><td>1</td></tr>\n<tr><td>http://10.0.0.11:8080</td><td>-</td><td>-</td><td>Init Ok </td><td>12344</td><td>1</td></tr>\n<tr><td>http://10.0.0.12:8080</td><td>-</td><td>-</td><td>Init Ok Hot Standby</td><td>0</td><td>0</td></tr>\n</table>"
+  },
+  {
+    "instruction": "a2dismod lbmethod_byrequests && a2enmod lbmethod_bytraffic",
+    "output": "a2enmod lbmethod_bytraffic && systemctl restart apache2"
+  },
+  {
+    "instruction": "cat /etc/apache2/sites-available/lb_traffic.conf",
+    "output": "<VirtualHost *:80>\n    <Proxy balancer://traffic_cluster>\n        BalancerMember http://10.0.0.10:8080 loadfactor=3\n        BalancerMember http://10.0.0.11:8080 loadfactor=2\n        BalancerMember http://10.0.0.12:8080 loadfactor=1\n        ProxySet lbmethod=bytraffic\n    </Proxy>\n    ProxyPass / balancer://traffic_cluster/\n    ProxyPassReverse / balancer://traffic_cluster/\n</VirtualHost>"
+  },
+  {
+    "instruction": "a2enmod lbmethod_bybusyness",
+    "output": "a2enmod lbmethod_bybusyness && systemctl restart apache2"
+  },
+  {
+    "instruction": "apachectl -M 2>/dev/null | grep proxy",
+    "output": "proxy_module (shared)\nproxy_balancer_module (shared)\nproxy_http_module (shared)\nlbmethod_byrequests_module (shared)\nlbmethod_bytraffic_module (shared)\nlbmethod_bybusyness_module (shared)"
+  },
+  {
+    "instruction": "ipvsadm -A -t 10.0.0.100:80 -s rr",
+    "output": "ipvsadm -A -t 10.0.0.100:80 -s rr"
+  },
+  {
+    "instruction": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.10:8080 -m",
+    "output": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.10:8080 -m"
+  },
+  {
+    "instruction": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.11:8080 -m",
+    "output": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.11:8080 -m"
+  },
+  {
+    "instruction": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.12:8080 -m -w 2",
+    "output": "ipvsadm -a -t 10.0.0.100:80 -r 10.0.0.12:8080 -m -w 2"
+  },
+  {
+    "instruction": "ipvsadm -l -n",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.100:80 rr\n  -> 10.0.0.10:8080               Masq    1      0          0\n  -> 10.0.0.11:8080               Masq    1      0          0\n  -> 10.0.0.12:8080               Masq    2      0          0"
+  },
+  {
+    "instruction": "ipvsadm -E -t 10.0.0.100:80 -s wrr",
+    "output": "ipvsadm -E -t 10.0.0.100:80 -s wrr"
+  },
+  {
+    "instruction": "ipvsadm -d -t 10.0.0.100:80 -r 10.0.0.12:8080",
+    "output": "ipvsadm -d -t 10.0.0.100:80 -r 10.0.0.12:8080"
+  },
+  {
+    "instruction": "ipvsadm -D -t 10.0.0.100:80",
+    "output": "ipvsadm -D -t 10.0.0.100:80"
+  },
+  {
+    "instruction": "ipvsadm -L -n",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.101:80 wlc\n  -> 10.0.0.10:8080               Masq    1      0          0\n  -> 10.0.0.11:8080               Masq    1      0          0"
+  },
+  {
+    "instruction": "ipvsadm -A -f 100 -s rr",
+    "output": "ipvsadm -A -f 100 -s rr"
+  },
+  {
+    "instruction": "ipvsadm -a -f 100 -r 10.0.0.10:8080 -g",
+    "output": "ipvsadm -a -f 100 -r 10.0.0.10:8080 -g"
+  },
+  {
+    "instruction": "ipvsadm -a -f 100 -r 10.0.0.11:8080 -g",
+    "output": "ipvsadm -a -f 100 -r 10.0.0.11:8080 -g"
+  },
+  {
+    "instruction": "ipvsadm -l -n -c",
+    "output": "IPVS connection entries\npro expire state       source             virtual            destination\nTCP 00:59  ESTABLISHED 10.0.0.1:54321    10.0.0.100:80      10.0.0.10:8080\nTCP 01:59  ESTABLISHED 10.0.0.2:54322    10.0.0.100:80      10.0.0.11:8080\nTCP 00:45  ESTABLISHED 10.0.0.3:54323    10.0.0.100:80      10.0.0.10:8080\nTCP 00:32  NONE        10.0.0.4:54324    10.0.0.100:80      10.0.0.12:8080"
+  },
+  {
+    "instruction": "ipvsadm -l -n --stats",
+    "output": "IP Virtual Server version 1.2.1 (size=4096)\nProt LocalAddress:Port Scheduler Flags\n  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn\nTCP  10.0.0.100:80 wlc\n  -> 10.0.0.10:8080               Masq    1      12         3456\n  -> 10.0.0.11:8080               Masq    1      10         2345\n  -> 10.0.0.12:8080               Masq    1      0          0"
+  }
+]

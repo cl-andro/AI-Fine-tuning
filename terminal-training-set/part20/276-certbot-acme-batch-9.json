@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "How to install certbot on Debian 12",
+    "output": "<think>\nThe goal is to install certbot on Debian 12.\nFirst, let me understand what's needed here.\nI'll reach for apt here because apt operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\napt install certbot python3-certbot-nginx"
+  },
+  {
+    "instruction": "How to install certbot from snap",
+    "output": "<think>\nThe task requires us to install certbot from snap.\nHere's how I'd approach this.\nThe tool for this job is snap — Snap package management.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\nAfter running, I'll confirm the result looks right.\n</think>\nsnap install certbot --classic"
+  },
+  {
+    "instruction": "How to update certbot to the latest version",
+    "output": "<think>\nThe task requires us to update certbot to the latest version.\nLet me think through this step by step.\nI'd use apt for this — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt update && apt upgrade certbot"
+  },
+  {
+    "instruction": "How to update certbot via snap",
+    "output": "<think>\nThe user wants to update certbot via snap.\nLet me think through this step by step.\nThis calls for snap. Snap package management.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\nAfter running, I'll confirm the result looks right.\n</think>\nsnap refresh certbot"
+  },
+  {
+    "instruction": "How to ensure certbot auto-renewal works with systemd",
+    "output": "<think>\nWe should ensure certbot auto-renewal works with systemd.\nLet me reason through this.\nThis calls for systemctl. Managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsystemctl enable snap.certbot.renew.timer && systemctl start snap.certbot.renew.timer"
+  },
+  {
+    "instruction": "How to enable the certbot renewal timer on Debian",
+    "output": "<think>\nSo we need to enable the certbot renewal timer on Debian.\nLet me consider what makes sense here.\nThis calls for systemctl. Managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl enable certbot.timer"
+  },
+  {
+    "instruction": "How to check if certbot timer is active",
+    "output": "<think>\nSo the request is to check if certbot timer is active.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl is-enabled certbot.timer"
+  },
+  {
+    "instruction": "How to view the certbot renewal timer status",
+    "output": "<think>\nWe should view the certbot renewal timer status.\nLet me consider what makes sense here.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl status certbot.timer"
+  },
+  {
+    "instruction": "How to manually run the certbot renewal timer",
+    "output": "<think>\nThe goal is to manually run the certbot renewal timer.\nLet me break this down.\nBest tool here is systemctl — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl start certbot.timer"
+  },
+  {
+    "instruction": "How to stop the certbot renewal timer",
+    "output": "<think>\nThe goal is to stop the certbot renewal timer.\nFirst, let me understand what's needed here.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl stop certbot.timer"
+  },
+  {
+    "instruction": "How to disable the certbot renewal timer",
+    "output": "<think>\nNeed to disable the certbot renewal timer.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl disable certbot.timer"
+  },
+  {
+    "instruction": "How to create a certbot renewal cron job",
+    "output": "<think>\nThe task requires us to create a certbot renewal cron job.\nHere's how I'd approach this.\nThe --quiet flag handles suppress output. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho '0 3 * * * root certbot renew --quiet --post-hook \"systemctl reload nginx\"' > /etc/cron.d/certbot-renew"
+  },
+  {
+    "instruction": "How to test renewal via cron without actually renewing",
+    "output": "<think>\nAlright, we need to test renewal via cron without actually renewing.\nFirst, let me understand what's needed here.\nThe tool for this job is certbot — Let's Encrypt certificate management.\nThe --dry-run flag means simulate without making changes, which matters here because standard practice for this kind of operation.\nI'm using --quiet for suppress output — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nI'll check the output to make sure it did what we expected.\n</think>\ncertbot renew --dry-run --quiet"
+  },
+  {
+    "instruction": "How to monitor certbot renewal logs",
+    "output": "<think>\nThe goal is to monitor certbot renewal logs.\ngrep is what we need — pattern searching.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ngrep -i 'renew' /var/log/letsencrypt/letsencrypt.log"
+  },
+  {
+    "instruction": "How to check the last certbot renewal status",
+    "output": "<think>\nNeed to check the last certbot renewal status.\ntail is what we need — tail operations.\nWhy -E? Extended regex. needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ntail -20 /var/log/letsencrypt/letsencrypt.log | grep -E 'success|error|fail'"
+  },
+  {
+    "instruction": "How to extract certbot renewal errors",
+    "output": "<think>\nThe task requires us to extract certbot renewal errors.\nThis calls for grep. Pattern searching.\nI've added -i to interactive, prompt before action — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ngrep -i error /var/log/letsencrypt/letsencrypt.log"
+  },
+  {
+    "instruction": "How to set up email notifications for certbot renewal",
+    "output": "<think>\nSo the request is to set up email notifications for certbot renewal.\nThe tool for this job is certbot — Let's Encrypt certificate management.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nI'll check the output to make sure it did what we expected.\n</think>\ncertbot renew --quiet --post-hook 'echo \"Cert renewed\" | mail -s \"Cert renewal\" admin@example.com'"
+  },
+  {
+    "instruction": "How to notify via Slack on cert renewal",
+    "output": "<think>\nThe task requires us to notify via Slack on cert renewal.\nBest tool here is certbot — Let's Encrypt certificate management.\nI've added -H to follow symlinks on command line only — this controls how the output is formatted.\nWhy -d? Directory listing, don't descend. this controls how the output is formatted.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nQuick verification after execution to be safe.\n</think>\ncertbot renew --deploy-hook 'curl -X POST -H \"Content-Type: application/json\" -d \"{\\\"text\\\":\\\"Cert renewed for example.com\\\"}\" https://hooks.slack.com/services/xxx'"
+  },
+  {
+    "instruction": "How to create a custom renewal script",
+    "output": "<think>\nThe user wants to create a custom renewal script.\nLet me consider what makes sense here.\nI've added --quiet to suppress output — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho '#!/bin/bash' > /usr/local/bin/cert-renew.sh && echo 'certbot renew --quiet --post-hook \"systemctl reload nginx\"' >> /usr/local/bin/cert-renew.sh && chmod +x /usr/local/bin/cert-renew.sh"
+  },
+  {
+    "instruction": "How to run a custom renewal script daily",
+    "output": "<think>\nWe're being asked to run a custom renewal script daily.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho '0 2 * * * root /usr/local/bin/cert-renew.sh' > /etc/cron.d/cert-renew"
+  },
+  {
+    "instruction": "How to create a certbot renewal wrapper for multiple services",
+    "output": "<think>\nSo we need to create a certbot renewal wrapper for multiple services.\nI've added --quiet to suppress output — standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho '#!/bin/bash' > /usr/local/bin/cert-renew-all.sh && echo 'certbot renew --quiet --post-hook \"systemctl reload nginx; systemctl reload postfix; systemctl reload dovecot\"' >> /usr/local/bin/cert-renew-all.sh && chmod +x /usr/local/bin/cert-renew-all.sh"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "linkerd -n default edges deploy -o wide",
+    "output": "<think>\nThe user wants to linkerd -n default edges deploy -o wide.\nSRC is what we need — SRC operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nSRC       DST            SRC_NS      DST_NS      SECURED    CONTROL\nhttpbin   sleep:80       default     default     ✓        default\nsleep     httpbin:80     default     default     ✓        default"
+  },
+  {
+    "instruction": "linkerd -n default tap pod/httpbin-5c5944c88c-v9q5k --to deploy/sleep",
+    "output": "<think>\nThe task requires us to linkerd -n default tap pod/httpbin-5c5944c88c-v9q5k --to deploy/sleep.\nThis calls for req. Req operations.\n</think>\nreq id=0:1 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :method=GET :authority=httpbin.default:80 :path=/headers\nrsp id=0:1 proxy=in  src=10.244.0.5:54321 dst=10.244.0.6:80 :status=200 latency=5678µs"
+  },
+  {
+    "instruction": "linkerd -n default top deploy --to svc/httpbin",
+    "output": "<think>\nNeed to linkerd -n default top deploy --to svc/httpbin.\nBest tool here is SOURCE — SOURCE operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nSOURCE                                 DESTINATION                        SUCCESS      RPS   LATENCY_P50   LATENCY_P95\npod/sleep-6c9f78b8d6-abc12             svc/httpbin                        100.00%   2.5rps           5ms           12ms"
+  },
+  {
+    "instruction": "linkerd diagnostics proxy-metrics -n default pod/httpbin-5c5944c88c-v9q5k | head -20",
+    "output": "<think>\nThis is asking us to linkerd diagnostics proxy-metrics -n default pod/httpbin-5c5944c88c-v9q5k | head -20.\nThis calls for HELP. HELP operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nHELP linkerd_proxy_http_route_request_total Total number of requests that have been received by routes\nTYPE linkerd_proxy_http_route_request_total counter\nlinkerd_proxy_http_route_request_total{route=\"default\",direction=\"inbound\",dst_namespace=\"default\",dst_service=\"httpbin\"} 4567\nHELP linkerd_proxy_http_request_duration_ms Request latency histogram\nTYPE linkerd_proxy_http_request_duration_ms histogram\nlinkerd_proxy_http_request_duration_ms_bucket{dir=\"in\",le=\"5\"} 1234\nlinkerd_proxy_http_request_duration_ms_bucket{dir=\"in\",le=\"10\"} 3456\nlinkerd_proxy_http_request_duration_ms_sum{dir=\"in\"} 23456\nlinkerd_proxy_http_request_duration_ms_count{dir=\"in\"} 4567"
+  },
+  {
+    "instruction": "linkerd diagnostics install-sp",
+    "output": "<think>\nThe goal is to linkerd diagnostics install-sp.\nLet me think about the best approach.\nThis calls for Service. Service operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nService profile installed on linkerd-control-plane"
+  },
+  {
+    "instruction": "linkerd diagnostics pod-certificates -n default pod/httpbin-5c5944c88c-v9q5k",
+    "output": "<think>\nThe goal is to linkerd diagnostics pod-certificates -n default pod/httpbin-5c5944c88c-v9q5k.\nI'll reach for Proxy here because Proxy operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nProxy certificate for httpbin-5c5944c88c-v9q5k:\n  Serial: 1234567890abcdef\n  Issuer: identity.linkerd.cluster.local\n  Subject: default.httpbin.serviceaccount.identity.linkerd.cluster.local\n  Valid from: 2026-07-20 10:00:00 +0000 UTC\n  Valid until: 2027-07-20 10:00:00 +0000 UTC"
+  },
+  {
+    "instruction": "linkerd multicluster install",
+    "output": "<think>\nNeed to linkerd multicluster install.\nFirst, let me understand what's needed here.\nA quick sanity check afterward saves debugging time later.\n</think>\n✜ Multicluster extension installed\n✜ Service mirror controller created\n✜ Link and gateway resources created"
+  },
+  {
+    "instruction": "linkerd multicluster link --cluster-name cluster-west --api-server-address https://10.0.0.100:6443",
+    "output": "<think>\nThe task requires us to linkerd multicluster link --cluster-name cluster-west --api-server-address https://10.0.0.100:6443.\nLet me think about the best approach.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\n✜ Linked cluster 'cluster-west' with gateway at 10.0.0.100:443"
+  },
+  {
+    "instruction": "linkerd multicluster gateways",
+    "output": "<think>\nAlright, we need to linkerd multicluster gateways.\nLet me think about the best approach.\nThe tool for this job is CLUSTER — CLUSTER operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nCLUSTER NAME   ALIVE     STATUS    NAMESPACE               API URL\ncluster-east   ✓        running   linkerd-multicluster   https://10.0.1.100:6443\ncluster-west   ✓        running   linkerd-multicluster   https://10.0.2.100:6443"
+  },
+  {
+    "instruction": "linkerd multicluster unlink --cluster-name cluster-west",
+    "output": "<think>\nThis is asking us to linkerd multicluster unlink --cluster-name cluster-west.\n</think>\n✜ Cluster 'cluster-west' unlinked"
+  },
+  {
+    "instruction": "linkerd viz dashboard",
+    "output": "<think>\nAlright, we need to linkerd viz dashboard.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\n✜ Linkerd dashboard available at:\nhttp://localhost:50750/api/v1/namespaces/linkerd-viz/services/web:8084/proxy/"
+  },
+  {
+    "instruction": "linkerd jaeger install | kubectl apply -f -",
+    "output": "<think>\nWe're being asked to linkerd jaeger install | kubectl apply -f -.\nLet me consider what makes sense here.\nI'd use namespace for this — namespace operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nnamespace/linkerd-jaeger created\nserviceaccount/jaeger created\nservice/jaeger created\ndeployment.apps/jaeger created\n✜ Jaeger extension installed successfully"
+  },
+  {
+    "instruction": "linkerd jaeger dashboard",
+    "output": "<think>\nNeed to linkerd jaeger dashboard.\nFirst, let me understand what's needed here.\n</think>\n✜ Jaeger dashboard available at:\nhttp://localhost:16686"
+  },
+  {
+    "instruction": "linkerd -n default jaeger tap deploy/httpbin",
+    "output": "<think>\nThe task requires us to linkerd -n default jaeger tap deploy/httpbin.\nFirst, let me understand what's needed here.\nI'll reach for Trace here because Trace operations.\n</think>\nTrace ID: abcdef1234567890\n  Span ID: 1234\n  Parent: 0\n  Service: httpbin\n  Duration: 12ms\n  Start time: 2026-07-25T10:00:01.000Z\n  Tags:\n    http.method: GET\n    http.path: /get\n    http.status_code: 200\n    http.url: http://httpbin.default:80/get"
+  },
+  {
+    "instruction": "linkerd viz install --set metricsRetentionTime=72h | kubectl apply -f -",
+    "output": "<think>\nThe user wants to linkerd viz install --set metricsRetentionTime=72h | kubectl apply -f -.\nLet me break this down.\nBest tool here is namespace — namespace operations.\n</think>\nnamespace/linkerd-viz configured\nconfigmap/linkerd-viz-metrics-config created\n✜ Viz extension installed with 72h retention"
+  },
+  {
+    "instruction": "linkerd viz uninstall",
+    "output": "<think>\nThis is asking us to linkerd viz uninstall.\nLet me reason through this.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\n✜ Viz extension uninstalled"
+  },
+  {
+    "instruction": "linkerd uninstall | kubectl delete -f -",
+    "output": "<think>\nAlright, we need to linkerd uninstall | kubectl delete -f -.\nLet me think about the best approach.\nI'll reach for namespace here because namespace operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nnamespace \"linkerd\" deleted\n✜ Linkerd uninstalled"
+  },
+  {
+    "instruction": "linkerd identity -n default pod/httpbin-5c5944c88c-v9q5k",
+    "output": "<think>\nThe task requires us to linkerd identity -n default pod/httpbin-5c5944c88c-v9q5k.\nHere's how I'd approach this.\nPod is what we need — Pod operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nPod: httpbin-5c5944c88c-v9q5k\n  Identity: default.httpbin.serviceaccount.identity.linkerd.cluster.local\n  Certificate expiry: 2027-07-20T10:00:00Z\n  Trust domain: cluster.local\n  Issuer: identity.linkerd.cluster.local"
+  },
+  {
+    "instruction": "linkerd -n default routes svc/httpbin",
+    "output": "<think>\nSo we need to linkerd -n default routes svc/httpbin.\nHere's how I'd approach this.\nI'd use ROUTE for this — ROUTE operations.\n</think>\nROUTE       SERVICE    SUCCESS      RPS   LATENCY_P50   LATENCY_P95\nGET /       httpbin    100.00%   2.5rps           5ms           12ms\nGET /ip     httpbin    100.00%   1.0rps           3ms            8ms"
+  },
+  {
+    "instruction": "linkerd diagnostics endpoints -n default svc/httpbin",
+    "output": "<think>\nThe task requires us to linkerd diagnostics endpoints -n default svc/httpbin.\nLet me consider what makes sense here.\nThe tool for this job is httpbin.default — httpbin.default operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nhttpbin.default:80 -> 10.244.0.5:80 (httpbin-5c5944c88c-v9q5k)\n  weight: 1\n  state: alive\n  since: 2026-07-20T10:00:00Z"
+  }
+]

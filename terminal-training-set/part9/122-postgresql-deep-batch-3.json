@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Show replication slots info",
+    "output": "<think>\nNeed to show replication slots info.\nFor this, psql is the right tool — PostgreSQL database queries.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SELECT slot_name, slot_type, active, restart_lsn FROM pg_replication_slots\""
+  },
+  {
+    "instruction": "Show top 10 queries by total time",
+    "output": "<think>\nThe goal is to show top 10 queries by total time.\nI'll reach for psql here because PostgreSQL database queries.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -c \"SELECT query, calls, total_time, rows FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10\""
+  },
+  {
+    "instruction": "Show tables with highest dead tuple percentage",
+    "output": "<think>\nThe task requires us to show tables with highest dead tuple percentage.\nLet me think about the best approach.\npsql is what we need — PostgreSQL database queries.\nThe -c flag means count or create, which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT relname, n_dead_tup, n_live_tup, ROUND(100.0 * n_dead_tup / GREATEST(n_live_tup + n_dead_tup, 1), 2) AS dead_pct FROM pg_stat_user_tables WHERE n_live_tup > 0 ORDER BY dead_pct DESC LIMIT 10\""
+  },
+  {
+    "instruction": "Show blocking and blocked queries",
+    "output": "<think>\nNeed to show blocking and blocked queries.\nI'll reach for psql here because PostgreSQL database queries.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT a.datname, a.pid, a.usename, a.query, b.pid AS blocked_by, b.query AS blocking_query FROM pg_stat_activity a JOIN pg_stat_activity b ON a.pid != b.pid AND a.wait_event_type = 'Lock' WHERE b.state = 'active' AND a.state = 'active'\""
+  },
+  {
+    "instruction": "Show un-granted locks",
+    "output": "<think>\nThe user wants to show un-granted locks.\nFirst, let me understand what's needed here.\nI'd use psql for this — PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT relation::regclass, mode, granted FROM pg_locks WHERE NOT granted\""
+  },
+  {
+    "instruction": "Create a tablespace on a specific disk",
+    "output": "<think>\nSo the request is to create a tablespace on a specific disk.\nLet me think through this step by step.\nBest tool here is psql — PostgreSQL database queries.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"CREATE TABLESPACE fastspace LOCATION '/ssd/postgresql/data'\""
+  },
+  {
+    "instruction": "Alter table fillfactor",
+    "output": "<think>\nThe goal is to alter table fillfactor.\npsql is what we need — PostgreSQL database queries.\nI've added -c to count or create — standard practice for this kind of operation.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"ALTER TABLE mytable SET (fillfactor = 70)\""
+  },
+  {
+    "instruction": "Add a check constraint",
+    "output": "<think>\nThe goal is to add a check constraint.\nThis calls for psql. PostgreSQL database queries.\nI've added -c to count or create — without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"ALTER TABLE orders ADD CONSTRAINT positive_price CHECK (price > 0)\""
+  },
+  {
+    "instruction": "Create a partial index",
+    "output": "<think>\nThe goal is to create a partial index.\nLet me reason through this.\nThe tool for this job is psql — PostgreSQL database queries.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nQuick verification after execution to be safe.\n</think>\npsql -c \"CREATE INDEX idx_active_users ON users(email) WHERE active = true\""
+  },
+  {
+    "instruction": "Reindex all databases in the cluster",
+    "output": "<think>\nAlright, we need to reindex all databases in the cluster.\nLet me think through this step by step.\nI'd use reindexdb for this — reindexdb operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nreindexdb --all"
+  },
+  {
+    "instruction": "Vacuum and analyze all databases",
+    "output": "<think>\nNeed to vacuum and analyze all databases.\nLet me think through this step by step.\nI'll reach for vacuumdb here because vacuumdb operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nvacuumdb --all --analyze"
+  },
+  {
+    "instruction": "Show pgBouncer pool information",
+    "output": "<think>\nThis is asking us to show pgBouncer pool information.\nHere's how I'd approach this.\nThe tool for this job is psql — PostgreSQL database queries.\nThe -p flag handles create parent directories as needed. Important because needed for this specific use case.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -p 6432 -c \"SHOW POOLS\""
+  },
+  {
+    "instruction": "Show pgBouncer active clients",
+    "output": "<think>\nNeed to show pgBouncer active clients.\nI'll reach for psql here because PostgreSQL database queries.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -p 6432 -c \"SHOW CLIENTS\""
+  },
+  {
+    "instruction": "Show pgBouncer server connections",
+    "output": "<think>\nThe user wants to show pgBouncer server connections.\nLet me think through this step by step.\nBest tool here is psql — PostgreSQL database queries.\nI've added -p to create parent directories as needed — needed for this specific use case.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -p 6432 -c \"SHOW SERVERS\""
+  },
+  {
+    "instruction": "Set session work memory to 256MB",
+    "output": "<think>\nThis is asking us to set session work memory to 256MB.\nLet me consider what makes sense here.\nI'll reach for psql here because PostgreSQL database queries.\nThe -c flag handles count or create. Important because needed for this specific use case.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SET work_mem = '256MB'\""
+  },
+  {
+    "instruction": "Show memory-related configuration settings",
+    "output": "<think>\nThe goal is to show memory-related configuration settings.\nLet me consider what makes sense here.\nThe tool for this job is psql — PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SELECT name, setting, unit FROM pg_settings WHERE category = 'Resource Usage / Memory'\""
+  },
+  {
+    "instruction": "Enable pg_stat_statements extension",
+    "output": "<think>\nThis is asking us to enable pg_stat_statements extension.\nThe tool for this job is psql — PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -c \"CREATE EXTENSION IF NOT EXISTS pg_stat_statements\""
+  },
+  {
+    "instruction": "Show WAL statistics",
+    "output": "<think>\nWe should show WAL statistics.\nHere's how I'd approach this.\nThis calls for psql. PostgreSQL database queries.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT * FROM pg_stat_wal\""
+  },
+  {
+    "instruction": "Find idle in transaction queries",
+    "output": "<think>\nThe goal is to find idle in transaction queries.\nLet me think about the best approach.\npsql is what we need — PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SELECT pid, datname, usename, now() - xact_start AS xact_duration, state, query FROM pg_stat_activity WHERE state = 'idle in transaction' ORDER BY xact_start\""
+  },
+  {
+    "instruction": "Generate pgBadger report from logs",
+    "output": "<think>\nThe goal is to generate pgBadger report from logs.\nLet me reason through this.\npgbadger is what we need — pgbadger operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\npgbadger /var/log/postgresql/postgresql-15-main.log -o report.html"
+  },
+  {
+    "instruction": "Show schema column information",
+    "output": "<think>\nSo we need to show schema column information.\nLet me reason through this.\nBest tool here is psql — PostgreSQL database queries.\nI've added -c to count or create — this controls how the output is formatted.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = 'public' ORDER BY table_name, ordinal_position\""
+  },
+  {
+    "instruction": "Show table inheritance hierarchy",
+    "output": "<think>\nSo we need to show table inheritance hierarchy.\npsql is what we need — PostgreSQL database queries.\nI'm using -c for count or create — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -c \"SELECT inhrelid::regclass AS child, inhparent::regclass AS parent FROM pg_inherits\""
+  }
+]

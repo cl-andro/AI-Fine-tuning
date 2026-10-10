@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE returning count per agent_id",
+    "output": "WITH counts AS (SELECT agent_id, COUNT(*) c FROM tickets GROUP BY agent_id) SELECT * FROM counts WHERE c > 2;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE computing average priority",
+    "output": "WITH avg_cte AS (SELECT AVG(priority) a FROM tickets) SELECT * FROM tickets WHERE priority > (SELECT a FROM avg_cte);"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nTwo CTEs joined together",
+    "output": "WITH a AS (SELECT agent_id, SUM(priority) s FROM tickets GROUP BY agent_id), b AS (SELECT agent_id, COUNT(*) c FROM tickets GROUP BY agent_id) SELECT a.agent_id, a.s FROM a JOIN b ON a.agent_id = b.agent_id WHERE b.c > 3;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nApply filters before entering a CTE",
+    "output": "WITH filtered AS (SELECT * FROM tickets WHERE priority > 50) SELECT agent_id, COUNT(*) FROM filtered GROUP BY agent_id;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE then order by aggregate",
+    "output": "WITH total AS (SELECT agent_id, SUM(priority) s FROM tickets GROUP BY agent_id) SELECT * FROM total ORDER BY s DESC;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nModify via CTE then select window rank",
+    "output": "WITH base AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY agent_id ORDER BY priority DESC) rn FROM tickets) SELECT * FROM base WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nRecursive CTE to create a number sequence",
+    "output": "WITH RECURSIVE num(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM num WHERE n < 10) SELECT * FROM num;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nRecursive CTE walking a holiday-date chain",
+    "output": "WITH RECURSIVE dates(d) AS (SELECT '2024-01-01'::date UNION ALL SELECT (d + INTERVAL '1 day')::date FROM dates WHERE d < '2024-01-10') SELECT d FROM dates;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE combining two aggregates in one pass",
+    "output": "WITH agg AS (SELECT agent_id, SUM(priority) s, AVG(priority) a FROM tickets GROUP BY agent_id) SELECT agent_id, s, a FROM agg WHERE s > 100;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nMultiple CTEs chained (a then b referencing a)",
+    "output": "WITH a AS (SELECT agent_id, COUNT(*) c FROM tickets GROUP BY agent_id), b AS (SELECT * FROM a WHERE c > 1) SELECT COUNT(*) FROM b;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nSet expressions inside a CTE",
+    "output": "WITH c AS (SELECT agent_id FROM tickets WHERE priority > 10 UNION SELECT agent_id FROM tickets WHERE priority < 2) SELECT * FROM c;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE for deduplication using row number",
+    "output": "WITH dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY agent_id ORDER BY opened_on) rn FROM tickets) SELECT * FROM dedup WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nRecursive hierarchy emulating parent-child with depth",
+    "output": "WITH RECURSIVE tree AS (SELECT id, agent_id FROM tickets WHERE parent_id IS NULL UNION ALL SELECT c.id, c.agent_id FROM tickets c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nMaterialize then refilter a CTE",
+    "output": "WITH m AS (SELECT agent_id, SUM(priority) s FROM tickets GROUP BY agent_id HAVING SUM(priority) > 0) SELECT *, s * 1.0 / (SELECT SUM(s) FROM m) AS share FROM m;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nTally CTE feeding a LEFT JOIN to fill missing grouping rows",
+    "output": "WITH RECURSIVE grp AS (SELECT 1 g UNION ALL SELECT g + 1 FROM grp WHERE g < 10) SELECT g, COUNT(t.agent_id) FROM grp LEFT JOIN tickets t ON t.agent_id = g GROUP BY g;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE with ordered window and outer filter on rank",
+    "output": "WITH r AS (SELECT *, RANK() OVER (PARTITION BY agent_id ORDER BY priority DESC) rk FROM tickets) SELECT * FROM r WHERE rk <= 3;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE used twice via self reference pattern",
+    "output": "WITH c AS (SELECT agent_id, priority FROM tickets WHERE priority IS NOT NULL) SELECT * FROM c WHERE priority > (SELECT AVG(priority) FROM c);"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nInline aggregate then filter in outer query",
+    "output": "WITH g AS (SELECT agent_id FROM tickets GROUP BY agent_id HAVING COUNT(*) > 2) SELECT * FROM tickets WHERE agent_id IN (SELECT * FROM g);"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nPivot-like pivot using multiple aggregate CTEs",
+    "output": "WITH wide AS (SELECT agent_id, SUM(CASE WHEN priority > 100 THEN 1 ELSE 0 END) over100, SUM(CASE WHEN priority <= 100 THEN 1 ELSE 0 END) under FROM tickets GROUP BY agent_id) SELECT * FROM wide;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nRecursive CTE to expand an interval of ranges",
+    "output": "WITH RECURSIVE iv(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM iv WHERE n < 100) SELECT n FROM iv;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE for lead-lag difference",
+    "output": "WITH lg AS (SELECT agent_id, priority, LAG(priority) OVER (PARTITION BY agent_id ORDER BY opened_on) prev FROM tickets) SELECT *, priority - COALESCE(prev,priority) AS delta FROM lg;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nChained CTEs for multi-stage business calc",
+    "output": "WITH step1 AS (SELECT agent_id, SUM(priority) s FROM tickets GROUP BY agent_id), step2 AS (SELECT *, s * 2 doubled FROM step1) SELECT * FROM step2 WHERE doubled > 20;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE referencing a correlated subquery",
+    "output": "WITH big AS (SELECT agent_id FROM tickets GROUP BY agent_id HAVING SUM(priority) > 100) SELECT * FROM tickets t WHERE EXISTS (SELECT 1 FROM big b WHERE b.agent_id = t.agent_id);"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nRecursive CTE producing factorial numbers",
+    "output": "WITH RECURSIVE f(n, fact) AS (SELECT 1, 1 UNION ALL SELECT n+1, fact*(n+1) FROM f WHERE n < 10) SELECT * FROM f;"
+  },
+  {
+    "instruction": "Schema: tickets(agent_id, priority, opened_on)\nCTE on itself to compute growth from prior period",
+    "output": "WITH p AS (SELECT agent_id, SUM(priority) cur FROM tickets GROUP BY agent_id), q AS (SELECT *, LAG(cur) OVER (ORDER BY agent_id) prev FROM p) SELECT *, cur - prev AS growth FROM q;"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "traefik version",
+    "output": "<think>\nThis is asking us to traefik version.\nHere's how I'd approach this.\nI'd use version for this — version operations.\n</think>\nversion: v3.1.4\ncodename: v3.1\nbuilt: 2026-03-15_10:00:00\ngo version: go1.22.5"
+  },
+  {
+    "instruction": "traefik healthcheck",
+    "output": "<think>\nAlright, we need to traefik healthcheck.\nThe tool for this job is OK — OK operations.\nI'll check the output to make sure it did what we expected.\n</think>\nOK: https://localhost:8080/api/health"
+  },
+  {
+    "instruction": "traefik healthcheck --ping",
+    "output": "<think>\nSo we need to traefik healthcheck --ping.\nLet me think through this step by step.\nThis calls for Ping. Ping operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nPing endpoint: OK (200)"
+  },
+  {
+    "instruction": "curl -s http://localhost:8080/api/rawdata | python3 -m json.tool | head -30",
+    "output": "<think>\nThe user wants to curl -s http://localhost:8080/api/rawdata | python3 -m json.tool | head -30.\nLet me think about the best approach.\n</think>\n{\n    \"routers\": {\n        \"api\": {\n            \"entryPoints\": [\"traefik\"],\n            \"service\": \"api@internal\",\n            \"rule\": \"PathPrefix(`/api`)\"\n        },\n        \"web\": {\n            \"entryPoints\": [\"web\"],\n            \"service\": \"backend\",\n            \"rule\": \"Host(`example.com`)\"\n        }\n    },\n    \"services\": {\n        \"backend\": {\n            \"loadBalancer\": {\n                \"servers\": [\n                    {\"url\": \"http://10.0.0.10:8080\"},\n                    {\"url\": \"http://10.0.0.11:8080\"}\n                ],\n                \"healthCheck\": {\"path\": \"/health\", \"interval\": \"10s\"}\n            }\n        }\n    }\n}"
+  },
+  {
+    "instruction": "cat /etc/traefik/traefik.yml",
+    "output": "<think>\nThis is asking us to cat /etc/traefik/traefik.yml.\nThis calls for api. Api operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\napi:\n  dashboard: true\n  debug: true\nentryPoints:\n  web:\n    address: \":80\"\n  websecure:\n    address: \":443\"\nproviders:\n  file:\n    filename: /etc/traefik/dynamic.yml\n    watch: true\nping: {}\nlog:\n  level: INFO"
+  },
+  {
+    "instruction": "cat /etc/traefik/dynamic.yml",
+    "output": "<think>\nSo the request is to cat /etc/traefik/dynamic.yml.\nLet me think through this step by step.\nI'd use http for this — http operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nhttp:\n  routers:\n    web:\n      rule: \"Host(`example.com`)\"\n      service: backend\n      entryPoints:\n        - web\n      middlewares:\n        - rate-limit\n  services:\n    backend:\n      loadBalancer:\n        servers:\n          - url: \"http://10.0.0.10:8080\"\n          - url: \"http://10.0.0.11:8080\"\n        healthCheck:\n          path: /health\n          interval: 10s\n          timeout: 3s\n  middlewares:\n    rate-limit:\n      rateLimit:\n        average: 100\n        burst: 50"
+  },
+  {
+    "instruction": "systemctl restart traefik",
+    "output": "<think>\nSo we need to systemctl restart traefik.\nsystemctl is what we need — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart traefik"
+  },
+  {
+    "instruction": "journalctl -u traefik -n 10 --no-pager",
+    "output": "<think>\nWe should journalctl -u traefik -n 10 --no-pager.\nI'd use Jul for this — Jul operations.\nI'll check the output to make sure it did what we expected.\n</think>\nJul 25 10:00:01 debian traefik[3456]: Starting provider *file.Provider\nJul 25 10:00:01 debian traefik[3456]: Starting provider *traefik.Provider\nJul 25 10:00:01 debian traefik[3456]: Found new router: web\nJul 25 10:00:01 debian traefik[3456]: Found new service: backend\nJul 25 10:00:02 debian traefik[3456]: Server started on :80\nJul 25 10:00:02 debian traefik[3456]: Server started on :443"
+  },
+  {
+    "instruction": "envoy --version",
+    "output": "<think>\nSo the request is to envoy --version.\nI'll reach for envoy here because envoy operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nenvoy  version: 1.30.1 (e3a0c2f101a29b8e1d3f7c4e53a8b6a9c2d1e0f1)"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy.yaml",
+    "output": "<think>\nThe goal is to envoy --mode validate -c /etc/envoy/envoy.yaml.\nLet me reason through this.\n</think>\n[2026-07-25 10:00:01.123][12345][info][main] initializing epoch 0\n[2026-07-25 10:00:01.124][12345][info][main] validation complete"
+  },
+  {
+    "instruction": "envoy -c /etc/envoy/envoy.yaml --mode serve &",
+    "output": "<think>\nThe task requires us to envoy -c /etc/envoy/envoy.yaml --mode serve &.\nQuick verification after execution to be safe.\n</think>\n[2026-07-25 10:00:01.123][12346][info][main] initializing epoch 0\n[2026-07-25 10:00:01.456][12346][info][upstream] server started"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/server_info",
+    "output": "<think>\nNeed to curl -s http://localhost:9901/server_info.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\n{\"version\":\"1.30.1\",\"state\":\"LIVE\",\"uptime_current_epoch_ms\":\"1234567\",\"hot_restart_version\":\"11.0\",\"command_line_options\":{\"base_id\":\"0\",\"config_path\":\"/etc/envoy/envoy.yaml\",\"admin_address\":\"0.0.0.0\",\"admin_port\":\"9901\"}}"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/clusters | head -15",
+    "output": "<think>\nThis is asking us to curl -s http://localhost:9901/clusters | head -15.\nLet me think through this step by step.\nFor this, backend is the right tool — backend operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nbackend::default::health_flags::healthy\nbackend::default::hostname::10.0.0.10\nbackend::default::priority::0\nbackend::default::weight::1\nbackend::default::uptime::1234567\nbackend::default::cx_active::2\nbackend::default::cx_total::12345\nbackend::default::rq_active::5\nbackend::default::rq_total::67890\nbackend::default::healthy::true"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/certs",
+    "output": "<think>\nAlright, we need to curl -s http://localhost:9901/certs.\nHere's how I'd approach this.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\n{\"certificates\":[]}"
+  },
+  {
+    "instruction": "cat /etc/envoy/envoy.yaml | grep -A 20 'clusters'",
+    "output": "<think>\nAlright, we need to cat /etc/envoy/envoy.yaml | grep -A 20 'clusters'.\nThe tool for this job is clusters — clusters operations.\n</think>\n  clusters:\n  - name: backend\n    type: STRICT_DNS\n    lb_policy: LEAST_REQUEST\n    health_checks:\n      timeout: 5s\n      interval: 10s\n      unhealthy_threshold: 3\n      healthy_threshold: 2\n      http_health_check:\n        path: /health\n    load_assignment:\n      cluster_name: backend\n      endpoints:\n      - lb_endpoints:\n        - endpoint:\n            address:\n              socket_address:\n                address: 10.0.0.10\n                port_value: 8080\n        - endpoint:\n            address:\n              socket_address:\n                address: 10.0.0.11\n                port_value: 8080"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy.yaml 2>/dev/null; echo 'Exit: '$?",
+    "output": "<think>\nThe user wants to envoy --mode validate -c /etc/envoy/envoy.yaml 2>/dev/null; echo 'Exit: '$.\nThis calls for Exit. Exit operations.\n</think>\nExit: 0"
+  },
+  {
+    "instruction": "traefik test --configFile=/etc/traefik/traefik.yml",
+    "output": "<think>\nSo we need to traefik test --configFile=/etc/traefik/traefik.yml.\nLet me think through this step by step.\nConfiguration is what we need — Configuration operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nConfiguration file is valid"
+  },
+  {
+    "instruction": "curl -s http://localhost:9901/stats | grep -E 'server.version|server.uptime'",
+    "output": "<think>\nThis is asking us to curl -s http://localhost:9901/stats | grep -E 'server.version|server.uptime'.\nLet me reason through this.\nI'd use server.version for this — server.version operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nserver.version: 1.30.1\nserver.uptime: 1234567"
+  },
+  {
+    "instruction": "traefik bug-report",
+    "output": "<think>\nWe're being asked to traefik bug-report.\nLet me consider what makes sense here.\nBug is what we need — Bug operations.\nOne command does the job. Simple is better.\n</think>\nBug report saved to /tmp/traefik-bug-report-20260725.zip"
+  },
+  {
+    "instruction": "envoy --mode validate -c /etc/envoy/envoy-bad.yaml 2>&1 | tail -3",
+    "output": "<think>\nWe're being asked to envoy --mode validate -c /etc/envoy/envoy-bad.yaml 2>&1 | tail -3.\nLet me reason through this.\nQuick verification after execution to be safe.\n</think>\n[2026-07-25 10:00:01.456][12347][critical][main] error initializing configuration\n[2026-07-25 10:00:01.457][12347][info][main] VALIDATION FAILED\nInvalid configuration: proto: field 'cluster_name' is required"
+  },
+  {
+    "instruction": "curl -s -X POST http://localhost:9901/logging?level=warning",
+    "output": "<think>\nSo the request is to curl -s -X POST http://localhost:9901/logging?level=warning.\nLog is what we need — Log operations.\nAfter running, I'll confirm the result looks right.\n</think>\nLog level has been changed to warning"
+  }
+]

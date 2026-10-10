@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show Ceph OSD map",
+    "output": "<think>\nThis is asking us to show Ceph OSD map.\nLet me consider what makes sense here.\nThe tool for this job is ceph — ceph operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nceph osd dump"
+  },
+  {
+    "instruction": "Get Ceph crush map compiled",
+    "output": "<think>\nThe task requires us to get Ceph crush map compiled.\nThe tool for this job is ceph — ceph operations.\n</think>\nceph osd getcrushmap -o crush.map"
+  },
+  {
+    "instruction": "Decompile a Ceph crush map for editing",
+    "output": "<think>\nThe user wants to decompile a Ceph crush map for editing.\nLet me think about the best approach.\nBest tool here is crushtool — crushtool operations.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nI've added -o to output to file, OR operator in find — important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncrushtool -d crush.map -o crush.txt"
+  },
+  {
+    "instruction": "Compile and set a Ceph crush map",
+    "output": "<think>\nThe task requires us to compile and set a Ceph crush map.\nLet me consider what makes sense here.\ncrushtool is what we need — crushtool operations.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncrushtool -c crush.txt -o crush.new && ceph osd setcrushmap -i crush.new"
+  },
+  {
+    "instruction": "Set Ceph pool application to RBD",
+    "output": "<think>\nThe user wants to set Ceph pool application to RBD.\nFirst, let me understand what's needed here.\nceph is what we need — ceph operations.\nLet me verify afterward that it worked correctly.\n</think>\nceph osd pool application enable mypool rbd"
+  },
+  {
+    "instruction": "Set Ceph pool application to CephFS",
+    "output": "<think>\nSo we need to set Ceph pool application to CephFS.\nThe tool for this job is ceph — ceph operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nceph osd pool application enable cephfs_data cephfs"
+  },
+  {
+    "instruction": "Add an OSD to Ceph from a device",
+    "output": "<think>\nThe task requires us to add an OSD to Ceph from a device.\nLet me reason through this.\nThis calls for ceph-volume. Ceph-volume operations.\nLet me verify afterward that it worked correctly.\n</think>\nceph-volume lvm prepare --bluestore --data /dev/sdb"
+  },
+  {
+    "instruction": "Activate a prepared Ceph OSD",
+    "output": "<think>\nAlright, we need to activate a prepared Ceph OSD.\nThe tool for this job is ceph-volume — ceph-volume operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nceph-volume lvm activate --bluestore 0 0f1a2b3c-..."
+  },
+  {
+    "instruction": "List Ceph OSDs with their device class",
+    "output": "<think>\nThe task requires us to list Ceph OSDs with their device class.\nBest tool here is ceph — ceph operations.\nAfter running, I'll confirm the result looks right.\n</think>\nceph osd crush class ls"
+  },
+  {
+    "instruction": "Create a Ceph crush rule for SSD OSDs",
+    "output": "<think>\nWe're being asked to create a Ceph crush rule for SSD OSDs.\nLet me think about the best approach.\nceph is what we need — ceph operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nceph osd crush rule create-replicated ssd-rule default host ssd"
+  },
+  {
+    "instruction": "Set Ceph pool crush rule",
+    "output": "<think>\nSo we need to set Ceph pool crush rule.\nceph is what we need — ceph operations.\nI'll check the output to make sure it did what we expected.\n</think>\nceph osd pool set mypool crush_rule ssd-rule"
+  },
+  {
+    "instruction": "Create a Ceph erasure-coded pool",
+    "output": "<think>\nWe should create a Ceph erasure-coded pool.\nHere's how I'd approach this.\nFor this, ceph is the right tool — ceph operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nceph osd erasure-code-profile set myprofile k=2 m=1"
+  },
+  {
+    "instruction": "Create Ceph erasure-coded pool using a profile",
+    "output": "<think>\nSo the request is to create Ceph erasure-coded pool using a profile.\nFor this, ceph is the right tool — ceph operations.\nAfter running, I'll confirm the result looks right.\n</think>\nceph osd pool create ecpool 64 erasure myprofile"
+  },
+  {
+    "instruction": "Enable Ceph application on an erasure-coded pool",
+    "output": "<think>\nAlright, we need to enable Ceph application on an erasure-coded pool.\nI'd use ceph for this — ceph operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nceph osd pool application enable ecpool rbd"
+  },
+  {
+    "instruction": "Create a Ceph RBD image",
+    "output": "<think>\nThe user wants to create a Ceph RBD image.\nLet me break this down.\nThe tool for this job is rbd — rbd operations.\n</think>\nrbd create myimage --size 1G --pool mypool"
+  },
+  {
+    "instruction": "List Ceph RBD images in a pool",
+    "output": "<think>\nWe're being asked to list Ceph RBD images in a pool.\nFor this, rbd is the right tool — rbd operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nrbd ls mypool"
+  },
+  {
+    "instruction": "Show Ceph RBD image info",
+    "output": "<think>\nWe should show Ceph RBD image info.\nLet me consider what makes sense here.\nrbd is what we need — rbd operations.\nAfter running, I'll confirm the result looks right.\n</think>\nrbd info mypool/myimage"
+  },
+  {
+    "instruction": "Resize a Ceph RBD image",
+    "output": "<think>\nThe task requires us to resize a Ceph RBD image.\nFor this, rbd is the right tool — rbd operations.\nQuick verification after execution to be safe.\n</think>\nrbd resize mypool/myimage --size 2G"
+  },
+  {
+    "instruction": "Remove a Ceph RBD image",
+    "output": "<think>\nThe goal is to remove a Ceph RBD image.\nLet me think about the best approach.\nI'll reach for rbd here because rbd operations.\n</think>\nrbd rm mypool/myimage"
+  },
+  {
+    "instruction": "Create a Ceph RBD snapshot",
+    "output": "<think>\nThe user wants to create a Ceph RBD snapshot.\nI'll reach for rbd here because rbd operations.\n</think>\nrbd snap create mypool/myimage@snap1"
+  },
+  {
+    "instruction": "List Ceph RBD snapshots",
+    "output": "<think>\nSo the request is to list Ceph RBD snapshots.\nBest tool here is rbd — rbd operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrbd snap ls mypool/myimage"
+  },
+  {
+    "instruction": "Rollback a Ceph RBD to a snapshot",
+    "output": "<think>\nNeed to rollback a Ceph RBD to a snapshot.\nLet me think through this step by step.\nI'd use rbd for this — rbd operations.\nLet me verify afterward that it worked correctly.\n</think>\nrbd snap rollback mypool/myimage@snap1"
+  },
+  {
+    "instruction": "Delete a Ceph RBD snapshot",
+    "output": "<think>\nThe task requires us to delete a Ceph RBD snapshot.\nHere's how I'd approach this.\nI'll reach for rbd here because rbd operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nrbd snap rm mypool/myimage@snap1"
+  },
+  {
+    "instruction": "Map a Ceph RBD image locally",
+    "output": "<think>\nWe're being asked to map a Ceph RBD image locally.\nLet me think through this step by step.\nThe tool for this job is rbd — rbd operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nrbd map mypool/myimage"
+  },
+  {
+    "instruction": "Unmap a Ceph RBD image",
+    "output": "<think>\nWe should unmap a Ceph RBD image.\nLet me reason through this.\nI'll reach for rbd here because rbd operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nrbd unmap /dev/rbd0"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Use Woodpecker with forge metadata",
+    "output": "<think>\nThe user wants to use Woodpecker with forge metadata.\nLet me think about the best approach.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'pipeline: info: image: alpine:latest commands: - echo $CI_REPO - echo $CI_COMMIT_BRANCH' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker CI_PIPELINE_NUMBER variable",
+    "output": "<think>\nNeed to use Woodpecker CI_PIPELINE_NUMBER variable.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'pipeline: log: image: alpine:latest commands: - echo \"Build #$CI_PIPELINE_NUMBER\"' >> .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker CI variables for commit info",
+    "output": "<think>\nSo the request is to use Woodpecker CI variables for commit info.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'pipeline: commit: image: alpine:latest commands: - echo $CI_COMMIT_SHA - echo $CI_COMMIT_MESSAGE' >> .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with Git tags in CI",
+    "output": "<think>\nThe user wants to use Woodpecker with Git tags in CI.\nLet me reason through this.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'pipeline: tag: image: alpine:latest commands: - echo $CI_COMMIT_TAG' >> .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker CI_PIPELINE_URL",
+    "output": "<think>\nThis is asking us to use Woodpecker CI_PIPELINE_URL.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'pipeline: url: image: alpine:latest commands: - echo $CI_PIPELINE_URL' >> .woodpecker.yml"
+  },
+  {
+    "instruction": "Restart a Woodpecker build",
+    "output": "<think>\nThe user wants to restart a Woodpecker build.\nLet me break this down.\nI'll reach for woodpecker-cli here because woodpecker-cli operations.\nQuick verification after execution to be safe.\n</think>\nwoodpecker-cli build restart owner/repo 42"
+  },
+  {
+    "instruction": "Cancel a Woodpecker build",
+    "output": "<think>\nWe should cancel a Woodpecker build.\nLet me think through this step by step.\nFor this, woodpecker-cli is the right tool — woodpecker-cli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nwoodpecker-cli build cancel owner/repo 42"
+  },
+  {
+    "instruction": "Start Drone server in Docker",
+    "output": "<think>\nNeed to start Drone server in Docker.\nFor this, docker is the right tool — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name drone-server -p 8080:80 -e DRONE_GITHUB_CLIENT_ID=xxx -e DRONE_GITHUB_CLIENT_SECRET=yyy -e DRONE_RPC_SECRET=secret drone/drone:2"
+  },
+  {
+    "instruction": "Start Drone runner in Docker",
+    "output": "<think>\nSo we need to start Drone runner in Docker.\ndocker is what we need — container management.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nWhy -e? Edit or executable. this controls how the output is formatted.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name drone-runner -e DRONE_RPC_HOST=drone-server -e DRONE_RPC_SECRET=secret -e DRONE_RUNNER_CAPACITY=2 drone/drone-runner-docker:1"
+  },
+  {
+    "instruction": "Start Drone runner with privileged mode",
+    "output": "<think>\nThe user wants to start Drone runner with privileged mode.\nLet me break this down.\nThis calls for docker. Container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nQuick verification after execution to be safe.\n</think>\ndocker run -d --name drone-runner -v /var/run/docker.sock:/var/run/docker.sock -e DRONE_RPC_HOST=drone.example.com -e DRONE_RPC_SECRET=secret -e DRONE_RUNNER_PRIVILEGED_IMAGES=golang:latest drone/drone-runner-docker:1"
+  },
+  {
+    "instruction": "Start Woodpecker server in Docker",
+    "output": "<think>\nThe goal is to start Woodpecker server in Docker.\nLet me think through this step by step.\nI'll reach for docker here because container management.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name woodpecker-server -p 8080:80 -e WOODPECKER_GITHUB_CLIENT=xxx -e WOODPECKER_GITHUB_SECRET=yyy -e WOODPECKER_AGENT_SECRET=secret woodpeckerci/woodpecker-server:latest"
+  },
+  {
+    "instruction": "Start Woodpecker agent in Docker",
+    "output": "<think>\nThe task requires us to start Woodpecker agent in Docker.\nLet me think about the best approach.\nThis calls for docker. Container management.\nWhy -d? Directory listing, don't descend. without it the command won't work as we need.\nWhy -v? Verbose output. needed for this specific use case.\nI've added -e to edit or executable — standard practice for this kind of operation.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run -d --name woodpecker-agent -v /var/run/docker.sock:/var/run/docker.sock -e WOODPECKER_SERVER=woodpecker-server:9000 -e WOODPECKER_AGENT_SECRET=secret woodpeckerci/woodpecker-agent:latest"
+  },
+  {
+    "instruction": "Use Drone with DigitalOcean Autoscale",
+    "output": "<think>\nWe're being asked to use Drone with DigitalOcean Autoscale.\ndrone is what we need — drone operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ndrone autoscale create --service digitalocean --token do_token --size s-2vcpu-4gb --region nyc3 --max-instances 5"
+  },
+  {
+    "instruction": "Drone autoscale list instances",
+    "output": "<think>\nThe goal is to drone autoscale list instances.\nI'd use drone for this — drone operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ndrone autoscale ls"
+  },
+  {
+    "instruction": "Drone autoscale stop instance",
+    "output": "<think>\nThe goal is to drone autoscale stop instance.\ndrone is what we need — drone operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndrone autoscale stop instance_id"
+  },
+  {
+    "instruction": "Drone global webhook debugging",
+    "output": "<think>\nSo the request is to drone global webhook debugging.\nHere's how I'd approach this.\nThis calls for drone. Drone operations.\n</think>\ndrone build ls owner/repo --page 1 --per-page 5"
+  },
+  {
+    "instruction": "Export Drone build logs to a file",
+    "output": "<think>\nNeed to export Drone build logs to a file.\nHere's how I'd approach this.\nFor this, drone is the right tool — drone operations.\n</think>\ndrone build logs owner/repo 42 1 > build.log"
+  },
+  {
+    "instruction": "Use Woodpecker CLI with different output formats",
+    "output": "<think>\nThe goal is to use Woodpecker CLI with different output formats.\nThis calls for woodpecker-cli. Woodpecker-cli operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nwoodpecker-cli build ls owner/repo --output json"
+  },
+  {
+    "instruction": "Use Woodpecker CLI format as table",
+    "output": "<think>\nThe goal is to use Woodpecker CLI format as table.\nThe tool for this job is woodpecker-cli — woodpecker-cli operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nwoodpecker-cli build ls owner/repo --output table"
+  },
+  {
+    "instruction": "Use Drone CLI to list builds with details",
+    "output": "<think>\nSo we need to use Drone CLI to list builds with details.\nThis calls for drone. Drone operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndrone build ls owner/repo --format '{{.Number}}: {{.Status}}'"
+  },
+  {
+    "instruction": "Use Drone CLI to list repos with details",
+    "output": "<think>\nThis is asking us to use Drone CLI to list repos with details.\nThe tool for this job is drone — drone operations.\n</think>\ndrone repo ls --format '{{.Slug}}: {{.Visibility}}'"
+  },
+  {
+    "instruction": "Create a Drone pipeline with Windows container",
+    "output": "<think>\nThis is asking us to create a Drone pipeline with Windows container.\nFirst, let me understand what's needed here.\n</think>\necho 'kind: pipeline type: docker platform: os: windows amd64: true steps: - name: build image: golang:latest commands: - go build' > .drone.yml"
+  }
+]

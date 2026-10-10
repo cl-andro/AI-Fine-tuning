@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert a single row with guest='John'",
+    "output": "INSERT INTO reservations (guest, room) VALUES ('John', 100);"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert multiple rows at once",
+    "output": "INSERT INTO reservations (guest, room) VALUES ('John', 1), ('Jane', 2), ('Jim', 3);"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert into reservations from a select that filters nights",
+    "output": "INSERT INTO reservations (guest, room) SELECT guest, room FROM reservations_src WHERE nights = 'x';"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate the row with id=7",
+    "output": "UPDATE reservations SET guest = 'NewName' WHERE id = 7;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate all rows setting room to 0",
+    "output": "UPDATE reservations SET room = 0;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate reservations increasing all room by 10%",
+    "output": "UPDATE reservations SET room = room * 1.1;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate rows where nights equals 'done'",
+    "output": "UPDATE reservations SET guest = 'Finished' WHERE nights = 'done';"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete a row by id 12",
+    "output": "DELETE FROM reservations WHERE id = 12;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete rows where room is below 50",
+    "output": "DELETE FROM reservations WHERE room < 50;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete rows where nights is NULL",
+    "output": "DELETE FROM reservations WHERE nights IS NULL;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete all rows from reservations",
+    "output": "DELETE FROM reservations;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpsert: insert or update on conflict of the id",
+    "output": "INSERT INTO reservations (id, guest) VALUES (1, 'X') ON CONFLICT (id) DO UPDATE SET guest = EXCLUDED.guest;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nConditional update using CASE",
+    "output": "UPDATE reservations SET room = CASE WHEN room > 100 THEN room - 10 ELSE room + 10 END;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate a join-based target using a subquery value",
+    "output": "UPDATE reservations SET room = (SELECT MAX(room) FROM reservations) WHERE room IS NULL;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete with a subquery filter",
+    "output": "DELETE FROM reservations WHERE room IN (SELECT room FROM reservations WHERE nights = 'skip');"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert with explicit column list and defaults",
+    "output": "INSERT INTO reservations (guest, room, nights) VALUES ('A', 5, 'active');"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate with a LIMIT to only change a few rows",
+    "output": "UPDATE reservations SET room = room + 1 WHERE id IN (SELECT id FROM reservations LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert ignoring duplicates",
+    "output": "INSERT OR IGNORE INTO reservations (guest) VALUES ('Dup');"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nDelete a range where room between two values",
+    "output": "DELETE FROM reservations WHERE room BETWEEN 20 AND 30;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nUpdate setting multiple columns",
+    "output": "UPDATE reservations SET guest = 'Z', room = 0, nights = NULL WHERE id = 9;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nInsert a row returning its id",
+    "output": "INSERT INTO reservations (guest) VALUES ('Ret') RETURNING id;"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nReplace all occurrences in a string column",
+    "output": "UPDATE reservations SET nights = REPLACE(nights, 'a', 'b');"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nTrim whitespace then update guest",
+    "output": "UPDATE reservations SET guest = TRIM(guest);"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nLowercase a text column in place",
+    "output": "UPDATE reservations SET guest = LOWER(guest);"
+  },
+  {
+    "instruction": "Schema: reservations(id, guest, room, nights)\nBulk upsert with multiple rows",
+    "output": "INSERT INTO reservations (id, guest) VALUES (1, 'A'), (2, 'B') ON CONFLICT (id) DO UPDATE SET guest = EXCLUDED.guest;"
+  }
+]

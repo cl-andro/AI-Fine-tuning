@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to create a Crossplane XRD (CompositeResourceDefinition)",
+    "output": "<think>\nWe're being asked to create a Crossplane XRD (CompositeResourceDefinition).\nFirst, let me understand what's needed here.\nThe tool for this job is kubectl — Kubernetes cluster management.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nkubectl apply -f my-xrd.yaml"
+  },
+  {
+    "instruction": "How to create a Crossplane XRD with a nested field",
+    "output": "<think>\nSo we need to create a Crossplane XRD with a nested field.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - <<< 'apiVersion: apiextensions.crossplane.io/v1\nkind: CompositeResourceDefinition\nmetadata:\n  name: xmyapps.example.crossplane.io\nspec:\n  group: example.crossplane.io\n  names:\n    kind: XMyApp\n    plural: xmyapps\n  claimNames:\n    kind: MyApp\n    plural: myapps\n  versions:\n  - name: v1alpha1\n    served: true\n    referenceable: true\n    schema:\n      openAPIV3Schema:\n        type: object\n        properties:\n          spec:\n            type: object\n            properties:\n              region:\n                type: string\n              replicas:\n                type: integer'"
+  },
+  {
+    "instruction": "How to create a Crossplane Composition",
+    "output": "<think>\nWe should create a Crossplane Composition.\nLet me think about the best approach.\nkubectl is what we need — Kubernetes cluster management.\n</think>\nkubectl apply -f my-composition.yaml"
+  },
+  {
+    "instruction": "How to create a Crossplane Composition with a patch",
+    "output": "<think>\nSo the request is to create a Crossplane Composition with a patch.\nLet me break this down.\nThis calls for kubectl. Kubernetes cluster management.\n</think>\nkubectl apply -f - <<< 'apiVersion: apiextensions.crossplane.io/v1\nkind: Composition\nmetadata:\n  name: xmyapps.example.crossplane.io\nspec:\n  compositeTypeRef:\n    apiVersion: example.crossplane.io/v1alpha1\n    kind: XMyApp\n  resources:\n  - name: my-bucket\n    base:\n      apiVersion: s3.aws.crossplane.io/v1beta1\n      kind: Bucket\n      spec:\n        forProvider:\n          region: us-east-1\n    patches:\n    - fromFieldPath: spec.region\n      toFieldPath: spec.forProvider.region'"
+  },
+  {
+    "instruction": "How to create a Crossplane claim",
+    "output": "<think>\nSo the request is to create a Crossplane claim.\nLet me think through this step by step.\nI'll reach for kubectl here because Kubernetes cluster management.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl apply -f - <<< 'apiVersion: example.crossplane.io/v1alpha1\nkind: MyApp\nmetadata:\n  name: my-app-claim\nspec:\n  region: us-east-1\n  replicas: 2\n  compositionRef:\n    name: xmyapps.example.crossplane.io\n  resourceRef:\n    apiVersion: example.crossplane.io/v1alpha1\n    kind: XMyApp\n    name: my-app-claim'"
+  },
+  {
+    "instruction": "How to create a Crossplane claim with a composition selector",
+    "output": "<think>\nThis is asking us to create a Crossplane claim with a composition selector.\nLet me reason through this.\nBest tool here is kubectl — Kubernetes cluster management.\nWhy -f? Force, suppress errors. this controls how the output is formatted.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl apply -f - <<< 'apiVersion: example.crossplane.io/v1alpha1\nkind: MyApp\nmetadata:\n  name: my-app-claim\nspec:\n  region: us-east-1\n  compositionSelector:\n    matchLabels:\n      provider: aws'"
+  },
+  {
+    "instruction": "How to get the status of a Crossplane claim",
+    "output": "<think>\nWe should get the status of a Crossplane claim.\nI'd use kubectl for this — Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get myapp my-app-claim -o yaml"
+  },
+  {
+    "instruction": "How to delete a Crossplane claim",
+    "output": "<think>\nAlright, we need to delete a Crossplane claim.\nLet me reason through this.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl delete myapp my-app-claim"
+  },
+  {
+    "instruction": "How to get a Crossplane composite resource",
+    "output": "<think>\nWe should get a Crossplane composite resource.\nThis calls for kubectl. Kubernetes cluster management.\nThe -o flag handles output to file, OR operator in find. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get xmyapp my-app-claim -o yaml"
+  },
+  {
+    "instruction": "How to list all Crossplane composites",
+    "output": "<think>\nThe goal is to list all Crossplane composites.\nLet me think through this step by step.\nkubectl is what we need — Kubernetes cluster management.\nWhy -o? Output to file, OR operator in find. standard practice for this kind of operation.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get composite -o wide"
+  },
+  {
+    "instruction": "How to check if a Crossplane XRD is established",
+    "output": "<think>\nWe're being asked to check if a Crossplane XRD is established.\nFirst, let me understand what's needed here.\nkubectl is what we need — Kubernetes cluster management.\nWhy -o? Output to file, OR operator in find. standard practice for this kind of operation.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get xrd xmyapps.example.crossplane.io -o jsonpath='{.status.conditions[?(@.type==\"Established\")].status}'"
+  },
+  {
+    "instruction": "How to get the Crossplane Composition for a claim",
+    "output": "<think>\nThe task requires us to get the Crossplane Composition for a claim.\nFirst, let me understand what's needed here.\nI'll reach for kubectl here because Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nkubectl get composition $COMPOSITION_NAME -o yaml"
+  },
+  {
+    "instruction": "How to update a Crossplane Composition",
+    "output": "<think>\nSo we need to update a Crossplane Composition.\nLet me think about the best approach.\nI'd use kubectl for this — Kubernetes cluster management.\nI've added -f to force, suppress errors — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nkubectl apply -f updated-composition.yaml"
+  },
+  {
+    "instruction": "How to patch a Crossplane Composition",
+    "output": "<think>\nThe user wants to patch a Crossplane Composition.\nLet me consider what makes sense here.\nBest tool here is kubectl — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl patch composition xmyapps.example.crossplane.io --type merge -p '{\"spec\":{\"resources\":[{\"name\":\"my-bucket\",\"base\":{\"apiVersion\":\"s3.aws.crossplane.io/v1beta1\",\"kind\":\"Bucket\"}}]}}'"
+  },
+  {
+    "instruction": "How to delete a Crossplane Composition",
+    "output": "<think>\nSo we need to delete a Crossplane Composition.\nThis calls for kubectl. Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl delete composition xmyapps.example.crossplane.io"
+  },
+  {
+    "instruction": "How to update a Crossplane XRD",
+    "output": "<think>\nThe user wants to update a Crossplane XRD.\nkubectl is what we need — Kubernetes cluster management.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nkubectl apply -f updated-xrd.yaml"
+  },
+  {
+    "instruction": "How to delete a Crossplane XRD",
+    "output": "<think>\nSo we need to delete a Crossplane XRD.\nLet me reason through this.\nThe tool for this job is kubectl — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl delete xrd xmyapps.example.crossplane.io"
+  },
+  {
+    "instruction": "How to list all Crossplane locks",
+    "output": "<think>\nWe're being asked to list all Crossplane locks.\nI'll reach for kubectl here because Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get locks"
+  },
+  {
+    "instruction": "How to list all Crossplane package revisions",
+    "output": "<think>\nSo we need to list all Crossplane package revisions.\nFirst, let me understand what's needed here.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl get providerrevisions"
+  },
+  {
+    "instruction": "How to check the health of Crossplane pods",
+    "output": "<think>\nThe user wants to check the health of Crossplane pods.\nThis calls for kubectl. Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl get pods -n crossplane-system"
+  },
+  {
+    "instruction": "How to check the Crossplane version",
+    "output": "<think>\nNeed to check the Crossplane version.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -n flag handles dry-run, no changes. Important because without it the command won't work as we need.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get deployment crossplane -n crossplane-system -o jsonpath='{.spec.template.spec.containers[0].image}'"
+  },
+  {
+    "instruction": "How to get Crossplane logs",
+    "output": "<think>\nThis is asking us to get Crossplane logs.\nHere's how I'd approach this.\nThis calls for kubectl. Kubernetes cluster management.\nI'm using -n for dry-run, no changes — standard practice for this kind of operation.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl logs -n crossplane-system deployment/crossplane --tail=50"
+  },
+  {
+    "instruction": "How to get Crossplane provider logs",
+    "output": "<think>\nThis is asking us to get Crossplane provider logs.\nLet me consider what makes sense here.\nI'd use kubectl for this — Kubernetes cluster management.\nThe -n flag means dry-run, no changes, which matters here because important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl logs -n crossplane-system deployment/provider-aws --tail=50"
+  },
+  {
+    "instruction": "How to restart Crossplane",
+    "output": "<think>\nThe user wants to restart Crossplane.\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl rollout restart deployment crossplane -n crossplane-system"
+  },
+  {
+    "instruction": "How to check Crossplane provider health",
+    "output": "<think>\nThe goal is to check Crossplane provider health.\nBest tool here is kubectl — Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get providerrevisions -o wide"
+  }
+]

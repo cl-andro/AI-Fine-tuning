@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRank rows by liters within each truck_id",
+    "output": "SELECT *, RANK() OVER (PARTITION BY truck_id ORDER BY liters DESC) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nDense rank of rows by liters",
+    "output": "SELECT *, DENSE_RANK() OVER (ORDER BY liters DESC) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRow number per truck_id ordered by filled_at",
+    "output": "SELECT *, ROW_NUMBER() OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRunning total of liters ordered by filled_at",
+    "output": "SELECT *, SUM(liters) OVER (ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRunning total of liters per truck_id",
+    "output": "SELECT *, SUM(liters) OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nAverage of liters over all rows",
+    "output": "SELECT *, AVG(liters) OVER () FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nPrevious liters value (lag) per truck_id",
+    "output": "SELECT *, LAG(liters, 1) OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nNext liters value (lead) per truck_id",
+    "output": "SELECT *, LEAD(liters, 1) OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nMaximum liters per truck_id across all rows",
+    "output": "SELECT *, MAX(liters) OVER (PARTITION BY truck_id) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nMinimum liters per truck_id",
+    "output": "SELECT *, MIN(liters) OVER (PARTITION BY truck_id) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nMoving average window of 3 rows per truck_id",
+    "output": "SELECT *, AVG(liters) OVER (PARTITION BY truck_id ORDER BY filled_at ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nWindow frame from first row to current per truck_id",
+    "output": "SELECT *, SUM(liters) OVER (PARTITION BY truck_id ORDER BY filled_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nFirst value of liters per truck_id",
+    "output": "SELECT *, FIRST_VALUE(liters) OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nLast value of liters per truck_id across full partition",
+    "output": "SELECT *, LAST_VALUE(liters) OVER (PARTITION BY truck_id ORDER BY filled_at ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nPercent rank of liters",
+    "output": "SELECT *, PERCENT_RANK() OVER (ORDER BY liters) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nCumulative distribution of liters",
+    "output": "SELECT *, CUME_DIST() OVER (ORDER BY liters) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nQuartile bucket using NTILE",
+    "output": "SELECT *, NTILE(4) OVER (ORDER BY liters) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nDifference of liters from its group max",
+    "output": "SELECT truck_id, liters, liters - MAX(liters) OVER (PARTITION BY truck_id) AS diff FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRank of liters with ties allowed to skip",
+    "output": "SELECT truck_id, liters, RANK() OVER (ORDER BY liters DESC) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nSliding window of total over preceding 5 rows",
+    "output": "SELECT *, SUM(liters) OVER (ORDER BY filled_at ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nRunning count per truck_id",
+    "output": "SELECT *, COUNT(*) OVER (PARTITION BY truck_id ORDER BY filled_at) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nTop 2 by liters within each truck_id using ROW_NUMBER",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY truck_id ORDER BY liters DESC) rn FROM fuelings) x WHERE rn <= 2;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nNth value of liters within partition",
+    "output": "SELECT *, NTH_VALUE(liters, 2) OVER (PARTITION BY truck_id ORDER BY filled_at ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nExpressed ratio of liters to group total",
+    "output": "SELECT truck_id, liters, liters / SUM(liters) OVER (PARTITION BY truck_id) AS ratio FROM fuelings;"
+  },
+  {
+    "instruction": "Schema: fuelings(truck_id, liters, filled_at)\nWindow with custom unbounded following frame",
+    "output": "SELECT *, SUM(liters) OVER (PARTITION BY truck_id ORDER BY filled_at ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM fuelings;"
+  }
+]

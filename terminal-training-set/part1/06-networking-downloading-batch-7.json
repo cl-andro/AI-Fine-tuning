@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install and fail2ban for SSH brute force protection",
+    "output": "<think>\nThis is asking us to install and fail2ban for SSH brute force protection.\nLet me reason through this.\nThe tool for this job is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y fail2ban && systemctl enable --now fail2ban"
+  },
+  {
+    "instruction": "Check fail2ban status for SSH jail",
+    "output": "<think>\nThe task requires us to check fail2ban status for SSH jail.\nThis calls for fail2ban-client. Fail2ban-client operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfail2ban-client status sshd"
+  },
+  {
+    "instruction": "Unban an IP from fail2ban",
+    "output": "<think>\nThe task requires us to unban an IP from fail2ban.\nLet me think about the best approach.\nThe tool for this job is fail2ban-client — fail2ban-client operations.\nAfter running, I'll confirm the result looks right.\n</think>\nfail2ban-client set sshd unbanip 192.168.1.100"
+  },
+  {
+    "instruction": "Check iptables rules managed by fail2ban",
+    "output": "<think>\nSo the request is to check iptables rules managed by fail2ban.\nLet me think through this step by step.\nThis calls for iptables. Firewall management.\nThe -L flag handles follow symlinks when processing. Important because important to get the expected behavior.\nThe -n flag means dry-run, no changes, which matters here because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -L f2b-sshd -n"
+  },
+  {
+    "instruction": "Set up a simple firewall with a single iptables rule",
+    "output": "<think>\nThe user wants to set up a simple firewall with a single iptables rule.\nThe tool for this job is iptables — firewall management.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -p tcp --dport 22 -s 192.168.1.0/24 -j ACCEPT"
+  },
+  {
+    "instruction": "Block an IP address with iptables",
+    "output": "<think>\nNeed to block an IP address with iptables.\nThis calls for iptables. Firewall management.\nI'm using -s for summarize or silent mode — needed for this specific use case.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -s 10.0.0.5 -j DROP"
+  },
+  {
+    "instruction": "Allow established connections through iptables",
+    "output": "<think>\nNeed to allow established connections through iptables.\nLet me consider what makes sense here.\niptables is what we need — firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+  },
+  {
+    "instruction": "Log dropped packets with iptables",
+    "output": "<think>\nWe should log dropped packets with iptables.\niptables is what we need — firewall management.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -j LOG --log-prefix \"DROPPED: \" --log-level 4"
+  },
+  {
+    "instruction": "Port forward with iptables (DNAT)",
+    "output": "<think>\nAlright, we need to port forward with iptables (DNAT).\nLet me think through this step by step.\niptables is what we need — firewall management.\nI'm using -t for sort by modification time — needed for this specific use case.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.0.0.10:8080"
+  },
+  {
+    "instruction": "MASQUERADE (SNAT) outgoing traffic",
+    "output": "<think>\nWe're being asked to mASQUERADE (SNAT) outgoing traffic.\nFirst, let me understand what's needed here.\nI'll reach for iptables here because firewall management.\nThe -t flag means sort by modification time, which matters here because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\niptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "Set a default policy of DROP for INPUT",
+    "output": "<think>\nWe're being asked to set a default policy of DROP for INPUT.\nLet me think through this step by step.\niptables is what we need — firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -P INPUT DROP"
+  },
+  {
+    "instruction": "Allow loopback traffic in iptables",
+    "output": "<think>\nWe should allow loopback traffic in iptables.\nLet me think through this step by step.\nBest tool here is iptables — firewall management.\nI'm using -i for interactive, prompt before action — standard practice for this kind of operation.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -i lo -j ACCEPT"
+  },
+  {
+    "instruction": "Rate limit SSH connections with iptables",
+    "output": "<think>\nSo the request is to rate limit SSH connections with iptables.\nI'd use iptables for this — firewall management.\nI've added -p to create parent directories as needed — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set && iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 4 -j DROP"
+  },
+  {
+    "instruction": "Block a specific MAC address",
+    "output": "<think>\nSo we need to block a specific MAC address.\nLet me break this down.\nThe tool for this job is iptables — firewall management.\nNo need for complex pipelines here — one command is sufficient.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -A INPUT -m mac --mac-source 00:11:22:33:44:55 -j DROP"
+  },
+  {
+    "instruction": "Check conntrack table size",
+    "output": "<think>\nSo the request is to check conntrack table size.\nFirst, let me understand what's needed here.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_max"
+  },
+  {
+    "instruction": "Show the connection tracking table",
+    "output": "<think>\nThe task requires us to show the connection tracking table.\nHere's how I'd approach this.\nBest tool here is conntrack — conntrack operations.\nWhy -L? Follow symlinks when processing. needed for this specific use case.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nconntrack -L | head -20"
+  },
+  {
+    "instruction": "Flush the connection tracking table",
+    "output": "<think>\nThe user wants to flush the connection tracking table.\nI'll reach for conntrack here because conntrack operations.\n</think>\nconntrack -F"
+  },
+  {
+    "instruction": "Disable IPv6 temporarily",
+    "output": "<think>\nSo the request is to disable IPv6 temporarily.\nLet me think through this step by step.\nFor this, sysctl is the right tool — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsysctl -w net.ipv6.conf.all.disable_ipv6=1"
+  },
+  {
+    "instruction": "Enable IPv6 back",
+    "output": "<think>\nThe task requires us to enable IPv6 back.\nI'll reach for sysctl here because kernel parameter tuning.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysctl -w net.ipv6.conf.all.disable_ipv6=0"
+  },
+  {
+    "instruction": "Check if IPv6 is active on an interface",
+    "output": "<think>\nAlright, we need to check if IPv6 is active on an interface.\nHere's how I'd approach this.\nI'd use cat for this — cat operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/sys/net/ipv6/conf/eth0/disable_ipv6"
+  },
+  {
+    "instruction": "Add an IPv6 address to an interface",
+    "output": "<think>\nWe're being asked to add an IPv6 address to an interface.\nLet me reason through this.\nBest tool here is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nip addr add 2001:db8::100/64 dev eth0"
+  },
+  {
+    "instruction": "Ping an IPv6 address",
+    "output": "<think>\nSo the request is to ping an IPv6 address.\nLet me think about the best approach.\nI'd use ping6 for this — ping6 operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nping6 2001:4860:4860::8888"
+  },
+  {
+    "instruction": "Trace IPv6 route",
+    "output": "<think>\nThe task requires us to trace IPv6 route.\nLet me break this down.\nThe tool for this job is traceroute6 — traceroute6 operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ntraceroute6 2001:4860:4860::8888"
+  },
+  {
+    "instruction": "Show IPv6 neighbor discovery cache",
+    "output": "<think>\nWe're being asked to show IPv6 neighbor discovery cache.\nip is what we need — network interface configuration.\nI'm using -6 for use IPv6 only — standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nip -6 neigh show"
+  },
+  {
+    "instruction": "Check IPv6 router advertisement",
+    "output": "<think>\nWe should check IPv6 router advertisement.\nThis calls for radvdump. Radvdump operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nradvdump"
+  }
+]

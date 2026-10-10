@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to add a u32 filter with a mask for MAC address",
+    "output": "<think>\nThe goal is to add a u32 filter with a mask for MAC address.\nLet me think through this step by step.\nI'd use tc for this — tc operations.\nThe -4 flag handles use IPv4 only. Important because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u32 0x00112233 0xffffffff at -8 match u32 0x44556677 0xffffffff at -4 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter for TCP destination port",
+    "output": "<think>\nAlright, we need to add a u32 filter for TCP destination port.\nBest tool here is tc — tc operations.\nLet me verify afterward that it worked correctly.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 6 0xff match u16 80 0xffff at 2 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter with IP and port combination",
+    "output": "<think>\nWe should add a u32 filter with IP and port combination.\nFor this, tc is the right tool — tc operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 match ip dport 443 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a filter with a hash table for u32",
+    "output": "<think>\nWe're being asked to add a filter with a hash table for u32.\nHere's how I'd approach this.\nBest tool here is tc — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntc filter add dev eth0 parent 1: prio 1 handle 1: u32 divisor 256 && tc filter add dev eth0 parent 1: prio 1 u32 ht 1: match ip src 10.0.0.1 hash key mask 0x000000ff at 12 link 1: && tc filter add dev eth0 parent 1: prio 1 u32 ht 1:1: match ip src 10.0.0.1 flowid 1:10"
+  },
+  {
+    "instruction": "How to show u32 filter details",
+    "output": "<think>\nSo we need to show u32 filter details.\nLet me reason through this.\nBest tool here is tc — tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc filter show dev eth0 parent 1: prio 1"
+  },
+  {
+    "instruction": "How to use tc qdisc to set up per-port queuing",
+    "output": "<think>\nThe goal is to use tc qdisc to set up per-port queuing.\nI'd use tc for this — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root handle 1: htb && tc class add dev eth0 parent 1: classid 1:10 htb rate 10mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dport 80 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter for matching on IP fragment offset",
+    "output": "<think>\nThis is asking us to add a u32 filter for matching on IP fragment offset.\nI'd use tc for this — tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u16 0x2000 0x3fff at 6 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter for matching on TOS/precedence",
+    "output": "<think>\nAlright, we need to add a u32 filter for matching on TOS/precedence.\nLet me think about the best approach.\nThe tool for this job is tc — tc operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u8 0x20 0xfc at 1 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter for matching on TCP flags",
+    "output": "<think>\nNeed to add a u32 filter for matching on TCP flags.\nHere's how I'd approach this.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u8 0x02 0xff at 33 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a u32 filter that matches on 802.1Q VLAN ID",
+    "output": "<think>\nThis is asking us to add a u32 filter that matches on 802.1Q VLAN ID.\nFor this, tc is the right tool — tc operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntc filter add dev eth0 parent 1: protocol 802.1q prio 1 u32 match u16 0x0064 0x0fff at -2 flowid 1:10"
+  },
+  {
+    "instruction": "How to use tc to shape traffic for a 802.1Q VLAN",
+    "output": "<think>\nNeed to use tc to shape traffic for a 802.1Q VLAN.\nLet me reason through this.\ntc is what we need — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0.100 root handle 1: htb default 30 && tc class add dev eth0.100 parent 1: classid 1:10 htb rate 5mbit"
+  },
+  {
+    "instruction": "How to add a u32 filter for matching on ICMP code",
+    "output": "<think>\nNeed to add a u32 filter for matching on ICMP code.\ntc is what we need — tc operations.\nOne command does the job. Simple is better.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 1 0xff match u8 0 at 21 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a flower filter for VLAN protocol type",
+    "output": "<think>\nWe should add a flower filter for VLAN protocol type.\nI'd use tc for this — tc operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip flower vlan_type 0x0800 action drop"
+  },
+  {
+    "instruction": "How to filter by VLAN PCP with flower",
+    "output": "<think>\nThe task requires us to filter by VLAN PCP with flower.\nBest tool here is tc — tc operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol 802.1q flower vlan_prio 5 action drop"
+  },
+  {
+    "instruction": "How to add a tc filter that uses connmark",
+    "output": "<think>\nSo we need to add a tc filter that uses connmark.\nThis calls for tc. Tc operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 handle 1 connmark flowid 1:10"
+  },
+  {
+    "instruction": "How to set up tc with IPset match",
+    "output": "<think>\nWe're being asked to set up tc with IPset match.\nHere's how I'd approach this.\nBest tool here is tc — tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 basic match 'ipset(blocklist src)' action drop"
+  },
+  {
+    "instruction": "How to use tc-sample to sample packets at 1 every N",
+    "output": "<think>\nSo we need to use tc-sample to sample packets at 1 every N.\nFor this, tc is the right tool — tc operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.2 action sample rate 100 group 5  trunc 128"
+  },
+  {
+    "instruction": "How to set the sample truncation size",
+    "output": "<think>\nWe should set the sample truncation size.\nLet me think about the best approach.\nFor this, tc is the right tool — tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u32 0 0 action sample rate 10 group 1 trunc 256"
+  },
+  {
+    "instruction": "How to add police action to tc filter",
+    "output": "<think>\nThe task requires us to add police action to tc filter.\nLet me consider what makes sense here.\nThe tool for this job is tc — tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 action police rate 1mbit burst 10k conform-exceed drop/continue"
+  },
+  {
+    "instruction": "How to set up a two-rate policer in tc",
+    "output": "<think>\nNeed to set up a two-rate policer in tc.\nFirst, let me understand what's needed here.\nBest tool here is tc — tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u32 0 0 action police rate 10mbit burst 10k mtu 1500 peakrate 20mbit pburst 20k conform-exceed drop/ok"
+  },
+  {
+    "instruction": "How to add a simple tc filter that drops all traffic",
+    "output": "<think>\nThis is asking us to add a simple tc filter that drops all traffic.\nLet me reason through this.\nBest tool here is tc — tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match u32 0 0 action drop"
+  },
+  {
+    "instruction": "How to attach tc filter with a specific handle",
+    "output": "<think>\nWe should attach tc filter with a specific handle.\nLet me reason through this.\nFor this, tc is the right tool — tc operations.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 handle 0x10 u32 match ip src 10.0.0.1 flowid 1:10"
+  },
+  {
+    "instruction": "How to add a qdisc on a bonded interface",
+    "output": "<think>\nNeed to add a qdisc on a bonded interface.\nLet me consider what makes sense here.\nThis calls for tc. Tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev bond0 root handle 1: htb default 30"
+  },
+  {
+    "instruction": "How to shape traffic on a bridge interface",
+    "output": "<think>\nWe're being asked to shape traffic on a bridge interface.\nLet me think about the best approach.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev br0 root handle 1: htb default 30 && tc class add dev br0 parent 1: classid 1:10 htb rate 5mbit"
+  },
+  {
+    "instruction": "How to use tc with netem on a virtual bridge port",
+    "output": "<think>\nWe're being asked to use tc with netem on a virtual bridge port.\ntc is what we need — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ntc qdisc add dev veth0 root netem delay 100ms loss 5%"
+  }
+]

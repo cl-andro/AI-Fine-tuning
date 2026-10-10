@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Reload promtail configuration",
+    "output": "<think>\nThe task requires us to reload promtail configuration.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl reload promtail"
+  },
+  {
+    "instruction": "Check promtail service status",
+    "output": "<think>\nThe task requires us to check promtail service status.\nLet me break this down.\nI'd use systemctl for this — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status promtail"
+  },
+  {
+    "instruction": "Query logs from Loki with logcli",
+    "output": "<think>\nThe task requires us to query logs from Loki with logcli.\nLet me break this down.\nI'll reach for logcli here because logcli operations.\n</think>\nlogcli query '{job=\"nginx\"}'"
+  },
+  {
+    "instruction": "List available labels in Loki",
+    "output": "<think>\nWe should list available labels in Loki.\nI'd use logcli for this — logcli operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli labels"
+  },
+  {
+    "instruction": "Query logs from last hour",
+    "output": "<think>\nSo we need to query logs from last hour.\nThe tool for this job is logcli — logcli operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nlogcli query '{app=\"web\"}' --since=1h"
+  },
+  {
+    "instruction": "Start promtail with config file",
+    "output": "<think>\nAlright, we need to start promtail with config file.\nHere's how I'd approach this.\npromtail is what we need — promtail operations.\n</think>\npromtail -config.file=/etc/promtail/config.yml"
+  },
+  {
+    "instruction": "Validate promtail config",
+    "output": "<think>\nThe goal is to validate promtail config.\nThe tool for this job is promtail — promtail operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\npromtail -config.file=/etc/promtail/config.yml -check-syntax"
+  },
+  {
+    "instruction": "Tail logs via promtail to stdout",
+    "output": "<think>\nWe should tail logs via promtail to stdout.\nHere's how I'd approach this.\nI'll reach for promtail here because promtail operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\npromtail -config.file=/etc/promtail/config.yml -stdout"
+  },
+  {
+    "instruction": "View promtail version",
+    "output": "<think>\nWe should view promtail version.\nLet me reason through this.\npromtail is what we need — promtail operations.\nWhy --version? Show version info. this controls how the output is formatted.\n</think>\npromtail --version"
+  },
+  {
+    "instruction": "Add scrape config for nginx logs",
+    "output": "<think>\nThe user wants to add scrape config for nginx logs.\nHere's how I'd approach this.\ncat is what we need — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: nginx\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: nginx\n      __path__: /var/log/nginx/access.log\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage for regex parsing",
+    "output": "<think>\nSo we need to add pipeline stage for regex parsing.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: '^(?P<ip>\\S+) (?P<ident>\\S+) (?P<auth>\\S+) \\[(?P<timestamp>[^\\]]+)\\] \"(?P<method>\\S+) (?P<path>\\S+) (?P<protocol>[^\"]+)\" (?P<status>\\d+) (?P<size>\\d+)'\nEOF"
+  },
+  {
+    "instruction": "Add json pipeline stage",
+    "output": "<think>\nSo we need to add json pipeline stage.\nLet me reason through this.\ncat is what we need — cat operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- json:\n    expressions:\n      level: level\n      message: message\n      timestamp: timestamp\nEOF"
+  },
+  {
+    "instruction": "Add timestamp label from log line",
+    "output": "<think>\nThe goal is to add timestamp label from log line.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: '^(?P<timestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})'\n- timestamp:\n    source: timestamp\n    format: RFC3339Nano\nEOF"
+  },
+  {
+    "instruction": "Add static label in pipeline",
+    "output": "<think>\nAlright, we need to add static label in pipeline.\nI'd use cat for this — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- labels:\n    app: myapp\n    env: production\nEOF"
+  },
+  {
+    "instruction": "Drop log lines matching pattern",
+    "output": "<think>\nThis is asking us to drop log lines matching pattern.\nI'll reach for cat here because cat operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- drop:\n    expression: 'healthcheck|heartbeat'\nEOF"
+  },
+  {
+    "instruction": "Add multiline stage for stack traces",
+    "output": "<think>\nSo we need to add multiline stage for stack traces.\nI'll reach for cat here because cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- multiline:\n    firstline: '^\\[\\d{4}-\\d{2}-\\d{2}'\nEOF"
+  },
+  {
+    "instruction": "Query Loki for error logs",
+    "output": "<think>\nWe're being asked to query Loki for error logs.\nI'd use logcli for this — logcli operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\nlogcli query '{job=\"nginx\"} |= \"error\"'"
+  },
+  {
+    "instruction": "Query Loki with label matchers",
+    "output": "<think>\nAlright, we need to query Loki with label matchers.\nI'll reach for logcli here because logcli operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nlogcli query '{app=\"web\", env=\"production\"}'"
+  },
+  {
+    "instruction": "Get label values for a specific label",
+    "output": "<think>\nSo the request is to get label values for a specific label.\nThis calls for logcli. Logcli operations.\n</think>\nlogcli labels job"
+  },
+  {
+    "instruction": "Query Loki from specific time range",
+    "output": "<think>\nWe're being asked to query Loki from specific time range.\nFirst, let me understand what's needed here.\nThe tool for this job is logcli — logcli operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli query '{job=\"syslog\"}' --from=2025-01-01T00:00:00Z --to=2025-01-02T00:00:00Z"
+  },
+  {
+    "instruction": "Output log query results as JSON",
+    "output": "<think>\nThe goal is to output log query results as JSON.\nFor this, logcli is the right tool — logcli operations.\nThe -o flag means output to file, OR operator in find, which matters here because important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nlogcli query '{job=\"nginx\"}' -o json"
+  },
+  {
+    "instruction": "Query logs with raw logql filter",
+    "output": "<think>\nThe goal is to query logs with raw logql filter.\nThe tool for this job is logcli — logcli operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nlogcli query 'rate({job=\"nginx\"}[5m])'"
+  }
+]

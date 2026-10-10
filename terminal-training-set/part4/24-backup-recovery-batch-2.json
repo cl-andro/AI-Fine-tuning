@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an ext4 filesystem dump of /dev/sda1",
+    "output": "<think>\nThe task requires us to create an ext4 filesystem dump of /dev/sda1.\nBest tool here is dump — dump operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ndump -0uf /backup/sda1.dump /dev/sda1"
+  },
+  {
+    "instruction": "Restore an ext4 filesystem from a dump file",
+    "output": "<think>\nThe task requires us to restore an ext4 filesystem from a dump file.\nBest tool here is restore — restore operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nrestore -rf /backup/sda1.dump"
+  },
+  {
+    "instruction": "Save filesystem to an fsarchiver archive",
+    "output": "<think>\nThe goal is to save filesystem to an fsarchiver archive.\nLet me consider what makes sense here.\nThis calls for fsarchiver. Fsarchiver operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nfsarchiver savefs /backup/sda1.fsa /dev/sda1"
+  },
+  {
+    "instruction": "Restore a filesystem from an fsarchiver archive",
+    "output": "<think>\nThis is asking us to restore a filesystem from an fsarchiver archive.\nBest tool here is fsarchiver — fsarchiver operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nfsarchiver restfs /backup/sda1.fsa id=0,dest=/dev/sda1"
+  },
+  {
+    "instruction": "Save a partition with partimage",
+    "output": "<think>\nNeed to save a partition with partimage.\nLet me consider what makes sense here.\nFor this, partimage is the right tool — partimage operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\npartimage save /dev/sda1 /backup/sda1.img"
+  },
+  {
+    "instruction": "Clone a partition with partclone.ext4",
+    "output": "<think>\nThe user wants to clone a partition with partclone.ext4.\nFor this, partclone.ext4 is the right tool — partclone.ext4 operations.\nThe -c flag handles count or create. Important because needed for this specific use case.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\n</think>\npartclone.ext4 -c -s /dev/sda1 -o /backup/sda1.pcl"
+  },
+  {
+    "instruction": "Start Clonezilla in ocs mode to save disk",
+    "output": "<think>\nAlright, we need to start Clonezilla in ocs mode to save disk.\nLet me break this down.\nBest tool here is ocs-sr — ocs-sr operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nocs-sr -q2 -j2 -z1p -i 4096 -sfsck -sc /dev/sda /backup/sda-image"
+  },
+  {
+    "instruction": "Create a Mondo archive of the system",
+    "output": "<think>\nWe're being asked to create a Mondo archive of the system.\nI'll reach for mondoarchive here because mondoarchive operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmondoarchive -Oi -L -N -d /backup -E /tmp -s 4096m -p mybackup"
+  },
+  {
+    "instruction": "Sync /home/user to S3 bucket with s3cmd",
+    "output": "<think>\nWe should sync /home/user to S3 bucket with s3cmd.\nHere's how I'd approach this.\nThis calls for s3cmd. S3cmd operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ns3cmd sync /home/user/ s3://my-backup-bucket/home/"
+  },
+  {
+    "instruction": "Sync a local dir to a remote rclone destination",
+    "output": "<think>\nSo the request is to sync a local dir to a remote rclone destination.\nLet me break this down.\nThe tool for this job is rclone — cloud storage sync.\nA single command handles this cleanly — no need to overcomplicate it.\nLike rsync — --dry-run first. Cloud transfers might incur costs for large syncs.\nAfter running, I'll confirm the result looks right.\n</think>\nrclone sync /home/user remote:backup-home"
+  },
+  {
+    "instruction": "Copy a file to rclone remote",
+    "output": "<think>\nThis is asking us to copy a file to rclone remote.\nFirst, let me understand what's needed here.\nrclone is what we need — cloud storage sync.\nLike rsync — --dry-run first. Cloud transfers might incur costs for large syncs.\nI'll check the output to make sure it did what we expected.\n</think>\nrclone copy /home/user/file.txt remote:backup-home"
+  },
+  {
+    "instruction": "Dump a PostgreSQL database named mydb",
+    "output": "<think>\nThe task requires us to dump a PostgreSQL database named mydb.\nThis calls for pg_dump. PostgreSQL database backup.\nOne command does the job. Simple is better.\n</think>\npg_dump mydb > /backup/mydb.sql"
+  },
+  {
+    "instruction": "Restore a PostgreSQL database from dump",
+    "output": "<think>\nThe task requires us to restore a PostgreSQL database from dump.\nLet me break this down.\nBest tool here is psql — PostgreSQL database queries.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\npsql mydb < /backup/mydb.sql"
+  },
+  {
+    "instruction": "Dump all MySQL databases",
+    "output": "<think>\nNeed to dump all MySQL databases.\nLet me reason through this.\nmysqldump is what we need — MySQL database backup.\nA single command handles this cleanly — no need to overcomplicate it.\nUse --single-transaction for InnoDB to get a consistent snapshot without locking.\nQuick verification after execution to be safe.\n</think>\nmysqldump --all-databases > /backup/all-dbs.sql"
+  },
+  {
+    "instruction": "Dump a MongoDB database",
+    "output": "<think>\nNeed to dump a MongoDB database.\nLet me think through this step by step.\nThe tool for this job is mongodump — mongodump operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmongodump --db mydb --out /backup/mongodb"
+  },
+  {
+    "instruction": "Create a daily cron backup script with rotation",
+    "output": "<think>\nSo the request is to create a daily cron backup script with rotation.\nFirst, let me understand what's needed here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\n0 2 * * * /usr/local/bin/backup.sh && find /backup -type f -mtime +30 -delete"
+  },
+  {
+    "instruction": "Use rsync with --link-dest for hardlink backups",
+    "output": "<think>\nThis is asking us to use rsync with --link-dest for hardlink backups.\nLet me consider what makes sense here.\nI'll reach for rsync here because efficient file synchronization.\nThe -a flag means AND operator in find, which matters here because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -a --link-dest=/backup/previous /home/user/ /backup/current/"
+  },
+  {
+    "instruction": "Use rsync with --backup-dir to save changed files",
+    "output": "<think>\nThe goal is to use rsync with --backup-dir to save changed files.\nLet me think about the best approach.\nFor this, rsync is the right tool — efficient file synchronization.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nAfter running, I'll confirm the result looks right.\n</think>\nrsync -a --backup --backup-dir=/backup/changed /home/user/ /backup/current/"
+  },
+  {
+    "instruction": "Create Borg backup with zstd compression",
+    "output": "<think>\nAlright, we need to create Borg backup with zstd compression.\nLet me think through this step by step.\nI'll reach for borg here because deduplicating backups.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nborg create --compression zstd,3 /backup/borg::home-{now:%Y-%m-%d} /home/user"
+  },
+  {
+    "instruction": "Backup to Restic with S3 backend",
+    "output": "<think>\nWe should backup to Restic with S3 backend.\nFirst, let me understand what's needed here.\nThe tool for this job is restic — encrypted backups.\nWhy -r? Recursive operation (descend into subdirectories). without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrestic -r s3:s3.amazonaws.com/bucket backup /home/user"
+  },
+  {
+    "instruction": "Remove rdiff-backup increments older than 30 days",
+    "output": "<think>\nNeed to remove rdiff-backup increments older than 30 days.\nLet me consider what makes sense here.\nBest tool here is rdiff-backup — rdiff-backup operations.\n</think>\nrdiff-backup --remove-older-than 30D /backup/etc"
+  },
+  {
+    "instruction": "Perform a dry run of rsync transfer",
+    "output": "<think>\nNeed to perform a dry run of rsync transfer.\nThis calls for rsync. Efficient file synchronization.\nThe --dry-run flag means simulate without making changes, which matters here because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\n</think>\nrsync -avh --dry-run /home/user/ /backup/data/"
+  },
+  {
+    "instruction": "List files in a Borg archive with paths",
+    "output": "<think>\nThis is asking us to list files in a Borg archive with paths.\nborg is what we need — deduplicating backups.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nborg list /backup/borg::home-2026-07-20 --format '{path}{NL}'"
+  },
+  {
+    "instruction": "Create an encrypted GnuPG duplicity backup",
+    "output": "<think>\nThe user wants to create an encrypted GnuPG duplicity backup.\nLet me reason through this.\nThe tool for this job is duplicity — duplicity operations.\n</think>\nduplicity --encrypt-key KEYID /home/user file:///backup/duplicity"
+  },
+  {
+    "instruction": "Restore a duplicity backup to a specific date",
+    "output": "<think>\nThe goal is to restore a duplicity backup to a specific date.\nLet me think through this step by step.\nThe tool for this job is duplicity — duplicity operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nduplicity restore --time 2026-07-20 file:///backup/duplicity /tmp/restore"
+  }
+]

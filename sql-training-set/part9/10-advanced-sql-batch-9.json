@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nPivot a column to present values as columns",
+    "output": "SELECT * FROM (SELECT cateredcol FROM events) src PIVOT (COUNT(*) FOR cateredcol IN (1, 2, 3));"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nUnpivot columns back to rows",
+    "output": "SELECT * FROM events UNPIVOT (val FOR keycol IN (a, b, c));"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nUse CASE to map a numeric to a label",
+    "output": "SELECT *, CASE WHEN col > 100 THEN 'high' WHEN col > 50 THEN 'mid' ELSE 'low' END AS bucket FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nExtract a value from a JSON column",
+    "output": "SELECT events.*, attrs ->> 'color' AS color FROM events WHERE attrs ->> 'color' = 'red';"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nFull-text search against a text column",
+    "output": "SELECT * FROM events WHERE to_tsvector('english', col) @@ to_tsquery('english', 'term');"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nRegex find rows matching a pattern",
+    "output": "SELECT * FROM events WHERE col ~ '^[A-Z]2[0-9]+$';"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nCoalesce to replace null with a fallback",
+    "output": "SELECT events.*, COALESCE(col, 'UNKNOWN') AS col_filled FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nPrevent division by zero using NULLIF",
+    "output": "SELECT events.*, price / NULLIF(discount, 0) AS effective FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nUpsert with a single statement",
+    "output": "INSERT INTO events (id, col) VALUES (1, 'x') ON CONFLICT (id) DO UPDATE SET col = EXCLUDED.col;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nSelf join to compare rows to their previous one",
+    "output": "SELECT a.* FROM events a JOIN events b ON a.id = b.id + 1;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nRecursive query expanding a tree",
+    "output": "WITH RECURSIVE t AS (SELECT id FROM events WHERE parent_id IS NULL UNION ALL SELECT c.id FROM events c JOIN t ON c.parent_id = t.id) SELECT * FROM t;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nGrouped string aggregation combining text values",
+    "output": "SELECT grp, STRING_AGG(col, ', ') FROM events GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nWindow rank used to select a top row",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY col DESC) rn FROM events) x WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nDate truncation to bucket into weeks",
+    "output": "SELECT date_trunc('week', dt), COUNT(*) FROM events GROUP BY date_trunc('week', dt);"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nGREATEST/LEAST to clamp a value",
+    "output": "SELECT *, GREATEST(col, 0) AS clamped FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nUse EXTRACT to pull the year from a date",
+    "output": "SELECT *, EXTRACT(YEAR FROM dt) AS yr FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nArray unnest to flatten into rows",
+    "output": "SELECT events.*, unnest(tags) AS tag FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nGaps-and-islands via window differences",
+    "output": "SELECT *, SUM(new_grp) OVER (ORDER BY dt) AS grp FROM (SELECT *, CASE WHEN LAG(dt) OVER (ORDER BY dt) IS NULL OR dt - LAG(dt) OVER (ORDER BY dt) > INTERVAL '1 day' THEN 1 ELSE 0 END AS new_grp FROM events) x;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nCondensation of a table into delimited string",
+    "output": "SELECT STRING_AGG(DISTINCT grp, '|') FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nCompute a running percentile",
+    "output": "SELECT col, PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY col) OVER () FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nBackfill missing values with LAST_VALUE ignoring nulls",
+    "output": "SELECT *, COALESCE(col, LAST_VALUE(col IGNORE NULLS) OVER (ORDER BY dt)) FROM events;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nGenerate a date series joined to data",
+    "output": "SELECT gs, COUNT(t.id) FROM generate_series('2024-01-01','2024-01-10','1 day') gs LEFT JOIN events t ON t.dt::date = gs GROUP BY gs;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nTranslate / pivot using FILTER clause",
+    "output": "SELECT grp, COUNT(*) FILTER (WHERE col = 'x') AS xs, COUNT(*) FILTER (WHERE col = 'y') AS ys FROM events GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nMulti-column UNPIVOT style via CROSS JOIN LATERAL",
+    "output": "SELECT t.*, k.v FROM events t CROSS JOIN LATERAL (VALUES ('col1',col1),('col2',col2)) AS k(k,v);"
+  },
+  {
+    "instruction": "Schema: events(id, player_id, type, ts)\nWindow difference between partition first and current",
+    "output": "SELECT *, col - FIRST_VALUE(col) OVER (PARTITION BY grp ORDER BY dt) AS delta FROM events;"
+  }
+]

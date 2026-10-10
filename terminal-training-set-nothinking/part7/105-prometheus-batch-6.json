@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Snapshot Prometheus TSDB via API",
+    "output": "curl -X POST 'http://localhost:9090/api/v1/admin/tsdb/snapshot'"
+  },
+  {
+    "instruction": "Delete series via Prometheus admin API",
+    "output": "curl -X POST -g 'http://localhost:9090/api/v1/admin/tsdb/delete_series?match[]=up{job=\"node\"}'"
+  },
+  {
+    "instruction": "Clean tombstones in Prometheus TSDB",
+    "output": "curl -X POST 'http://localhost:9090/api/v1/admin/tsdb/clean_tombstones'"
+  },
+  {
+    "instruction": "Start Prometheus with retention size",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.retention.size 100GB"
+  },
+  {
+    "instruction": "Start Prometheus with WAL compression",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.wal-compression"
+  },
+  {
+    "instruction": "Start Prometheus without TSDB locks",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.no-lockfile"
+  },
+  {
+    "instruction": "Start Prometheus with max block duration",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.max-block-duration 2h"
+  },
+  {
+    "instruction": "Start Prometheus with min block duration",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.min-block-duration 30m"
+  },
+  {
+    "instruction": "Install node_exporter as a service",
+    "output": "curl -L https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz | tar xz && sudo ./node_exporter-1.8.2.linux-amd64/node_exporter"
+  },
+  {
+    "instruction": "Run node_exporter with disabled collectors",
+    "output": "node_exporter --no-collector.mdadm --no-collector.zfs"
+  },
+  {
+    "instruction": "Run node_exporter with specific collectors",
+    "output": "node_exporter --collector.diskstats --collector.filesystem --collector.cpu --collector.network --collector.meminfo"
+  },
+  {
+    "instruction": "Run node_exporter with custom listen port",
+    "output": "node_exporter --web.listen-address :9101"
+  },
+  {
+    "instruction": "Run node_exporter with custom path prefix",
+    "output": "node_exporter --web.telemetry-path /node-metrics"
+  },
+  {
+    "instruction": "Run node_exporter with rootfs for disk stats",
+    "output": "node_exporter --path.rootfs /host"
+  },
+  {
+    "instruction": "Run node_exporter with systemd collector",
+    "output": "node_exporter --collector.systemd --collector.systemd.unit-whitelist=\"(docker|sshd|nginx)\\.service\""
+  },
+  {
+    "instruction": "Run node_exporter with textfile collector",
+    "output": "node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile"
+  },
+  {
+    "instruction": "Install blackbox_exporter",
+    "output": "curl -L https://github.com/prometheus/blackbox_exporter/releases/download/v0.25.0/blackbox_exporter-0.25.0.linux-amd64.tar.gz | tar xz && ./blackbox_exporter-0.25.0.linux-amd64/blackbox_exporter"
+  },
+  {
+    "instruction": "Scrape blackbox_exporter for HTTP probe",
+    "output": "echo 'scrape_configs: - job_name: http_probe params: module: [http_2xx] target: [\"https://example.com\"] static_configs: - targets: - blackbox:9115' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure blackbox ICMP probe module",
+    "output": "echo 'modules: icmp: prober: icmp timeout: 5s icmp: preferred_ip_protocol: ip4' > blackbox.yml"
+  },
+  {
+    "instruction": "Configure blackbox TCP probe module",
+    "output": "echo 'modules: tcp_connect: prober: tcp timeout: 5s tcp: query_response: []' >> blackbox.yml"
+  },
+  {
+    "instruction": "Install Prometheus in Docker",
+    "output": "docker run -d --name prometheus -p 9090:9090 -v $PWD/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus"
+  },
+  {
+    "instruction": "Install node_exporter in Docker",
+    "output": "docker run -d --name node_exporter -p 9100:9100 -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro prom/node-exporter --path.rootfs /host"
+  },
+  {
+    "instruction": "Install Alertmanager in Docker",
+    "output": "docker run -d --name alertmanager -p 9093:9093 -v $PWD/alertmanager.yml:/etc/alertmanager/alertmanager.yml prom/alertmanager"
+  },
+  {
+    "instruction": "Upgrade Prometheus by replacing binary",
+    "output": "curl -L https://github.com/prometheus/prometheus/releases/download/v2.54.0/prometheus-2.54.0.linux-amd64.tar.gz | tar xz && sudo cp prometheus-2.54.0.linux-amd64/prometheus /usr/local/bin/ && sudo systemctl restart prometheus"
+  },
+  {
+    "instruction": "Start Prometheus in debug logging mode",
+    "output": "prometheus --config.file prometheus.yml --log.level debug"
+  }
+]

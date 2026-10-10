@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Enable Apache mod_dav on Debian 12 and verify",
+    "output": "<think>\nSo the request is to enable Apache mod_dav on Debian 12 and verify.\na2enmod is what we need — a2enmod operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo a2enmod dav dav_fs && apache2ctl -M | grep -i dav"
+  },
+  {
+    "instruction": "Configure Apache DAVLockDB directory",
+    "output": "<think>\nThis is asking us to configure Apache DAVLockDB directory.\nLet me break this down.\nI'd use mkdir for this — directory creation.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mkdir -p /var/www/webdav/locks && sudo chown www-data:www-data /var/www/webdav/locks && echo 'DAVLockDB /var/www/webdav/locks/DAVLock' | sudo tee /etc/apache2/conf-available/dav-lockdb.conf && sudo a2enconf dav-lockdb && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Set digest auth realm for Apache WebDAV",
+    "output": "<think>\nNeed to set digest auth realm for Apache WebDAV.\nLet me think about the best approach.\nI'm using -a for AND operator in find — important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'AuthName \"Secure WebDAV\"' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Create additional htdigest user for WebDAV",
+    "output": "<think>\nSo the request is to create additional htdigest user for WebDAV.\nLet me think about the best approach.\nFor this, htdigest is the right tool — htdigest operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo htdigest /etc/apache2/webdav.passwd 'Secure WebDAV' bob"
+  },
+  {
+    "instruction": "Verify digest auth file contents",
+    "output": "<think>\nSo the request is to verify digest auth file contents.\nThe tool for this job is cat — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncat /etc/apache2/webdav.passwd"
+  },
+  {
+    "instruction": "Increase WebDAV upload limit in Apache",
+    "output": "<think>\nThe user wants to increase WebDAV upload limit in Apache.\nI've added -a to AND operator in find — important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'LimitRequestBody 2147483648' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Check WebDAV directory listing in Apache",
+    "output": "<think>\nWe're being asked to check WebDAV directory listing in Apache.\nWhy -a? AND operator in find. important to get the expected behavior.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'Options +Indexes' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Disable directory listing for WebDAV in Apache",
+    "output": "<think>\nWe should disable directory listing for WebDAV in Apache.\nThe -a flag handles AND operator in find. Important because this controls how the output is formatted.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'Options -Indexes' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Set WebDAV directory to require SSL in Apache",
+    "output": "<think>\nThis is asking us to set WebDAV directory to require SSL in Apache.\nLet me reason through this.\nWhy -a? AND operator in find. important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 'SSLRequireSSL' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Log WebDAV requests in Apache to separate file",
+    "output": "<think>\nThe user wants to log WebDAV requests in Apache to separate file.\nHere's how I'd approach this.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'SetEnvIf Request_URI \"^/webdav\" webdavlog\nCustomLog /var/log/apache2/webdav.log combined env=webdavlog' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Check WebDAV logs in Apache",
+    "output": "<think>\nThe user wants to check WebDAV logs in Apache.\nThe tool for this job is tail — tail operations.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo tail -f /var/log/apache2/webdav.log"
+  },
+  {
+    "instruction": "Block specific IP from accessing WebDAV",
+    "output": "<think>\nThe user wants to block specific IP from accessing WebDAV.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '<Location /webdav>\n    Require ip 192.168.1.0/24\n</Location>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Restrict WebDAV to authenticated users only",
+    "output": "<think>\nThe goal is to restrict WebDAV to authenticated users only.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho '<Location /webdav>\n    Require valid-user\n</Location>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Limit WebDAV access to specific HTTP methods",
+    "output": "<think>\nSo we need to limit WebDAV access to specific HTTP methods.\nHere's how I'd approach this.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\necho '<LimitExcept GET PROPFIND OPTIONS>\n    Require valid-user\n</LimitExcept>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Run git clone over WebDAV with git-http-backend",
+    "output": "<think>\nThis is asking us to run git clone over WebDAV with git-http-backend.\nLet me think through this step by step.\nI'd use apt for this — apt operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo apt install git && sudo a2enmod cgi && echo 'ScriptAlias /git /usr/lib/git-core/git-http-backend' | sudo tee /etc/apache2/conf-available/git-dav.conf && sudo a2enconf git-dav && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Test WebDAV with PROPFIND and check response",
+    "output": "<think>\nThis is asking us to test WebDAV with PROPFIND and check response.\nFor this, curl is the right tool — making HTTP requests.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncurl -X PROPFIND http://localhost/webdav/ --user alice:secretpass -H 'Depth: 0' -w '\\nHTTP Status: %{http_code}\\n'"
+  },
+  {
+    "instruction": "Use httpie for WebDAV MKCOL",
+    "output": "<think>\nNeed to use httpie for WebDAV MKCOL.\nHere's how I'd approach this.\nThis calls for http. Http operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nhttp MKCOL http://localhost/webdav/newdir --auth alice:secretpass"
+  },
+  {
+    "instruction": "Use httpie for WebDAV PUT",
+    "output": "<think>\nSo the request is to use httpie for WebDAV PUT.\nLet me break this down.\nI'd use http for this — http operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nhttp PUT http://localhost/webdav/test.md @file.md --auth alice:secretpass"
+  },
+  {
+    "instruction": "Use httpie for WebDAV DELETE",
+    "output": "<think>\nThe task requires us to use httpie for WebDAV DELETE.\nFirst, let me understand what's needed here.\nhttp is what we need — http operations.\nAfter running, I'll confirm the result looks right.\n</think>\nhttp DELETE http://localhost/webdav/unwanted.md --auth alice:secretpass"
+  },
+  {
+    "instruction": "Use httpie for WebDAV PROPFIND",
+    "output": "<think>\nWe should use httpie for WebDAV PROPFIND.\nLet me think through this step by step.\nBest tool here is http — http operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nhttp PROPFIND http://localhost/webdav/ Depth:1 --auth alice:secretpass"
+  }
+]

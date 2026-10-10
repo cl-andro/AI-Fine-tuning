@@ -1,0 +1,23 @@
+[
+  {"instruction": "Install GoAccess from official repo", "output": "apt-get install goaccess"},
+  {"instruction": "Build GoAccess from source", "output": "wget https://tar.goaccess.io/goaccess-1.9.3.tar.gz && tar -xzf goaccess-1.9.3.tar.gz && cd goaccess-1.9.3 && ./configure --enable-utf8 --enable-geoip=mmdb && make && make install"},
+  {"instruction": "Download GeoIP database for GoAccess", "output": "wget https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb -O /usr/share/GeoIP/GeoLite2-Country.mmdb"},
+  {"instruction": "Configure GoAccess with GeoIP support", "output": "goaccess access.log --geoip-database=/usr/share/GeoIP/GeoLite2-City.mmdb -a -o report.html"},
+  {"instruction": "Create systemd service for GoAccess dashboard", "output": "cat > /etc/systemd/system/goaccess-dashboard.service << 'EOF'\n[Unit]\nDescription=GoAccess Real-time Dashboard\n[Service]\nExecStart=/usr/bin/goaccess /var/log/nginx/access.log --real-time-html --daemonize -o /var/www/html/report.html\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF"},
+  {"instruction": "Create Nginx config to serve GoAccess report", "output": "cat > /etc/nginx/sites-available/goaccess-report << 'EOF'\nserver {\n    listen 8080;\n    root /var/www/html;\n    index report.html;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}\nEOF"},
+  {"instruction": "Schedule daily GoAccess report generation", "output": "echo '0 6 * * * root /usr/bin/goaccess /var/log/nginx/access.log -a -o /var/www/html/report.html' > /etc/cron.d/goaccess-daily"},
+  {"instruction": "Create logrotate postrotate for fresh report", "output": "cat > /etc/logrotate.d/goaccess-postrotate << 'EOF'\n/var/log/nginx/access.log {\n    daily\n    rotate 7\n    postrotate\n        /usr/bin/goaccess /var/log/nginx/access.log -a -o /var/www/html/report.html\n    endscript\n}\nEOF"},
+  {"instruction": "Check GoAccess version", "output": "goaccess --version"},
+  {"instruction": "View GoAccess help page", "output": "goaccess --help"},
+  {"instruction": "List all available log format options", "output": "goaccess --log-format=help"},
+  {"instruction": "Show GoAccess configuration options", "output": "goaccess --config-help"},
+  {"instruction": "Test log format against sample line", "output": "goaccess --log-format=COMBINED --log-test=1 access.log 2>&1 | head -20"},
+  {"instruction": "Validate log parsing with debug", "output": "goaccess access.log --invalid-requests --debug 2>&1 | tail -50"},
+  {"instruction": "Check if log format matches", "output": "goaccess access.log --log-format=COMBINED --debug 2>&1 | grep -i matched"},
+  {"instruction": "Show date/time parsing details", "output": "goaccess access.log --debug-time 2>&1 | head -30"},
+  {"instruction": "Count total lines in log file", "output": "wc -l access.log"},
+  {"instruction": "Check log file encoding type", "output": "file access.log"},
+  {"instruction": "View sample log lines for format detection", "output": "head -5 access.log"},
+  {"instruction": "View last 10 log entries", "output": "tail -10 access.log"},
+  {"instruction": "Filter log file for GoAccess analysis", "output": "grep -v '127.0.0.1' access.log > filtered.log && goaccess filtered.log -a -o report.html"}
+]

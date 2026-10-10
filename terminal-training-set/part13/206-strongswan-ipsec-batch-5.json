@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to set up IPsec site-to-site with strongSwan",
+    "output": "<think>\nThe goal is to set up IPsec site-to-site with strongSwan.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  site-to-site {\n    version = 2\n    local_addrs = 192.168.1.1\n    remote_addrs = 203.0.113.10\n    local {\n      auth = psk\n      id = site1\n    }\n    remote {\n      auth = psk\n      id = site2\n    }\n    children {\n      lan {\n        local_ts = 10.0.1.0/24\n        remote_ts = 10.0.2.0/24\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up IPsec transport mode (host-to-host)",
+    "output": "<think>\nSo we need to set up IPsec transport mode (host-to-host).\nLet me break this down.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'connections {\n  transport {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    local {\n      auth = psk\n    }\n    remote {\n      auth = psk\n    }\n    children {\n      host {\n        mode = transport\n        local_ts = dynamic\n        remote_ts = dynamic\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IPsec with multiple remotes",
+    "output": "<think>\nThe task requires us to configure IPsec with multiple remotes.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'connections {\n  multi-remote {\n    version = 2\n    local_addrs = 192.168.1.10\n    remote_addrs = 203.0.113.10, 203.0.113.11\n    local {\n      auth = pubkey\n      certs = server.crt\n    }\n    remote {\n      auth = pubkey\n    }\n    children {\n      net {}\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up IPsec with IPv4 and IPv6",
+    "output": "<think>\nThe user wants to set up IPsec with IPv4 and IPv6.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'connections {\n  dual-stack {\n    local_addrs = 192.168.1.10, 2001:db8::1\n    remote_addrs = 203.0.113.10, 2001:db8:2::1\n    version = 2\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to auto-connect IPsec at boot",
+    "output": "<think>\nThe goal is to auto-connect IPsec at boot.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'connections {\n  auto-conn {\n    startup = start\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set IPsec connection startup policy",
+    "output": "<think>\nSo the request is to set IPsec connection startup policy.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  my-connection {\n    startup = route\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set up IPsec as a responder only",
+    "output": "<think>\nAlright, we need to set up IPsec as a responder only.\nLet me reason through this.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'connections {\n  responder {\n    startup = trap\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IPsec with firewall rules",
+    "output": "<think>\nThe goal is to configure IPsec with firewall rules.\nLet me reason through this.\nThis calls for iptables. Firewall management.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -p udp --dport 500 -j ACCEPT && iptables -A INPUT -p udp --dport 4500 -j ACCEPT && iptables -A INPUT -p esp -j ACCEPT"
+  },
+  {
+    "instruction": "How to enable IP forwarding for IPsec",
+    "output": "<think>\nSo we need to enable IP forwarding for IPsec.\nFor this, sysctl is the right tool — kernel parameter tuning.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.ipv4.ip_forward=1"
+  },
+  {
+    "instruction": "How to set up iptables masquerade for IPsec",
+    "output": "<think>\nWe should set up iptables masquerade for IPsec.\nThe tool for this job is iptables — firewall management.\nI've added -t to sort by modification time — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t nat -A POSTROUTING -s 10.5.0.0/24 -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "How to allow IPsec traffic through firewall",
+    "output": "<think>\nSo the request is to allow IPsec traffic through firewall.\nLet me think about the best approach.\nThe tool for this job is ufw — ufw operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nufw allow 500/udp && ufw allow 4500/udp && ufw allow esp"
+  },
+  {
+    "instruction": "How to check IPsec firewall rules",
+    "output": "<think>\nSo the request is to check IPsec firewall rules.\nLet me think about the best approach.\nI'd use iptables for this — firewall management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -L -n | grep 500"
+  },
+  {
+    "instruction": "How to show IPsec policies in the kernel",
+    "output": "<think>\nWe're being asked to show IPsec policies in the kernel.\nBest tool here is ip — network interface configuration.\nAfter running, confirm it worked as expected before moving on.\n</think>\nip xfrm policy show"
+  },
+  {
+    "instruction": "How to show IPsec SAs in kernel",
+    "output": "<think>\nWe should show IPsec SAs in kernel.\nLet me think about the best approach.\nBest tool here is ip — network interface configuration.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nip xfrm state show"
+  },
+  {
+    "instruction": "How to flush kernel IPsec policies",
+    "output": "<think>\nThis is asking us to flush kernel IPsec policies.\nFor this, ip is the right tool — network interface configuration.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nip xfrm policy flush"
+  },
+  {
+    "instruction": "How to flush kernel IPsec SAs",
+    "output": "<think>\nNeed to flush kernel IPsec SAs.\nThis calls for ip. Network interface configuration.\nOne command does the job. Simple is better.\n</think>\nip xfrm state flush"
+  },
+  {
+    "instruction": "How to show IPsec route table",
+    "output": "<think>\nWe should show IPsec route table.\nI'd use ip for this — network interface configuration.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nip route show table 220"
+  },
+  {
+    "instruction": "How to check IPsec tunnel interface",
+    "output": "<think>\nNeed to check IPsec tunnel interface.\nI'd use ip for this — network interface configuration.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nip link show type xfrm"
+  },
+  {
+    "instruction": "How to show XFRM interface statistics",
+    "output": "<think>\nSo we need to show XFRM interface statistics.\nHere's how I'd approach this.\nFor this, ip is the right tool — network interface configuration.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\n</think>\nip -s link show xfrm0"
+  },
+  {
+    "instruction": "How to add XFRM interface for IPsec",
+    "output": "<think>\nWe're being asked to add XFRM interface for IPsec.\nFirst, let me understand what's needed here.\nip is what we need — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nip link add xfrm0 type xfrm dev eth0 if_id 42 && ip link set xfrm0 up"
+  },
+  {
+    "instruction": "How to use XFRM interfaces in strongSwan",
+    "output": "<think>\nWe're being asked to use XFRM interfaces in strongSwan.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'connections {\n  xfrm {\n    if_id = 42\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to mark IPsec traffic with fwmark",
+    "output": "<think>\nThis is asking us to mark IPsec traffic with fwmark.\nLet me think through this step by step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  my-connection {\n    mark_in = 42\n    mark_out = 42\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set IPsec priority",
+    "output": "<think>\nWe're being asked to set IPsec priority.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'connections {\n  my-connection {\n    priority = 1000\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to mediate IPsec SAs with high priority",
+    "output": "<think>\nSo we need to mediate IPsec SAs with high priority.\nThe tool for this job is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nip xfrm policy add src 10.0.0.0/24 dst 10.0.1.0/24 dir out priority 1000 ptype main action allow tmpl src 192.168.1.10 dst 192.168.2.10 proto esp reqid 1 mode tunnel"
+  },
+  {
+    "instruction": "How to see IPsec per-connection stats",
+    "output": "<think>\nWe're being asked to see IPsec per-connection stats.\nLet me think through this step by step.\nThis calls for swanctl. Swanctl operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\nswanctl --list-sa | grep -E 'bytes|packets'"
+  }
+]

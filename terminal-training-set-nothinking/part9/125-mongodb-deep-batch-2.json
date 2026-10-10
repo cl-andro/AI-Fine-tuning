@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a compound index",
+    "output": "mongosh --eval \"db.orders.createIndex({userId: 1, createdAt: -1})\""
+  },
+  {
+    "instruction": "Create a text search index",
+    "output": "mongosh --eval \"db.articles.createIndex({title: 'text', content: 'text'}, {weights: {title: 10, content: 5}})\""
+  },
+  {
+    "instruction": "Create a TTL index that expires after 24h",
+    "output": "mongosh --eval \"db.sessions.createIndex({createdAt: 1}, {expireAfterSeconds: 86400})\""
+  },
+  {
+    "instruction": "Create a hashed index",
+    "output": "mongosh --eval \"db.users.createIndex({email: 'hashed'})\""
+  },
+  {
+    "instruction": "Create a 2dsphere geospatial index",
+    "output": "mongosh --eval \"db.places.createIndex({location: '2dsphere'})\""
+  },
+  {
+    "instruction": "List all indexes for a collection",
+    "output": "mongosh --eval \"db.users.getIndexes()\""
+  },
+  {
+    "instruction": "Drop a single index",
+    "output": "mongosh --eval \"db.users.dropIndex('email_1')\""
+  },
+  {
+    "instruction": "Drop multiple indexes at once",
+    "output": "mongosh --eval \"db.users.dropIndexes(['idx_field1', 'idx_field2'])\""
+  },
+  {
+    "instruction": "Aggregate with group, sort, and project",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$group: {_id: '\\$status', total: {\\$sum: '\\$amount'}, count: {\\$sum: 1}}}, {\\$sort: {total: -1}}]).toArray()\""
+  },
+  {
+    "instruction": "Aggregate with lookup (JOIN)",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$lookup: {from: 'users', localField: 'userId', foreignField: '_id', as: 'user'}}, {\\$unwind: '\\$user'}, {\\$project: {'user.name': 1, amount: 1, status: 1}}]).toArray()\""
+  },
+  {
+    "instruction": "Aggregate with match and group",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$match: {status: 'completed'}}, {\\$group: {_id: null, totalRevenue: {\\$sum: '\\$amount'}, avgOrder: {\\$avg: '\\$amount'}, maxOrder: {\\$max: '\\$amount'}}}]).toArray()\""
+  },
+  {
+    "instruction": "Aggregate with bucket (histogram)",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$bucket: {groupBy: '\\$amount', boundaries: [0, 50, 100, 500, 1000], default: 'Other', output: {count: {\\$sum: 1}, total: {\\$sum: '\\$amount'}}}}]).toArray()\""
+  },
+  {
+    "instruction": "Aggregate with addFields computation",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$addFields: {totalWithTax: {\\$multiply: ['\\$amount', 1.08]}}}]).toArray()\""
+  },
+  {
+    "instruction": "Aggregate with unwind array",
+    "output": "mongosh --quiet --eval \"db.orders.aggregate([{\\$unwind: '\\$items'}, {\\$group: {_id: '\\$items.product', totalQty: {\\$sum: '\\$items.qty'}}}]).toArray()\""
+  },
+  {
+    "instruction": "Show current database operations",
+    "output": "mongosh --eval \"db.currentOp({true: 1})\""
+  },
+  {
+    "instruction": "Kill an operation by its opid",
+    "output": "mongosh --eval \"db.killOp(12345)\""
+  },
+  {
+    "instruction": "Kill all operations running more than 5s",
+    "output": "mongosh --eval \"db.currentOp().inprog.filter(op => op.secs_running > 5).forEach(op => db.killOp(op.opid))\""
+  },
+  {
+    "instruction": "Show collection statistics",
+    "output": "mongosh --eval \"db.orders.stats()\""
+  },
+  {
+    "instruction": "Show database statistics",
+    "output": "mongosh --eval \"db.stats()\""
+  },
+  {
+    "instruction": "List all databases in the server",
+    "output": "mongosh --eval \"db.adminCommand('listDatabases')\""
+  },
+  {
+    "instruction": "List all collections in current db",
+    "output": "mongosh --eval \"db.getCollectionNames()\""
+  },
+  {
+    "instruction": "Create a new database implicitly",
+    "output": "mongosh mynewdb --eval \"db.test.insertOne({x: 1})\""
+  }
+]

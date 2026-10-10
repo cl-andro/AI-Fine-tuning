@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install Zabbix server on Debian 12",
+    "output": "<think>\nThe goal is to install Zabbix server on Debian 12.\nLet me break this down.\nI'll reach for wget here because downloading files.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest+debian12_all.deb && dpkg -i zabbix-release_latest+debian12_all.deb && apt update && apt install -y zabbix-server-mysql zabbix-frontend-php zabbix-sql-scripts zabbix-agent"
+  },
+  {
+    "instruction": "Start Zabbix server",
+    "output": "<think>\nNeed to start Zabbix server.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl enable --now zabbix-server zabbix-agent apache2"
+  },
+  {
+    "instruction": "Check Zabbix server status",
+    "output": "<think>\nSo the request is to check Zabbix server status.\nFirst, let me understand what's needed here.\nI'd use systemctl for this — managing systemd services.\nThe -l flag means long format with details, which matters here because needed for this specific use case.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status zabbix-server --no-pager -l"
+  },
+  {
+    "instruction": "Install Icinga2",
+    "output": "<think>\nWe should install Icinga2.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y icinga2 monitoring-plugins && systemctl enable --now icinga2"
+  },
+  {
+    "instruction": "Check Icinga2 configuration",
+    "output": "<think>\nSo we need to check Icinga2 configuration.\nFor this, icinga2 is the right tool — icinga2 operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nicinga2 daemon -C"
+  },
+  {
+    "instruction": "List Icinga2 hosts from CLI",
+    "output": "<think>\nThe task requires us to list Icinga2 hosts from CLI.\nFirst, let me understand what's needed here.\nFor this, icinga2 is the right tool — icinga2 operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nicinga2 object list --type Host"
+  },
+  {
+    "instruction": "Install netdata",
+    "output": "<think>\nThe user wants to install netdata.\nLet me break this down.\nThe tool for this job is bash — bash operations.\n</think>\nbash <(curl -Ss https://my-netdata.io/kickstart.sh) --stable-channel --disable-telemetry"
+  },
+  {
+    "instruction": "Access netdata dashboard locally",
+    "output": "<think>\nThe task requires us to access netdata dashboard locally.\nLet me reason through this.\nFor this, curl is the right tool — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:19999/api/v1/info | jq '.version' "
+  },
+  {
+    "instruction": "Install glances with all plugins",
+    "output": "<think>\nSo the request is to install glances with all plugins.\nThis calls for apt. Apt operations.\nI've added --version to show version info — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y glances && glances --version"
+  },
+  {
+    "instruction": "Run glances in server mode",
+    "output": "<think>\nThis is asking us to run glances in server mode.\nThis calls for glances. Glances operations.\nThe -s flag handles summarize or silent mode. Important because without it the command won't work as we need.\n</think>\nglances -s -B 0.0.0.0 &"
+  },
+  {
+    "instruction": "Query glances via XML-RPC",
+    "output": "<think>\nNeed to query glances via XML-RPC.\nI'll reach for curl here because making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -s http://localhost:61209/api/4/cpu | jq ."
+  },
+  {
+    "instruction": "Install htop",
+    "output": "<think>\nThe task requires us to install htop.\nHere's how I'd approach this.\nThe tool for this job is apt — apt operations.\nI'm using --version for show version info — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y htop && htop --version"
+  },
+  {
+    "instruction": "Install iotop for disk I/O monitoring",
+    "output": "<think>\nSo we need to install iotop for disk I/O monitoring.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y iotop && iotop --version"
+  },
+  {
+    "instruction": "Run iotop to show top I/O processes",
+    "output": "<think>\nThe user wants to run iotop to show top I/O processes.\niotop is what we need — iotop operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\niotop -oP -d 2 -n 3"
+  },
+  {
+    "instruction": "Install sysstat (iostat, sar, mpstat)",
+    "output": "<think>\nWe should install sysstat (iostat, sar, mpstat).\nLet me break this down.\nI'll reach for apt here because apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y sysstat && systemctl enable --now sysstat"
+  },
+  {
+    "instruction": "Show disk statistics with iostat",
+    "output": "<think>\nWe're being asked to show disk statistics with iostat.\nLet me think through this step by step.\niostat is what we need — disk I/O performance monitoring.\n</think>\niostat -xz 2 3"
+  },
+  {
+    "instruction": "Show CPU report with sar",
+    "output": "<think>\nThe goal is to show CPU report with sar.\nLet me think about the best approach.\nI'll reach for sar here because historical system activity reporting.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsar -u 1 5"
+  },
+  {
+    "instruction": "Show memory usage with sar",
+    "output": "<think>\nThe user wants to show memory usage with sar.\nLet me reason through this.\nBest tool here is sar — historical system activity reporting.\nWhy -r? Recursive operation (descend into subdirectories). needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsar -r 1 5"
+  },
+  {
+    "instruction": "Show network statistics with sar",
+    "output": "<think>\nSo the request is to show network statistics with sar.\nI'll reach for sar here because historical system activity reporting.\nThe -n flag handles dry-run, no changes. Important because this controls how the output is formatted.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nsar -n DEV 1 5"
+  },
+  {
+    "instruction": "Show virtual memory stats with vmstat",
+    "output": "<think>\nWe're being asked to show virtual memory stats with vmstat.\nFor this, vmstat is the right tool — system performance monitoring.\nLet me verify afterward that it worked correctly.\n</think>\nvmstat 2 10"
+  },
+  {
+    "instruction": "Show disk stats with vmstat",
+    "output": "<think>\nWe should show disk stats with vmstat.\nLet me think about the best approach.\nI'll reach for vmstat here because system performance monitoring.\nThe -d flag means directory listing, don't descend, which matters here because needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nvmstat -d 2 5"
+  },
+  {
+    "instruction": "Monitor memory in real-time with watch",
+    "output": "<think>\nNeed to monitor memory in real-time with watch.\nThis calls for watch. Watch operations.\nThe -n flag means dry-run, no changes, which matters here because important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\n</think>\nwatch -n 2 free -h"
+  },
+  {
+    "instruction": "Monitor disk I/O with watch and iostat",
+    "output": "<think>\nThis is asking us to monitor disk I/O with watch and iostat.\nLet me break this down.\nI'd use watch for this — watch operations.\nThe -n flag handles dry-run, no changes. Important because without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nwatch -n 2 'iostat -xz 1 1 | tail -20'"
+  },
+  {
+    "instruction": "Check system load with uptime",
+    "output": "<think>\nThe goal is to check system load with uptime.\nFor this, uptime is the right tool — uptime operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nuptime && cat /proc/loadavg"
+  },
+  {
+    "instruction": "View kernel ring buffer for hardware errors",
+    "output": "<think>\nSo we need to view kernel ring buffer for hardware errors.\nI'd use dmesg for this — kernel ring buffer inspection.\nThe -T flag means print filesystem type in df, which matters here because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\n</think>\ndmesg -T --level=err,warn | tail -30"
+  }
+]

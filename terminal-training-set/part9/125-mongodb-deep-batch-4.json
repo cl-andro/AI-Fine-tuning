@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Export collection to CSV",
+    "output": "<think>\nThe goal is to export collection to CSV.\nLet me break this down.\nI'd use mongoexport for this — mongoexport operations.\nLet me verify afterward that it worked correctly.\n</think>\nmongoexport --uri mongodb://localhost:27017/mydb --collection users --type=csv --fields=name,email,status --out users.csv"
+  },
+  {
+    "instruction": "Import JSON file into collection",
+    "output": "<think>\nSo the request is to import JSON file into collection.\nFirst, let me understand what's needed here.\nThe tool for this job is mongoimport — mongoimport operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nmongoimport --uri mongodb://localhost:27017/mydb --collection orders --file orders.json"
+  },
+  {
+    "instruction": "Import CSV with headerline",
+    "output": "<think>\nNeed to import CSV with headerline.\nLet me think through this step by step.\nI'll reach for mongoimport here because mongoimport operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nmongoimport --uri mongodb://localhost:27017/mydb --collection users --type=csv --headerline --file users.csv"
+  },
+  {
+    "instruction": "Monitor server stats with mongostat",
+    "output": "<think>\nThe user wants to monitor server stats with mongostat.\nI'd use mongostat for this — mongostat operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nmongostat --uri mongodb://localhost:27017 --rowcount=10"
+  },
+  {
+    "instruction": "Monitor operation times with mongotop",
+    "output": "<think>\nSo the request is to monitor operation times with mongotop.\nLet me break this down.\nThe tool for this job is mongotop — mongotop operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmongotop --uri mongodb://localhost:27017 --rowcount=10"
+  },
+  {
+    "instruction": "Explain query execution stats",
+    "output": "<think>\nWe should explain query execution stats.\nI'll reach for mongosh here because MongoDB operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nmongosh --eval \"db.orders.find({userId: ObjectId('...')}).explain('executionStats')\""
+  },
+  {
+    "instruction": "Set database profiler level",
+    "output": "<think>\nNeed to set database profiler level.\nFor this, mongosh is the right tool — MongoDB operations.\nLet me verify afterward that it worked correctly.\n</think>\nmongosh --eval \"db.setProfilingLevel(1, {slowms: 100})\""
+  },
+  {
+    "instruction": "Show profiler data for slow queries",
+    "output": "<think>\nSo the request is to show profiler data for slow queries.\nLet me think through this step by step.\nI'd use mongosh for this — MongoDB operations.\n</think>\nmongosh --eval \"db.system.profile.find({millis: {\\$gt: 100}}).pretty()\""
+  },
+  {
+    "instruction": "Use multi-document transactions",
+    "output": "<think>\nSo we need to use multi-document transactions.\nHere's how I'd approach this.\nmongosh is what we need — MongoDB operations.\nOne command does the job. Simple is better.\n</think>\nmongosh --eval \"const session = db.getMongo().startSession(); session.startTransaction(); const orders = session.getDatabase('mydb').orders; orders.insertOne({item: 'test', qty: 1}); session.commitTransaction(); session.endSession()\""
+  },
+  {
+    "instruction": "Watch for changes with changeStream",
+    "output": "<think>\nSo we need to watch for changes with changeStream.\nI'll reach for mongosh here because MongoDB operations.\nQuick verification after execution to be safe.\n</think>\nmongosh --eval \"const changeStream = db.orders.watch(); changeStream.next()\""
+  },
+  {
+    "instruction": "Use mapReduce for data aggregation",
+    "output": "<think>\nNeed to use mapReduce for data aggregation.\nLet me consider what makes sense here.\nI'd use mongosh for this — MongoDB operations.\nI'm using --quiet for suppress output — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nmongosh --quiet --eval \"db.orders.mapReduce(function() { emit(this.userId, this.amount); }, function(key, values) { return Array.sum(values); }, {out: 'order_totals'})\""
+  },
+  {
+    "instruction": "Show server status",
+    "output": "<think>\nThe user wants to show server status.\nI'll reach for mongosh here because MongoDB operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nmongosh --eval \"db.serverStatus()\""
+  },
+  {
+    "instruction": "Get build information",
+    "output": "<think>\nNeed to get build information.\nThe tool for this job is mongosh — MongoDB operations.\n</think>\nmongosh --eval \"db.adminCommand('buildInfo')\""
+  },
+  {
+    "instruction": "Validate collection for corruption",
+    "output": "<think>\nWe should validate collection for corruption.\nLet me reason through this.\nThis calls for mongosh. MongoDB operations.\n</think>\nmongosh --eval \"db.orders.validate({full: true})\""
+  },
+  {
+    "instruction": "Compact a collection to reclaim space",
+    "output": "<think>\nThe goal is to compact a collection to reclaim space.\nLet me think about the best approach.\nThe tool for this job is mongosh — MongoDB operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nmongosh --eval \"db.runCommand({compact: 'orders'})\""
+  },
+  {
+    "instruction": "Create a view from existing collection",
+    "output": "<think>\nThe goal is to create a view from existing collection.\nI'll reach for mongosh here because MongoDB operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nmongosh --eval \"db.createView('activeUsers', 'users', [{\\$match: {status: 'active'}}, {\\$project: {name: 1, email: 1}}])\""
+  },
+  {
+    "instruction": "Run a geoNear aggregation query",
+    "output": "<think>\nSo we need to run a geoNear aggregation query.\nBest tool here is mongosh — MongoDB operations.\nThe --quiet flag means suppress output, which matters here because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nmongosh --quiet --eval \"db.places.aggregate([{\\$geoNear: {near: {type: 'Point', coordinates: [-73.97, 40.77]}, spherical: true, distanceField: 'dist'}}]).toArray()\""
+  },
+  {
+    "instruction": "Use bulkWrite for mixed batch operations",
+    "output": "<think>\nAlright, we need to use bulkWrite for mixed batch operations.\nmongosh is what we need — MongoDB operations.\n</think>\nmongosh --eval \"db.orders.bulkWrite([{insertOne: {document: {item: 'test', qty: 1}}}, {updateMany: {filter: {status: 'pending'}, update: {\\$set: {priority: 'low'}}}}])\""
+  },
+  {
+    "instruction": "Show oplog entries from local db",
+    "output": "<think>\nThe user wants to show oplog entries from local db.\nLet me think about the best approach.\nThe tool for this job is mongosh — MongoDB operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nmongosh --eval \"db.getSiblingDB('local').oplog.rs.find().limit(5).toArray()\""
+  },
+  {
+    "instruction": "Get the current oplog size",
+    "output": "<think>\nNeed to get the current oplog size.\nLet me break this down.\nBest tool here is mongosh — MongoDB operations.\n</think>\nmongosh --eval \"db.getSiblingDB('local').oplog.rs.stats().maxSize\""
+  },
+  {
+    "instruction": "Use collation in a query",
+    "output": "<think>\nAlright, we need to use collation in a query.\nLet me break this down.\nBest tool here is mongosh — MongoDB operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmongosh --eval \"db.users.find().collation({locale: 'en', strength: 2})\""
+  },
+  {
+    "instruction": "Create a background index",
+    "output": "<think>\nWe're being asked to create a background index.\nLet me break this down.\nI'd use mongosh for this — MongoDB operations.\nLet me verify afterward that it worked correctly.\n</think>\nmongosh --eval \"db.users.createIndex({name: 1}, {background: true})\""
+  }
+]

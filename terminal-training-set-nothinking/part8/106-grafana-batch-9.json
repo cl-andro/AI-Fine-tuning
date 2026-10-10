@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Get Grafana dashboard permissions via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions | jq '.'"
+  },
+  {
+    "instruction": "Add Grafana dashboard permission for a user via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions -H 'Content-Type: application/json' -d '{\"userId\":2,\"permission\":2}'"
+  },
+  {
+    "instruction": "Add Grafana dashboard permission for a team via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions -H 'Content-Type: application/json' -d '{\"teamId\":1,\"permission\":2}'"
+  },
+  {
+    "instruction": "Delete Grafana dashboard permissions via API",
+    "output": "curl -X DELETE http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions/1"
+  },
+  {
+    "instruction": "Get Grafana folder permissions via API",
+    "output": "curl -s http://admin:admin@localhost:3000/api/folders/abc/permissions | jq '.'"
+  },
+  {
+    "instruction": "Update Grafana folder permissions via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/folders/abc/permissions -H 'Content-Type: application/json' -d '{\"items\":[{\"userId\":2,\"permission\":2}]}'"
+  },
+  {
+    "instruction": "Migrate Grafana dashboards from one datasource to another",
+    "output": "curl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc | jq '.dashboard | walk(if .datasource == \"old-prom\" then .datasource = \"new-prom\" else . end)' | curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Create Grafana dashboard with template variables",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"With Vars\",\"templating\":{\"list\":[{\"name\":\"instance\",\"type\":\"query\",\"query\":\"label_values(node_cpu_seconds_total, instance)\"}]}},\"overwrite\":false}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with graph panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"CPU Dashboard\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"CPU Usage\",\"targets\":[{\"expr\":\"100 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]) * 100)\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with stat panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Stats\",\"panels\":[{\"type\":\"stat\",\"title\":\"Memory Free\",\"targets\":[{\"expr\":\"node_memory_MemFree_bytes\"}],\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with table panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Table View\",\"panels\":[{\"type\":\"table\",\"title\":\"Processes\",\"targets\":[{\"expr\":\"topk(10, node_processes_running)\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with bar gauge panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Gauge\",\"panels\":[{\"type\":\"bargauge\",\"title\":\"Disk Usage\",\"targets\":[{\"expr\":\"100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes * 100)\"}],\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with heatmap panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Heatmap\",\"panels\":[{\"type\":\"heatmap\",\"title\":\"Request Latency\",\"targets\":[{\"expr\":\"rate(http_request_duration_seconds_bucket[5m])\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Set Grafana dashboard time range",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Dashboard\",\"time\":{\"from\":\"now-6h\",\"to\":\"now\"},\"panels\":[]}}'"
+  },
+  {
+    "instruction": "Set Grafana dashboard auto-refresh interval",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Dashboard\",\"refresh\":\"10s\",\"panels\":[]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with row grouping",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Grouped\",\"panels\":[{\"type\":\"row\",\"title\":\"System\"},{\"type\":\"stat\",\"title\":\"CPU\",\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":1}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with repeat panel",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Repeat\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"$instance\",\"repeat\":\"instance\",\"targets\":[{\"expr\":\"node_cpu_seconds_total{instance=~\\\"$instance\\\"}\"}]}]}}'"
+  },
+  {
+    "instruction": "Link Grafana dashboards via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Linked\",\"panels\":[],\"links\":[{\"type\":\"dashboards\",\"title\":\"Other Dashboard\",\"dashboardUID\":\"abc123\"}]}}'"
+  },
+  {
+    "instruction": "Create Grafana annotation with tags via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/annotations -H 'Content-Type: application/json' -d '{\"text\":\"Release v2.0\",\"tags\":[\"release\",\"production\"],\"time\":1721923200000,\"timeEnd\":1721923200000}'"
+  },
+  {
+    "instruction": "Create Grafana region annotation via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/annotations -H 'Content-Type: application/json' -d '{\"text\":\"Incident window\",\"time\":1721923200000,\"timeEnd\":1721923500000}'"
+  },
+  {
+    "instruction": "Add Grafana panel with alert threshold via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Alerting\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"With Threshold\",\"targets\":[{\"expr\":\"node_cpu_seconds_total\"}],\"thresholds\":[{\"value\":80,\"color\":\"red\"}]}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with text panel via API",
+    "output": "curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Text\",\"panels\":[{\"type\":\"text\",\"title\":\"Doc\",\"mode\":\"markdown\",\"content\":\"# Instructions\\nThis is a **test**\"}]}}'"
+  },
+  {
+    "instruction": "Backup Grafana database (sqlite)",
+    "output": "cp /var/lib/grafana/grafana.db /backup/grafana-$(date +%Y%m%d).db"
+  },
+  {
+    "instruction": "Restore Grafana database (sqlite)",
+    "output": "systemctl stop grafana-server && cp /backup/grafana-20260725.db /var/lib/grafana/grafana.db && chown grafana:grafana /var/lib/grafana/grafana.db && systemctl start grafana-server"
+  },
+  {
+    "instruction": "Install Grafana using apt",
+    "output": "sudo apt-get install -y software-properties-common && sudo add-apt-repository 'deb https://packages.grafana.com/oss/deb stable main' && sudo apt-get update && sudo apt-get install -y grafana"
+  }
+]

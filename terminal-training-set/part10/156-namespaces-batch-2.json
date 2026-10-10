@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create net namespace and run ip link",
+    "output": "<think>\nThe user wants to create net namespace and run ip link.\nLet me think about the best approach.\nI'll reach for unshare here because unshare operations.\nI've added -c to count or create — without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunshare --net bash -c 'ip link; echo \"no lo yet\"; ip link set lo up; ip addr add 127.0.0.1/8 dev lo'"
+  },
+  {
+    "instruction": "Create veth pair between namespaces",
+    "output": "<think>\nThe goal is to create veth pair between namespaces.\nLet me reason through this.\nFor this, ip is the right tool — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nip link add veth0 type veth peer name veth1"
+  },
+  {
+    "instruction": "Move veth into namespace",
+    "output": "<think>\nNeed to move veth into namespace.\nI'd use ip for this — network interface configuration.\n</think>\nip link set veth1 netns NS_NAME"
+  },
+  {
+    "instruction": "Set up bridge and attach namespace",
+    "output": "<think>\nThe goal is to set up bridge and attach namespace.\nThis calls for ip. Network interface configuration.\n</think>\nip link add br0 type bridge; ip link set veth0 master br0; ip link set br0 up"
+  },
+  {
+    "instruction": "Run DHCP client in net namespace",
+    "output": "<think>\nThe task requires us to run DHCP client in net namespace.\nLet me reason through this.\nI'd use nsenter for this — nsenter operations.\nI'm using -n for dry-run, no changes — without it the command won't work as we need.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nnsenter -n -t PID dhclient eth0"
+  },
+  {
+    "instruction": "Use iptables in network namespace",
+    "output": "<think>\nWe're being asked to use iptables in network namespace.\nHere's how I'd approach this.\nI'd use nsenter for this — nsenter operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nnsenter -n -t PID iptables -L"
+  },
+  {
+    "instruction": "Check network interfaces inside namespace",
+    "output": "<think>\nSo we need to check network interfaces inside namespace.\nLet me think through this step by step.\nThis calls for nsenter. Nsenter operations.\nThe -n flag handles dry-run, no changes. Important because needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nnsenter -n -t PID ip addr"
+  },
+  {
+    "instruction": "Ping from inside a network namespace",
+    "output": "<think>\nThe task requires us to ping from inside a network namespace.\nnsenter is what we need — nsenter operations.\nWhy -n? Dry-run, no changes. standard practice for this kind of operation.\nI've added -t to sort by modification time — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nnsenter -n -t PID ping 8.8.8.8"
+  },
+  {
+    "instruction": "Create named network namespace with ip netns",
+    "output": "<think>\nThe task requires us to create named network namespace with ip netns.\nThis calls for ip. Network interface configuration.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nip netns add blue"
+  },
+  {
+    "instruction": "List named network namespaces",
+    "output": "<think>\nAlright, we need to list named network namespaces.\nHere's how I'd approach this.\nBest tool here is ip — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nip netns list"
+  },
+  {
+    "instruction": "Execute command in named network namespace",
+    "output": "<think>\nSo the request is to execute command in named network namespace.\nLet me think about the best approach.\nBest tool here is ip — network interface configuration.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nip netns exec blue ip addr"
+  },
+  {
+    "instruction": "Delete a named network namespace",
+    "output": "<think>\nAlright, we need to delete a named network namespace.\nHere's how I'd approach this.\nI'd use ip for this — network interface configuration.\n</think>\nip netns delete blue"
+  },
+  {
+    "instruction": "Connect two net namespaces with veth",
+    "output": "<think>\nThe user wants to connect two net namespaces with veth.\nFor this, ip is the right tool — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\nip netns add ns1 && ip netns add ns2 && ip link add veth1 type veth peer name veth2 && ip link set veth1 netns ns1 && ip link set veth2 netns ns2"
+  },
+  {
+    "instruction": "Assign IP to veth in namespace",
+    "output": "<think>\nSo the request is to assign IP to veth in namespace.\nThe tool for this job is ip — network interface configuration.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nip netns exec ns1 ip addr add 10.0.0.1/24 dev veth1 && ip netns exec ns1 ip link set veth1 up"
+  },
+  {
+    "instruction": "Ping between two net namespaces",
+    "output": "<think>\nSo we need to ping between two net namespaces.\nI'll reach for ip here because network interface configuration.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nip netns exec ns1 ping -c 2 10.0.0.2"
+  },
+  {
+    "instruction": "Add default route in net namespace",
+    "output": "<think>\nThe task requires us to add default route in net namespace.\nip is what we need — network interface configuration.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nip netns exec ns1 ip route add default via 10.0.0.254"
+  },
+  {
+    "instruction": "Add NAT masquerade for namespace traffic",
+    "output": "<think>\nSo the request is to add NAT masquerade for namespace traffic.\nLet me consider what makes sense here.\nThis calls for iptables. Firewall management.\nWhy -t? Sort by modification time. needed for this specific use case.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "Enable IP forwarding for namespace",
+    "output": "<think>\nWe should enable IP forwarding for namespace.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1 > /proc/sys/net/ipv4/ip_forward"
+  },
+  {
+    "instruction": "Create macvlan in namespace",
+    "output": "<think>\nSo the request is to create macvlan in namespace.\nLet me consider what makes sense here.\nBest tool here is ip — network interface configuration.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nip link add macvlan0 link eth0 type macvlan mode bridge; ip link set macvlan0 netns ns1"
+  },
+  {
+    "instruction": "Create ipvlan in namespace",
+    "output": "<think>\nThis is asking us to create ipvlan in namespace.\nLet me consider what makes sense here.\nThis calls for ip. Network interface configuration.\n</think>\nip link add ipvlan0 link eth0 type ipvlan mode l2; ip link set ipvlan0 netns ns1"
+  },
+  {
+    "instruction": "Run iperf in namespace for net perf",
+    "output": "<think>\nThis is asking us to run iperf in namespace for net perf.\nI'd use ip for this — network interface configuration.\nThe -s flag means summarize or silent mode, which matters here because this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nip netns exec ns1 iperf3 -s &; ip netns exec ns2 iperf3 -c 10.0.0.1"
+  },
+  {
+    "instruction": "Check route table inside namespace",
+    "output": "<think>\nAlright, we need to check route table inside namespace.\nFirst, let me understand what's needed here.\nFor this, ip is the right tool — network interface configuration.\nOne command does the job. Simple is better.\n</think>\nip netns exec ns1 ip route"
+  }
+]

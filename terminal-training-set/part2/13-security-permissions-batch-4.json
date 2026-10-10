@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Check the integrity of installed packages with debsums",
+    "output": "<think>\nNeed to check the integrity of installed packages with debsums.\nLet me consider what makes sense here.\nFor this, debsums is the right tool — debsums operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndebsums -s"
+  },
+  {
+    "instruction": "Check if any file has been changed from its packaged state",
+    "output": "<think>\nThe goal is to check if any file has been changed from its packaged state.\nThis calls for debsums. Debsums operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ndebsums --changed"
+  },
+  {
+    "instruction": "Install and run unhide to find hidden processes",
+    "output": "<think>\nThe user wants to install and run unhide to find hidden processes.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y unhide && unhide proc"
+  },
+  {
+    "instruction": "List all processes running as root",
+    "output": "<think>\nSo the request is to list all processes running as root.\nFirst, let me understand what's needed here.\nThis calls for ps. Process listing.\nWhy -U? Use full user name instead of UID. standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nps -U root -u root -o pid,cmd | head -20"
+  },
+  {
+    "instruction": "Check for zombie processes",
+    "output": "<think>\nAlright, we need to check for zombie processes.\nLet me reason through this.\nps is what we need — process listing.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\nps aux | awk '{if ($8 == \"Z\") print}'"
+  },
+  {
+    "instruction": "Check if SELinux is enabled",
+    "output": "<think>\nThe user wants to check if SELinux is enabled.\nThis calls for getenforce. Getenforce operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ngetenforce 2>/dev/null || sestatus 2>/dev/null || echo SELinux not installed"
+  },
+  {
+    "instruction": "Install SELinux on Debian",
+    "output": "<think>\nSo the request is to install SELinux on Debian.\nLet me consider what makes sense here.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y selinux-basics selinux-policy-default && selinux-activate"
+  },
+  {
+    "instruction": "Change SELinux mode to permissive",
+    "output": "<think>\nThe task requires us to change SELinux mode to permissive.\nBest tool here is setenforce — setenforce operations.\n</think>\nsetenforce 0"
+  },
+  {
+    "instruction": "Change SELinux mode to enforcing",
+    "output": "<think>\nThis is asking us to change SELinux mode to enforcing.\nLet me think about the best approach.\nI'll reach for setenforce here because setenforce operations.\nOne command does the job. Simple is better.\n</think>\nsetenforce 1"
+  },
+  {
+    "instruction": "Check SELinux context of a file",
+    "output": "<think>\nThe user wants to check SELinux context of a file.\nBest tool here is ls — ls operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nls -Z file.txt"
+  },
+  {
+    "instruction": "Change SELinux context of a file",
+    "output": "<think>\nThe user wants to change SELinux context of a file.\nLet me consider what makes sense here.\nThe tool for this job is chcon — chcon operations.\nI've added -t to sort by modification time — this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\n</think>\nchcon -t httpd_sys_content_t /var/www/index.html"
+  },
+  {
+    "instruction": "Restore default SELinux context for a path",
+    "output": "<think>\nNeed to restore default SELinux context for a path.\nLet me reason through this.\nFor this, restorecon is the right tool — restorecon operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nrestorecon -Rv /var/www/"
+  },
+  {
+    "instruction": "List all SELinux booleans",
+    "output": "<think>\nWe should list all SELinux booleans.\nLet me consider what makes sense here.\nBest tool here is getsebool — getsebool operations.\nI'm using -a for AND operator in find — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngetsebool -a"
+  },
+  {
+    "instruction": "Set an SELinux boolean",
+    "output": "<think>\nThis is asking us to set an SELinux boolean.\nLet me reason through this.\nI'd use setsebool for this — setsebool operations.\nAfter running, I'll confirm the result looks right.\n</think>\nsetsebool httpd_can_network_connect on"
+  },
+  {
+    "instruction": "Check SELinux port labeling",
+    "output": "<think>\nThe task requires us to check SELinux port labeling.\nLet me think about the best approach.\nI'd use semanage for this — semanage operations.\nThe -l flag means long format with details, which matters here because this controls how the output is formatted.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nsemanage port -l | head -20"
+  },
+  {
+    "instruction": "List all SELinux file contexts",
+    "output": "<think>\nThe task requires us to list all SELinux file contexts.\nFirst, let me understand what's needed here.\nI'd use semanage for this — semanage operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nsemanage fcontext -l | head -20"
+  },
+  {
+    "instruction": "List all SELinux users",
+    "output": "<think>\nThe goal is to list all SELinux users.\nLet me break this down.\nI'll reach for semanage here because semanage operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsemanage user -l"
+  },
+  {
+    "instruction": "Install and configure knockd (port knocking)",
+    "output": "<think>\nWe're being asked to install and configure knockd (port knocking).\nI'd use apt for this — apt operations.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nThe -s flag handles summarize or silent mode. Important because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\napt install -y knockd && echo -e '[options]\\nlogfile = /var/log/knockd.log\\n[openSSH]\\nsequence = 7000,8000,9000\\nseq_timeout = 5\\ncommand = /sbin/iptables -A INPUT -s %IP% -p tcp --dport 22 -j ACCEPT\\ntcpflags = syn' > /etc/knockd.conf && systemctl start knockd"
+  },
+  {
+    "instruction": "Knock a sequence of ports to open SSH",
+    "output": "<think>\nThe task requires us to knock a sequence of ports to open SSH.\nknock is what we need — knock operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nknock 192.168.1.100 7000 8000 9000 && ssh user@192.168.1.100"
+  },
+  {
+    "instruction": "Install and configure OpenVPN server",
+    "output": "<think>\nNeed to install and configure OpenVPN server.\nFirst, let me understand what's needed here.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y openvpn && cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/ && systemctl start openvpn@server"
+  },
+  {
+    "instruction": "Install WireGuard VPN server",
+    "output": "<think>\nThe task requires us to install WireGuard VPN server.\nI'll reach for apt here because apt operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y wireguard && wg genkey | tee /etc/wireguard/server.key | wg pubkey > /etc/wireguard/server.pub"
+  },
+  {
+    "instruction": "Create a WireGuard config",
+    "output": "<think>\nWe should create a WireGuard config.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/wireguard/wg0.conf << 'EOF'\n[Interface]\nAddress = 10.0.0.1/24\nPrivateKey = $(cat /etc/wireguard/server.key)\nListenPort = 51820\n[Peer]\nPublicKey = clientpubkey\nAllowedIPs = 10.0.0.2/32\nEOF && systemctl enable --now wg-quick@wg0"
+  },
+  {
+    "instruction": "Start WireGuard interface",
+    "output": "<think>\nWe're being asked to start WireGuard interface.\nLet me think about the best approach.\nFor this, wg-quick is the right tool — wg-quick operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nwg-quick up wg0"
+  },
+  {
+    "instruction": "Stop WireGuard interface",
+    "output": "<think>\nThe task requires us to stop WireGuard interface.\nThis calls for wg-quick. Wg-quick operations.\nI'll check the output to make sure it did what we expected.\n</think>\nwg-quick down wg0"
+  },
+  {
+    "instruction": "Check WireGuard status",
+    "output": "<think>\nThe user wants to check WireGuard status.\nLet me reason through this.\nI'd use wg for this — WireGuard VPN interface management.\nWireGuard configs contain private keys — keep permissions at 600.\nLet me verify afterward that it worked correctly.\n</think>\nwg show"
+  },
+  {
+    "instruction": "Check if DNSSEC is working on the system",
+    "output": "<think>\nThe goal is to check if DNSSEC is working on the system.\nLet me consider what makes sense here.\nThis calls for dig. DNS querying.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\ndig +dnssec example.com | grep -E 'flags:.*ad' && echo DNSSEC OK || echo DNSSEC not validated"
+  }
+]

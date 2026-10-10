@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Configure fail2ban jail for nginx with custom bantime",
+    "output": "<think>\nNeed to configure fail2ban jail for nginx with custom bantime.\nLet me consider what makes sense here.\nI've added -e to edit or executable — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho -e '[nginx-http]\nenabled = true\nport = http,https\nfilter = nginx-http-auth\nlogpath = /var/log/nginx/access.log\nbantime = 86400\nfindtime = 600\nmaxretry = 5' > /etc/fail2ban/jail.d/nginx-custom.conf"
+  },
+  {
+    "instruction": "Start fail2ban service if not running",
+    "output": "<think>\nNeed to start fail2ban service if not running.\nThe tool for this job is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl start fail2ban"
+  },
+  {
+    "instruction": "Check fail2ban jail status for multiple jails",
+    "output": "<think>\nNeed to check fail2ban jail status for multiple jails.\nFirst, let me understand what's needed here.\nI'll reach for fail2ban-client here because fail2ban-client operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nfail2ban-client status && fail2ban-client status sshd && fail2ban-client status nginx-http"
+  },
+  {
+    "instruction": "Use fail2ban-client to get all banned IPs globally",
+    "output": "<think>\nSo the request is to use fail2ban-client to get all banned IPs globally.\nHere's how I'd approach this.\nBest tool here is fail2ban-client — fail2ban-client operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nfail2ban-client banned --raw"
+  },
+  {
+    "instruction": "Use elasticdump with custom Elasticsearch query",
+    "output": "<think>\nNeed to use elasticdump with custom Elasticsearch query.\nLet me break this down.\nThe tool for this job is elasticdump — elasticdump operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nelasticdump --input=http://localhost:9200/my-index --searchBody='{\"query\":{\"range\":{\"@timestamp\":{\"gte\":\"now-7d\"}}}}' --output=last_7d.json"
+  },
+  {
+    "instruction": "Use elasticdump to transform data during export",
+    "output": "<think>\nWe should use elasticdump to transform data during export.\nHere's how I'd approach this.\nBest tool here is elasticdump — elasticdump operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nelasticdump --input=http://localhost:9200/index --output=http://localhost:9200/new-index --type=mapping"
+  },
+  {
+    "instruction": "Use curator to show indices matching a pattern",
+    "output": "<think>\nThe user wants to use curator to show indices matching a pattern.\nFor this, curator_cli is the right tool — curator_cli operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ncurator_cli show_indices --filter_list '{\"filtertype\":\"pattern\",\"value\":\"logstash-2025.06.*\"}'"
+  },
+  {
+    "instruction": "Use curator to perform an alias operation on indices",
+    "output": "<think>\nThis is asking us to use curator to perform an alias operation on indices.\nLet me think about the best approach.\nFor this, curator_cli is the right tool — curator_cli operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncurator_cli alias --name logstash-current --filter_list '{\"filtertype\":\"pattern\",\"value\":\"logstash-2025.06*\"}'"
+  },
+  {
+    "instruction": "Run Vector with multiple pipelines for log parsing",
+    "output": "<think>\nSo we need to run Vector with multiple pipelines for log parsing.\nHere's how I'd approach this.\nvector is what we need — vector operations.\nQuick verification after execution to be safe.\n</think>\nvector --config /etc/vector/vector.toml --watch-config"
+  },
+  {
+    "instruction": "Use Vector remap language (VRL) to transform logs",
+    "output": "<think>\nSo we need to use Vector remap language (VRL) to transform logs.\nLet me reason through this.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'sources: {in: {type: stdin}}, transforms: {parse: {type: remap, source: \".parsed = parse_regex!(.message, r\\\"^(?P<ip>\\\\S+) .*\\\")\", inputs: [in]}}, sinks: {out: {type: console, inputs: [parse]}}' | vector --config-yaml -"
+  },
+  {
+    "instruction": "Use fluent-bit to tail logs and send to Elasticsearch",
+    "output": "<think>\nThe task requires us to use fluent-bit to tail logs and send to Elasticsearch.\nThis calls for fluent-bit. Fluent-bit operations.\nI've added -i to interactive, prompt before action — needed for this specific use case.\nThe -p flag means create parent directories as needed, which matters here because without it the command won't work as we need.\n</think>\nfluent-bit -i tail -p path=/var/log/syslog -o es -p host=localhost -p port=9200 -p index=fluentbit"
+  },
+  {
+    "instruction": "Use fluent-bit with multiline parser for stack traces",
+    "output": "<think>\nWe're being asked to use fluent-bit with multiline parser for stack traces.\nI'd use fluent-bit for this — fluent-bit operations.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nfluent-bit -i tail -p path=/var/log/app.log -p multiline.parser=custom -o stdout"
+  },
+  {
+    "instruction": "List installed fluentd plugins",
+    "output": "<think>\nWe should list installed fluentd plugins.\nLet me think about the best approach.\nI'd use fluent-gem for this — fluent-gem operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nfluent-gem list | grep fluent"
+  },
+  {
+    "instruction": "Use fluentd to tail logs and output to S3",
+    "output": "<think>\nWe're being asked to use fluentd to tail logs and output to S3.\nLet me think through this step by step.\nBest tool here is fluentd — fluentd operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nfluentd -c /etc/fluentd/fluent_s3.conf"
+  },
+  {
+    "instruction": "Check fluentd process status and running workers",
+    "output": "<think>\nWe're being asked to check fluentd process status and running workers.\nLet me break this down.\nThis calls for ps. Process listing.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nps aux | grep fluentd"
+  },
+  {
+    "instruction": "Reload fluentd configuration without restarting",
+    "output": "<think>\nSo the request is to reload fluentd configuration without restarting.\nLet me reason through this.\nI'll reach for kill here because process termination.\nOne command does the job. Simple is better.\nkill -9 should be a last resort — if the process ignores SIGTERM, then escalate to SIGKILL.\nLet me verify afterward that it worked correctly.\n</think>\nkill -SIGHUP $(cat /var/run/fluentd.pid)"
+  },
+  {
+    "instruction": "Use sed to mask email addresses in log files",
+    "output": "<think>\nAlright, we need to use sed to mask email addresses in log files.\nFirst, let me understand what's needed here.\nFor this, sed is the right tool — text stream editing.\nThe -E flag handles extended regex. Important because this controls how the output is formatted.\n</think>\nsed -E 's/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/REDACTED/g' access.log > masked.log"
+  },
+  {
+    "instruction": "Extract all email addresses from log files with grep",
+    "output": "<think>\nThe user wants to extract all email addresses from log files with grep.\nThe tool for this job is grep — pattern searching.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\ngrep -oE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}' /var/log/mail.log | sort -u"
+  },
+  {
+    "instruction": "Use awk to summarize log counts by month",
+    "output": "<think>\nThe goal is to use awk to summarize log counts by month.\nI'd use awk for this — text processing and reporting.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nawk '{print $1}' /var/log/nginx/access.log | awk -F/ '{print $3}' | sort | uniq -c"
+  },
+  {
+    "instruction": "Use journalctl to pipe logs directly to a JSON parser",
+    "output": "<think>\nAlright, we need to use journalctl to pipe logs directly to a JSON parser.\nI'd use journalctl for this — checking systemd logs.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nOld logs can be large — add --since to limit the range and avoid huge output.\nQuick verification after execution to be safe.\n</think>\njournalctl -o json --since '1 hour ago' | jq 'select(.PRIORITY == \"3\") | {message: .MESSAGE, time: .__REALTIME_TIMESTAMP}'"
+  },
+  {
+    "instruction": "Combine find and grep to search logs in rotated archives",
+    "output": "<think>\nSo the request is to combine find and grep to search logs in rotated archives.\nThe tool for this job is find — file searching.\nThe -name flag handles filter by filename pattern. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind /var/log/ -name 'syslog*' -exec grep -l 'out of memory' {} \\;"
+  },
+  {
+    "instruction": "Compress old log files manually with xz for better compression",
+    "output": "<think>\nSo the request is to compress old log files manually with xz for better compression.\nBest tool here is xz — xz operations.\nLet me verify afterward that it worked correctly.\n</think>\nxz -9 /var/log/old-app.log"
+  }
+]

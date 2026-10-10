@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a named pipe with mkfifo and use it",
+    "output": "mkfifo mypipe; cat file.txt > mypipe &; cat < mypipe"
+  },
+  {
+    "instruction": "Use mkfifo for bidirectional communication",
+    "output": "mkfifo fifo1 fifo2; cmd1 < fifo1 > fifo2 &; cmd2 < fifo2 > fifo1 &; wait"
+  },
+  {
+    "instruction": "Use coproc to run a background process with I/O",
+    "output": "coproc MYPROC { command; }; echo 'input' >&${MYPROC[1]}; read output <&${MYPROC[0]}"
+  },
+  {
+    "instruction": "Use coproc to communicate with bc for math",
+    "output": "coproc BC { bc -l; }; echo 'scale=4; 355/113' >&${BC[1]}; read result <&${BC[0]}; echo $result"
+  },
+  {
+    "instruction": "Use /dev/fd to pass file descriptors in process substitution",
+    "output": "diff /dev/fd/3 /dev/fd/4 3< <(ls dir1) 4< <(ls dir2)"
+  },
+  {
+    "instruction": "Use process substitution with while read loop",
+    "output": "while IFS= read -r pkg; do echo \"Installing $pkg\"; done < <(apt list --upgradable 2>/dev/null | grep -oP '^[^/]+')"
+  },
+  {
+    "instruction": "Use exec to replace the current shell with a command",
+    "output": "exec /usr/bin/env bash --login"
+  },
+  {
+    "instruction": "Use exec to redirect all script output to a file",
+    "output": "exec > >(tee -a /var/log/script.log) 2>&1; echo \"All output logged\""
+  },
+  {
+    "instruction": "Use exec with custom file descriptors",
+    "output": "exec 3<input.txt 4>output.txt; read -u 3 line; echo \"$line\" >&4; exec 3>&- 4>&-"
+  },
+  {
+    "instruction": "Use eval with caution for dynamic variable assignment",
+    "output": "key=var1; val=hello; eval \"$key=\\\"$val\\\"\"; echo $var1"
+  },
+  {
+    "instruction": "Use eval to build and run a command from string fragments",
+    "output": "cmd='grep'; args='-rn \"TODO\" src/'; eval \"$cmd $args\""
+  },
+  {
+    "instruction": "Use shopt -s dotglob to include hidden files in glob",
+    "output": "shopt -s dotglob; for f in *; do echo \"$f\"; done; shopt -u dotglob"
+  },
+  {
+    "instruction": "Use shopt -s extglob for extended pattern matching",
+    "output": "shopt -s extglob; rm -rf !(important-file|keep-this)"
+  },
+  {
+    "instruction": "Use shopt -s globstar to match nested directories recursively",
+    "output": "shopt -s globstar; wc -l **/*.py"
+  },
+  {
+    "instruction": "Use set -o noclobber to prevent accidental file overwrite",
+    "output": "set -o noclobber; echo new > existing.txt 2>&1 || echo \"File exists, not overwritten\"; set +o noclobber"
+  },
+  {
+    "instruction": "Use set -o ignoreeof to prevent Ctrl+D from exiting shell",
+    "output": "set -o ignoreeof;"
+  },
+  {
+    "instruction": "Use set -o vi to enable vi-style command-line editing",
+    "output": "set -o vi"
+  },
+  {
+    "instruction": "Use set -o emacs to switch back to emacs editing mode",
+    "output": "set -o emacs"
+  },
+  {
+    "instruction": "Use source with a return value check",
+    "output": "source /etc/os-release; if [ \"$ID\" = debian ]; then echo \"Is Debian\"; fi"
+  },
+  {
+    "instruction": "Use brace expansion to create directory structure",
+    "output": "mkdir -p project/{src/{main,test}/java,docs,config}"
+  },
+  {
+    "instruction": "Use brace expansion with sequences",
+    "output": "touch file_{a..z}.txt"
+  },
+  {
+    "instruction": "Use brace expansion with step values",
+    "output": "echo {1..10..2}"
+  },
+  {
+    "instruction": "Use glob patterns to match file ranges",
+    "output": "echo [a-f]*.txt"
+  },
+  {
+    "instruction": "Use globbing with character classes",
+    "output": "ls [[:digit:]]*"
+  },
+  {
+    "instruction": "Create and use a persistent alias across sessions",
+    "output": "echo 'alias llt=\"ls -ltr --color=auto\"' >> ~/.bash_aliases && source ~/.bash_aliases"
+  }
+]

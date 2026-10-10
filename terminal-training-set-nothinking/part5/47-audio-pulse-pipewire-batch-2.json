@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set the default PulseAudio sink to 'alsa_output.pci-0000_00_1f.3.analog-stereo'",
+    "output": "pactl set-default-sink alsa_output.pci-0000_00_1f.3.analog-stereo"
+  },
+  {
+    "instruction": "Set the default PulseAudio source to 'alsa_input.pci-0000_00_1f.3.analog-stereo'",
+    "output": "pactl set-default-source alsa_input.pci-0000_00_1f.3.analog-stereo"
+  },
+  {
+    "instruction": "Load the PulseAudio module 'module-null-sink' with sink name 'virtual_sink'",
+    "output": "pactl load-module module-null-sink sink_name=virtual_sink"
+  },
+  {
+    "instruction": "Load the module-loopback to playback from source to sink",
+    "output": "pactl load-module module-loopback source=alsa_input.usb-mic sink=alsa_output.pci-speakers"
+  },
+  {
+    "instruction": "Load module-combined-sink to combine two audio outputs",
+    "output": "pactl load-module module-combined-sink sink_name=combined sinks=alsa_output.pci,alsa_output.usb"
+  },
+  {
+    "instruction": "Load module-rtp-receive to receive RTP audio stream",
+    "output": "pactl load-module module-rtp-receive"
+  },
+  {
+    "instruction": "Load module-rtp-send to send audio via RTP",
+    "output": "pactl load-module module-rtp-send source=alsa_output.monitor"
+  },
+  {
+    "instruction": "Unload a PulseAudio module by its module index number",
+    "output": "pactl unload-module 42"
+  },
+  {
+    "instruction": "Unload all instances of module-null-sink",
+    "output": "pactl unload-module module-null-sink"
+  },
+  {
+    "instruction": "Move sink-input (playing stream) 27 to a different sink",
+    "output": "pactl move-sink-input 27 alsa_output.usb-headphones"
+  },
+  {
+    "instruction": "Move source-output (recording stream) 5 to a different source",
+    "output": "pactl move-source-output 5 alsa_input.usb-mic"
+  },
+  {
+    "instruction": "Move all sink-inputs to a specific sink",
+    "output": "for i in $(pactl list sink-inputs short | awk '{print $1}'); do pactl move-sink-input \"$i\" alsa_output.usb-headphones; done"
+  },
+  {
+    "instruction": "Suspend a specific PulseAudio sink",
+    "output": "pactl suspend-sink alsa_output.pci true"
+  },
+  {
+    "instruction": "Resume a suspended PulseAudio sink",
+    "output": "pactl suspend-sink alsa_output.pci false"
+  },
+  {
+    "instruction": "Show card profile for a specific card index",
+    "output": "pactl set-card-profile 0 output:analog-stereo"
+  },
+  {
+    "instruction": "Switch a Bluetooth card to HSP/HFP profile",
+    "output": "pactl set-card-profile bluez_card.XX_XX_XX_XX_XX_XX headset_head_unit"
+  },
+  {
+    "instruction": "Switch a card to high-fidelity playback profile",
+    "output": "pactl set-card-profile 0 output:analog-stereo+input:analog-stereo"
+  },
+  {
+    "instruction": "Set the port on a sink to 'analog-output-headphones'",
+    "output": "pactl set-sink-port alsa_output.pci analog-output-headphones"
+  },
+  {
+    "instruction": "Set the port on a source to 'analog-input-mic'",
+    "output": "pactl set-source-port alsa_input.pci analog-input-mic"
+  },
+  {
+    "instruction": "Load module-equalizer-sink for graphic EQ",
+    "output": "pactl load-module module-equalizer-sink"
+  },
+  {
+    "instruction": "Load module-ladspa-sink for LADSPA DSP effects",
+    "output": "pactl load-module module-ladspa-sink sink_name=dsp_effects plugin=ladspa_file label=effect_label"
+  },
+  {
+    "instruction": "Load module-tunnel-sink to stream audio to a remote PulseAudio server",
+    "output": "pactl load-module module-tunnel-sink server=remote-pc.local sink=remote_sink"
+  },
+  {
+    "instruction": "Load module-tunnel-source to capture from a remote microphone",
+    "output": "pactl load-module module-tunnel-source server=remote-pc.local source=remote_mic"
+  },
+  {
+    "instruction": "List currently loaded module names and arguments",
+    "output": "pactl list modules | grep -E 'Module"
+  },
+  {
+    "instruction": "Reload PulseAudio configuration from default.pa",
+    "output": "pactl unload-module module-device-restore; pactl load-module module-device-restore"
+  }
+]

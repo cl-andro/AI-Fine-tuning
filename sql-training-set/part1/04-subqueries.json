@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet employees earning above average salary",
+    "output": "SELECT * FROM employees WHERE salary > (SELECT AVG(salary) FROM employees);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet the employee with the highest salary",
+    "output": "SELECT * FROM employees WHERE salary = (SELECT MAX(salary) FROM employees);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id), departments(id, dept_name)\nGet employees in the Engineering department",
+    "output": "SELECT * FROM employees WHERE department_id = (SELECT id FROM departments WHERE dept_name = 'Engineering');"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nGet users who placed orders over 500",
+    "output": "SELECT * FROM users WHERE id IN (SELECT user_id FROM orders WHERE total > 500);"
+  },
+  {
+    "instruction": "Schema: products(id, name, price, category)\nGet products more expensive than the average in their category",
+    "output": "SELECT * FROM products p WHERE price > (SELECT AVG(price) FROM products WHERE category = p.category);"
+  },
+  {
+    "instruction": "Schema: students(id, name, gpa)\nGet students with GPA above the minimum GPA of grade A students",
+    "output": "SELECT * FROM students WHERE gpa > (SELECT MIN(gpa) FROM students WHERE grade = 'A');"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary)\nGet employees who earn more than employee id 5",
+    "output": "SELECT * FROM employees WHERE salary > (SELECT salary FROM employees WHERE id = 5);"
+  },
+  {
+    "instruction": "Schema: departments(id, dept_name), employees(id, name, department_id, salary)\nGet departments that have at least one employee",
+    "output": "SELECT * FROM departments WHERE id IN (SELECT department_id FROM employees);"
+  },
+  {
+    "instruction": "Schema: departments(id, dept_name), employees(id, name, department_id)\nGet departments with no employees",
+    "output": "SELECT * FROM departments WHERE id NOT IN (SELECT department_id FROM employees WHERE department_id IS NOT NULL);"
+  },
+  {
+    "instruction": "Schema: users(id, name), orders(id, user_id, total)\nGet users who have never ordered",
+    "output": "SELECT * FROM users WHERE id NOT IN (SELECT user_id FROM orders);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet each employee with their department average salary",
+    "output": "SELECT e.name, e.salary, d.avg_sal FROM employees e JOIN (SELECT department_id, AVG(salary) AS avg_sal FROM employees GROUP BY department_id) d ON e.department_id = d.department_id;"
+  },
+  {
+    "instruction": "Schema: products(id, name, price)\nGet the second highest priced product",
+    "output": "SELECT * FROM products WHERE price = (SELECT MAX(price) FROM products WHERE price < (SELECT MAX(price) FROM products));"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_id, score)\nGet students who scored above average on exam 1",
+    "output": "SELECT * FROM scores WHERE exam_id = 1 AND score > (SELECT AVG(score) FROM scores WHERE exam_id = 1);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary)\nCheck if any employee earns more than 100000",
+    "output": "SELECT EXISTS (SELECT 1 FROM employees WHERE salary > 100000);"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total, status)\nGet users whose all orders are completed",
+    "output": "SELECT * FROM users WHERE id NOT IN (SELECT user_id FROM orders WHERE status != 'completed');"
+  },
+  {
+    "instruction": "Schema: employees(id, name, department_id, salary)\nGet employees earning more than anyone in department 2",
+    "output": "SELECT * FROM employees WHERE salary > ALL (SELECT salary FROM employees WHERE department_id = 2);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, department_id, salary)\nGet employees earning more than someone in department 2",
+    "output": "SELECT * FROM employees WHERE salary > ANY (SELECT salary FROM employees WHERE department_id = 2);"
+  },
+  {
+    "instruction": "Schema: customers(id, name), orders(id, customer_id, total)\nGet customers with order totals matching the maximum single order",
+    "output": "SELECT * FROM customers WHERE id IN (SELECT customer_id FROM orders WHERE total = (SELECT MAX(total) FROM orders));"
+  },
+  {
+    "instruction": "Schema: items(id, name, category_id), categories(id, name)\nGet items in categories that start with 'E'",
+    "output": "SELECT * FROM items WHERE category_id IN (SELECT id FROM categories WHERE name LIKE 'E%');"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary, department_id)\nGet the top earner in each department",
+    "output": "SELECT * FROM employees e WHERE salary = (SELECT MAX(salary) FROM employees WHERE department_id = e.department_id);"
+  },
+  {
+    "instruction": "Schema: accounts(id, balance, user_id), users(id, name)\nGet users with balance above the overall average balance",
+    "output": "SELECT u.name FROM users u JOIN accounts a ON u.id = a.user_id WHERE a.balance > (SELECT AVG(balance) FROM accounts);"
+  },
+  {
+    "instruction": "Schema: movies(id, title, rating)\nGet movies rated higher than the average comedy rating",
+    "output": "SELECT * FROM movies WHERE rating > (SELECT AVG(rating) FROM movies WHERE genre = 'comedy');"
+  },
+  {
+    "instruction": "Schema: employees(id, name, department_id)\nGet departments with exactly 3 employees",
+    "output": "SELECT department_id FROM employees GROUP BY department_id HAVING COUNT(*) = 3;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nGet the user with the most orders",
+    "output": "SELECT user_id FROM orders GROUP BY user_id ORDER BY COUNT(*) DESC LIMIT 1;"
+  },
+  {
+    "instruction": "Schema: students(id, name, class_id), classes(id, name)\nGet students in classes that have more than 30 students",
+    "output": "SELECT * FROM students WHERE class_id IN (SELECT class_id FROM students GROUP BY class_id HAVING COUNT(*) > 30);"
+  }
+]

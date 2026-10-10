@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Test an IP address in CIDR with cidrhost function",
+    "output": "echo 'cidrhost(\"10.0.0.0/24\", 10)' | terraform console"
+  },
+  {
+    "instruction": "Calculate subnet with cidrsubnets function",
+    "output": "echo 'cidrsubnets(\"10.0.0.0/16\", 4, 4, 8)' | terraform console"
+  },
+  {
+    "instruction": "Create a VPC with Terraform",
+    "output": "echo 'resource \"aws_vpc\" \"main\" { cidr_block = \"10.0.0.0/16\" enable_dns_support = true enable_dns_hostnames = true }' > vpc.tf"
+  },
+  {
+    "instruction": "Create public and private subnets",
+    "output": "echo 'resource \"aws_subnet\" \"public\" { count = 2 vpc_id = aws_vpc.main.id cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index) map_public_ip_on_launch = true } resource \"aws_subnet\" \"private\" { count = 2 vpc_id = aws_vpc.main.id cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 10) }' > subnets.tf"
+  },
+  {
+    "instruction": "Create an Internet Gateway",
+    "output": "echo 'resource \"aws_internet_gateway\" \"gw\" { vpc_id = aws_vpc.main.id }' > igw.tf"
+  },
+  {
+    "instruction": "Create a NAT Gateway in a public subnet",
+    "output": "echo 'resource \"aws_nat_gateway\" \"nat\" { allocation_id = aws_eip.nat.id subnet_id = aws_subnet.public[0].id } resource \"aws_eip\" \"nat\" { domain = \"vpc\" }' > nat.tf"
+  },
+  {
+    "instruction": "Create a public route table with default route",
+    "output": "echo 'resource \"aws_route_table\" \"public\" { vpc_id = aws_vpc.main.id route { cidr_block = \"0.0.0.0/0\" gateway_id = aws_internet_gateway.gw.id } } resource \"aws_route_table_association\" \"public\" { count = 2 subnet_id = aws_subnet.public[count.index].id route_table_id = aws_route_table.public.id }' > routes.tf"
+  },
+  {
+    "instruction": "Create a VPC flow log",
+    "output": "echo 'resource \"aws_flow_log\" \"vpc\" { log_destination = aws_s3_bucket.logs.arn traffic_type = \"ALL\" vpc_id = aws_vpc.main.id }' > flowlog.tf"
+  },
+  {
+    "instruction": "Create a VPC endpoint for S3",
+    "output": "echo 'resource \"aws_vpc_endpoint\" \"s3\" { vpc_id = aws_vpc.main.id service_name = \"com.amazonaws.${var.region}.s3\" route_table_ids = [aws_route_table.private.id] }' > vpc-endpoint.tf"
+  },
+  {
+    "instruction": "Create a VPN connection",
+    "output": "echo 'resource \"aws_vpn_gateway\" \"vgw\" { vpc_id = aws_vpc.main.id } resource \"aws_customer_gateway\" \"cgw\" { bgp_asn = 65000 ip_address = \"203.0.113.1\" type = \"ipsec.1\" } resource \"aws_vpn_connection\" \"conn\" { vpn_gateway_id = aws_vpn_gateway.vgw.id customer_gateway_id = aws_customer_gateway.cgw.id type = \"ipsec.1\" }' > vpn.tf"
+  },
+  {
+    "instruction": "Create an EC2 instance with user data",
+    "output": "echo 'resource \"aws_instance\" \"web\" { ami = data.aws_ami.ubuntu.id instance_type = \"t3.micro\" user_data = base64encode(templatefile(\"init.sh\", { hostname = \"web01\" })) }' > ec2-userdata.tf"
+  },
+  {
+    "instruction": "Create an EBS snapshot policy",
+    "output": "echo 'resource \"aws_ebs_snapshot_copy\" \"backup\" { source_region = \"us-east-1\" source_snapshot_id = aws_ebs_snapshot.daily.id }' > ebs.tf"
+  },
+  {
+    "instruction": "Create a Lambda function with Terraform",
+    "output": "echo 'resource \"aws_lambda_function\" \"fn\" { filename = \"lambda.zip\" function_name = \"my-function\" role = aws_iam_role.lambda.arn handler = \"index.handler\" runtime = \"python3.12\" }' > lambda.tf"
+  },
+  {
+    "instruction": "Create a Lambda function URL",
+    "output": "echo 'resource \"aws_lambda_function_url\" \"url\" { function_name = aws_lambda_function.fn.function_name authorization_type = \"NONE\" }' > lambda-url.tf"
+  },
+  {
+    "instruction": "Create an EventBridge rule for Lambda trigger",
+    "output": "echo 'resource \"aws_cloudwatch_event_rule\" \"schedule\" { schedule_expression = \"rate(1 hour)\" } resource \"aws_cloudwatch_event_target\" \"fn\" { rule = aws_cloudwatch_event_rule.schedule.name arn = aws_lambda_function.fn.arn }' > eventbridge.tf"
+  },
+  {
+    "instruction": "Create an SQS queue",
+    "output": "echo 'resource \"aws_sqs_queue\" \"queue\" { name = \"app-queue\" visibility_timeout_seconds = 60 }' > sqs.tf"
+  },
+  {
+    "instruction": "Create an SNS topic with subscription",
+    "output": "echo 'resource \"aws_sns_topic\" \"alerts\" { name = \"infra-alerts\" } resource \"aws_sns_topic_subscription\" \"email\" { topic_arn = aws_sns_topic.alerts.arn protocol = \"email\" endpoint = \"team@example.com\" }' > sns.tf"
+  },
+  {
+    "instruction": "Create a DynamoDB table with auto-scaling",
+    "output": "echo 'resource \"aws_dynamodb_table\" \"table\" { name = \"app-data\" billing_mode = \"PROVISIONED\" hash_key = \"id\" read_capacity = 5 write_capacity = 5 attribute { name = \"id\" type = \"S\" } }' > dynamodb.tf"
+  },
+  {
+    "instruction": "Create an ECR repository",
+    "output": "echo 'resource \"aws_ecr_repository\" \"app\" { name = \"my-app\" image_scanning_configuration { scan_on_push = true } }' > ecr.tf"
+  },
+  {
+    "instruction": "Create an EKS cluster with node group",
+    "output": "echo 'resource \"aws_eks_cluster\" \"main\" { name = \"prod-eks\" role_arn = aws_iam_role.eks.arn vpc_config { subnet_ids = data.aws_subnets.private.ids } } resource \"aws_eks_node_group\" \"workers\" { cluster_name = aws_eks_cluster.main.name node_role_arn = aws_iam_role.node.arn subnet_ids = data.aws_subnets.private.ids scaling_config { desired_size = 3 max_size = 10 min_size = 2 } instance_types = [\"t3.medium\"] }' > eks.tf"
+  },
+  {
+    "instruction": "Create a KMS key for encryption",
+    "output": "echo 'resource \"aws_kms_key\" \"main\" { description = \"App encryption key\" enable_key_rotation = true deletion_window_in_days = 7 }' > kms.tf"
+  },
+  {
+    "instruction": "Create a Secrets Manager secret",
+    "output": "echo 'resource \"aws_secretsmanager_secret\" \"db\" { name = \"prod/db/password\" } resource \"aws_secretsmanager_secret_version\" \"db\" { secret_id = aws_secretsmanager_secret.db.id secret_string = var.db_password }' > secrets.tf"
+  },
+  {
+    "instruction": "Create an SSM Parameter Store parameter",
+    "output": "echo 'resource \"aws_ssm_parameter\" \"config\" { name = \"/app/config/url\" type = \"String\" value = \"https://api.example.com\" }' > ssm.tf"
+  },
+  {
+    "instruction": "Run Terraform destroy with auto-approve and parallelism",
+    "output": "terraform destroy -auto-approve -parallelism=3"
+  },
+  {
+    "instruction": "Generate execution plan with out file and apply it in one shot",
+    "output": "terraform plan -out=plan.out && terraform apply plan.out"
+  }
+]

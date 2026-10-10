@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Trace a running daemon for debugging",
+    "output": "<think>\nSo the request is to trace a running daemon for debugging.\nLet me think about the best approach.\nBest tool here is strace — system call tracing.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -p $(pidof nginx) -f -o /tmp/nginx-strace.log"
+  },
+  {
+    "instruction": "Monitor database query from application",
+    "output": "<think>\nSo the request is to monitor database query from application.\nLet me consider what makes sense here.\nstrace is what we need — system call tracing.\nWhy -e? Edit or executable. needed for this specific use case.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e trace=network,sendto,recvfrom -p $(pgrep -f 'postgres|mysql|sqlite')"
+  },
+  {
+    "instruction": "Debug connection refused errors",
+    "output": "<think>\nWe should debug connection refused errors.\nLet me consider what makes sense here.\nFor this, strace is the right tool — system call tracing.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nWhy -p? Create parent directories as needed. without it the command won't work as we need.\nThe -f flag means force, suppress errors, which matters here because without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -e trace=connect -p $(pgrep -f myapp) -o connect.log"
+  },
+  {
+    "instruction": "Identify slow file reads in app",
+    "output": "<think>\nWe're being asked to identify slow file reads in app.\nI'd use strace for this — system call tracing.\nThe -T flag means print filesystem type in df, which matters here because standard practice for this kind of operation.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -T -e trace=read -p $(pgrep -f myapp) 2>&1 | awk -F'[<>]' '{if($2>0.01) print}'"
+  },
+  {
+    "instruction": "Find missing files an app needs",
+    "output": "<think>\nNeed to find missing files an app needs.\nLet me break this down.\nThis calls for strace. System call tracing.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nstrace -e trace=openat,stat -p $(pgrep -f myapp) -o missing-files.log 2>&1 & sleep 10; kill %1"
+  },
+  {
+    "instruction": "Debug permission denied errors",
+    "output": "<think>\nThis is asking us to debug permission denied errors.\nLet me break this down.\nThis calls for strace. System call tracing.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nstrace -e trace=openat -e status=failed -p $(pgrep -f myapp) 2>&1 | grep EACCES"
+  },
+  {
+    "instruction": "Trace config file loading at startup",
+    "output": "<think>\nNeed to trace config file loading at startup.\nI'll reach for strace here because system call tracing.\nWhy -e? Edit or executable. needed for this specific use case.\nWhy -f? Force, suppress errors. needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nstrace -e trace=openat -f myapp 2>&1 | grep 'config\\|conf'"
+  },
+  {
+    "instruction": "Find library loading issues",
+    "output": "<think>\nThis is asking us to find library loading issues.\nstrace is what we need — system call tracing.\nI've added -e to edit or executable — standard practice for this kind of operation.\nI've added -E to extended regex — this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=openat myapp 2>&1 | grep -E '\\.so|No such file'"
+  },
+  {
+    "instruction": "Debug DNS resolution timeout",
+    "output": "<think>\nThe user wants to debug DNS resolution timeout.\nI'd use strace for this — system call tracing.\nI've added -e to edit or executable — this controls how the output is formatted.\nWhy -T? Print filesystem type in df. without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -e trace=connect -T curl -v http://example.com 2>&1 | grep -E 'connect|time'"
+  },
+  {
+    "instruction": "Identify socket leaks in app",
+    "output": "<think>\nWe should identify socket leaks in app.\nLet me break this down.\nI'd use strace for this — system call tracing.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -e trace=socket,close -p $(pgrep -f myapp) -o sockets.log 2>&1 & sleep 30; kill %1; cat sockets.log | awk '{a[$1]++} END{for(k in a) print a[k],k}'"
+  },
+  {
+    "instruction": "Debug slow shutdown sequence",
+    "output": "<think>\nThe goal is to debug slow shutdown sequence.\nLet me think about the best approach.\nI'll reach for strace here because system call tracing.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nI'm using -T for print filesystem type in df — needed for this specific use case.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -f -T -o /tmp/shutdown.log kill -TERM $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "Monitor lock file creation",
+    "output": "<think>\nWe should monitor lock file creation.\nFirst, let me understand what's needed here.\nThe tool for this job is strace — system call tracing.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nstrace -e trace=openat,flock -p $(pgrep -f myapp) 2>&1 | grep -E 'lock|\\.pid|\\.lock'"
+  },
+  {
+    "instruction": "Track unlink (file deletion) operations",
+    "output": "<think>\nSo the request is to track unlink (file deletion) operations.\nI'd use strace for this — system call tracing.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nstrace -e trace=unlink,unlinkat -p $(pgrep -f myapp) 2>&1"
+  },
+  {
+    "instruction": "Debug cron job execution",
+    "output": "<think>\nThe user wants to debug cron job execution.\nLet me consider what makes sense here.\nI'd use strace for this — system call tracing.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -f -e trace=execve,clone -o /tmp/cron-strace.log cron"
+  },
+  {
+    "instruction": "Monitor log file writes from app",
+    "output": "<think>\nAlright, we need to monitor log file writes from app.\nLet me think about the best approach.\nBest tool here is strace — system call tracing.\nI've added -e to edit or executable — without it the command won't work as we need.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nstrace -e trace=write,writev -p $(pgrep -f myapp) -o /tmp/app-writes.log"
+  },
+  {
+    "instruction": "Debug race condition with timing",
+    "output": "<think>\nThe task requires us to debug race condition with timing.\nLet me think about the best approach.\nBest tool here is strace — system call tracing.\n</think>\nstrace -r -f -o /tmp/race-timing.log myapp"
+  },
+  {
+    "instruction": "Find mmap churn in application",
+    "output": "<think>\nThe user wants to find mmap churn in application.\nHere's how I'd approach this.\nThis calls for strace. System call tracing.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nI've added -c to count or create — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -e trace=mmap,munmap -c myapp"
+  },
+  {
+    "instruction": "Identify file descriptors left open",
+    "output": "<think>\nWe should identify file descriptors left open.\nLet me consider what makes sense here.\nBest tool here is strace — system call tracing.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e trace=openat,close -f -o /tmp/fd-trace.log myapp; awk '/openat/ {o++} /close/ {c++} END {print \"opens:\",o,\"closes:\",c}' /tmp/fd-trace.log"
+  },
+  {
+    "instruction": "Debug docker container entrypoint",
+    "output": "<think>\nSo the request is to debug docker container entrypoint.\nLet me reason through this.\nBest tool here is strace — system call tracing.\nI've added -f to force, suppress errors — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nstrace -f -e trace=execve -o /tmp/docker-strace.log docker run alpine echo hello"
+  },
+  {
+    "instruction": "Monitor systemd unit startup",
+    "output": "<think>\nThe user wants to monitor systemd unit startup.\nFor this, strace is the right tool — system call tracing.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -f -e trace=execve,openat -o /tmp/unit-trace.log systemctl start myapp.service"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Query rate of HTTP requests over 5 minutes",
+    "output": "rate(http_requests_total[5m])"
+  },
+  {
+    "instruction": "Query average request duration in last minute",
+    "output": "avg(rate(http_request_duration_seconds_sum[1m]) / rate(http_request_duration_seconds_count[1m]))"
+  },
+  {
+    "instruction": "Query 99th percentile of request duration",
+    "output": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))"
+  },
+  {
+    "instruction": "Query CPU usage percentage",
+    "output": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+  },
+  {
+    "instruction": "Query memory usage percentage",
+    "output": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)"
+  },
+  {
+    "instruction": "Query disk usage percentage",
+    "output": "100 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} * 100)"
+  },
+  {
+    "instruction": "Count distinct label values",
+    "output": "count(count by (instance) (up))"
+  },
+  {
+    "instruction": "Sum of metrics by a label",
+    "output": "sum by (job) (rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Top 5 instances by CPU usage",
+    "output": "topk(5, avg by (instance) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])))"
+  },
+  {
+    "instruction": "Bottom 5 instances by free memory",
+    "output": "bottomk(5, node_memory_MemAvailable_bytes)"
+  },
+  {
+    "instruction": "Use offset modifier to compare with previous week",
+    "output": "node_cpu_seconds_total offset 1w"
+  },
+  {
+    "instruction": "Use offset to compare current and previous value",
+    "output": "node_memory_MemAvailable_bytes - node_memory_MemAvailable_bytes offset 1h"
+  },
+  {
+    "instruction": "Use @ modifier to query at a specific timestamp",
+    "output": "node_cpu_seconds_total @ 1721923200"
+  },
+  {
+    "instruction": "Check if any target is down",
+    "output": "up == 0"
+  },
+  {
+    "instruction": "Predict disk fill time",
+    "output": "predict_linear(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"}[6h], 86400)"
+  },
+  {
+    "instruction": "Absent function to detect missing series",
+    "output": "absent(up{job=\"node\"})"
+  },
+  {
+    "instruction": "Changes function to detect changes over time",
+    "output": "changes(node_cpu_seconds_total[10m]) > 0"
+  },
+  {
+    "instruction": "Delta over a range vector",
+    "output": "delta(node_cpu_seconds_total[5m])"
+  },
+  {
+    "instruction": "Increase over a range",
+    "output": "increase(http_requests_total[1h])"
+  },
+  {
+    "instruction": "Irate for instant rate with high-res",
+    "output": "irate(node_network_receive_bytes_total[5m])"
+  },
+  {
+    "instruction": "Deriv of a gauge over time",
+    "output": "deriv(node_memory_MemFree_bytes[30m])"
+  },
+  {
+    "instruction": "Histogram quantile for latency",
+    "output": "histogram_quantile(0.95, sum(rate(grpc_server_handling_seconds_bucket[5m])) by (le, service))"
+  },
+  {
+    "instruction": "Label replace function",
+    "output": "label_replace(up, \"dc\", \"$1\", \"instance\", \"(.*):.*\")"
+  },
+  {
+    "instruction": "Label join function",
+    "output": "label_join(up, \"full_name\", \":\", \"job\", \"instance\")"
+  },
+  {
+    "instruction": "Sort by value ascending",
+    "output": "sort(node_memory_MemFree_bytes)"
+  }
+]

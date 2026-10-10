@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "How to filter Varnish log by status code",
+    "output": "varnishlog -g request -q 'RespStatus == 404'"
+  },
+  {
+    "instruction": "How to change Varnish runtime parameter",
+    "output": "varnishadm param.set default_ttl 3600"
+  },
+  {
+    "instruction": "How to compile VCL for testing",
+    "output": "varnishd -C -f /etc/varnish/default.vcl -o /tmp/compiled.vcl"
+  },
+  {
+    "instruction": "How to show Varnish statistics in JSON",
+    "output": "varnishstat -j"
+  },
+  {
+    "instruction": "How to show Varnish storage usage",
+    "output": "varnishstat -1 | grep -E 'SMA|SMF'"
+  },
+  {
+    "instruction": "How to set Varnish backend to healthy",
+    "output": "varnishadm backend.set_health backend1 healthy"
+  },
+  {
+    "instruction": "How to show Varnish statistics with rate counters",
+    "output": "varnishstat -r"
+  },
+  {
+    "instruction": "How to show Varnish hit/miss ratio",
+    "output": "varnishstat -1 | grep -E 'MAIN\\.(cache|hit|miss)'"
+  },
+  {
+    "instruction": "How to start Varnish with multiple backends",
+    "output": "varnishd -a :80 -f /etc/varnish/multi.vcl -s malloc,512m -p default_ttl=120"
+  },
+  {
+    "instruction": "How to ban URLs matching a pattern in Varnish",
+    "output": "varnishadm ban req.url ~ '\\.php$'"
+  },
+  {
+    "instruction": "How to add grace mode in VCL",
+    "output": "echo 'sub vcl_hit { if (obj.ttl >= 0s) { return (deliver); } if (obj.ttl + obj.grace > 0s && std.healthy(req.backend_hint)) { return (deliver); } return (fetch); } sub vcl_backend_response { set beresp.grace = 24h; }' > /etc/varnish/grace.vcl"
+  },
+  {
+    "instruction": "How to purge by cache tag in Varnish",
+    "output": "varnishadm ban obj.http.x-cache-tag ~ '^product_1234'"
+  },
+  {
+    "instruction": "How to test VCL syntax",
+    "output": "varnishd -C -f /etc/varnish/default.vcl > /dev/null 2>&1"
+  },
+  {
+    "instruction": "How to show Varnish backend health",
+    "output": "varnishadm backend.health"
+  },
+  {
+    "instruction": "How to set Varnish backend to unhealthy",
+    "output": "varnishadm backend.set_health backend1 sick"
+  },
+  {
+    "instruction": "How to add a health probe in VCL",
+    "output": "echo 'probe health_check { .url = \"/health\"; .interval = 5s; .timeout = 1s; .window = 5; .threshold = 3; } backend server1 { .host = \"10.0.0.1\"; .port = \"80\"; .probe = health_check; }' > /etc/varnish/health.vcl"
+  },
+  {
+    "instruction": "How to watch Varnish live statistics",
+    "output": "varnishstat -w 2"
+  },
+  {
+    "instruction": "How to show active VCL in Varnish",
+    "output": "varnishadm vcl.list"
+  },
+  {
+    "instruction": "How to add cookie stripping in VCL",
+    "output": "echo 'sub vcl_recv { if (req.url ~ \"^/static/\") { unset req.http.cookie; } }' > /etc/varnish/strip-cookies.vcl"
+  },
+  {
+    "instruction": "How to purge a specific URL in Varnish",
+    "output": "varnishadm ban req.url == '/path/to/page'"
+  },
+  {
+    "instruction": "How to view Varnish log in real-time",
+    "output": "varnishlog -g raw"
+  },
+  {
+    "instruction": "How to show Varnish runtime parameters",
+    "output": "varnishadm param.show"
+  },
+  {
+    "instruction": "How to tune Varnish thread pool parameters",
+    "output": "varnishadm param.set thread_pool_max 500 && varnishadm param.set thread_pool_min 50"
+  },
+  {
+    "instruction": "How to reload VCL in Varnish without restart",
+    "output": "varnishadm vcl.load reloaded /etc/varnish/default.vcl && varnishadm vcl.use reloaded"
+  },
+  {
+    "instruction": "How to ban by hostname in Varnish",
+    "output": "varnishadm ban req.http.host == 'old.example.com'"
+  },
+  {
+    "instruction": "How to start Varnish with a custom VCL",
+    "output": "varnishd -a :80 -f /etc/varnish/custom.vcl -s file,/var/lib/varnish/varnish_storage.bin,1G"
+  }
+]

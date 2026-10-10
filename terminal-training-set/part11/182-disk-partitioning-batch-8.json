@@ -1,0 +1,94 @@
+[
+  {
+    "instruction": "How to clone a partition table to another disk",
+    "output": "<think>\nWe're being asked to clone a partition table to another disk.\nLet me reason through this.\nBest tool here is sgdisk — sgdisk operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nsgdisk -R /dev/sdb /dev/sda"
+  },
+  {
+    "instruction": "How to randomize the disk GUID",
+    "output": "<think>\nWe're being asked to randomize the disk GUID.\nI'd use sgdisk for this — sgdisk operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsgdisk -G /dev/sda"
+  },
+  {
+    "instruction": "How to create a 512MiB EFI system partition",
+    "output": "<think>\nThe goal is to create a 512MiB EFI system partition.\nLet me think about the best approach.\nBest tool here is sgdisk — sgdisk operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nsgdisk -n 1:0:+512MiB -t 1:ef00 /dev/sda"
+  },
+  {
+    "instruction": "How to create an ext4 filesystem on a partition",
+    "output": "<think>\nWe should create an ext4 filesystem on a partition.\nLet me break this down.\nFor this, mkfs.ext4 is the right tool — mkfs.ext4 operations.\n</think>\nmkfs.ext4 /dev/sda1"
+  },
+  {
+    "instruction": "How to set up a swap partition",
+    "output": "<think>\nNeed to set up a swap partition.\nI'll reach for mkswap here because mkswap operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nmkswap /dev/sda2"
+  },
+  {
+    "instruction": "How to list block devices with lsblk",
+    "output": "<think>\nAlright, we need to list block devices with lsblk.\nLet me reason through this.\nThis calls for lsblk. Block device listing.\n</think>\nlsblk /dev/sda"
+  },
+  {
+    "instruction": "How to show UUIDs of partitions with blkid",
+    "output": "<think>\nWe're being asked to show UUIDs of partitions with blkid.\nLet me think about the best approach.\nBest tool here is blkid — block device attribute lookup.\nCheck the output for errors before proceeding to the next step.\n</think>\nblkid /dev/sda1"
+  },
+  {
+    "instruction": "How to convert an MBR disk to GPT with gdisk",
+    "output": "<think>\nNeed to convert an MBR disk to GPT with gdisk.\nI'd use gdisk for this — gdisk operations.\nAfter running, I'll confirm the result looks right.\n</think>\ngdisk /dev/sda <<< 'w\n'"
+  },
+  {
+    "instruction": "How to resize a GPT partition to grow it",
+    "output": "<think>\nThis is asking us to resize a GPT partition to grow it.\nLet me consider what makes sense here.\nI'd use parted for this — disk partitioning.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted /dev/sda resizepart 1 500MiB"
+  },
+  {
+    "instruction": "How to create a logical partition inside extended",
+    "output": "<think>\nSo we need to create a logical partition inside extended.\nLet me think through this step by step.\nThe tool for this job is parted — disk partitioning.\nNo need for complex pipelines here — one command is sufficient.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted /dev/sda mkpart logical 512MiB 1GiB"
+  },
+  {
+    "instruction": "How to create a partition aligned to optimal I/O",
+    "output": "<think>\nWe should create a partition aligned to optimal I/O.\nLet me break this down.\nFor this, parted is the right tool — disk partitioning.\nI've added -a to AND operator in find — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted -a optimal /dev/sda mkpart primary 0% 100%"
+  },
+  {
+    "instruction": "How to create a swap partition with sgdisk",
+    "output": "<think>\nSo the request is to create a swap partition with sgdisk.\nFirst, let me understand what's needed here.\nsgdisk is what we need — sgdisk operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nsgdisk -n 2:0:+8G -t 2:8200 /dev/sda"
+  },
+  {
+    "instruction": "How to list the partition table of a disk with fdisk",
+    "output": "<think>\nAlright, we need to list the partition table of a disk with fdisk.\nLet me break this down.\nFor this, fdisk is the right tool — disk management.\nThe -l flag handles long format with details. Important because needed for this specific use case.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\nLet me verify afterward that it worked correctly.\n</think>\nfdisk -l /dev/sda"
+  },
+  {
+    "instruction": "How to list all disks and partitions",
+    "output": "<think>\nThe user wants to list all disks and partitions.\nHere's how I'd approach this.\nI'll reach for fdisk here because disk management.\nI'm using -l for long format with details — standard practice for this kind of operation.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\nLet me verify afterward that it worked correctly.\n</think>\nfdisk -l"
+  },
+  {
+    "instruction": "How to open fdisk interactively on a disk",
+    "output": "<think>\nThe user wants to open fdisk interactively on a disk.\nI'll reach for fdisk here because disk management.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\n</think>\nfdisk /dev/sda"
+  },
+  {
+    "instruction": "How to create a GPT partition table with fdisk",
+    "output": "<think>\nThe task requires us to create a GPT partition table with fdisk.\nfdisk is what we need — disk management.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\n</think>\nfdisk /dev/sda <<< 'g\nw\n'"
+  },
+  {
+    "instruction": "How to create an MBR partition table with fdisk",
+    "output": "<think>\nThe goal is to create an MBR partition table with fdisk.\nFirst, let me understand what's needed here.\nBest tool here is fdisk — disk management.\nOne command does the job. Simple is better.\nModifying partition tables can nuke all data on the disk. Double-check the device name.\nAfter running, I'll confirm the result looks right.\n</think>\nfdisk /dev/sda <<< 'o\nw\n'"
+  },
+  {
+    "instruction": "How to delete a partition with fdisk",
+    "output": "<think>\nAlright, we need to delete a partition with fdisk.\nLet me consider what makes sense here.\nFor this, fdisk is the right tool — disk management.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nfdisk /dev/sda <<< 'd\nw\n'"
+  },
+  {
+    "instruction": "How to list the partition table with gdisk",
+    "output": "<think>\nWe're being asked to list the partition table with gdisk.\nI'd use gdisk for this — gdisk operations.\nWhy -l? Long format with details. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ngdisk -l /dev/sda"
+  },
+  {
+    "instruction": "How to open gdisk interactively",
+    "output": "<think>\nThe user wants to open gdisk interactively.\nFirst, let me understand what's needed here.\nI'd use gdisk for this — gdisk operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ngdisk /dev/sda"
+  },
+  {
+    "instruction": "How to create a GPT table with sgdisk",
+    "output": "<think>\nWe're being asked to create a GPT table with sgdisk.\nThe tool for this job is sgdisk — sgdisk operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nsgdisk -o /dev/sda"
+  },
+  {
+    "instruction": "How to create a 100MB partition with sgdisk",
+    "output": "<think>\nAlright, we need to create a 100MB partition with sgdisk.\nI'd use sgdisk for this — sgdisk operations.\nI'm using -n for dry-run, no changes — standard practice for this kind of operation.\n</think>\nsgdisk -n 1:0:+100M /dev/sda"
+  },
+  {
+    "instruction": "How to create a partition filling the entire disk",
+    "output": "<think>\nWe're being asked to create a partition filling the entire disk.\nBest tool here is sgdisk — sgdisk operations.\nThe -n flag means dry-run, no changes, which matters here because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nsgdisk -n 1:0:0 /dev/sda"
+  }
+]

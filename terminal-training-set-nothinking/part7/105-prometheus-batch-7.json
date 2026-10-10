@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Check Prometheus targets page",
+    "output": "curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job, health, scrapeUrl}'"
+  },
+  {
+    "instruction": "Check Prometheus rules via promtool with health",
+    "output": "promtool check rules --lint-errors rules.yml"
+  },
+  {
+    "instruction": "Promtool check web config hashing",
+    "output": "promtool check web-config web.yml"
+  },
+  {
+    "instruction": "Generate password hash for basic auth",
+    "output": "promtool generate-password-hash mypassword"
+  },
+  {
+    "instruction": "Create a web config for Prometheus basic auth",
+    "output": "echo 'basic_auth_users: prom: <hashed_password>' > web.yml"
+  },
+  {
+    "instruction": "Start Prometheus with web config for auth",
+    "output": "prometheus --config.file prometheus.yml --web.config.file web.yml"
+  },
+  {
+    "instruction": "Enable TLS for Prometheus web",
+    "output": "echo 'tls_server_config: cert_file: server.crt key_file: server.key' > web.yml"
+  },
+  {
+    "instruction": "Use HTTP/2 for Prometheus web server",
+    "output": "prometheus --config.file prometheus.yml --web.config.file web.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager Slack receiver",
+    "output": "echo 'receivers: - name: slack slack_configs: - api_url: https://hooks.slack.com/services/T00/B00/xxx channel: \"#alerts\" send_resolved: true' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager email receiver",
+    "output": "echo 'receivers: - name: email email_configs: - to: admin@example.com from: alert@example.com smarthost: smtp.example.com:587 auth_username: user auth_password: pass' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager PagerDuty receiver",
+    "output": "echo 'receivers: - name: pagerduty pagerduty_configs: - routing_key: abc123' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager OpsGenie receiver",
+    "output": "echo 'receivers: - name: opsgenie opsgenie_configs: - api_key: abc123 responders: - name: team type: team' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager VictorOps receiver",
+    "output": "echo 'receivers: - name: victorops victorops_configs: - api_key: abc123 routing_key: devops' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager Webhook receiver",
+    "output": "echo 'receivers: - name: webhook webhook_configs: - url: https://hooks.example.com/alerts send_resolved: true' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set group_wait in Alertmanager route",
+    "output": "echo 'route: group_by: [alertname] group_wait: 30s group_interval: 5m repeat_interval: 4h receiver: default' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set Alertmanager time-based inhibition",
+    "output": "echo 'inhibit_rules: - source_match: alertname: InstanceDown target_match: alertname: InstanceNetworkEqual: [instance]' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Set Alertmanager mute time intervals",
+    "output": "echo 'mute_time_intervals: - name: maintenance time_intervals: - times: - start: \"02:00\" end: \"04:00\" weekdays: [saturday, sunday]' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager with multiple routes",
+    "output": "echo 'route: routes: - receiver: team-A match: severity: critical - receiver: team-B match: severity: warning' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Configure Alertmanager route by regex",
+    "output": "echo 'route: routes: - receiver: db match_re: service: \"(mysql|postgres|redis)\"' >> alertmanager.yml"
+  },
+  {
+    "instruction": "Start Alertmanager with custom storage",
+    "output": "alertmanager --config.file alertmanager.yml --storage.path /data/alertmanager"
+  },
+  {
+    "instruction": "Start Alertmanager with cluster peers",
+    "output": "alertmanager --config.file alertmanager.yml --cluster.listen-address 0.0.0.0:9094 --cluster.peer alert1:9094,alert2:9094"
+  },
+  {
+    "instruction": "Start Alertmanager without clustering",
+    "output": "alertmanager --config.file alertmanager.yml --cluster.listen-address="
+  },
+  {
+    "instruction": "Reload Alertmanager config via API",
+    "output": "curl -X POST http://localhost:9093/-/reload"
+  },
+  {
+    "instruction": "Check Alertmanager status via API",
+    "output": "curl http://localhost:9093/api/v2/status"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "PT: Checksum tables for replication consistency",
+    "output": "pt-table-checksum --databases=mydb --replicate=percona.checksums"
+  },
+  {
+    "instruction": "PT: Sync table data between master and replica",
+    "output": "pt-table-sync --execute --sync-to-master h=replica.example.com,D=mydb"
+  },
+  {
+    "instruction": "PT: Analyze slow query log",
+    "output": "pt-query-digest /var/log/mysql/mysql-slow.log"
+  },
+  {
+    "instruction": "PT: Analyze process list",
+    "output": "pt-query-digest --processlist h=localhost"
+  },
+  {
+    "instruction": "Xtrabackup: Full backup",
+    "output": "xtrabackup --backup --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Prepare for restore",
+    "output": "xtrabackup --prepare --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Restore from backup",
+    "output": "xtrabackup --copy-back --target-dir=/backup/mysql/full"
+  },
+  {
+    "instruction": "Xtrabackup: Streaming backup with compression",
+    "output": "xtrabackup --backup --stream=xbstream --target-dir=/tmp/backup | gzip > backup.xbstream.gz"
+  },
+  {
+    "instruction": "Run mysqlslap benchmark with concurrency",
+    "output": "mysqlslap --user=root --password --concurrency=10,50 --iterations=5 --number-int-cols=5 --number-char-cols=20 --auto-generate-sql"
+  },
+  {
+    "instruction": "Run mysqlslap with a custom query",
+    "output": "mysqlslap --user=root --password --concurrency=10 --iterations=3 --query=\"SELECT * FROM mydb.orders WHERE status='pending'\""
+  },
+  {
+    "instruction": "Run mysqlslap with many queries",
+    "output": "mysqlslap --user root --password --concurrency=20 --number-of-queries=1000 --auto-generate-sql"
+  },
+  {
+    "instruction": "Check MyISAM table for errors",
+    "output": "myisamchk -e /var/lib/mysql/mydb/mytable.MYI"
+  },
+  {
+    "instruction": "Repair MyISAM table",
+    "output": "myisamchk -r /var/lib/mysql/mydb/mytable.MYI"
+  },
+  {
+    "instruction": "Show table sizes in a database",
+    "output": "mysql -u root -p -e \"SELECT table_schema, table_name, ROUND((data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.tables WHERE table_schema = 'mydb' ORDER BY size_mb DESC\""
+  },
+  {
+    "instruction": "Show top 5 largest tables",
+    "output": "mysql -u root -p -e \"SELECT table_name, ROUND(((data_length + index_length) / 1024 / 1024), 2) AS size_mb FROM information_schema.tables WHERE table_schema = 'mydb' ORDER BY (data_length + index_length) DESC LIMIT 5\""
+  },
+  {
+    "instruction": "Set global MySQL variable",
+    "output": "mysql -u root -p -e \"SET GLOBAL max_connections = 500\""
+  },
+  {
+    "instruction": "Flush the query cache",
+    "output": "mysql -u root -p -e \"RESET QUERY CACHE\""
+  },
+  {
+    "instruction": "Add an index without blocking writes",
+    "output": "mysql -u root -p mydb -e \"ALTER TABLE orders ADD INDEX idx_status (status), ALGORITHM=INPLACE, LOCK=NONE\""
+  },
+  {
+    "instruction": "Show open tables in use",
+    "output": "mysql -u root -p -e \"SHOW OPEN TABLES WHERE In_use > 0\""
+  },
+  {
+    "instruction": "Check for table fragmentation",
+    "output": "mysql -u root -p -e \"SELECT table_schema, table_name, ROUND(data_free / 1024 / 1024, 2) AS frag_mb FROM information_schema.tables WHERE data_free > 0 AND table_schema = 'mydb' ORDER BY frag_mb DESC\""
+  },
+  {
+    "instruction": "Run MySQL upgrade check",
+    "output": "mysqlcheck -u root -p --all-databases --check-upgrade"
+  },
+  {
+    "instruction": "Set InnoDB buffer pool size globally",
+    "output": "mysql -u root -p -e \"SET GLOBAL innodb_buffer_pool_size = 4294967296\""
+  }
+]

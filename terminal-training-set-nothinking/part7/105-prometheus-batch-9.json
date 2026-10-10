@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Setup Prometheus federation",
+    "output": "echo 'scrape_configs: - job_name: federate honor_labels: true metrics_path: /federate params: match[]: - {__name__=~\"job:.*\"} static_configs: - targets: - upstream-prom:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure Prometheus with scrape config limits",
+    "output": "echo 'scrape_configs: - job_name: big scrape_timeout: 10s scrape_interval: 30s sample_limit: 5000 static_configs: - targets: - big:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Use Prometheus data via Grafana as datasource",
+    "output": "echo 'apiVersion: 1 datasources: - name: Prometheus type: prometheus access: proxy url: http://localhost:9090 isDefault: true' > grafana-datasource.yml"
+  },
+  {
+    "instruction": "Install prometheus-adapter for k8s metrics",
+    "output": "helm install prometheus-adapter prometheus-community/prometheus-adapter --set prometheus.url=http://prometheus-server"
+  },
+  {
+    "instruction": "Custom metrics API via prometheus-adapter",
+    "output": "echo 'rules: default: false custom: - seriesQuery: http_requests_total resources: overrides: namespace: resource: namespace name: matches: ^(.*) as: \"${1}_total\"' > adapter-config.yaml"
+  },
+  {
+    "instruction": "Install Prometheus Operator in k8s",
+    "output": "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm install prometheus prometheus-community/kube-prometheus-stack"
+  },
+  {
+    "instruction": "Expose Prometheus via NodePort in k8s",
+    "output": "kubectl patch svc prometheus-kube-prometheus-prometheus -n monitoring -p '{\"spec\":{\"type\":\"NodePort\"}}'"
+  },
+  {
+    "instruction": "Install Thanos sidecar for long-term storage",
+    "output": "docker run -d --name thanos-sidecar --volumes-from prometheus quay.io/thanos/thanos sidecar --tsdb.path /prometheus --prometheus.url http://localhost:9090 --objstore.config-file bucket.yml"
+  },
+  {
+    "instruction": "Thanos store gateway config",
+    "output": "echo 'type: S3 config: bucket: thanos endpoint: s3.amazonaws.com access_key: AKIA... secret_key: ...' > bucket.yml"
+  },
+  {
+    "instruction": "Query Thanos via querier",
+    "output": "docker run -d --name thanos-querier quay.io/thanos/thanos query --grpc-address 0.0.0.0:10901 --http-address 0.0.0.0:10902 --endpoint thanos-sidecar:10901"
+  },
+  {
+    "instruction": "Thanos compactor for downsampling",
+    "output": "docker run -d --name thanos-compactor quay.io/thanos/thanos compact --data-dir /data --objstore.config-file bucket.yml --retention.resolution-raw 30d --retention.resolution-5m 180d --retention.resolution-1h 365d"
+  },
+  {
+    "instruction": "Thanos ruler for rule evaluation",
+    "output": "docker run -d --name thanos-ruler quay.io/thanos/thanos rule --data-dir /data --rule-file rules.yml --alertmanagers.url http://alertmanager:9093 --objstore.config-file bucket.yml --query endpointexample-thanos-querier:10901"
+  },
+  {
+    "instruction": "Use PromQL with histogram fraction",
+    "output": "histogram_fraction(0.5, 0.9, rate(http_request_duration_seconds_bucket[5m]))"
+  },
+  {
+    "instruction": "Use PromQL datetime functions for alerting window",
+    "output": "hour() >= 9 and hour() < 17 and day_of_week() >= 1 and day_of_week() <= 5"
+  },
+  {
+    "instruction": "Calculate error budget with PromQL",
+    "output": "1 - (sum(rate(http_requests_total{status=~\"5..\"}[28d])) / sum(rate(http_requests_total[28d])))"
+  },
+  {
+    "instruction": "Predict disk exhaustion with linear regression",
+    "output": "predict_linear(node_filesystem_avail_bytes[2w], 86400 * 7) < 0"
+  },
+  {
+    "instruction": "Use PromQL annotations for multi-dimensional alerting",
+    "output": "sum by (cluster, namespace) (rate(container_cpu_usage_seconds_total[5m]))"
+  },
+  {
+    "instruction": "Enable remote write with exactly-once delivery",
+    "output": "prometheus --config.file prometheus.yml --enable-feature exactly-once-delivery"
+  },
+  {
+    "instruction": "Track active time series count",
+    "output": "prometheus_tsdb_head_series"
+  },
+  {
+    "instruction": "Track scrape failures rate",
+    "output": "rate(prometheus_target_scrapes_exceeded_sample_limit_total[5m])"
+  },
+  {
+    "instruction": "Monitor Prometheus itself with self-scrape",
+    "output": "echo 'scrape_configs: - job_name: prometheus static_configs: - targets: - localhost:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Create a Prometheus blackbox probe alert",
+    "output": "echo 'groups: - name: blackbox rules: alert: EndpointDown expr: probe_success == 0 for: 1m labels: severity: critical annotations: summary: \"{{ $labels.target }} is unreachable\"' >> rules.yml"
+  },
+  {
+    "instruction": "Alert on node filesystem read-only",
+    "output": "echo 'groups: - name: system rules: alert: FilesystemReadOnly expr: node_filesystem_readonly == 1 for: 1m labels: severity: critical' >> rules.yml"
+  },
+  {
+    "instruction": "Alert on high network errors",
+    "output": "echo 'groups: - name: network rules: alert: HighNetworkErrors expr: rate(node_network_receive_errors_total[5m]) / rate(node_network_receive_packets_total[5m]) > 0.01 for: 10m labels: severity: warning' >> rules.yml"
+  }
+]

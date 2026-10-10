@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to add a netem jitter (delay variation)",
+    "output": "<think>\nNeed to add a netem jitter (delay variation).\nI'd use tc for this — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ntc qdisc add dev eth0 root netem delay 100ms 10ms 25%"
+  },
+  {
+    "instruction": "How to add netem correlation for delay",
+    "output": "<think>\nAlright, we need to add netem correlation for delay.\nI'll reach for tc here because tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root netem delay 100ms 20ms 75%"
+  },
+  {
+    "instruction": "How to add netem loss with correlation",
+    "output": "<think>\nThe goal is to add netem loss with correlation.\nLet me consider what makes sense here.\ntc is what we need — tc operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root netem loss 5% 50%"
+  },
+  {
+    "instruction": "How to add netem gap loss pattern",
+    "output": "<think>\nWe're being asked to add netem gap loss pattern.\nFor this, tc is the right tool — tc operations.\n</think>\ntc qdisc add dev eth0 root netem loss gemodel 10% 20% 50% 10%"
+  },
+  {
+    "instruction": "How to add netem state loss pattern (4-state Markov)",
+    "output": "<think>\nThe task requires us to add netem state loss pattern (4-state Markov).\nHere's how I'd approach this.\nBest tool here is tc — tc operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root netem loss state 10% 20% 30% 40%"
+  },
+  {
+    "instruction": "How to add netem with packet duplication correlation",
+    "output": "<think>\nAlright, we need to add netem with packet duplication correlation.\nFor this, tc is the right tool — tc operations.\nOne command does the job. Simple is better.\n</think>\ntc qdisc add dev eth0 root netem duplicate 2% 80%"
+  },
+  {
+    "instruction": "How to add netem corruption correlation",
+    "output": "<think>\nWe're being asked to add netem corruption correlation.\nI'll reach for tc here because tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root netem corrupt 1% 50%"
+  },
+  {
+    "instruction": "How to add netem reorder with correlation",
+    "output": "<think>\nNeed to add netem reorder with correlation.\nFor this, tc is the right tool — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev eth0 root netem delay 100ms reorder 10% 50%"
+  },
+  {
+    "instruction": "How to add netem with gap reordering",
+    "output": "<think>\nSo the request is to add netem with gap reordering.\ntc is what we need — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root netem gap 5 delay 100ms reorder 25% 50%"
+  },
+  {
+    "instruction": "How to add netem for rate limiting",
+    "output": "<think>\nSo we need to add netem for rate limiting.\nLet me consider what makes sense here.\nThe tool for this job is tc — tc operations.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root netem rate 100kbit"
+  },
+  {
+    "instruction": "How to add netem with packet overhead",
+    "output": "<think>\nWe should add netem with packet overhead.\nI'd use tc for this — tc operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root netem rate 1mbit 20 100"
+  },
+  {
+    "instruction": "How to add netem to simulate cellular network",
+    "output": "<think>\nAlright, we need to add netem to simulate cellular network.\nHere's how I'd approach this.\nI'll reach for tc here because tc operations.\n</think>\ntc qdisc add dev eth0 root netem delay 200ms 50ms loss 2% 25% rate 500kbit duplicate 1% reorder 5% 50%"
+  },
+  {
+    "instruction": "How to add netem on a child qdisc for selective traffic",
+    "output": "<think>\nWe should add netem on a child qdisc for selective traffic.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ntc qdisc add dev eth0 root handle 1: prio && tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 300ms && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 10.0.0.5 flowid 1:3"
+  },
+  {
+    "instruction": "How to remove all netem effects",
+    "output": "<think>\nSo we need to remove all netem effects.\nI'd use tc for this — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc qdisc del dev eth0 root"
+  },
+  {
+    "instruction": "How to show netem statistics",
+    "output": "<think>\nAlright, we need to show netem statistics.\nI'll reach for tc here because tc operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc -s qdisc show dev eth0 | tail -20"
+  },
+  {
+    "instruction": "How to use tc with SSH traffic prioritization",
+    "output": "<think>\nAlright, we need to use tc with SSH traffic prioritization.\nLet me consider what makes sense here.\nFor this, tc is the right tool — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ntc qdisc add dev eth0 root handle 1: prio && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dport 22 0xffff flowid 1:1"
+  },
+  {
+    "instruction": "How to shape voice traffic (UDP 16384-32767)",
+    "output": "<think>\nSo we need to shape voice traffic (UDP 16384-32767).\nBest tool here is tc — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:10 htb rate 512kbit ceil 1mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip sport 16384 0xe000 flowid 1:10"
+  },
+  {
+    "instruction": "How to limit P2P traffic with tc",
+    "output": "<think>\nNeed to limit P2P traffic with tc.\nLet me think about the best approach.\nI'll reach for tc here because tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root handle 1: htb && tc class add dev eth0 parent 1: classid 1:10 htb rate 500kbit ceil 1mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 6 0xff match ip dport 6881 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to use tc to mimic satellite link",
+    "output": "<think>\nThis is asking us to use tc to mimic satellite link.\nFirst, let me understand what's needed here.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root netem delay 600ms 50ms loss 1% rate 10mbit"
+  },
+  {
+    "instruction": "How to add tc with TBF on a virtual interface",
+    "output": "<think>\nThis is asking us to add tc with TBF on a virtual interface.\nLet me think about the best approach.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev veth0 root tbf rate 1mbit burst 32kbit latency 100ms"
+  },
+  {
+    "instruction": "How to set burst in TBF to allow higher peak",
+    "output": "<think>\nWe're being asked to set burst in TBF to allow higher peak.\nI'll reach for tc here because tc operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root tbf rate 1mbit burst 64kbit latency 50ms"
+  },
+  {
+    "instruction": "How to use TBF with peakrate",
+    "output": "<think>\nThe user wants to use TBF with peakrate.\nFor this, tc is the right tool — tc operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root tbf rate 5mbit peakrate 10mbit burst 64kbit mtu 1500"
+  },
+  {
+    "instruction": "How to add a tc filter for ICMP traffic shaping",
+    "output": "<think>\nAlright, we need to add a tc filter for ICMP traffic shaping.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:20 htb rate 100kbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 1 0xff flowid 1:20"
+  },
+  {
+    "instruction": "How to create a simple port forward with tc redirect",
+    "output": "<think>\nWe should create a simple port forward with tc redirect.\nHere's how I'd approach this.\nFor this, tc is the right tool — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc qdisc add dev eth0 ingress && tc filter add dev eth0 parent ffff: protocol ip flower ip_proto tcp dst_port 80 action nat ingress 192.168.1.100:8080"
+  },
+  {
+    "instruction": "How to save tc rules to a script",
+    "output": "<think>\nSo the request is to save tc rules to a script.\nLet me reason through this.\nI'll reach for tc here because tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc show dev eth0 > /root/tc-backup.sh && tc class show dev eth0 >> /root/tc-backup.sh && tc filter show dev eth0 >> /root/tc-backup.sh"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "How to enable HAProxy stats page",
+    "output": "<think>\nThe user wants to enable HAProxy stats page.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'listen stats :1936 mode http stats enable stats uri / stats auth admin:password123' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to configure HAProxy to use TLS termination",
+    "output": "<think>\nWe're being asked to configure HAProxy to use TLS termination.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'frontend web-frontend bind :443 ssl crt /etc/ssl/certs/example.pem' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to enable a server in HAProxy via socket",
+    "output": "<think>\nSo the request is to enable a server in HAProxy via socket.\nLet me reason through this.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\necho 'enable server web-backend/web01' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to check HAProxy version",
+    "output": "<think>\nThe task requires us to check HAProxy version.\nLet me consider what makes sense here.\nFor this, haproxy is the right tool — TCP/HTTP load balancer configuration.\nI've added -v to verbose output — standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nhaproxy -v"
+  },
+  {
+    "instruction": "How to show HAProxy errors via socket",
+    "output": "<think>\nThe user wants to show HAProxy errors via socket.\nLet me think about the best approach.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'show errors' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to rate limit connections per IP in HAProxy",
+    "output": "<think>\nWe're being asked to rate limit connections per IP in HAProxy.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'frontend web-frontend stick-table type ip size 100k expire 30s store conn_cur rate(ps) http-request deny if { src_conn_cur gt 10 }' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to set up HAProxy logging to a specific facility",
+    "output": "<think>\nThe goal is to set up HAProxy logging to a specific facility.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'global log /dev/log local0 info log /dev/log local1 notice' > /etc/haproxy/logging.cfg"
+  },
+  {
+    "instruction": "How to show HAProxy build info",
+    "output": "<think>\nThis is asking us to show HAProxy build info.\nLet me think about the best approach.\nI'd use haproxy for this — TCP/HTTP load balancer configuration.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nhaproxy -vv"
+  },
+  {
+    "instruction": "How to set up HAProxy ACL for path-based routing",
+    "output": "<think>\nThis is asking us to set up HAProxy ACL for path-based routing.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\n</think>\necho 'acl is_api path_beg -i /api use_backend api-backend if is_api default_backend web-backend' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to show all HAProxy backends via socket",
+    "output": "<think>\nWe're being asked to show all HAProxy backends via socket.\nLet me consider what makes sense here.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'show backend' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to clear a HAProxy stick-table",
+    "output": "<think>\nThe task requires us to clear a HAProxy stick-table.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'clear table web-backend' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to configure HAProxy with backup server",
+    "output": "<think>\nNeed to configure HAProxy with backup server.\nLet me consider what makes sense here.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'server web01 10.0.0.1:80 check server web02 10.0.0.2:80 check backup' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to check HAProxy connection distribution",
+    "output": "<think>\nSo the request is to check HAProxy connection distribution.\nHere's how I'd approach this.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'show stat | cut -d, -f1,2,6,7,18' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to set server weight in HAProxy via socket",
+    "output": "<think>\nSo we need to set server weight in HAProxy via socket.\nLet me consider what makes sense here.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\necho 'set server web-backend/web01 weight 50' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to configure HAProxy health check with custom interval",
+    "output": "<think>\nThis is asking us to configure HAProxy health check with custom interval.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'server web01 10.0.0.1:80 check inter 2s rise 3 fall 5' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to set max connections in HAProxy",
+    "output": "<think>\nSo we need to set max connections in HAProxy.\nLet me think through this step by step.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'global maxconn 65535' > /etc/haproxy/global.cfg"
+  },
+  {
+    "instruction": "How to start HAProxy with a config file",
+    "output": "<think>\nThe user wants to start HAProxy with a config file.\nhaproxy is what we need — TCP/HTTP load balancer configuration.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nhaproxy -f /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to add custom error file in HAProxy",
+    "output": "<think>\nThe task requires us to add custom error file in HAProxy.\n</think>\necho 'errorfile 503 /etc/haproxy/errors/503.http' >> /etc/haproxy/haproxy.cfg"
+  },
+  {
+    "instruction": "How to add HTTP basic auth to HAProxy stats",
+    "output": "<think>\nNeed to add HTTP basic auth to HAProxy stats.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'stats auth admin:password123' > /etc/haproxy/stats-auth.cfg"
+  },
+  {
+    "instruction": "How to add an ACL entry via socket in HAProxy",
+    "output": "<think>\nNeed to add an ACL entry via socket in HAProxy.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'add acl /etc/haproxy/whitelist.lst 10.0.0.1' | socat unix-connect:/var/run/haproxy.sock stdio"
+  },
+  {
+    "instruction": "How to show HAProxy stats via socket",
+    "output": "<think>\nWe should show HAProxy stats via socket.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'show stat' | socat unix-connect:/var/run/haproxy.sock stdio"
+  }
+]

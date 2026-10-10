@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an S3 bucket with Pulumi (Python)",
+    "output": "<think>\nWe should create an S3 bucket with Pulumi (Python).\nLet me consider what makes sense here.\nThe tool for this job is pulumi — pulumi operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\npulumi config set aws:region us-east-1 && cat > __main__.py << 'EOF' import pulumi_aws as aws; bucket = aws.s3.Bucket('my-bucket'); pulumi.export('bucket_name', bucket.id) EOF"
+  },
+  {
+    "instruction": "Deploy the S3 bucket Python program",
+    "output": "<think>\nWe should deploy the S3 bucket Python program.\nLet me consider what makes sense here.\nThe tool for this job is pulumi — pulumi operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npulumi up -y"
+  },
+  {
+    "instruction": "Create a VPC with subnets in Pulumi",
+    "output": "<think>\nSo we need to create a VPC with subnets in Pulumi.\nLet me consider what makes sense here.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'from pulumi_aws import ec2; vpc = ec2.Vpc(\"main\", cidr_block=\"10.0.0.0/16\"); subnet = ec2.Subnet(\"public\", vpc_id=vpc.id, cidr_block=\"10.0.1.0/24\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an EC2 instance in Pulumi using AMI lookup",
+    "output": "<think>\nSo the request is to create an EC2 instance in Pulumi using AMI lookup.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'import pulumi_aws as aws; ami = aws.ec2.get_ami(most_recent=True, filters=[{\"name\":\"name\",\"values\":[\"ubuntu-*22.04*\"]}]); instance = aws.ec2.Instance(\"web\", ami=ami.id, instance_type=\"t3.micro\")' > __main__.py"
+  },
+  {
+    "instruction": "Create a security group with ingress rules",
+    "output": "<think>\nThis is asking us to create a security group with ingress rules.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'sg = aws.ec2.SecurityGroup(\"web\", ingress=[{\"protocol\":\"tcp\",\"from_port\":80,\"to_port\":80,\"cidr_blocks\":[\"0.0.0.0/0\"]}])' > sg.py"
+  },
+  {
+    "instruction": "Create an RDS instance with Pulumi",
+    "output": "<think>\nWe're being asked to create an RDS instance with Pulumi.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'db = aws.rds.Instance(\"main\", engine=\"postgres\", engine_version=\"16\", instance_class=\"db.t3.micro\", allocated_storage=20, db_name=\"myapp\", username=\"admin\", password=\"secret123\")' > __main__.py"
+  },
+  {
+    "instruction": "Create a Lambda function with Pulumi",
+    "output": "<think>\nThis is asking us to create a Lambda function with Pulumi.\nLet me consider what makes sense here.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'fn = aws.lambda_.Function(\"fn\", role=iam_role.arn, handler=\"index.handler\", runtime=\"python3.12\", filename=\"lambda.zip\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an ECS Fargate service with Pulumi",
+    "output": "<think>\nThe user wants to create an ECS Fargate service with Pulumi.\nLet me reason through this.\n</think>\necho 'cluster = aws.ecs.Cluster(\"main\"); task_def = aws.ecs.TaskDefinition(\"app\", family=\"app\", network_mode=\"awsvpc\", requires_compatibilities=[\"FARGATE\"], cpu=\"256\", memory=\"512\", container_definitions=json.dumps([{\"name\":\"app\",\"image\":\"nginx:latest\"}])); service = aws.ecs.Service(\"svc\", cluster=cluster.arn, task_definition=task_def.arn, desired_count=2, launch_type=\"FARGATE\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an EKS cluster with Pulumi",
+    "output": "<think>\nNeed to create an EKS cluster with Pulumi.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'cluster = aws.eks.Cluster(\"main\", role_arn=aws.iam.Role(\"eks\", assume_role_policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})).arn); aws.eks.NodeGroup(\"nodes\", cluster_name=cluster.name, node_role_arn=aws.iam.Role(\"node\", assume_role_policy=json.dumps({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})).arn, scaling_config={\"desired_size\":3,\"max_size\":10,\"min_size\":2})' > eks.py"
+  },
+  {
+    "instruction": "Create a Route53 DNS record with Pulumi",
+    "output": "<think>\nWe're being asked to create a Route53 DNS record with Pulumi.\nLet me consider what makes sense here.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'record = aws.route53.Record(\"www\", zone_id=\"Z123456\", name=\"www.example.com\", type=\"A\", ttl=300, records=[\"203.0.113.1\"])' > __main__.py"
+  },
+  {
+    "instruction": "Export output values in Pulumi",
+    "output": "<think>\nNeed to export output values in Pulumi.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'pulumi.export(\"instance_ip\", instance.public_ip); pulumi.export(\"bucket_arn\", bucket.arn)' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.interpolate for string formatting",
+    "output": "<think>\nAlright, we need to use pulumi.interpolate for string formatting.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'url = pulumi.Output.concat(\"https://\", lb.dns_name)' > __main__.py"
+  },
+  {
+    "instruction": "Use apply() to transform Pulumi outputs",
+    "output": "<think>\nNeed to use apply() to transform Pulumi outputs.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'instance_id = instance.id.apply(lambda id: f\"ec2-{id}\")' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.Config to read configuration",
+    "output": "<think>\nThe user wants to use pulumi.Config to read configuration.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'config = pulumi.Config(); env = config.require(\"environment\"); region = config.get(\"region\", \"us-east-1\")' > config_example.py"
+  },
+  {
+    "instruction": "Use pulumi.Config.require_secret for sensitive config",
+    "output": "<think>\nThis is asking us to use pulumi.Config.require_secret for sensitive config.\nLet me think through this step by step.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'config = pulumi.Config(); db_pass = config.require_secret(\"db_password\")' > config_example.py"
+  },
+  {
+    "instruction": "Use StackReference to get another stack's outputs",
+    "output": "<think>\nThe user wants to use StackReference to get another stack's outputs.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'infra = pulumi.StackReference(\"infra/prod\"); vpc_id = infra.require_output(\"vpc_id\")' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for depends_on",
+    "output": "<think>\nWe're being asked to use pulumi.ResourceOptions for depends_on.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'instance = aws.ec2.Instance(\"web\", opts=pulumi.ResourceOptions(depends_on=[sg]))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions with protect",
+    "output": "<think>\nThe task requires us to use pulumi.ResourceOptions with protect.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\necho 'db = aws.rds.Instance(\"main\", opts=pulumi.ResourceOptions(protect=True))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions import to adopt resources",
+    "output": "<think>\nAlright, we need to use pulumi.ResourceOptions import to adopt resources.\nLet me think through this step by step.\nI've added -name to filter by filename pattern — important to get the expected behavior.\n</think>\necho 'bucket = aws.s3.Bucket(\"existing\", opts=pulumi.ResourceOptions(import=\"existing-bucket-name\"))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for deleteBeforeReplace",
+    "output": "<think>\nWe should use pulumi.ResourceOptions for deleteBeforeReplace.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'instance = aws.ec2.Instance(\"web\", opts=pulumi.ResourceOptions(delete_before_replace=True))' > __main__.py"
+  },
+  {
+    "instruction": "Use pulumi.ResourceOptions for aliases (rename migration)",
+    "output": "<think>\nNeed to use pulumi.ResourceOptions for aliases (rename migration).\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\n</think>\necho 'service = aws.ecs.Service(\"app-svc\", opts=pulumi.ResourceOptions(aliases=[\"old-alias-urn\"]))' > __main__.py"
+  },
+  {
+    "instruction": "Create a Pulumi component resource class",
+    "output": "<think>\nWe're being asked to create a Pulumi component resource class.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'class WebServer(pulumi.ComponentResource): def __init__(self, name, opts=None): super().__init__(\"my:component:WebServer\", name, None, opts)' > components.py"
+  },
+  {
+    "instruction": "Add resources inside a component resource",
+    "output": "<think>\nNeed to add resources inside a component resource.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'class WebServer(pulumi.ComponentResource): def __init__(self, name, opts=None): super().__init__(\"my:component:WebServer\", name, None, opts); self.instance = aws.ec2.Instance(f\"{name}-ec2\", opts=pulumi.ResourceOptions(parent=self))' > components.py"
+  },
+  {
+    "instruction": "Export outputs from a component",
+    "output": "<think>\nThe user wants to export outputs from a component.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'class WebServer(pulumi.ComponentResource): def __init__(self): super().__init__(\"my:ws\", \"web\", None); self.register_outputs({\"ip\": self.instance.public_ip})' > components.py"
+  },
+  {
+    "instruction": "Create a Pulumi dynamic provider for custom resources",
+    "output": "<think>\nSo the request is to create a Pulumi dynamic provider for custom resources.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'from pulumi.dynamic import Resource, ResourceProvider; class MyProvider(ResourceProvider): def create(self, props): return {\"id\": \"1\", \"outs\": {\"result\": props[\"input\"]}}; class MyResource(Resource): def __init__(self, name, input, opts=None): super().__init__(MyProvider(), name, {\"input\": input}, opts)' > dynamic.py"
+  }
+]

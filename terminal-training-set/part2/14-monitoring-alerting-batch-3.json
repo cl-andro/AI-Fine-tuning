@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install and run collectd (system metrics collector)",
+    "output": "<think>\nSo we need to install and run collectd (system metrics collector).\nLet me consider what makes sense here.\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y collectd && systemctl enable --now collectd"
+  },
+  {
+    "instruction": "Configure collectd to send to a remote server",
+    "output": "<think>\nWe're being asked to configure collectd to send to a remote server.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho -e 'LoadPlugin network\\n<Plugin network>\\n\\tServer \"192.168.1.100\" \"25826\"\\n</Plugin>' >> /etc/collectd/collectd.conf && systemctl restart collectd"
+  },
+  {
+    "instruction": "Install and run telegraf for metrics collection",
+    "output": "<think>\nThe task requires us to install and run telegraf for metrics collection.\nLet me reason through this.\nwget is what we need — downloading files.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -qO- https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor -o /usr/share/keyrings/influxdb.gpg && echo 'deb [signed-by=/usr/share/keyrings/influxdb.gpg] https://repos.influxdata.com/debian stable main' > /etc/apt/sources.list.d/influxdata.list && apt update && apt install -y telegraf && systemctl enable --now telegraf"
+  },
+  {
+    "instruction": "Test Telegraf output configuration",
+    "output": "<think>\nNeed to test Telegraf output configuration.\nBest tool here is telegraf — telegraf operations.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ntelegraf --test --config /etc/telegraf/telegraf.conf | head -30"
+  },
+  {
+    "instruction": "Configure Telegraf to send to InfluxDB",
+    "output": "<think>\nNeed to configure Telegraf to send to InfluxDB.\nLet me think about the best approach.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e '[[outputs.influxdb]]\\n  urls = [\"http://localhost:8086\"]\\n  database = \"telegraf\"' >> /etc/telegraf/telegraf.conf && systemctl restart telegraf"
+  },
+  {
+    "instruction": "Query InfluxDB for recent metrics",
+    "output": "<think>\nSo the request is to query InfluxDB for recent metrics.\nLet me consider what makes sense here.\ncurl is what we need — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s -X POST http://localhost:8086/query --data-urlencode 'db=telegraf' --data-urlencode 'q=SELECT * FROM cpu LIMIT 5' | jq '.'"
+  },
+  {
+    "instruction": "Install Chronograf (InfluxDB dashboard)",
+    "output": "<think>\nSo we need to install Chronograf (InfluxDB dashboard).\nLet me think through this step by step.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y chronograf && systemctl enable --now chronograf"
+  },
+  {
+    "instruction": "Install Kapacitor (InfluxDB alerting)",
+    "output": "<think>\nSo the request is to install Kapacitor (InfluxDB alerting).\nThis calls for apt. Apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y kapacitor && systemctl enable --now kapacitor"
+  },
+  {
+    "instruction": "Create a Kapacitor alert for high CPU",
+    "output": "<think>\nThe goal is to create a Kapacitor alert for high CPU.\nI'll reach for cat here because cat operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncat > cpu_alert.tick << 'EOF'\nstream\n    |from()\n        .measurement('cpu')\n    |alert()\n        .crit(lambda: int(\"usage_idle\") < 20)\n        .log('/tmp/alerts.log')\nEOF\nkapacitor define cpu_alert -tick cpu_alert.tick && kapacitor enable cpu_alert"
+  },
+  {
+    "instruction": "Install Checkmk monitoring agent",
+    "output": "<think>\nThis is asking us to install Checkmk monitoring agent.\nLet me think about the best approach.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y check-mk-agent && systemctl enable --now checkmk-agent"
+  },
+  {
+    "instruction": "Install and run Nagios Core",
+    "output": "<think>\nThe goal is to install and run Nagios Core.\nFirst, let me understand what's needed here.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y nagios4 nagios4-core && systemctl enable --now nagios4"
+  },
+  {
+    "instruction": "Add a Nagios host to monitor",
+    "output": "<think>\nThe task requires us to add a Nagios host to monitor.\nLet me think about the best approach.\nWhy -e? Edit or executable. without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho -e 'define host {\\n\\tuse generic-host\\n\\thost_name remote-server\\n\\taddress 192.168.1.100\\n}' >> /etc/nagios4/conf.d/remote.cfg && systemctl restart nagios4"
+  },
+  {
+    "instruction": "Run a Nagios check from command line",
+    "output": "<think>\nThe goal is to run a Nagios check from command line.\nLet me think about the best approach.\nI've added -H to follow symlinks on command line only — important to get the expected behavior.\nI'm using -c for count or create — this controls how the output is formatted.\nAfter running, I'll confirm the result looks right.\n</think>\n/usr/lib/nagios/plugins/check_http -H example.com -w 5 -c 10"
+  },
+  {
+    "instruction": "Install Icinga2 monitoring",
+    "output": "<think>\nAlright, we need to install Icinga2 monitoring.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y icinga2 && systemctl enable --now icinga2"
+  },
+  {
+    "instruction": "Check Icinga2 configuration",
+    "output": "<think>\nThe goal is to check Icinga2 configuration.\nThis calls for icinga2. Icinga2 operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nicinga2 daemon -C"
+  },
+  {
+    "instruction": "Install Zabbix agent",
+    "output": "<think>\nThe goal is to install Zabbix agent.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y zabbix-agent && systemctl enable --now zabbix-agent"
+  },
+  {
+    "instruction": "Configure Zabbix agent to connect to server",
+    "output": "<think>\nThe task requires us to configure Zabbix agent to connect to server.\nsed is what we need — text stream editing.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nThe -i flag means interactive, prompt before action, which matters here because without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nsed -i 's/Server=127.0.0.1/Server=192.168.1.50/' /etc/zabbix/zabbix_agentd.conf && sed -i 's/ServerActive=127.0.0.1/ServerActive=192.168.1.50/' /etc/zabbix/zabbix_agentd.conf && systemctl restart zabbix-agent"
+  },
+  {
+    "instruction": "Install and run Glances (web mode)",
+    "output": "<think>\nThis is asking us to install and run Glances (web mode).\nI'll reach for apt here because apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y glances && glances -w"
+  },
+  {
+    "instruction": "Check system info via Glances API",
+    "output": "<think>\nWe should check system info via Glances API.\nLet me break this down.\nI'd use curl for this — making HTTP requests.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:61209/api/2/mem | jq '.'"
+  },
+  {
+    "instruction": "Run Glances in client-server mode (server)",
+    "output": "<think>\nNeed to run Glances in client-server mode (server).\nLet me reason through this.\nFor this, glances is the right tool — glances operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nglances -s"
+  },
+  {
+    "instruction": "Run Glances in client-server mode (client)",
+    "output": "<think>\nSo we need to run Glances in client-server mode (client).\nBest tool here is glances — glances operations.\nQuick verification after execution to be safe.\n</think>\nglances -c 192.168.1.100"
+  },
+  {
+    "instruction": "Install and use atop (advanced process viewer)",
+    "output": "<think>\nAlright, we need to install and use atop (advanced process viewer).\nLet me consider what makes sense here.\nThis calls for apt. Apt operations.\nThe -r flag handles recursive operation (descend into subdirectories). Important because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y atop && atop -r /var/log/atop/atop_$(date +%Y%m%d) | head -20"
+  },
+  {
+    "instruction": "Use atop to see process activity per second",
+    "output": "<think>\nThe task requires us to use atop to see process activity per second.\nFirst, let me understand what's needed here.\nI'd use atop for this — atop operations.\n</think>\natop -P 1"
+  },
+  {
+    "instruction": "Install cockpit (web-based server management)",
+    "output": "<think>\nAlright, we need to install cockpit (web-based server management).\nFirst, let me understand what's needed here.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y cockpit && systemctl enable --now cockpit"
+  },
+  {
+    "instruction": "Access cockpit via API",
+    "output": "<think>\nThis is asking us to access cockpit via API.\nFor this, curl is the right tool — making HTTP requests.\nI've added -s to summarize or silent mode — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s -k https://localhost:9090/cockpit/login | head -5"
+  }
+]

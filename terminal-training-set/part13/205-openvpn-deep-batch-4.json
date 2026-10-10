@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to set up PKI with EasyRSA v3",
+    "output": "<think>\nSo we need to set up PKI with EasyRSA v3.\nThis calls for cd. Cd operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\ncd /etc/openvpn/easy-rsa && ./easyrsa init-pki && ./easyrsa build-ca nopass"
+  },
+  {
+    "instruction": "How to generate server request and sign with EasyRSA",
+    "output": "<think>\nNeed to generate server request and sign with EasyRSA.\nThis calls for cd. Cd operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ncd /etc/openvpn/easy-rsa && EASYRSA_REQ_CN=server ./easyrsa gen-req server nopass && ./easyrsa sign-req server server"
+  },
+  {
+    "instruction": "How to generate client certificate bundle with EasyRSA",
+    "output": "<think>\nWe're being asked to generate client certificate bundle with EasyRSA.\nLet me think about the best approach.\nBest tool here is cd — cd operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncd /etc/openvpn/easy-rsa && ./easyrsa gen-req client1 nopass && ./easyrsa sign-req client client1 && ./easyrsa gen-dh"
+  },
+  {
+    "instruction": "How to set EasyRSA key size",
+    "output": "<think>\nWe should set EasyRSA key size.\nI'll reach for export here because export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nexport EASYRSA_KEY_SIZE=4096 && cd /etc/openvpn/easy-rsa && ./easyrsa build-ca nopass"
+  },
+  {
+    "instruction": "How to set EasyRSA certificate expiry",
+    "output": "<think>\nNeed to set EasyRSA certificate expiry.\nexport is what we need — export operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nexport EASYRSA_CA_EXPIRE=3650 && cd /etc/openvpn/easy-rsa && ./easyrsa build-ca nopass"
+  },
+  {
+    "instruction": "How to generate EasyRSA CRL",
+    "output": "<think>\nNeed to generate EasyRSA CRL.\nLet me think about the best approach.\ncd is what we need — cd operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ncd /etc/openvpn/easy-rsa && ./easyrsa gen-crl"
+  },
+  {
+    "instruction": "How to revoke a certificate with EasyRSA",
+    "output": "<think>\nSo we need to revoke a certificate with EasyRSA.\nI'll reach for cd here because cd operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\ncd /etc/openvpn/easy-rsa && ./easyrsa revoke client1 && ./easyrsa gen-crl"
+  },
+  {
+    "instruction": "How to list all certificates in EasyRSA",
+    "output": "<think>\nThe goal is to list all certificates in EasyRSA.\nLet me reason through this.\nI'd use cd for this — cd operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncd /etc/openvpn/easy-rsa/pki/issued && ls -la"
+  },
+  {
+    "instruction": "How to show certificate details",
+    "output": "<think>\nThis is asking us to show certificate details.\nHere's how I'd approach this.\nI'd use openssl for this — cryptographic operations and certificate management.\nOne command does the job. Simple is better.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\n</think>\nopenssl x509 -in /etc/openvpn/easy-rsa/pki/issued/client1.crt -text -noout"
+  },
+  {
+    "instruction": "How to show certificate expiry date",
+    "output": "<think>\nSo we need to show certificate expiry date.\nThis calls for openssl. Cryptographic operations and certificate management.\nAfter running, confirm it worked as expected before moving on.\n</think>\nopenssl x509 -in /etc/openvpn/server.crt -enddate -noout"
+  },
+  {
+    "instruction": "How to verify OpenVPN certificate chain",
+    "output": "<think>\nSo we need to verify OpenVPN certificate chain.\nLet me reason through this.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nopenssl verify -CAfile /etc/openvpn/ca.crt /etc/openvpn/server.crt"
+  },
+  {
+    "instruction": "How to generate ECDH key for OpenVPN",
+    "output": "<think>\nThe user wants to generate ECDH key for OpenVPN.\nLet me think about the best approach.\nThe tool for this job is openssl — cryptographic operations and certificate management.\nThe -name flag handles filter by filename pattern. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nQuick verification after execution to be safe.\n</think>\nopenssl ecparam -genkey -name prime256v1 -out /etc/openvpn/ec.pem"
+  },
+  {
+    "instruction": "How to use elliptic curve crypto in OpenVPN",
+    "output": "<think>\nSo the request is to use elliptic curve crypto in OpenVPN.\nLet me reason through this.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'dh ec.pem\ncurve prime256v1' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to generate ECDSA cert with OpenSSL",
+    "output": "<think>\nThe goal is to generate ECDSA cert with OpenSSL.\nLet me reason through this.\nBest tool here is openssl — cryptographic operations and certificate management.\nI've added -name to filter by filename pattern — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nI'll check the output to make sure it did what we expected.\n</think>\nopenssl ecparam -genkey -name prime256v1 -out ca.key && openssl req -new -x509 -key ca.key -out ca.crt -days 3650"
+  },
+  {
+    "instruction": "How to set up OpenVPN with HMAC firewall protection",
+    "output": "<think>\nSo the request is to set up OpenVPN with HMAC firewall protection.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'tls-auth /etc/openvpn/ta.key 0' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to protect against DDoS with tls-crypt",
+    "output": "<think>\nAlright, we need to protect against DDoS with tls-crypt.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'tls-crypt /etc/openvpn/tc.key' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set up OpenVPN with UDP and TCP fallback",
+    "output": "<think>\nAlright, we need to set up OpenVPN with UDP and TCP fallback.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho 'proto udp\nport 1194\n\nproto tcp-server\nport 443' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to enable port sharing in OpenVPN",
+    "output": "<think>\nThe task requires us to enable port sharing in OpenVPN.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'port-share 127.0.0.1 8443' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set up OpenVPN in a Docker container",
+    "output": "<think>\nWe should set up OpenVPN in a Docker container.\ndocker is what we need — container management.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d --cap-add=NET_ADMIN --device /dev/net/tun -v /etc/openvpn:/etc/openvpn --net host kylemanna/openvpn"
+  },
+  {
+    "instruction": "How to create a bridged OpenVPN (tap) setup",
+    "output": "<think>\nNeed to create a bridged OpenVPN (tap) setup.\nOne command does the job. Simple is better.\n</think>\necho 'dev tap0\nserver-bridge 10.8.0.1 255.255.255.0 10.8.0.50 10.8.0.100' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set up OpenVPN with compression",
+    "output": "<think>\nThis is asking us to set up OpenVPN with compression.\nLet me think about the best approach.\n</think>\necho 'compress lz4-v2' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to enable push-compress in OpenVPN",
+    "output": "<think>\nThe task requires us to enable push-compress in OpenVPN.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\n</think>\necho 'push \"compress lz4-v2\"' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to adapt link mtu in OpenVPN",
+    "output": "<think>\nThe task requires us to adapt link mtu in OpenVPN.\nLet me break this down.\n</think>\necho 'link-mtu 1500' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set ping-timer-rem in OpenVPN",
+    "output": "<think>\nAlright, we need to set ping-timer-rem in OpenVPN.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'ping-timer-rem' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to persist tun adapter across restarts",
+    "output": "<think>\nSo we need to persist tun adapter across restarts.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'persist-tun' >> /etc/openvpn/server.conf"
+  }
+]

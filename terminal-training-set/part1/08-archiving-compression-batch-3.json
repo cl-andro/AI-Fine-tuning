@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a lz4-compressed tar (fastest)",
+    "output": "<think>\nThe task requires us to create a lz4-compressed tar (fastest).\nHere's how I'd approach this.\nI'll reach for tar here because file archiving.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck that the target device has enough space before extracting large archives.\nI'll check the output to make sure it did what we expected.\n</think>\ntar cf - ./dir/ | lz4 - archive.tar.lz4"
+  },
+  {
+    "instruction": "Extract a lz4 tarball",
+    "output": "<think>\nThe goal is to extract a lz4 tarball.\nI'd use lz4 for this — lz4 operations.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nlz4 -d archive.tar.lz4 | tar xf -"
+  },
+  {
+    "instruction": "Compress with lzip",
+    "output": "<think>\nAlright, we need to compress with lzip.\nI'll reach for tar here because file archiving.\nCheck that the target device has enough space before extracting large archives.\nAfter running, I'll confirm the result looks right.\n</think>\ntar --lzip -cf archive.tar.lz ./dir/"
+  },
+  {
+    "instruction": "Extract lzip tarball",
+    "output": "<think>\nNeed to extract lzip tarball.\nLet me consider what makes sense here.\nThe tool for this job is tar — file archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar --lzip -xf archive.tar.lz"
+  },
+  {
+    "instruction": "Compress with lzop",
+    "output": "<think>\nWe should compress with lzop.\nLet me reason through this.\nThe tool for this job is tar — file archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar --lzop -cf archive.tar.lzo ./dir/"
+  },
+  {
+    "instruction": "Extract lzop tarball",
+    "output": "<think>\nAlright, we need to extract lzop tarball.\nI'd use tar for this — file archiving.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar --lzop -xf archive.tar.lzo"
+  },
+  {
+    "instruction": "Create a compressed cpio archive",
+    "output": "<think>\nNeed to create a compressed cpio archive.\nThis calls for find. File searching.\nThe -type flag handles filter by file type. Important because standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind ./dir/ -type f | cpio -o | gzip > archive.cpio.gz"
+  },
+  {
+    "instruction": "Extract a cpio archive",
+    "output": "<think>\nThe task requires us to extract a cpio archive.\nLet me break this down.\nThe tool for this job is cpio — cpio operations.\nQuick verification after execution to be safe.\n</think>\ncpio -idv < archive.cpio"
+  },
+  {
+    "instruction": "Create an uncompressed cpio (for initramfs)",
+    "output": "<think>\nNeed to create an uncompressed cpio (for initramfs).\nFor this, find is the right tool — file searching.\nWhy -type? Filter by file type. without it the command won't work as we need.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind ./dir/ -type f | cpio -o -H newc > initramfs.cpio"
+  },
+  {
+    "instruction": "Create a compressed archive with 7z",
+    "output": "<think>\nThe user wants to create a compressed archive with 7z.\nLet me verify afterward that it worked correctly.\n</think>\n7z a -t7z -mx=9 archive.7z ./dir/"
+  },
+  {
+    "instruction": "Extract a 7z archive with full paths",
+    "output": "<think>\nNeed to extract a 7z archive with full paths.\nFirst, let me understand what's needed here.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\n7z x archive.7z"
+  },
+  {
+    "instruction": "List contents of a 7z archive",
+    "output": "<think>\nSo the request is to list contents of a 7z archive.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\n7z l archive.7z"
+  },
+  {
+    "instruction": "Create a password-protected 7z archive",
+    "output": "<think>\nThe goal is to create a password-protected 7z archive.\nLet me consider what makes sense here.\nI'll check the output to make sure it did what we expected.\n</think>\n7z a -psecret -mhe=on secure.7z ./data/"
+  },
+  {
+    "instruction": "Extract RAR archive",
+    "output": "<think>\nThe goal is to extract RAR archive.\nBest tool here is unrar — unrar operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nunrar x archive.rar"
+  },
+  {
+    "instruction": "List contents of a RAR archive",
+    "output": "<think>\nNeed to list contents of a RAR archive.\nLet me consider what makes sense here.\nThe tool for this job is unrar — unrar operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nunrar l archive.rar"
+  },
+  {
+    "instruction": "Create a RAR archive",
+    "output": "<think>\nThe goal is to create a RAR archive.\nThe tool for this job is rar — rar operations.\n</think>\nrar a archive.rar ./dir/"
+  },
+  {
+    "instruction": "Extract a tar archive over SSH",
+    "output": "<think>\nWe're being asked to extract a tar archive over SSH.\nLet me reason through this.\nThis calls for ssh. Remote system access.\nOne command does the job. Simple is better.\n</think>\nssh user@host 'tar xzf - -C /target' < archive.tar.gz"
+  },
+  {
+    "instruction": "Remote backup with tar over SSH",
+    "output": "<think>\nSo the request is to remote backup with tar over SSH.\nLet me reason through this.\nThe tool for this job is tar — file archiving.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck that the target device has enough space before extracting large archives.\nAfter running, I'll confirm the result looks right.\n</think>\ntar czf - ./data/ | ssh user@host 'cat > backup-$(date +%Y%m%d).tar.gz'"
+  },
+  {
+    "instruction": "Remote restore with tar over SSH",
+    "output": "<think>\nThe goal is to remote restore with tar over SSH.\nLet me think about the best approach.\nI'll reach for ssh here because remote system access.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nssh user@host 'cat backup.tar.gz' | tar xzf - -C /restore/path"
+  },
+  {
+    "instruction": "Send tar archive to a remote machine via Netcat",
+    "output": "<think>\nWe should send tar archive to a remote machine via Netcat.\nFirst, let me understand what's needed here.\nFor this, tar is the right tool — file archiving.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - ./dir/ | nc 192.168.1.100 9999"
+  },
+  {
+    "instruction": "Receive tar archive via Netcat",
+    "output": "<think>\nAlright, we need to receive tar archive via Netcat.\nFor this, nc is the right tool — TCP/UDP networking and port scanning.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\nnc -l -p 9999 | tar xzf -"
+  },
+  {
+    "instruction": "Archive and send with progress display",
+    "output": "<think>\nSo we need to archive and send with progress display.\ntar is what we need — file archiving.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - ./large-dir | pv | ssh user@host 'cat > backup.tar.gz'"
+  },
+  {
+    "instruction": "Compress a block device (disk image)",
+    "output": "<think>\nWe should compress a block device (disk image).\nFor this, dd is the right tool — dd operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\nAfter running, I'll confirm the result looks right.\n</think>\ndd if=/dev/sdb1 bs=4M | gzip > disk.img.gz"
+  },
+  {
+    "instruction": "Restore a compressed disk image",
+    "output": "<think>\nThe task requires us to restore a compressed disk image.\nI'd use gunzip for this — gunzip operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ngunzip -c disk.img.gz | dd of=/dev/sdb1 bs=4M"
+  },
+  {
+    "instruction": "Verify a cd/dvd ISO after burning",
+    "output": "<think>\nWe're being asked to verify a cd/dvd ISO after burning.\nFirst, let me understand what's needed here.\nI'll reach for dd here because dd operations.\nI've added -d to directory listing, don't descend — needed for this specific use case.\nI'm using -i for interactive, prompt before action — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/dev/cdrom bs=2048 count=1 | md5sum; isoinfo -d -i /dev/cdrom | grep 'Volume size'"
+  }
+]

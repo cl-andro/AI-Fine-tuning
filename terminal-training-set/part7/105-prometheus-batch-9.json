@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Setup Prometheus federation",
+    "output": "<think>\nSo we need to setup Prometheus federation.\nFirst, let me understand what's needed here.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'scrape_configs: - job_name: federate honor_labels: true metrics_path: /federate params: match[]: - {__name__=~\"job:.*\"} static_configs: - targets: - upstream-prom:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure Prometheus with scrape config limits",
+    "output": "<think>\nAlright, we need to configure Prometheus with scrape config limits.\nLet me think through this step by step.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'scrape_configs: - job_name: big scrape_timeout: 10s scrape_interval: 30s sample_limit: 5000 static_configs: - targets: - big:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Use Prometheus data via Grafana as datasource",
+    "output": "<think>\nThe goal is to use Prometheus data via Grafana as datasource.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'apiVersion: 1 datasources: - name: Prometheus type: prometheus access: proxy url: http://localhost:9090 isDefault: true' > grafana-datasource.yml"
+  },
+  {
+    "instruction": "Install prometheus-adapter for k8s metrics",
+    "output": "<think>\nThe goal is to install prometheus-adapter for k8s metrics.\nLet me consider what makes sense here.\nThe tool for this job is helm — Kubernetes package management.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nhelm install prometheus-adapter prometheus-community/prometheus-adapter --set prometheus.url=http://prometheus-server"
+  },
+  {
+    "instruction": "Custom metrics API via prometheus-adapter",
+    "output": "<think>\nWe're being asked to custom metrics API via prometheus-adapter.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'rules: default: false custom: - seriesQuery: http_requests_total resources: overrides: namespace: resource: namespace name: matches: ^(.*) as: \"${1}_total\"' > adapter-config.yaml"
+  },
+  {
+    "instruction": "Install Prometheus Operator in k8s",
+    "output": "<think>\nSo we need to install Prometheus Operator in k8s.\nI'll reach for helm here because Kubernetes package management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nhelm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm install prometheus prometheus-community/kube-prometheus-stack"
+  },
+  {
+    "instruction": "Expose Prometheus via NodePort in k8s",
+    "output": "<think>\nWe should expose Prometheus via NodePort in k8s.\nLet me break this down.\nI'll reach for kubectl here because Kubernetes cluster management.\nI've added -n to dry-run, no changes — needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl patch svc prometheus-kube-prometheus-prometheus -n monitoring -p '{\"spec\":{\"type\":\"NodePort\"}}'"
+  },
+  {
+    "instruction": "Install Thanos sidecar for long-term storage",
+    "output": "<think>\nWe're being asked to install Thanos sidecar for long-term storage.\ndocker is what we need — container management.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run -d --name thanos-sidecar --volumes-from prometheus quay.io/thanos/thanos sidecar --tsdb.path /prometheus --prometheus.url http://localhost:9090 --objstore.config-file bucket.yml"
+  },
+  {
+    "instruction": "Thanos store gateway config",
+    "output": "<think>\nThis is asking us to thanos store gateway config.\nHere's how I'd approach this.\n</think>\necho 'type: S3 config: bucket: thanos endpoint: s3.amazonaws.com access_key: AKIA... secret_key: ...' > bucket.yml"
+  },
+  {
+    "instruction": "Query Thanos via querier",
+    "output": "<think>\nNeed to query Thanos via querier.\nFirst, let me understand what's needed here.\nI'll reach for docker here because container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d --name thanos-querier quay.io/thanos/thanos query --grpc-address 0.0.0.0:10901 --http-address 0.0.0.0:10902 --endpoint thanos-sidecar:10901"
+  },
+  {
+    "instruction": "Thanos compactor for downsampling",
+    "output": "<think>\nThis is asking us to thanos compactor for downsampling.\nHere's how I'd approach this.\nI'd use docker for this — container management.\nThe -d flag means directory listing, don't descend, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndocker run -d --name thanos-compactor quay.io/thanos/thanos compact --data-dir /data --objstore.config-file bucket.yml --retention.resolution-raw 30d --retention.resolution-5m 180d --retention.resolution-1h 365d"
+  },
+  {
+    "instruction": "Thanos ruler for rule evaluation",
+    "output": "<think>\nWe should thanos ruler for rule evaluation.\nI'd use docker for this — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name thanos-ruler quay.io/thanos/thanos rule --data-dir /data --rule-file rules.yml --alertmanagers.url http://alertmanager:9093 --objstore.config-file bucket.yml --query endpointexample-thanos-querier:10901"
+  },
+  {
+    "instruction": "Use PromQL with histogram fraction",
+    "output": "<think>\nThe user wants to use PromQL with histogram fraction.\nLet me think through this step by step.\nI'll reach for histogram_fraction here because histogram_fraction operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nhistogram_fraction(0.5, 0.9, rate(http_request_duration_seconds_bucket[5m]))"
+  },
+  {
+    "instruction": "Use PromQL datetime functions for alerting window",
+    "output": "<think>\nThis is asking us to use PromQL datetime functions for alerting window.\nLet me consider what makes sense here.\nhour is what we need — hour operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nhour() >= 9 and hour() < 17 and day_of_week() >= 1 and day_of_week() <= 5"
+  },
+  {
+    "instruction": "Calculate error budget with PromQL",
+    "output": "<think>\nThe goal is to calculate error budget with PromQL.\nFirst, let me understand what's needed here.\nQuick verification after execution to be safe.\n</think>\n1 - (sum(rate(http_requests_total{status=~\"5..\"}[28d])) / sum(rate(http_requests_total[28d])))"
+  },
+  {
+    "instruction": "Predict disk exhaustion with linear regression",
+    "output": "<think>\nThe task requires us to predict disk exhaustion with linear regression.\nLet me consider what makes sense here.\nThis calls for predict_linear. Predict_linear operations.\n</think>\npredict_linear(node_filesystem_avail_bytes[2w], 86400 * 7) < 0"
+  },
+  {
+    "instruction": "Use PromQL annotations for multi-dimensional alerting",
+    "output": "<think>\nThis is asking us to use PromQL annotations for multi-dimensional alerting.\nLet me break this down.\nsum is what we need — sum operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nsum by (cluster, namespace) (rate(container_cpu_usage_seconds_total[5m]))"
+  },
+  {
+    "instruction": "Enable remote write with exactly-once delivery",
+    "output": "<think>\nSo we need to enable remote write with exactly-once delivery.\nThis calls for prometheus. Prometheus operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nprometheus --config.file prometheus.yml --enable-feature exactly-once-delivery"
+  },
+  {
+    "instruction": "Track active time series count",
+    "output": "<think>\nSo the request is to track active time series count.\nI'd use prometheus_tsdb_head_series for this — prometheus_tsdb_head_series operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nprometheus_tsdb_head_series"
+  },
+  {
+    "instruction": "Track scrape failures rate",
+    "output": "<think>\nThe user wants to track scrape failures rate.\nLet me reason through this.\nFor this, rate is the right tool — rate operations.\n</think>\nrate(prometheus_target_scrapes_exceeded_sample_limit_total[5m])"
+  },
+  {
+    "instruction": "Monitor Prometheus itself with self-scrape",
+    "output": "<think>\nWe're being asked to monitor Prometheus itself with self-scrape.\nLet me consider what makes sense here.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'scrape_configs: - job_name: prometheus static_configs: - targets: - localhost:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Create a Prometheus blackbox probe alert",
+    "output": "<think>\nSo the request is to create a Prometheus blackbox probe alert.\nHere's how I'd approach this.\nQuick verification after execution to be safe.\n</think>\necho 'groups: - name: blackbox rules: alert: EndpointDown expr: probe_success == 0 for: 1m labels: severity: critical annotations: summary: \"{{ $labels.target }} is unreachable\"' >> rules.yml"
+  },
+  {
+    "instruction": "Alert on node filesystem read-only",
+    "output": "<think>\nWe should alert on node filesystem read-only.\nLet me break this down.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'groups: - name: system rules: alert: FilesystemReadOnly expr: node_filesystem_readonly == 1 for: 1m labels: severity: critical' >> rules.yml"
+  },
+  {
+    "instruction": "Alert on high network errors",
+    "output": "<think>\nNeed to alert on high network errors.\nLet me break this down.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho 'groups: - name: network rules: alert: HighNetworkErrors expr: rate(node_network_receive_errors_total[5m]) / rate(node_network_receive_packets_total[5m]) > 0.01 for: 10m labels: severity: warning' >> rules.yml"
+  }
+]

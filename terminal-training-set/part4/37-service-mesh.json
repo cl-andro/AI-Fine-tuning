@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "istioctl install --set profile=default -y",
+    "output": "<think>\nAlright, we need to istioctl install --set profile=default -y.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\n✓ Istio core installed\n✓ Istiod installed\n✓ Egress gateways installed\n✓ Ingress gateways installed\n✓ Installation complete\nMade this installation the default for injection and validation."
+  },
+  {
+    "instruction": "istioctl version",
+    "output": "<think>\nThe task requires us to istioctl version.\nLet me break this down.\nThis calls for client. Client operations.\nOne command does the job. Simple is better.\n</think>\nclient version: 1.22.0\ncontrol plane version: 1.22.0\ndata plane version: 1.22.0 (2 proxies)"
+  },
+  {
+    "instruction": "istioctl proxy-status",
+    "output": "<think>\nSo the request is to istioctl proxy-status.\nLet me reason through this.\nI'd use NAME for this — NAME operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nNAME                                                   CDS        LDS        EDS        RDS        ISTIOD                      VERSION\ndefault.httpbin-5c5944c88c-v9q5k.default                SYNCED     SYNCED     SYNCED     SYNCED     istiod-7c8b657bdf-abc12     1.22.0\ndefault.sleep-6c9f78b8d6-abc12.default                  SYNCED     SYNCED     SYNCED     SYNCED     istiod-7c8b657bdf-abc12     1.22.0"
+  },
+  {
+    "instruction": "istioctl proxy-config cluster -n default sleep-6c9f78b8d6-abc12",
+    "output": "<think>\nThis is asking us to istioctl proxy-config cluster -n default sleep-6c9f78b8d6-abc12.\nHere's how I'd approach this.\nFor this, SERVICE is the right tool — SERVICE operations.\n</think>\nSERVICE FQDN                                   PORT     SUBSET     DIRECTION     TYPE\nkubernetes.default.svc.cluster.local           443      -          inbound       ORIGINAL_DST\nkubernetes.default.svc.cluster.local           443      -          outbound      EDS\nhttpbin.default.svc.cluster.local              8000     -          outbound      EDS\nistiod.istio-system.svc.cluster.local          15012    -          outbound      EDS"
+  },
+  {
+    "instruction": "istioctl proxy-config listener -n default sleep-6c9f78b8d6-abc12",
+    "output": "<think>\nSo the request is to istioctl proxy-config listener -n default sleep-6c9f78b8d6-abc12.\nLet me think about the best approach.\nFor this, ADDRESS is the right tool — ADDRESS operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nADDRESS          PORT  MATCH                          DESTINATION\n0.0.0.0         80    ALL                              Route: httpbin.default:8000\n0.0.0.0         443   ALL                              Route: kubernetes.default:443\n0.0.0.0         15006 ALL                              Redirect\n0.0.0.0         15001 ALL                              Redirect\n10.96.0.1       443   Trans: tcp                       Cluster: kubernetes.default"
+  },
+  {
+    "instruction": "istioctl proxy-config routes -n default sleep-6c9f78b8d6-abc12",
+    "output": "<think>\nThis is asking us to istioctl proxy-config routes -n default sleep-6c9f78b8d6-abc12.\nI'll reach for NAME here because NAME operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nNAME         DOMAINS                            MATCH                  VIRTUAL SERVICE\nhttp.80      *                                  /*                     httpbin.default\n*            httpbin.default.svc.cluster.local   /*                     httpbin.default"
+  },
+  {
+    "instruction": "istioctl dashboard kiali",
+    "output": "<think>\nThe task requires us to istioctl dashboard kiali.\nLet me break this down.\nFor this, http is the right tool — http operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nhttp://localhost:20001/kiali"
+  },
+  {
+    "instruction": "istioctl dashboard grafana",
+    "output": "<think>\nThe goal is to istioctl dashboard grafana.\nLet me consider what makes sense here.\nThis calls for http. Http operations.\n</think>\nhttp://localhost:3000"
+  },
+  {
+    "instruction": "istioctl dashboard prometheus",
+    "output": "<think>\nSo we need to istioctl dashboard prometheus.\nFor this, http is the right tool — http operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nhttp://localhost:9090"
+  },
+  {
+    "instruction": "istioctl dashboard jaeger",
+    "output": "<think>\nNeed to istioctl dashboard jaeger.\nFirst, let me understand what's needed here.\nI'll reach for http here because http operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nhttp://localhost:16686"
+  },
+  {
+    "instruction": "istioctl analyze --namespace default",
+    "output": "<think>\nWe're being asked to istioctl analyze --namespace default.\nBest tool here is Warn — Warn operations.\n</think>\nWarn [IST0139] (VirtualService httpbin.default) The VirtualService does not match any destination hosts\nError [IST0101] (DestinationRule httpbin.default) Referenced mesh rule not found: \"httpbin-tls\""
+  },
+  {
+    "instruction": "istioctl analyze --all-namespaces",
+    "output": "<think>\nNeed to istioctl analyze --all-namespaces.\nFor this, Warn is the right tool — Warn operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nWarn [IST0139] (VirtualService httpbin.default) The VirtualService does not match any destination hosts\nError [IST0101] (DestinationRule httpbin.default) Referenced mesh rule not found\nInfo [IST0118] (Service httpbin.default) Port name 8000 doesn't follow port naming convention"
+  },
+  {
+    "instruction": "istioctl proxy-config endpoints -n default sleep-6c9f78b8d6-abc12",
+    "output": "<think>\nThe user wants to istioctl proxy-config endpoints -n default sleep-6c9f78b8d6-abc12.\nLet me consider what makes sense here.\nThis calls for ENDPOINT. ENDPOINT operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nENDPOINT                STATUS      OUTLIER CHECK     CLUSTER\n10.244.0.5:8000         HEALTHY     OK                outbound|8000||httpbin.default.svc.cluster.local\n10.244.0.6:80           HEALTHY     OK                outbound|80||sleep.default.svc.cluster.local"
+  },
+  {
+    "instruction": "kubectl get pods -n istio-system",
+    "output": "<think>\nSo the request is to kubectl get pods -n istio-system.\nLet me think through this step by step.\nBest tool here is NAME — NAME operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nNAME                                    READY   STATUS    RESTARTS   AGE\nistiod-7c8b657bdf-abc12                 1/1     Running   0          5d\nistio-ingressgateway-7d9c8cfc7b-xyz34   1/1     Running   0          5d\nistio-egressgateway-6c9f78b8d6-def56    1/1     Running   0          5d"
+  },
+  {
+    "instruction": "kubectl label namespace default istio-injection=enabled",
+    "output": "<think>\nAlright, we need to kubectl label namespace default istio-injection=enabled.\nLet me break this down.\nI'd use namespace for this — namespace operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nnamespace/default labeled"
+  },
+  {
+    "instruction": "istioctl experimental precheck",
+    "output": "<think>\nSo the request is to istioctl experimental precheck.\nHere's how I'd approach this.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\n✓ No issues found when checking the cluster. Istio can be safely installed or upgraded."
+  },
+  {
+    "instruction": "istioctl verify-install",
+    "output": "<think>\nThe user wants to istioctl verify-install.\nAfter running, I'll confirm the result looks right.\n</think>\n✓ Istio is installed and verified successfully\n✓ Checking required ports...\n✓ Checking pilot status...\n✓ Checking ingress gateway status...\n✓ All checks passed"
+  },
+  {
+    "instruction": "istioctl authz check default/sleep-6c9f78b8d6-abc12 --service httpbin.default.svc.cluster.local",
+    "output": "<think>\nThe goal is to istioctl authz check default/sleep-6c9f78b8d6-abc12 --service httpbin.default.svc.cluster.local.\nLet me reason through this.\nI'd use CHECK for this — CHECK operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nCHECK RESULT: ALLOWED\n  Reason: matched rule 'allow-all' at namespace 'default'"
+  },
+  {
+    "instruction": "istioctl proxy-config log -n default sleep-6c9f78b8d6-abc12 --level debug",
+    "output": "<think>\nThe goal is to istioctl proxy-config log -n default sleep-6c9f78b8d6-abc12 --level debug.\nThis calls for active. Active operations.\nQuick verification after execution to be safe.\n</think>\nactive log levels for proxy:\n  default: debug\n  wasm: debug\n  filter: debug\n  connection: debug\n  admin: debug\n  all: debug\nupdated log levels successfully."
+  },
+  {
+    "instruction": "istioctl proxy-status --context default",
+    "output": "<think>\nThe goal is to istioctl proxy-status --context default.\nI'd use NAME for this — NAME operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nNAME                                                   CLUSTER     CDS        LDS        EDS        RDS        ISTIOD                      VERSION\ndefault.httpbin-5c5944c88c-v9q5k.default                Kubernetes  SYNCED     SYNCED     SYNCED     SYNCED     istiod-7c8b657bdf-abc12     1.22.0\ndefault.sleep-6c9f78b8d6-abc12.default                  Kubernetes  SYNCED     SYNCED     SYNCED     SYNCED     istiod-7c8b657bdf-abc12     1.22.0"
+  },
+  {
+    "instruction": "istioctl proxy-config secret -n default sleep-6c9f78b8d6-abc12",
+    "output": "<think>\nThe goal is to istioctl proxy-config secret -n default sleep-6c9f78b8d6-abc12.\nThis calls for RESOURCE. RESOURCE operations.\nLet me verify afterward that it worked correctly.\n</think>\nRESOURCE NAME                  TYPE           STATUS     VALID CERT     SERIAL NUMBER                        NOT AFTER                NOT BEFORE\ndefault                         Cert Chain     ACTIVE     true           1234567890abcdef                    2027-07-20T10:00:00Z     2026-07-20T10:00:00Z\nROOTCA                          CA             ACTIVE     true           abcdef1234567890                    2031-07-20T10:00:00Z     2021-07-20T10:00:00Z"
+  }
+]

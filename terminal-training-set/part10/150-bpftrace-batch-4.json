@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Count system calls per second",
+    "output": "<think>\nWe're being asked to count system calls per second.\nLet me think about the best approach.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_* { @[probe] = count(); } interval:s:1 { print(@); clear(@); }'"
+  },
+  {
+    "instruction": "Trace file reads over 1MB",
+    "output": "<think>\nSo we need to trace file reads over 1MB.\nFor this, bpftrace is the right tool — bpftrace operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_exit_read /args->ret > 1048576/ { printf(\"large read: %d bytes by %s\\n\", args->ret, comm); }'"
+  },
+  {
+    "instruction": "Monitor TCP connection rates",
+    "output": "<think>\nThe user wants to monitor TCP connection rates.\nI'll reach for bpftrace here because bpftrace operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:tcp_v4_connect { @ = count(); } interval:s:1 { printf(\"conn/s: %d\\n\", @); clear(@); }'"
+  },
+  {
+    "instruction": "Track disk write latency",
+    "output": "<think>\nSo we need to track disk write latency.\nLet me consider what makes sense here.\nbpftrace is what we need — bpftrace operations.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'kprobe:blk_start_request { @start[args->req] = nsecs; } kprobe:blk_complete_request { @usecs = hist((nsecs - @start[args->req]) / 1000); delete(@start[args->req]); }'"
+  },
+  {
+    "instruction": "Show top processes by CPU using profile",
+    "output": "<think>\nThis is asking us to show top processes by CPU using profile.\nLet me think through this step by step.\nbpftrace is what we need — bpftrace operations.\nWhy -e? Edit or executable. without it the command won't work as we need.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'profile:hz:99 { @[comm] = count(); } interval:s:5 { print(@, 5); clear(@); }'"
+  },
+  {
+    "instruction": "Show processes causing context switches",
+    "output": "<think>\nSo we need to show processes causing context switches.\nBest tool here is bpftrace — bpftrace operations.\nI've added -e to edit or executable — needed for this specific use case.\n</think>\nbpftrace -e 'tracepoint:sched:sched_switch { @[args->next_comm] = count(); }'"
+  },
+  {
+    "instruction": "Trace memory allocations per binary",
+    "output": "<think>\nThe goal is to trace memory allocations per binary.\nLet me consider what makes sense here.\nbpftrace is what we need — bpftrace operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:kmem:kmalloc { @[comm] = sum(args->size); }'"
+  },
+  {
+    "instruction": "Count file types opened",
+    "output": "<think>\nThis is asking us to count file types opened.\nLet me consider what makes sense here.\nBest tool here is bpftrace — bpftrace operations.\n</think>\nbpftrace -e 'kprobe:do_sys_open { @[str(args->filename).strrchr(\".\")] = count(); }'"
+  },
+  {
+    "instruction": "Monitor directory traversal patterns",
+    "output": "<think>\nThe goal is to monitor directory traversal patterns.\nI'll reach for bpftrace here because bpftrace operations.\nI'm using -e for edit or executable — needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\nbpftrace -e 'kprobe:do_sys_open { @[str(args->filename).substr(0, 20)] = count(); }'"
+  },
+  {
+    "instruction": "Track mutex contention",
+    "output": "<think>\nAlright, we need to track mutex contention.\nLet me think through this step by step.\nI'd use bpftrace for this — bpftrace operations.\nI've added -e to edit or executable — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nbpftrace -e 'kprobe:mutex_lock { @start[tid] = nsecs; } kprobe:mutex_unlock { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"
+  },
+  {
+    "instruction": "Monitor spinlock contention",
+    "output": "<think>\nSo we need to monitor spinlock contention.\nI'd use bpftrace for this — bpftrace operations.\nI'm using -e for edit or executable — this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\n</think>\nbpftrace -e 'kprobe:_raw_spin_lock { @[kstack] = count(); }'"
+  },
+  {
+    "instruction": "Count socket read/write by type",
+    "output": "<think>\nSo we need to count socket read/write by type.\nLet me consider what makes sense here.\nFor this, bpftrace is the right tool — bpftrace operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:sock_recvmsg { @[\"recv\"] = count(); } kprobe:sock_sendmsg { @[\"send\"] = count(); }'"
+  },
+  {
+    "instruction": "Trace file deletion events",
+    "output": "<think>\nWe're being asked to trace file deletion events.\nFirst, let me understand what's needed here.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_unlinkat { printf(\"deleted: %s\\n\", str(args->name)); }'"
+  },
+  {
+    "instruction": "Monitor symlink creation",
+    "output": "<think>\nNeed to monitor symlink creation.\nI'll reach for bpftrace here because bpftrace operations.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_symlinkat { printf(\"symlink %s -> %s\\n\", str(args->link), str(args->target)); }'"
+  },
+  {
+    "instruction": "Track inotify watch additions",
+    "output": "<think>\nAlright, we need to track inotify watch additions.\nThis calls for bpftrace. Bpftrace operations.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\nbpftrace -e 'kprobe:inotify_add_watch { printf(\"inotify watch added by %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Count file locks acquired",
+    "output": "<think>\nWe should count file locks acquired.\nFor this, bpftrace is the right tool — bpftrace operations.\nI've added -e to edit or executable — without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_flock { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Track poll/select calls",
+    "output": "<think>\nAlright, we need to track poll/select calls.\nLet me think through this step by step.\nbpftrace is what we need — bpftrace operations.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_poll { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Monitor pipe reads and writes",
+    "output": "<think>\nWe should monitor pipe reads and writes.\nLet me think about the best approach.\nThe tool for this job is bpftrace — bpftrace operations.\nWhy -e? Edit or executable. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_read /args->fd == -1/ { @[\"pipe_read\"] = count(); }'"
+  },
+  {
+    "instruction": "Count shared memory operations",
+    "output": "<think>\nWe should count shared memory operations.\nLet me consider what makes sense here.\nI'd use bpftrace for this — bpftrace operations.\nWhy -e? Edit or executable. important to get the expected behavior.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_shmget { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Track process group changes",
+    "output": "<think>\nWe should track process group changes.\nLet me think through this step by step.\nFor this, bpftrace is the right tool — bpftrace operations.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_setpgid { printf(\"setpgid: %d -> %d\\n\", args->pid, args->pgid); }'"
+  },
+  {
+    "instruction": "Monitor clone and fork rates",
+    "output": "<think>\nThe task requires us to monitor clone and fork rates.\nLet me break this down.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_clone { @ = count(); } interval:s:1 { printf(\"clone/s: %d\\n\", @); clear(@); }'"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Start otelcol-contrib with config",
+    "output": "<think>\nWe should start otelcol-contrib with config.\nLet me think about the best approach.\nThe tool for this job is otelcol-contrib — otelcol-contrib operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\notelcol-contrib --config /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Validate otelcol config",
+    "output": "<think>\nThe user wants to validate otelcol config.\nLet me think about the best approach.\nBest tool here is otelcol-contrib — otelcol-contrib operations.\n</think>\notelcol-contrib --config /etc/otel/config.yaml --validate"
+  },
+  {
+    "instruction": "Set OTLP gRPC receiver",
+    "output": "<think>\nWe're being asked to set OTLP gRPC receiver.\nCheck the output for errors before proceeding to the next step.\n</think>\necho \"receivers:\\n  otlp:\\n    protocols:\\n      grpc:\\n        endpoint: 0.0.0.0:4317\" > /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Set OTLP HTTP receiver",
+    "output": "<think>\nNeed to set OTLP HTTP receiver.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho \"receivers:\\n  otlp:\\n    protocols:\\n      http:\\n        endpoint: 0.0.0.0:4318\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add batch processor with timeout",
+    "output": "<think>\nThe user wants to add batch processor with timeout.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho \"processors:\\n  batch:\\n    timeout: 5s\\n    send_batch_size: 1000\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add memory limiter processor",
+    "output": "<think>\nWe should add memory limiter processor.\nLet me think through this step by step.\nQuick verification after execution to be safe.\n</think>\necho \"processors:\\n  memory_limiter:\\n    check_interval: 1s\\n    limit_mib: 512\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add attributes processor",
+    "output": "<think>\nWe should add attributes processor.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\necho \"processors:\\n  attributes:\\n    actions:\\n      - key: environment\\n        value: production\\n        action: insert\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add filter processor for spans",
+    "output": "<think>\nSo we need to add filter processor for spans.\nLet me break this down.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho \"processors:\\n  filter:\\n    spans:\\n      include:\\n        match_type: regexp\\n        services:\\n          - .*\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export traces to Jaeger",
+    "output": "<think>\nThe goal is to export traces to Jaeger.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho \"exporters:\\n  jaeger:\\n    endpoint: localhost:14250\\n    tls:\\n      insecure: true\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export metrics to Prometheus",
+    "output": "<think>\nNeed to export metrics to Prometheus.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\necho \"exporters:\\n  prometheus:\\n    endpoint: 0.0.0.0:8889\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export traces to Zipkin",
+    "output": "<think>\nThe task requires us to export traces to Zipkin.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho \"exporters:\\n  zipkin:\\n    endpoint: http://zipkin:9411/api/v2/spans\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Set service pipelines",
+    "output": "<think>\nWe should set service pipelines.\nFirst, let me understand what's needed here.\nI've added -e to edit or executable — important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -e \"service:\\n  pipelines:\\n    traces:\\n      receivers: [otlp]\\n      processors: [batch]\\n      exporters: [jaeger]\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Run otel-cli with custom headers",
+    "output": "<think>\nThe user wants to run otel-cli with custom headers.\nHere's how I'd approach this.\nBest tool here is otel-cli — otel-cli operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\notel-cli exec --service myapp --otlp-header \"api-key=secret123\" --otlp-endpoint http://collector:4317 ./myapp"
+  },
+  {
+    "instruction": "Run otel-cli as daemon",
+    "output": "<think>\nAlright, we need to run otel-cli as daemon.\nHere's how I'd approach this.\nI'll reach for otel-cli here because otel-cli operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\notel-cli daemon --service myapp --otlp-endpoint http://collector:4317"
+  },
+  {
+    "instruction": "Set resource attributes with env",
+    "output": "<think>\nThe goal is to set resource attributes with env.\nexport is what we need — export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nexport OTEL_RESOURCE_ATTRIBUTES=\"service.name=myapp,service.version=1.0\" && otel-cli exec --service myapp ./myapp"
+  },
+  {
+    "instruction": "Use OTLP exporter with TLS",
+    "output": "<think>\nThis is asking us to use OTLP exporter with TLS.\nFirst, let me understand what's needed here.\notel-cli is what we need — otel-cli operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\notel-cli exec --service myapp --otlp-endpoint https://collector:4317 --otlp-headers 'x-api-key=secret' ./myapp"
+  },
+  {
+    "instruction": "Export spans to file",
+    "output": "<think>\nThe user wants to export spans to file.\nLet me break this down.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho \"exporters:\\n  file:\\n    path: /tmp/spans.json\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add span processor",
+    "output": "<think>\nThis is asking us to add span processor.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\necho \"service:\\n  pipelines:\\n    traces:\\n      processors: [batch, memory_limiter]\\n      exporters: [otlp]\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Configure sampling rate",
+    "output": "<think>\nWe're being asked to configure sampling rate.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho \"processors:\\n  sampling:\\n    decision:\\n      type: probabilistic\\n      sample_rate: 0.1\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Check otel-cli version",
+    "output": "<think>\nSo we need to check otel-cli version.\nFirst, let me understand what's needed here.\nI'll reach for otel-cli here because otel-cli operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\notel-cli version"
+  },
+  {
+    "instruction": "Run otel-cli with span export timeout",
+    "output": "<think>\nThe task requires us to run otel-cli with span export timeout.\nLet me reason through this.\nI'll reach for otel-cli here because otel-cli operations.\nWhy --timeout? Set max execution time. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\notel-cli exec --service myapp --timeout 30s ./myapp"
+  },
+  {
+    "instruction": "Use environment for OTLP endpoint",
+    "output": "<think>\nSo the request is to use environment for OTLP endpoint.\nOTEL_EXPORTER_OTLP_ENDPOINT is what we need — OTEL_EXPORTER_OTLP_ENDPOINT operations.\nI'll check the output to make sure it did what we expected.\n</think>\nOTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4317 otel-cli exec --service myapp ./myapp"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a Drone pipeline with deployment step and when condition",
+    "output": "echo 'steps: - name: deploy image: alpine commands: - echo deploying when: event: promote target: - production' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with timeout per step",
+    "output": "echo 'steps: - name: long-task image: alpine commands: - sleep 3600 when: timeout: 300' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with failure: ignore",
+    "output": "echo 'steps: - name: optional image: alpine commands: - false failure: ignore' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with detach for background step",
+    "output": "echo 'steps: - name: server image: nginx detach: true - name: test image: alpine commands: - curl http://localhost' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone with privileged mode for specific step",
+    "output": "echo 'steps: - name: docker-build image: plugins/docker privileged: true settings: repo: owner/app' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Drone pipeline with remote template",
+    "output": "echo 'kind: template load: https://raw.githubusercontent.com/org/templates/main/go.yaml data: version: \"1.22\"' > .drone.yml"
+  },
+  {
+    "instruction": "Create a Woodpecker pipeline with status filter",
+    "output": "echo 'pipeline: notify: image: alpine:latest commands: - echo done when: status: [ success, failure ]' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with YAML multi-doc for multiple pipelines",
+    "output": "echo '--- pipeline: lint: image: alpine:latest commands: - echo lint --- pipeline: test: image: alpine:latest commands: - echo test depends_on: - lint' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with forked PR event filter",
+    "output": "echo 'pipeline: safe: image: alpine:latest commands: - echo safe when: event: pull_request fork: false' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with path glob filter",
+    "output": "echo 'pipeline: docs: image: alpine:latest commands: - echo docs when: path: include: - docs/**/*.md' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with root path in workspace",
+    "output": "echo 'workspace: base: /build path: App pipeline: build: image: golang:latest commands: - pwd - go build' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with step environment_file",
+    "output": "echo 'pipeline: build: image: golang:latest environment_file: - .env commands: - go build' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with group step (parallel execution)",
+    "output": "echo 'pipeline: backend: image: golang:latest group: test commands: - go test frontend: image: node:20 group: test commands: - npm test' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with depends_on for sequential ordering",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build test: image: golang:latest depends_on: - build commands: - go test' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with debug logging via CLI",
+    "output": "woodpecker-cli --log-level debug build ls owner/repo"
+  },
+  {
+    "instruction": "Use Woodpecker global configuration file",
+    "output": "woodpecker-cli --config ~/.woodpecker.yaml build ls owner/repo"
+  },
+  {
+    "instruction": "Use Woodpecker CLI to wait for a build",
+    "output": "woodpecker-cli build ls owner/repo --watch"
+  },
+  {
+    "instruction": "Use Drone with Autoscaler (DigitalOcean)",
+    "output": "drone autoscale create --service digitalocean --token do_token --region nyc3 --size s-2vcpu-4gb --min-instances 1 --max-instances 5"
+  },
+  {
+    "instruction": "Drone autoscale scale down threshold",
+    "output": "drone autoscale update --service digitalocean --scale-down-delay 5m"
+  },
+  {
+    "instruction": "Use Drone with Amazon EKS autoscaler",
+    "output": "drone autoscale create --service amazon --token aws_key --secret aws_secret --region us-east-1 --image ami-123 --subnet subnet-abc --vpc vpc-xyz"
+  },
+  {
+    "instruction": "Install Drone CLI from script",
+    "output": "curl -L https://github.com/drone/drone-cli/releases/latest/download/drone_linux_amd64.tar.gz | tar zx && sudo mv drone /usr/local/bin/"
+  },
+  {
+    "instruction": "Install Woodpecker CLI from script",
+    "output": "curl -L https://github.com/woodpecker-ci/woodpecker/releases/latest/download/woodpecker-cli_linux_amd64.tar.gz | tar zx && sudo mv woodpecker-cli /usr/local/bin/"
+  },
+  {
+    "instruction": "Use Drone pipeline with GPU support",
+    "output": "echo 'steps: - name: train image: nvidia/cuda:12.4-runtime privileged: true commands: - nvidia-smi' >> .drone.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with GPU node selector",
+    "output": "echo 'pipeline: train: image: nvidia/cuda:12.4-runtime commands: - nvidia-smi backend_options: kubernetes: node_selector: gpu: true' > .woodpecker.yml"
+  }
+]

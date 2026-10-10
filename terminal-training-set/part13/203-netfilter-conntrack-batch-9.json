@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to enable conntrack in iptables chain policy",
+    "output": "<think>\nThe user wants to enable conntrack in iptables chain policy.\nI'll reach for iptables here because firewall management.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+  },
+  {
+    "instruction": "How to allow inbound new conntrack state",
+    "output": "<think>\nThe user wants to allow inbound new conntrack state.\nThis calls for iptables. Firewall management.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\niptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 80 -j ACCEPT"
+  },
+  {
+    "instruction": "How to block new inbound connections except SSH",
+    "output": "<think>\nNeed to block new inbound connections except SSH.\nLet me consider what makes sense here.\nI'll reach for iptables here because firewall management.\nI've added -p to create parent directories as needed — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport ! 22 -j DROP"
+  },
+  {
+    "instruction": "How to check conntrack INVALID drop count",
+    "output": "<think>\nWe should check conntrack INVALID drop count.\nThe tool for this job is iptables — firewall management.\nI've added -L to follow symlinks when processing — standard practice for this kind of operation.\nThe -v flag handles verbose output. Important because needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -L INPUT -v | grep ctstate"
+  },
+  {
+    "instruction": "How to log new connections via conntrack",
+    "output": "<think>\nAlright, we need to log new connections via conntrack.\nLet me break this down.\nI'll reach for iptables here because firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -A INPUT -m conntrack --ctstate NEW -j LOG --log-prefix 'CT_NEW_CONN: ' --log-level 4"
+  },
+  {
+    "instruction": "How to check conntrack related connection",
+    "output": "<think>\nWe should check conntrack related connection.\nLet me think through this step by step.\nI'll reach for conntrack here because conntrack operations.\nWhy -L? Follow symlinks when processing. this controls how the output is formatted.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nconntrack -L -o extended | grep RELATED"
+  },
+  {
+    "instruction": "How to set conntrack for LVS (IPVS)",
+    "output": "<think>\nThis is asking us to set conntrack for LVS (IPVS).\nLet me think through this step by step.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 1 > /proc/sys/net/ipv4/vs/conntrack"
+  },
+  {
+    "instruction": "How to check conntrack for IPVS connections",
+    "output": "<think>\nNeed to check conntrack for IPVS connections.\nThe tool for this job is conntrack — conntrack operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nconntrack -L -p tcp -d 10.0.0.100"
+  },
+  {
+    "instruction": "How to flush conntrack for IPVS virtual server",
+    "output": "<think>\nSo we need to flush conntrack for IPVS virtual server.\nFor this, conntrack is the right tool — conntrack operations.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nconntrack -D -d 10.0.0.100"
+  },
+  {
+    "instruction": "How to use conntrack to debug service problems",
+    "output": "<think>\nNeed to use conntrack to debug service problems.\nLet me consider what makes sense here.\nFor this, conntrack is the right tool — conntrack operations.\nWhy -E? Extended regex. without it the command won't work as we need.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nconntrack -E -p tcp --dport 80"
+  },
+  {
+    "instruction": "How to check conntrack NAT port collisions",
+    "output": "<think>\nThe goal is to check conntrack NAT port collisions.\nThis calls for dmesg. Kernel ring buffer inspection.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\ndmesg | grep conntrack"
+  },
+  {
+    "instruction": "How to increase port range for conntrack NAT",
+    "output": "<think>\nThe goal is to increase port range for conntrack NAT.\nFirst, let me understand what's needed here.\nI'd use sysctl for this — kernel parameter tuning.\nOne command does the job. Simple is better.\n</think>\nsysctl -w net.ipv4.ip_local_port_range='32768 65535'"
+  },
+  {
+    "instruction": "How to track conntrack via auditd",
+    "output": "<think>\nAlright, we need to track conntrack via auditd.\nThe tool for this job is auditctl — auditctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\nauditctl -a always,exit -S connect -F key=conntrack"
+  },
+  {
+    "instruction": "How to set nf_conntrack helper for SIP in nftables",
+    "output": "<think>\nThis is asking us to set nf_conntrack helper for SIP in nftables.\nLet me consider what makes sense here.\nThe tool for this job is nft — nftables firewall management.\nA single command handles this cleanly — no need to overcomplicate it.\nSame as iptables — test rules non-destructively first if possible.\n</think>\nnft add rule inet filter forward udp dport 5060 ct helper set sip"
+  },
+  {
+    "instruction": "How to configure ct helper for FTP in nftables",
+    "output": "<think>\nThe task requires us to configure ct helper for FTP in nftables.\nLet me break this down.\nFor this, nft is the right tool — nftables firewall management.\nSame as iptables — test rules non-destructively first if possible.\n</think>\nnft add rule inet filter forward tcp dport 21 ct helper set ftp"
+  },
+  {
+    "instruction": "How to see conntrack source tracking table",
+    "output": "<think>\nThe user wants to see conntrack source tracking table.\nThe tool for this job is cat — cat operations.\nWhy -t? Sort by modification time. needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ncat /proc/net/stat/nf_conntrack | column -t"
+  },
+  {
+    "instruction": "How to flush conntrack for a specific kernel namespace",
+    "output": "<think>\nSo we need to flush conntrack for a specific kernel namespace.\nBest tool here is nsenter — nsenter operations.\nI've added -t to sort by modification time — needed for this specific use case.\nI've added -n to dry-run, no changes — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nnsenter -t 1 -n -- conntrack -F"
+  },
+  {
+    "instruction": "How to check conntrack from init namespace",
+    "output": "<think>\nWe're being asked to check conntrack from init namespace.\nLet me think through this step by step.\nI'll reach for nsenter here because nsenter operations.\nThe -t flag handles sort by modification time. Important because needed for this specific use case.\nThe -n flag handles dry-run, no changes. Important because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nnsenter -t 1 -n -- conntrack -C"
+  },
+  {
+    "instruction": "How to enable conntrack for loopback traffic",
+    "output": "<think>\nSo the request is to enable conntrack for loopback traffic.\nLet me break this down.\nThis calls for iptables. Firewall management.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\n</think>\niptables -A INPUT -i lo -m conntrack --ctstate NEW -j ACCEPT"
+  },
+  {
+    "instruction": "How to disable conntrack for all Docker traffic",
+    "output": "<think>\nAlright, we need to disable conntrack for all Docker traffic.\nLet me think about the best approach.\nI'll reach for iptables here because firewall management.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nThe -I flag means ignore case, which matters here because without it the command won't work as we need.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\n</think>\niptables -t raw -I PREROUTING -i docker0 -j NOTRACK"
+  },
+  {
+    "instruction": "How to count conntrack entries per connection state",
+    "output": "<think>\nSo the request is to count conntrack entries per connection state.\nconntrack is what we need — conntrack operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nconntrack -L -o extended | awk '{print $3}' | sort | uniq -c | sort -rn"
+  },
+  {
+    "instruction": "How to check nf_conntrack event logging",
+    "output": "<think>\nThe goal is to check nf_conntrack event logging.\nBest tool here is cat — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_events"
+  },
+  {
+    "instruction": "How to enable conntrack events",
+    "output": "<think>\nNeed to enable conntrack events.\nI'd use sysctl for this — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w net.netfilter.nf_conntrack_events=1"
+  },
+  {
+    "instruction": "How to disable conntrack events",
+    "output": "<think>\nWe should disable conntrack events.\nLet me reason through this.\nI'll reach for sysctl here because kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.netfilter.nf_conntrack_events=0"
+  },
+  {
+    "instruction": "How to set conntrack default timeout on SYN packets",
+    "output": "<think>\nThe user wants to set conntrack default timeout on SYN packets.\nThe tool for this job is sysctl — kernel parameter tuning.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nsysctl -w net.netfilter.nf_conntrack_tcp_timeout_syn_sent=45"
+  }
+]

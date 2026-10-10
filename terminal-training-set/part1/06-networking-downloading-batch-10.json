@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a reverse SSH tunnel to bypass NAT",
+    "output": "<think>\nThe goal is to create a reverse SSH tunnel to bypass NAT.\nLet me think through this step by step.\nFor this, ssh is the right tool — remote system access.\nI've added -R to recursive operation — without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -R 2222:localhost:22 user@public-server"
+  },
+  {
+    "instruction": "Create a persistent SSH tunnel with autossh",
+    "output": "<think>\nThe user wants to create a persistent SSH tunnel with autossh.\nI'd use autossh for this — autossh operations.\nQuick verification after execution to be safe.\n</think>\nautossh -M 0 -o ServerAliveInterval=60 -R 2222:localhost:22 user@public-server"
+  },
+  {
+    "instruction": "Check if autossh is running",
+    "output": "<think>\nThe task requires us to check if autossh is running.\nLet me consider what makes sense here.\nI'll reach for pgrep here because pgrep operations.\nThe -a flag means AND operator in find, which matters here because this controls how the output is formatted.\n</think>\npgrep -a autossh"
+  },
+  {
+    "instruction": "Bind a program to a specific interface",
+    "output": "<think>\nAlright, we need to bind a program to a specific interface.\nLet me reason through this.\nFor this, iptables is the right tool — firewall management.\nThe -t flag handles sort by modification time. Important because this controls how the output is formatted.\nWhy -I? Ignore case. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nI'll check the output to make sure it did what we expected.\n</think>\niptables -t mangle -I OUTPUT -p tcp --dport 80 -j MARK --set-mark 1 && ip rule add fwmark 1 table 2 && ip route add default via 192.168.1.1 table 2"
+  },
+  {
+    "instruction": "Force an application to use a specific network interface",
+    "output": "<think>\nWe should force an application to use a specific network interface.\nLet me think through this step by step.\nI'll reach for LD_PRELOAD here because LD_PRELOAD operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nLD_PRELOAD=/usr/lib/libsocket_wrapper.so SOCKET_WRAPPER_DEFAULT_IFACE=eth1 ./myapp"
+  },
+  {
+    "instruction": "Test application on a specific interface",
+    "output": "<think>\nThe user wants to test application on a specific interface.\nLet me think through this step by step.\nThis calls for socat. Bidirectional data forwarding.\nAfter running, I'll confirm the result looks right.\n</think>\nsocat TCP-LISTEN:8080,bind=192.168.1.100,reuseaddr,fork EXEC:./myapp"
+  },
+  {
+    "instruction": "Create a network namespace and run a program in it",
+    "output": "<think>\nWe should create a network namespace and run a program in it.\nI'd use ip for this — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nip netns add testns && ip netns exec testns bash"
+  },
+  {
+    "instruction": "Move an interface into a network namespace",
+    "output": "<think>\nWe should move an interface into a network namespace.\nLet me think through this step by step.\nFor this, ip is the right tool — network interface configuration.\n</think>\nip link set eth1 netns testns"
+  },
+  {
+    "instruction": "Give a network namespace internet access",
+    "output": "<think>\nAlright, we need to give a network namespace internet access.\nLet me break this down.\nFor this, ip is the right tool — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nip netns exec testns ip link set lo up && ip netns exec testns dhclient eth1"
+  },
+  {
+    "instruction": "Use socat to create a TCP proxy",
+    "output": "<think>\nThe task requires us to use socat to create a TCP proxy.\nI'd use socat for this — bidirectional data forwarding.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsocat TCP-LISTEN:8080,fork TCP:192.168.1.100:80"
+  },
+  {
+    "instruction": "Use socat to create a UDP proxy",
+    "output": "<think>\nThis is asking us to use socat to create a UDP proxy.\nFirst, let me understand what's needed here.\nI'd use socat for this — bidirectional data forwarding.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsocat UDP-LISTEN:53,fork UDP:8.8.8.8:53"
+  },
+  {
+    "instruction": "Create a SSL/TLS proxy with socat",
+    "output": "<think>\nThe task requires us to create a SSL/TLS proxy with socat.\nI'd use socat for this — bidirectional data forwarding.\nI'll check the output to make sure it did what we expected.\n</think>\nsocat OPENSSL-LISTEN:443,cert=server.pem,verify=0,fork TCP:localhost:80"
+  },
+  {
+    "instruction": "Forward UNIX domain socket to TCP with socat",
+    "output": "<think>\nSo the request is to forward UNIX domain socket to TCP with socat.\nThis calls for socat. Bidirectional data forwarding.\n</think>\nsocat UNIX-LISTEN:/tmp/app.sock,fork TCP:localhost:8080"
+  },
+  {
+    "instruction": "Create a reverse port forward with socat",
+    "output": "<think>\nWe're being asked to create a reverse port forward with socat.\nI'll reach for socat here because bidirectional data forwarding.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nsocat TCP-LISTEN:8080,fork EXEC:'ssh user@remote nc 127.0.0.1 80'"
+  },
+  {
+    "instruction": "Use socat as a simple HTTP server",
+    "output": "<think>\nAlright, we need to use socat as a simple HTTP server.\nThis calls for socat. Bidirectional data forwarding.\nOne command does the job. Simple is better.\n</think>\nsocat TCP-LISTEN:8080,reuseaddr,fork SYSTEM:'echo -e \"HTTP/1.1 200 OK\\n\\nHello\"; read -t 0.1'"
+  },
+  {
+    "instruction": "Bind a program to a specific CPU core with networking",
+    "output": "<think>\nNeed to bind a program to a specific CPU core with networking.\nFirst, let me understand what's needed here.\nThis calls for taskset. Taskset operations.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nAfter running, I'll confirm the result looks right.\n</think>\ntaskset -c 0 curl https://example.com"
+  },
+  {
+    "instruction": "Show socket statistics with per-socket details",
+    "output": "<think>\nThe goal is to show socket statistics with per-socket details.\nss is what we need — socket diagnostics.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\nss -tulnpe"
+  },
+  {
+    "instruction": "Show detailed TCP socket info for a specific PID",
+    "output": "<think>\nSo we need to show detailed TCP socket info for a specific PID.\nLet me think about the best approach.\nBest tool here is ss — socket diagnostics.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nI've added -p to create parent directories as needed — important to get the expected behavior.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nss -t -p | grep pid=1234"
+  },
+  {
+    "instruction": "Show all multicast groups joined",
+    "output": "<think>\nThis is asking us to show all multicast groups joined.\nLet me reason through this.\nThis calls for ip. Network interface configuration.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nip maddr show"
+  },
+  {
+    "instruction": "Join a multicast group",
+    "output": "<think>\nThe task requires us to join a multicast group.\nLet me reason through this.\nBest tool here is ip — network interface configuration.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nip maddr add 224.0.0.1 dev eth0"
+  },
+  {
+    "instruction": "Leave a multicast group",
+    "output": "<think>\nThis is asking us to leave a multicast group.\nI'd use ip for this — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nip maddr del 224.0.0.1 dev eth0"
+  },
+  {
+    "instruction": "Check IGMP snooping status",
+    "output": "<think>\nThe user wants to check IGMP snooping status.\nLet me break this down.\nbridge is what we need — bridge operations.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nbridge -d link show | grep -A 2 eth"
+  },
+  {
+    "instruction": "Show IPv6 multicast addresses",
+    "output": "<think>\nThis is asking us to show IPv6 multicast addresses.\nLet me reason through this.\nFor this, ip is the right tool — network interface configuration.\nThe -6 flag handles use IPv6 only. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nip -6 maddr show"
+  },
+  {
+    "instruction": "Check if a port is open with a single bash command using /dev/tcp",
+    "output": "<think>\nWe should check if a port is open with a single bash command using /dev/tcp.\nLet me break this down.\nBest tool here is timeout — timeout operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\ntimeout 2 bash -c 'echo >/dev/tcp/192.168.1.1/443' 2>/dev/null && echo Port open || echo Port closed"
+  },
+  {
+    "instruction": "Create an HTTP proxy with a single netcat command",
+    "output": "<think>\nNeed to create an HTTP proxy with a single netcat command.\nI'd use while for this — while operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\nI've added -p to create parent directories as needed — standard practice for this kind of operation.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\nwhile true; do nc -l -p 8080 -e /bin/bash -c 'read req; host=$(echo $req | grep Host | cut -d: -f2 | tr -d \" \\r\"); nc $host 80 <&0'; done"
+  }
+]

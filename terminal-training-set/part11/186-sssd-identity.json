@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to create a basic sssd.conf for LDAP",
+    "output": "<think>\nAlright, we need to create a basic sssd.conf for LDAP.\nFor this, cat is the right tool — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > /etc/sssd/sssd.conf << 'EOF'\n[sssd]\ndomains = example.com\nconfig_file_version = 2\nservices = nss, pam\n\n[domain/example.com]\nid_provider = ldap\nauth_provider = ldap\nldap_uri = ldap://ldap.example.com\nldap_search_base = dc=example,dc=com\nEOF"
+  },
+  {
+    "instruction": "How to create sssd.conf with LDAP and credential caching",
+    "output": "<think>\nThe task requires us to create sssd.conf with LDAP and credential caching.\nI'll reach for cat here because cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncat > /etc/sssd/sssd.conf << 'EOF'\n[sssd]\ndomains = example.com\nservices = nss, pam\n\n[domain/example.com]\nid_provider = ldap\nauth_provider = ldap\nldap_uri = ldap://ldap.example.com\nldap_search_base = dc=example,dc=com\ncache_credentials = true\nenumerate = false\nEOF"
+  },
+  {
+    "instruction": "How to create sssd.conf with AD provider",
+    "output": "<think>\nWe're being asked to create sssd.conf with AD provider.\nFirst, let me understand what's needed here.\nBest tool here is cat — cat operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /etc/sssd/sssd.conf << 'EOF'\n[sssd]\ndomains = ad.example.com\nservices = nss, pam\n\n[domain/ad.example.com]\nid_provider = ad\nauth_provider = ad\nad_server = dc01.ad.example.com\nad_domain = ad.example.com\nEOF"
+  },
+  {
+    "instruction": "How to set proper permissions on sssd.conf",
+    "output": "<think>\nThe user wants to set proper permissions on sssd.conf.\nThis calls for chmod. File permission changes.\nNever chmod 777. Use the most restrictive permissions that still work.\nQuick verification after execution to be safe.\n</think>\nchmod 600 /etc/sssd/sssd.conf"
+  },
+  {
+    "instruction": "How to restart the SSSD service",
+    "output": "<think>\nThe user wants to restart the SSSD service.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl restart sssd"
+  },
+  {
+    "instruction": "How to start the SSSD service",
+    "output": "<think>\nNeed to start the SSSD service.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl start sssd"
+  },
+  {
+    "instruction": "How to stop the SSSD service",
+    "output": "<think>\nThe task requires us to stop the SSSD service.\nLet me consider what makes sense here.\nThe tool for this job is systemctl — managing systemd services.\nQuick verification after execution to be safe.\n</think>\nsystemctl stop sssd"
+  },
+  {
+    "instruction": "How to enable SSSD at boot",
+    "output": "<think>\nSo we need to enable SSSD at boot.\nFirst, let me understand what's needed here.\nThe tool for this job is systemctl — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nsystemctl enable sssd"
+  },
+  {
+    "instruction": "How to check SSSD service status",
+    "output": "<think>\nThe user wants to check SSSD service status.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status sssd"
+  },
+  {
+    "instruction": "How to clear all SSSD cache entries",
+    "output": "<think>\nThe goal is to clear all SSSD cache entries.\nHere's how I'd approach this.\nI'd use sss_cache for this — sss_cache operations.\nThe -E flag handles extended regex. Important because needed for this specific use case.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nsss_cache -E"
+  },
+  {
+    "instruction": "How to invalidate a specific user's cache",
+    "output": "<think>\nSo the request is to invalidate a specific user's cache.\nLet me reason through this.\nFor this, sss_cache is the right tool — sss_cache operations.\nWhy -u? Show or sort by access time. this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nsss_cache -u bob"
+  },
+  {
+    "instruction": "How to invalidate a group cache entry",
+    "output": "<think>\nSo the request is to invalidate a group cache entry.\nLet me reason through this.\nThe tool for this job is sss_cache — sss_cache operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nsss_cache -g developers"
+  },
+  {
+    "instruction": "How to invalidate a netgroup cache entry",
+    "output": "<think>\nThis is asking us to invalidate a netgroup cache entry.\nLet me consider what makes sense here.\nThis calls for sss_cache. Sss_cache operations.\nThe -n flag handles dry-run, no changes. Important because needed for this specific use case.\nLet me verify afterward that it worked correctly.\n</think>\nsss_cache -n mynetgroup"
+  },
+  {
+    "instruction": "How to clear all SSSD caches and restart the service",
+    "output": "<think>\nThe goal is to clear all SSSD caches and restart the service.\nBest tool here is sss_cache — sss_cache operations.\nI've added -E to extended regex — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nsss_cache -E && systemctl restart sssd"
+  },
+  {
+    "instruction": "How to check SSSD cache statistics",
+    "output": "<think>\nWe're being asked to check SSSD cache statistics.\nLet me think about the best approach.\nThis calls for sss_cache. Sss_cache operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsss_cache --stats"
+  },
+  {
+    "instruction": "How to flush SSSD database files and restart",
+    "output": "<think>\nAlright, we need to flush SSSD database files and restart.\nLet me break this down.\nThis calls for rm. File deletion.\nI'm using -f for force, suppress errors — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\n</think>\nrm -f /var/lib/sss/db/* && systemctl restart sssd"
+  },
+  {
+    "instruction": "How to select authselect profile with SSSD",
+    "output": "<think>\nThis is asking us to select authselect profile with SSSD.\nLet me consider what makes sense here.\nThis calls for authselect. Authselect operations.\nOne command does the job. Simple is better.\n</think>\nauthselect select sssd with-sudo with-mkhomedir"
+  },
+  {
+    "instruction": "How to select the minimal authselect profile",
+    "output": "<think>\nThe goal is to select the minimal authselect profile.\nLet me reason through this.\nI'll reach for authselect here because authselect operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nauthselect select minimal"
+  },
+  {
+    "instruction": "How to list all available authselect profiles",
+    "output": "<think>\nWe should list all available authselect profiles.\nI'd use authselect for this — authselect operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nauthselect list"
+  },
+  {
+    "instruction": "How to check the current authselect profile",
+    "output": "<think>\nWe should check the current authselect profile.\nBest tool here is authselect — authselect operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nauthselect current"
+  }
+]

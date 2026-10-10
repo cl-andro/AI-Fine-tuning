@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show all processes attached to a control group",
+    "output": "<think>\nNeed to show all processes attached to a control group.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\n</think>\ncat /sys/fs/cgroup/system.slice/nginx.service/cgroup.procs"
+  },
+  {
+    "instruction": "Show CPU usage per control group",
+    "output": "<think>\nThe user wants to show CPU usage per control group.\nLet me reason through this.\nI'd use systemd-cgtop for this — systemd-cgtop operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemd-cgtop"
+  },
+  {
+    "instruction": "Show memory usage per service cgroup",
+    "output": "<think>\nSo the request is to show memory usage per service cgroup.\nsystemd-cgls is what we need — systemd-cgls operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsystemd-cgls"
+  },
+  {
+    "instruction": "Set a memory limit on a running unit",
+    "output": "<think>\nThe goal is to set a memory limit on a running unit.\nFor this, systemctl is the right tool — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl set-property myapp.service MemoryMax=512M"
+  },
+  {
+    "instruction": "Set a CPU quota for a service",
+    "output": "<think>\nSo we need to set a CPU quota for a service.\nFirst, let me understand what's needed here.\nFor this, systemctl is the right tool — managing systemd services.\n</think>\nsystemctl set-property myapp.service CPUQuota=50%"
+  },
+  {
+    "instruction": "Set an I/O weight for a service",
+    "output": "<think>\nSo we need to set an I/O weight for a service.\nI'll reach for systemctl here because managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl set-property myapp.service IOWeight=100"
+  },
+  {
+    "instruction": "Show all cgroup resource limits for a service",
+    "output": "<think>\nThe task requires us to show all cgroup resource limits for a service.\nLet me break this down.\nI'll reach for systemctl here because managing systemd services.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nThe -p flag handles create parent directories as needed. Important because without it the command won't work as we need.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl show -p MemoryMax -p CPUQuota -p IOWeight nginx"
+  },
+  {
+    "instruction": "List all systemd slices",
+    "output": "<think>\nWe're being asked to list all systemd slices.\nLet me reason through this.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-units --type=slice"
+  },
+  {
+    "instruction": "Create a custom systemd slice for resource limiting",
+    "output": "<think>\nSo the request is to create a custom systemd slice for resource limiting.\nLet me break this down.\nThe tool for this job is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat > /etc/systemd/system/myslice.slice << 'EOF'\n[Slice]\nCPUQuota=50%\nMemoryMax=1G\nEOF && systemctl daemon-reload"
+  },
+  {
+    "instruction": "Start a service under a specific slice",
+    "output": "<think>\nThe goal is to start a service under a specific slice.\nLet me break this down.\nBest tool here is systemd-run — systemd-run operations.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemd-run --slice=myslice.slice ./myapp"
+  },
+  {
+    "instruction": "Run a command with systemd-run and resource limits",
+    "output": "<think>\nNeed to run a command with systemd-run and resource limits.\nLet me reason through this.\nBest tool here is systemd-run — systemd-run operations.\n</think>\nsystemd-run --user --property=MemoryMax=256M --property=CPUQuota=30% ./myapp"
+  },
+  {
+    "instruction": "Show all active systemd scopes",
+    "output": "<think>\nThe task requires us to show all active systemd scopes.\nLet me reason through this.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nLet me verify afterward that it worked correctly.\n</think>\nsystemctl list-units --type=scope"
+  },
+  {
+    "instruction": "Show the effective cgroup version",
+    "output": "<think>\nSo we need to show the effective cgroup version.\nI'll reach for stat here because stat operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nstat -fc %T /sys/fs/cgroup/"
+  },
+  {
+    "instruction": "List all cgroup controllers available",
+    "output": "<think>\nSo we need to list all cgroup controllers available.\nLet me think about the best approach.\nThis calls for cat. Cat operations.\n</think>\ncat /proc/cgroups"
+  },
+  {
+    "instruction": "Check if a cgroup controller is mounted",
+    "output": "<think>\nAlright, we need to check if a cgroup controller is mounted.\nFirst, let me understand what's needed here.\nI'll reach for mount here because filesystem mounting.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmount | grep cgroup"
+  },
+  {
+    "instruction": "Show CPU accounting stats per process",
+    "output": "<think>\nThis is asking us to show CPU accounting stats per process.\ncat is what we need — cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/1234/sched | head -10"
+  },
+  {
+    "instruction": "Show process scheduling policy and priority",
+    "output": "<think>\nThe user wants to show process scheduling policy and priority.\nBest tool here is chrt — chrt operations.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nchrt -p 1234"
+  },
+  {
+    "instruction": "Change scheduling policy to SCHED_FIFO",
+    "output": "<think>\nWe should change scheduling policy to SCHED_FIFO.\nLet me think about the best approach.\nThis calls for chrt. Chrt operations.\nWhy -f? Force, suppress errors. needed for this specific use case.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nchrt -f -p 50 1234"
+  },
+  {
+    "instruction": "Change scheduling policy to SCHED_RR",
+    "output": "<think>\nThe goal is to change scheduling policy to SCHED_RR.\nLet me think through this step by step.\nI'd use chrt for this — chrt operations.\nWhy -r? Recursive operation (descend into subdirectories). this controls how the output is formatted.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nchrt -r -p 50 1234"
+  },
+  {
+    "instruction": "Show SCHED_DEADLINE parameters of a process",
+    "output": "<think>\nThe task requires us to show SCHED_DEADLINE parameters of a process.\nLet me consider what makes sense here.\nThe tool for this job is cat — cat operations.\nI've added -i to interactive, prompt before action — needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\ncat /proc/1234/sched | grep -i deadline"
+  },
+  {
+    "instruction": "List all real-time processes on the system",
+    "output": "<think>\nSo the request is to list all real-time processes on the system.\nps is what we need — process listing.\nI've added -E to extended regex — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nps -eo pid,cls,cmd | grep -E 'FF|RR'"
+  },
+  {
+    "instruction": "Kill all real-time processes (dangerous)",
+    "output": "<think>\nSo the request is to kill all real-time processes (dangerous).\nLet me think through this step by step.\nThe tool for this job is ps — process listing.\nWhy -E? Extended regex. without it the command won't work as we need.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nps -eo pid,cls | grep -E 'FF|RR' | awk '{print $1}' | xargs kill -9 2>/dev/null || echo no RT procs"
+  },
+  {
+    "instruction": "Show total time a process has been running",
+    "output": "<think>\nNeed to show total time a process has been running.\nLet me break this down.\nThis calls for ps. Process listing.\nThe -o flag means output to file, OR operator in find, which matters here because this controls how the output is formatted.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nps -o etime= -p 1234"
+  },
+  {
+    "instruction": "Show process start time as wall clock",
+    "output": "<think>\nSo the request is to show process start time as wall clock.\nHere's how I'd approach this.\nFor this, ps is the right tool — process listing.\nThe -o flag means output to file, OR operator in find, which matters here because important to get the expected behavior.\nThe -p flag handles create parent directories as needed. Important because needed for this specific use case.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nps -o lstart= -p 1234"
+  },
+  {
+    "instruction": "Check process uptime in seconds",
+    "output": "<think>\nAlright, we need to check process uptime in seconds.\nLet me think about the best approach.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho $(($(date +%s) - $(stat -c%Y /proc/1234)))) 2>/dev/null; ps -o etime= -p 1234"
+  }
+]

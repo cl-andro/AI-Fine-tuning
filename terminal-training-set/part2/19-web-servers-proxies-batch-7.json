@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Install certbot for Let's Encrypt with Nginx plugin",
+    "output": "<think>\nThe task requires us to install certbot for Let's Encrypt with Nginx plugin.\nThe tool for this job is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y certbot python3-certbot-nginx"
+  },
+  {
+    "instruction": "Obtain a Let's Encrypt certificate with certbot",
+    "output": "<think>\nThis is asking us to obtain a Let's Encrypt certificate with certbot.\nLet me think about the best approach.\nThe tool for this job is certbot — Let's Encrypt certificate management.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nLet me verify afterward that it worked correctly.\n</think>\ncertbot --nginx -d example.com -d www.example.com --non-interactive --agree-tos -m admin@example.com"
+  },
+  {
+    "instruction": "Obtain a wildcard Let's Encrypt certificate via DNS challenge",
+    "output": "<think>\nWe're being asked to obtain a wildcard Let's Encrypt certificate via DNS challenge.\nHere's how I'd approach this.\nThe tool for this job is certbot — Let's Encrypt certificate management.\nWhy -d? Directory listing, don't descend. important to get the expected behavior.\nI've added -d to directory listing, don't descend — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\n</think>\ncertbot certonly --manual --preferred-challenges dns -d '*.example.com' -d example.com --agree-tos -m admin@example.com"
+  },
+  {
+    "instruction": "Renew all Let's Encrypt certificates",
+    "output": "<think>\nSo we need to renew all Let's Encrypt certificates.\nFor this, certbot is the right tool — Let's Encrypt certificate management.\nThe --quiet flag means suppress output, which matters here because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\n</think>\ncertbot renew --quiet --no-self-upgrade"
+  },
+  {
+    "instruction": "Check when Let's Encrypt certs expire",
+    "output": "<think>\nSo we need to check when Let's Encrypt certs expire.\nLet me consider what makes sense here.\nThis calls for certbot. Let's Encrypt certificate management.\nNo need for complex pipelines here — one command is sufficient.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\nAfter running, I'll confirm the result looks right.\n</think>\ncertbot certificates"
+  },
+  {
+    "instruction": "Revoke a Let's Encrypt certificate",
+    "output": "<think>\nSo we need to revoke a Let's Encrypt certificate.\nI'll reach for certbot here because Let's Encrypt certificate management.\nNo need for complex pipelines here — one command is sufficient.\nCertificate renewal might briefly interrupt services. Test renewal in staging mode first.\n</think>\ncertbot revoke --cert-path /etc/letsencrypt/live/example.com/cert.pem --reason cessationofoperation"
+  },
+  {
+    "instruction": "Install and configure uWSGI for Python apps",
+    "output": "<think>\nWe're being asked to install and configure uWSGI for Python apps.\nBest tool here is apt — apt operations.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y uwsgi uwsgi-plugin-python3 && mkdir -p /etc/uwsgi/sites && echo -e '[uwsgi]\\nmodule = myapp:app\\nmaster = true\\nprocesses = 4\\nsocket = /run/uwsgi/myapp.sock\\nchmod-socket = 660\\nvacuum = true\\ndie-on-term = true' > /etc/uwsgi/sites/myapp.ini"
+  },
+  {
+    "instruction": "Run uWSGI with Emperor mode for multi-app",
+    "output": "<think>\nThe goal is to run uWSGI with Emperor mode for multi-app.\nFirst, let me understand what's needed here.\nI'll reach for cat here because cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\ncat > /etc/systemd/system/uwsgi-emperor.service << 'EOF'\n[Unit]\nDescription=uWSGI Emperor\nAfter=network.target\n[Service]\nExecStart=/usr/bin/uwsgi --emperor /etc/uwsgi/sites --uid www-data --gid www-data\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl daemon-reload && systemctl enable --now uwsgi-emperor"
+  },
+  {
+    "instruction": "Install and configure Gunicorn for Python apps",
+    "output": "<think>\nAlright, we need to install and configure Gunicorn for Python apps.\nLet me reason through this.\nThe tool for this job is pip3 — pip3 operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\npip3 install gunicorn && gunicorn --workers 4 --bind 0.0.0.0:8000 myapp:app --daemon --pid /run/gunicorn.pid --log-file /var/log/gunicorn.log"
+  },
+  {
+    "instruction": "Create a Gunicorn systemd service",
+    "output": "<think>\nWe should create a Gunicorn systemd service.\nLet me consider what makes sense here.\nFor this, cat is the right tool — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/systemd/system/gunicorn.service << 'EOF'\n[Unit]\nDescription=Gunicorn Python WSGI\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/gunicorn --workers 4 --bind unix:/run/gunicorn.sock myapp:app\nRestart=always\nUser=www-data\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl daemon-reload && systemctl enable --now gunicorn"
+  },
+  {
+    "instruction": "Install Passenger for Nginx",
+    "output": "<think>\nThis is asking us to install Passenger for Nginx.\nLet me think through this step by step.\nI'll reach for apt here because apt operations.\nI'm using -c for count or create — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y dirmngr gnupg && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 561F9B9CAC40B2F7 && sh -c 'echo deb https://oss-binaries.phusionpassenger.com/apt/passenger bookworm main > /etc/apt/sources.list.d/passenger.list' && apt update && apt install -y libnginx-mod-http-passenger"
+  },
+  {
+    "instruction": "Create a custom ModSecurity rule to block SQLi",
+    "output": "<think>\nWe should create a custom ModSecurity rule to block SQLi.\nLet me think through this step by step.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e 'SecRule ARGS \"\\\\b(?i)select\\\\b.*\\\\bfrom\\\\b\" \"id:10001,phase:2,deny,status:403,msg:\"SQL Injection blocked\"\"' > /etc/modsecurity/custom-rules.conf && sed -i 's|SecRuleEngine DetectionOnly|SecRuleEngine On|' /etc/modsecurity/modsecurity.conf && echo 'Include /etc/modsecurity/custom-rules.conf' >> /etc/modsecurity/modsecurity.conf && systemctl restart apache2"
+  },
+  {
+    "instruction": "Set up ModSecurity audit log",
+    "output": "<think>\nThe task requires us to set up ModSecurity audit log.\nI've added -e to edit or executable — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho -e 'SecAuditEngine RelevantOnly\\nSecAuditLog /var/log/modsec_audit.log\\nSecAuditLogParts ABIJDEFHZ' >> /etc/modsecurity/modsecurity.conf && systemctl restart apache2"
+  },
+  {
+    "instruction": "Set up HAProxy stats page",
+    "output": "<think>\nAlright, we need to set up HAProxy stats page.\nHere's how I'd approach this.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'frontend stats\\n  bind *:8404\\n  stats enable\\n  stats uri /\\n  stats refresh 10s\\n  stats auth admin:password123' >> /etc/haproxy/haproxy.cfg && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up HAProxy with SPOE for WAF",
+    "output": "<think>\nThe user wants to set up HAProxy with SPOE for WAF.\nLet me reason through this.\nThe -e flag handles edit or executable. Important because this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\necho -e 'frontend http-in\\n  bind *:80\\n  filter spoe engine waf config /etc/haproxy/spoe-waf.conf\\n  http-request allow\\n  default_backend app' >> /etc/haproxy/haproxy.cfg && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Configure HAProxy to send logs via TCP",
+    "output": "<think>\nThe goal is to configure HAProxy to send logs via TCP.\nI've added -e to edit or executable — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\necho -e 'global\\n  log 192.168.1.100:514 len 4096 local0\\n\\ndefaults\\n  log global\\n  option httplog' >> /etc/haproxy/haproxy.cfg && systemctl restart haproxy"
+  },
+  {
+    "instruction": "Set up Squid as a reverse proxy with caching",
+    "output": "<think>\nWe should set up Squid as a reverse proxy with caching.\nHere's how I'd approach this.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e 'http_port 80 accel vhost\\ncache_peer 127.0.0.1 parent 8080 0 no-query originserver\\ncache_dir ufs /var/spool/squid 100 16 256\\nrequest_header_access Via deny all\\nrequest_header_access X-Forwarded-For deny all' >> /etc/squid/squid.conf && systemctl restart squid"
+  },
+  {
+    "instruction": "Configure Squid with access control lists",
+    "output": "<think>\nSo we need to configure Squid with access control lists.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho -e 'acl work_hours time MTWHF 09:00-17:00\\nacl allowed_sites dstdomain .example.com\\nhttp_access allow work_hours allowed_sites\\nhttp_access deny all' >> /etc/squid/squid.conf && systemctl restart squid"
+  },
+  {
+    "instruction": "Enable SSL inspection in Squid",
+    "output": "<think>\nWe're being asked to enable SSL inspection in Squid.\nLet me think about the best approach.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho -e 'http_port 3128 ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size=4MB\\nsslcrtd_program /usr/lib/squid/ssl_crtd -s /var/lib/ssl_db -M 4MB\\nssl_bump peek all\\nssl_bump bump all' >> /etc/squid/squid.conf && /usr/lib/squid/security_file_certgen -c -s /var/spool/squid/ssl_db -M 4MB && systemctl restart squid"
+  },
+  {
+    "instruction": "Install and configure lighttpd with SSL",
+    "output": "<think>\nThe user wants to install and configure lighttpd with SSL.\nLet me consider what makes sense here.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y lighttpd lighttpd-mod-openssl && echo -e '$SERVER[\"socket\"] == \":443\" {\\n  ssl.engine = \"enable\"\\n  ssl.pemfile = \"/etc/lighttpd/server.pem\"\\n}' >> /etc/lighttpd/lighttpd.conf && systemctl restart lighttpd"
+  },
+  {
+    "instruction": "Enable mod_compress in lighttpd",
+    "output": "<think>\nNeed to enable mod_compress in lighttpd.\nFor this, lighty-enable-mod is the right tool — lighty-enable-mod operations.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nlighty-enable-mod compress && echo -e 'compress.cache-dir = \"/var/cache/lighttpd/compress/\"\\ncompress.filetype = (\"text/html\", \"text/plain\", \"text/css\", \"application/javascript\")' >> /etc/lighttpd/lighttpd.conf && systemctl restart lighttpd"
+  },
+  {
+    "instruction": "Fetch a page with HTTP/2 using curl",
+    "output": "<think>\nSo we need to fetch a page with HTTP/2 using curl.\nHere's how I'd approach this.\nI'll reach for curl here because making HTTP requests.\nQuick verification after execution to be safe.\n</think>\ncurl --http2 -I https://example.com"
+  },
+  {
+    "instruction": "Test HTTP/3 with curl",
+    "output": "<think>\nThe task requires us to test HTTP/3 with curl.\nLet me reason through this.\nThis calls for curl. Making HTTP requests.\nWhy -I? Ignore case. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl --http3 -I https://example.com"
+  },
+  {
+    "instruction": "Download a file with progress bar using wget",
+    "output": "<think>\nWe should download a file with progress bar using wget.\nLet me consider what makes sense here.\nThe tool for this job is wget — downloading files.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget --progress=bar:force https://example.com/largefile.zip"
+  },
+  {
+    "instruction": "Use httpie for a POST request with JSON body",
+    "output": "<think>\nThe goal is to use httpie for a POST request with JSON body.\nLet me think through this step by step.\nBest tool here is http — http operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nhttp POST https://api.example.com/users name=John email=john@example.com"
+  },
+  {
+    "instruction": "Install and use hey for load testing",
+    "output": "<think>\nAlright, we need to install and use hey for load testing.\nHere's how I'd approach this.\nI'll reach for wget here because downloading files.\nWhy -q? Quiet mode, minimal output. this controls how the output is formatted.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nAfter running, I'll confirm the result looks right.\n</think>\nwget -q https://hey-release.s3.us-east-2.amazonaws.com/hey_linux_amd64 -O /usr/local/bin/hey && chmod +x /usr/local/bin/hey && hey -z 10s -c 50 http://localhost:8080/api"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to patch the AppImage dynamic linker path",
+    "output": "<think>\nSo we need to patch the AppImage dynamic linker path.\nFirst, let me understand what's needed here.\npatchelf is what we need — patchelf operations.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\npatchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 ./application.AppImage"
+  },
+  {
+    "instruction": "How to run an AppImage using podman instead of fuse",
+    "output": "<think>\nWe're being asked to run an AppImage using podman instead of fuse.\nLet me reason through this.\nI'll reach for podman here because rootless containers.\nWhy -v? Verbose output. without it the command won't work as we need.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\npodman run --rm -v $(pwd):/app:Z docker.io/library/debian:12 /app/application.AppImage"
+  },
+  {
+    "instruction": "How to check the available space for AppImage extraction",
+    "output": "<think>\nThis is asking us to check the available space for AppImage extraction.\nLet me think through this step by step.\nBest tool here is df — disk space checking.\nI'm using -h for human-readable format — needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ndf -h /tmp"
+  },
+  {
+    "instruction": "How to create a portable AppDir with a launcher script",
+    "output": "<think>\nWe're being asked to create a portable AppDir with a launcher script.\nFirst, let me understand what's needed here.\nThis calls for mkdir. Directory creation.\nThe -p flag means create parent directories as needed, which matters here because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nmkdir -p AppDir && cat > AppDir/AppRun << 'EOF' && chmod +x AppDir/AppRun"
+  },
+  {
+    "instruction": "How to test an AppImage with Valgrind for memory issues",
+    "output": "<think>\nThe task requires us to test an AppImage with Valgrind for memory issues.\nLet me reason through this.\nI'd use valgrind for this — memory debugging.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nvalgrind ./application.AppImage"
+  },
+  {
+    "instruction": "How to see all files that an AppImage extracts on first run",
+    "output": "<think>\nSo we need to see all files that an AppImage extracts on first run.\nBest tool here is strace — system call tracing.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -f -e trace=open,openat ./application.AppImage 2>&1 | grep '.mount_'"
+  },
+  {
+    "instruction": "How to disable automatic AppImage extraction to /tmp",
+    "output": "<think>\nSo the request is to disable automatic AppImage extraction to /tmp.\nThe tool for this job is APPIMAGE_EXTRACT_AND_RUN — APPIMAGE_EXTRACT_AND_RUN operations.\nQuick verification after execution to be safe.\n</think>\nAPPIMAGE_EXTRACT_AND_RUN=0 ./application.AppImage"
+  },
+  {
+    "instruction": "How to run an AppImage in a Docker container",
+    "output": "<think>\nAlright, we need to run an AppImage in a Docker container.\nI'd use docker for this — container management.\nI'm using -v for verbose output — standard practice for this kind of operation.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run --rm -v $(pwd):/app:Z --device /dev/fuse --cap-add SYS_ADMIN ubuntu:22.04 /app/application.AppImage"
+  },
+  {
+    "instruction": "How to see the md5sum of an extracted file inside an AppImage",
+    "output": "<think>\nThe task requires us to see the md5sum of an extracted file inside an AppImage.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\n./application.AppImage --appimage-extract usr/bin/app && md5sum usr/bin/app"
+  },
+  {
+    "instruction": "How to link an AppImage to a system-wide bin directory",
+    "output": "<think>\nThis is asking us to link an AppImage to a system-wide bin directory.\nLet me think about the best approach.\nln is what we need — ln operations.\nThe -s flag handles summarize or silent mode. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nBe careful with symlink paths — a wrong absolute path breaks the link.\nLet me verify afterward that it worked correctly.\n</think>\nsudo ln -s /opt/application.AppImage /usr/local/bin/app"
+  },
+  {
+    "instruction": "How to run appimagetool with a specific target arch",
+    "output": "<think>\nWe should run appimagetool with a specific target arch.\nLet me break this down.\nI'd use appimagetool for this — appimagetool operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nappimagetool --target-arch aarch64 /path/to/AppDir output.AppImage"
+  },
+  {
+    "instruction": "How to list all appimagetool options for compression",
+    "output": "<think>\nNeed to list all appimagetool options for compression.\nLet me consider what makes sense here.\nI'd use appimagetool for this — appimagetool operations.\nThe --help flag means show usage information, which matters here because needed for this specific use case.\nThe -i flag means interactive, prompt before action, which matters here because without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\nappimagetool --help | grep -i compress"
+  },
+  {
+    "instruction": "How to check the runtime required by an AppImage",
+    "output": "<think>\nThe user wants to check the runtime required by an AppImage.\n</think>\n./application.AppImage --appimage-offset"
+  },
+  {
+    "instruction": "How to prevent an AppImage from checking for updates",
+    "output": "<think>\nAlright, we need to prevent an AppImage from checking for updates.\nLet me break this down.\nThis calls for APPIMAGE_NO_UPDATE_CHECK. APPIMAGE_NO_UPDATE_CHECK operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nAPPIMAGE_NO_UPDATE_CHECK=1 ./application.AppImage"
+  },
+  {
+    "instruction": "How to bundle a custom icon with appimagetool",
+    "output": "<think>\nAlright, we need to bundle a custom icon with appimagetool.\nThe tool for this job is appimagetool — appimagetool operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nappimagetool -i /path/to/icon.png /path/to/AppDir output.AppImage"
+  },
+  {
+    "instruction": "How to see the list of AppImages tracked by appimaged",
+    "output": "<think>\nSo the request is to see the list of AppImages tracked by appimaged.\nThe tool for this job is ls — ls operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nls ~/.local/share/applications/ | grep appimage"
+  },
+  {
+    "instruction": "How to create a self-extracting AppImage script",
+    "output": "<think>\nNeed to create a self-extracting AppImage script.\nBest tool here is appimagetool — appimagetool operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nappimagetool /AppDir output.AppImage"
+  },
+  {
+    "instruction": "How to check the squashfs block size of an AppImage",
+    "output": "<think>\nThe goal is to check the squashfs block size of an AppImage.\nHere's how I'd approach this.\nThe tool for this job is strings — strings operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nstrings ./application.AppImage | grep -iE 'block|squash'"
+  },
+  {
+    "instruction": "How to run an AppImage with ASAN (Address Sanitizer)",
+    "output": "<think>\nSo we need to run an AppImage with ASAN (Address Sanitizer).\nLet me consider what makes sense here.\nFor this, ASAN_OPTIONS is the right tool — ASAN_OPTIONS operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nASAN_OPTIONS=detect_leaks=1 ./application.AppImage"
+  },
+  {
+    "instruction": "How to extract the AppImage update payload separately",
+    "output": "<think>\nThis is asking us to extract the AppImage update payload separately.\nI'll reach for zsyncmake here because zsyncmake operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\nzsyncmake output.AppImage && zsync output.AppImage"
+  }
+]

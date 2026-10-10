@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Enable Apache WebDAV modules on Debian 12",
+    "output": "<think>\nSo the request is to enable Apache WebDAV modules on Debian 12.\nLet me think about the best approach.\na2enmod is what we need — a2enmod operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo a2enmod dav && sudo a2enmod dav_fs && sudo systemctl restart apache2"
+  },
+  {
+    "instruction": "Check which Apache DAV modules are enabled",
+    "output": "<think>\nWe're being asked to check which Apache DAV modules are enabled.\nBest tool here is a2query — a2query operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo a2query -m dav && sudo a2query -m dav_fs && sudo a2query -m dav_lock"
+  },
+  {
+    "instruction": "Create a WebDAV directory and set ownership",
+    "output": "<think>\nWe're being asked to create a WebDAV directory and set ownership.\nFirst, let me understand what's needed here.\nFor this, mkdir is the right tool — directory creation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mkdir -p /var/www/webdav && sudo chown -R www-data:www-data /var/www/webdav"
+  },
+  {
+    "instruction": "Configure Apache with DAVLockDB and DAV On",
+    "output": "<think>\nThis is asking us to configure Apache with DAVLockDB and DAV On.\nLet me think through this step by step.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'Alias /webdav /var/www/webdav\n<Directory /var/www/webdav>\n    DAV On\n    DAVLockDB /var/www/webdav/DAVLock\n    Options Indexes\n    AuthType Digest\n    AuthName \"WebDAV\"\n    AuthUserFile /etc/apache2/webdav.passwd\n    Require valid-user\n</Directory>' | sudo tee /etc/apache2/sites-available/webdav.conf"
+  },
+  {
+    "instruction": "Enable the WebDAV site and restart Apache",
+    "output": "<think>\nWe should enable the WebDAV site and restart Apache.\nFirst, let me understand what's needed here.\nThis calls for a2ensite. A2ensite operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo a2ensite webdav.conf && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Create a digest authentication user for WebDAV",
+    "output": "<think>\nAlright, we need to create a digest authentication user for WebDAV.\nThe tool for this job is htdigest — htdigest operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo htdigest -c /etc/apache2/webdav.passwd 'WebDAV' alice"
+  },
+  {
+    "instruction": "Install lighttpd WebDAV module on Debian 12",
+    "output": "<think>\nThe goal is to install lighttpd WebDAV module on Debian 12.\nLet me reason through this.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\nsudo apt install lighttpd lighttpd-mod-webdav && sudo lighty-enable-mod webdav"
+  },
+  {
+    "instruction": "Configure lighttpd WebDAV with authentication",
+    "output": "<think>\nThe user wants to configure lighttpd WebDAV with authentication.\nHere's how I'd approach this.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\necho '$HTTP[\"url\"] =~ \"^/webdav\" {\n    webdav.opts = ( \"require-user\" => \"alice\" )\n    webdav.log-xml = \"enable\"\n    auth.require = ( \"\" => ( \"method\" => \"digest\", \"realm\" => \"WebDAV\", \"require\" => \"valid-user\" ) )\n}' | sudo tee /etc/lighttpd/conf-available/90-webdav.conf"
+  },
+  {
+    "instruction": "Restart lighttpd after WebDAV config",
+    "output": "<think>\nWe're being asked to restart lighttpd after WebDAV config.\nFirst, let me understand what's needed here.\nsystemctl is what we need — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl restart lighttpd"
+  },
+  {
+    "instruction": "Install ownCloud client tools (occ) on Debian 12",
+    "output": "<think>\nThe goal is to install ownCloud client tools (occ) on Debian 12.\nLet me break this down.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo apt install owncloud-client && sudo -u www-data php /var/www/owncloud/occ status"
+  },
+  {
+    "instruction": "Sync system address book with ownCloud occ",
+    "output": "<think>\nThe user wants to sync system address book with ownCloud occ.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo -u www-data php /var/www/owncloud/occ dav:sync-system-addressbook"
+  },
+  {
+    "instruction": "Create a new ownCloud user with occ",
+    "output": "<think>\nNeed to create a new ownCloud user with occ.\nFirst, let me understand what's needed here.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo -u www-data php /var/www/owncloud/occ user:add bob --password-from-env"
+  },
+  {
+    "instruction": "Scan ownCloud files for a user",
+    "output": "<think>\nNeed to scan ownCloud files for a user.\nLet me break this down.\nThe -u flag means show or sort by access time, which matters here because without it the command won't work as we need.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files:scan --all"
+  },
+  {
+    "instruction": "Transfer file ownership in ownCloud",
+    "output": "<think>\nWe're being asked to transfer file ownership in ownCloud.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files:transfer-ownership bob alice"
+  },
+  {
+    "instruction": "Create an external storage mount in ownCloud",
+    "output": "<think>\nThe user wants to create an external storage mount in ownCloud.\nLet me think about the best approach.\nThe -u flag means show or sort by access time, which matters here because without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files_external:create --mount-point /shares --storage-type local --backend local::/mnt/shared"
+  },
+  {
+    "instruction": "Install and run Nextcloud occ (snap)",
+    "output": "<think>\nThis is asking us to install and run Nextcloud occ (snap).\nLet me consider what makes sense here.\nThis calls for snap. Snap package management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\n</think>\nsudo snap install nextcloud && sudo nextcloud.occ status"
+  },
+  {
+    "instruction": "Install cadaver WebDAV client on Debian 12",
+    "output": "<think>\nThe goal is to install cadaver WebDAV client on Debian 12.\nLet me break this down.\nI'll reach for apt here because apt operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt install cadaver"
+  },
+  {
+    "instruction": "Connect to a WebDAV server with cadaver",
+    "output": "<think>\nAlright, we need to connect to a WebDAV server with cadaver.\nHere's how I'd approach this.\nThe tool for this job is cadaver — cadaver operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\ncadaver http://localhost/webdav"
+  },
+  {
+    "instruction": "List files on WebDAV server with cadaver",
+    "output": "<think>\nThe task requires us to list files on WebDAV server with cadaver.\nLet me think about the best approach.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -e 'open http://localhost/webdav\nls\nquit' | cadaver"
+  },
+  {
+    "instruction": "Upload a file to WebDAV with cadaver",
+    "output": "<think>\nThis is asking us to upload a file to WebDAV with cadaver.\nLet me reason through this.\nI've added -e to edit or executable — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\necho -e 'open http://localhost/webdav\nput /home/user/document.pdf\nquit' | cadaver"
+  },
+  {
+    "instruction": "Download a file from WebDAV with cadaver",
+    "output": "<think>\nThe task requires us to download a file from WebDAV with cadaver.\nFirst, let me understand what's needed here.\nI've added -e to edit or executable — this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e 'open http://localhost/webdav\nget document.pdf\nquit' | cadaver"
+  },
+  {
+    "instruction": "Create a directory on WebDAV with cadaver",
+    "output": "<think>\nWe're being asked to create a directory on WebDAV with cadaver.\nLet me break this down.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho -e 'open http://localhost/webdav\nmkdir newfolder\nquit' | cadaver"
+  },
+  {
+    "instruction": "Delete a file on WebDAV via cadaver",
+    "output": "<think>\nWe're being asked to delete a file on WebDAV via cadaver.\nWhy -e? Edit or executable. needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho -e 'open http://localhost/webdav\nrm oldfile.pdf\nquit' | cadaver"
+  },
+  {
+    "instruction": "Copy a file on WebDAV server with cadaver",
+    "output": "<think>\nThe goal is to copy a file on WebDAV server with cadaver.\nLet me consider what makes sense here.\nI'm using -e for edit or executable — standard practice for this kind of operation.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\necho -e 'open http://localhost/webdav\ncopy source.pdf dest.pdf\nquit' | cadaver"
+  }
+]

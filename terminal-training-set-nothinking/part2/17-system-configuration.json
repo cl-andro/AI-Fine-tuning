@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set the system timezone to UTC",
+    "output": "timedatectl set-timezone UTC"
+  },
+  {
+    "instruction": "Configure NTP time synchronization",
+    "output": "timedatectl set-ntp true"
+  },
+  {
+    "instruction": "Set system hostname to myserver",
+    "output": "hostnamectl set-hostname myserver"
+  },
+  {
+    "instruction": "Change the default system locale",
+    "output": "localectl set-locale LANG=en_US.UTF-8"
+  },
+  {
+    "instruction": "List available keymaps",
+    "output": "localectl list-keymaps"
+  },
+  {
+    "instruction": "Set the keyboard layout to us",
+    "output": "localectl set-keymap us"
+  },
+  {
+    "instruction": "Configure network interface with static IP",
+    "output": "cat > /etc/network/interfaces << 'EOF'\nauto eth0\niface eth0 inet static\n\taddress 192.168.1.100\n\tnetmask 255.255.255.0\n\tgateway 192.168.1.1\n\tdns-nameservers 8.8.8.8\nEOF && systemctl restart networking"
+  },
+  {
+    "instruction": "Set DNS servers in /etc/resolv.conf",
+    "output": "echo -e 'nameserver 8.8.8.8\\nnameserver 1.1.1.1' > /etc/resolv.conf"
+  },
+  {
+    "instruction": "Configure hostname resolution in /etc/hosts",
+    "output": "echo '192.168.1.100 myserver.local myserver' >> /etc/hosts"
+  },
+  {
+    "instruction": "Add a swap file of 2GB",
+    "output": "fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile && echo '/swapfile none swap sw 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Configure sysctl for network security",
+    "output": "echo -e 'net.ipv4.tcp_syncookies=1\\nnet.ipv4.ip_forward=0\\nnet.ipv4.conf.all.rp_filter=1' > /etc/sysctl.d/99-security.conf && sysctl --system"
+  },
+  {
+    "instruction": "Set kernel swappiness to 10",
+    "output": "sysctl -w vm.swappiness=10 && echo 'vm.swappiness=10' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Configure file descriptor limits system-wide",
+    "output": "echo -e '* soft nofile 65536\\n* hard nofile 65536' > /etc/security/limits.d/custom.conf"
+  },
+  {
+    "instruction": "Set ulimit for a specific user",
+    "output": "echo -e 'john soft nofile 4096\\njohn hard nofile 8192' > /etc/security/limits.d/john.conf"
+  },
+  {
+    "instruction": "Configure PAM to enforce password complexity",
+    "output": "apt install -y libpam-pwquality && echo 'password requisite pam_pwquality.so retry=3 minlen=12 difok=3' >> /etc/pam.d/common-password"
+  },
+  {
+    "instruction": "Set password aging policy",
+    "output": "chage -M 90 -m 7 -W 14 john"
+  },
+  {
+    "instruction": "Configure automatic security updates",
+    "output": "apt install -y unattended-upgrades && dpkg-reconfigure --priority=low unattended-upgrades"
+  },
+  {
+    "instruction": "Configure rsyslog to send logs to remote server",
+    "output": "echo '*.* @192.168.1.200:514' > /etc/rsyslog.d/remote.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Configure logrotate for custom logs",
+    "output": "cat > /etc/logrotate.d/myapp << 'EOF'\n/var/log/myapp/*.log {\n\tdaily\n\trotate 7\n\tcompress\n\tdelaycompress\n\tmissingok\n\tnotifempty\n\tcreate 640 root root\n}\nEOF"
+  },
+  {
+    "instruction": "Set default umask for all users",
+    "output": "echo 'umask 027' >> /etc/profile"
+  },
+  {
+    "instruction": "Configure SSH to use key auth only",
+    "output": "sed -i 's/^"
+  },
+  {
+    "instruction": "Disable SSH root login",
+    "output": "sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Configure fail2ban for SSH protection",
+    "output": "cat > /etc/fail2ban/jail.local << 'EOF'\n[sshd]\nenabled = true\nmaxretry = 3\nbantime = 3600\nfindtime = 600\nEOF && systemctl restart fail2ban"
+  },
+  {
+    "instruction": "Configure auditd for system call monitoring",
+    "output": "auditctl -w /etc/passwd -p wa -k passwd_changes && auditctl -w /etc/shadow -p wa -k shadow_changes"
+  },
+  {
+    "instruction": "Set a system-wide message of the day (MOTD)",
+    "output": "echo 'Welcome to $(hostname). Authorized access only.' > /etc/motd"
+  }
+]

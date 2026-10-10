@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use Woodpecker with services",
+    "output": "echo 'pipeline: test: image: golang:latest commands: - go test services: database: image: postgres:16 environment: - POSTGRES_DB=test' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with when conditions",
+    "output": "echo 'pipeline: deploy: image: alpine:latest commands: - echo deploy when: branch: main event: push' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with matrix builds",
+    "output": "echo 'matrix: GO_VERSION: - \"1.21\" - \"1.22\" OS: - linux - darwin pipeline: build: image: golang:${GO_VERSION} commands: - go build' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker global environment variable",
+    "output": "echo 'environment: - GLOBAL_VAR=value pipeline: print: image: alpine:latest commands: - echo ${GLOBAL_VAR}' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with clone disabled",
+    "output": "echo 'clone: disable: true pipeline: custom: image: alpine:latest commands: - echo no clone' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker secrets in commands",
+    "output": "echo 'pipeline: deploy: image: alpine:latest secrets: - docker_password commands: - echo $docker_password' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with volumes",
+    "output": "echo 'pipeline: build: image: golang:latest volumes: - /tmp/cache:/go/pkg/mod commands: - go build' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with backend options",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build backend_options: kubernetes: resources: limits: memory: 512Mi' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with platform filter",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build when: platform: linux/amd64' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with path filter",
+    "output": "echo 'pipeline: test: image: golang:latest commands: - go test when: path: include: - src/**' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with exclude path filter",
+    "output": "echo 'pipeline: lint: image: golang:latest commands: - go vet when: path: exclude: - docs/** - *.md' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with evaluate expression",
+    "output": "echo 'pipeline: conditional: image: alpine:latest commands: - echo run when: evaluate: \"CI_PIPELINE_EVENT == 'push' && CI_COMMIT_BRANCH == 'main'\"' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker pipeline steps with failure condition",
+    "output": "echo 'pipeline: notify: image: alpine:latest commands: - echo failed when: status: failure' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker multi-pipeline",
+    "output": "echo '--- pipeline: build: image: golang:latest commands: - go build --- pipeline: test: image: golang:latest commands: - go test depends_on: - build --- pipeline: deploy: image: alpine:latest commands: - echo deploy depends_on: - test' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with custom workspace",
+    "output": "echo 'workspace: base: /app path: src/github.com/owner/repo pipeline: build: image: golang:latest commands: - pwd' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with platform-specific steps",
+    "output": "echo 'pipeline: build: image: golang:latest commands: - go build when: platform: [ linux/amd64, linux/arm64 ]' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with step-level environment",
+    "output": "echo 'pipeline: test: image: golang:latest environment: - CGO_ENABLED=0 commands: - go test' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with override entrypoint",
+    "output": "echo 'pipeline: debug: image: alpine:latest commands: - /bin/sh - -c - sleep 600' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with SSH pipeline step",
+    "output": "echo 'pipeline: remote: image: appleboy/drone-ssh settings: host: 10.0.0.1 username: deploy password: mypass script: - uptime' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with SCP plugin",
+    "output": "echo 'pipeline: upload: image: appleboy/drone-scp settings: host: 10.0.0.1 username: deploy password: mypass source: dist/* target: /var/www' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with Discord notification",
+    "output": "echo 'pipeline: notify: image: drillhip/drone-discord settings: webhook_id: 123 webhook_token: abc' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with email notification",
+    "output": "echo 'pipeline: notify: image: plugins/email settings: host: smtp.example.com username: user password: pass recipients: - dev@example.com' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker pull_request only with changed files",
+    "output": "echo 'pipeline: pr-check: image: alpine:latest commands: - echo PR when: event: pull_request path: include: - src/**' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker with tag event and semver filter",
+    "output": "echo 'pipeline: release: image: plugins/github-release when: event: tag tag: v*' > .woodpecker.yml"
+  },
+  {
+    "instruction": "Use Woodpecker global secret via env variable",
+    "output": "woodpecker-cli secret add --global MY_GLOBAL_SECRET value"
+  }
+]

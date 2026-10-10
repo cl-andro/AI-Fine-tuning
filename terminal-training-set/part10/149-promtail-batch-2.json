@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Install Loki and promtail on Debian",
+    "output": "<think>\nThe goal is to install Loki and promtail on Debian.\nLet me consider what makes sense here.\nThis calls for apt-get. Apt-get operations.\nI'll check the output to make sure it did what we expected.\n</think>\napt-get install -y loki promtail"
+  },
+  {
+    "instruction": "Check Loki service status",
+    "output": "<think>\nThis is asking us to check Loki service status.\nLet me consider what makes sense here.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl status loki"
+  },
+  {
+    "instruction": "Start Loki server",
+    "output": "<think>\nThis is asking us to start Loki server.\nLet me consider what makes sense here.\nBest tool here is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl start loki"
+  },
+  {
+    "instruction": "Enable Loki on boot",
+    "output": "<think>\nThe user wants to enable Loki on boot.\nHere's how I'd approach this.\nThe tool for this job is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl enable loki"
+  },
+  {
+    "instruction": "Check Loki configuration",
+    "output": "<think>\nAlright, we need to check Loki configuration.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\nLet me verify afterward that it worked correctly.\n</think>\ncat /etc/loki/config.yml"
+  },
+  {
+    "instruction": "Test Loki API health endpoint",
+    "output": "<think>\nThe task requires us to test Loki API health endpoint.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ncurl http://localhost:3100/ready"
+  },
+  {
+    "instruction": "Query Loki via HTTP API",
+    "output": "<think>\nThe user wants to query Loki via HTTP API.\nLet me reason through this.\ncurl is what we need — making HTTP requests.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncurl -G -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode 'query={job=\"nginx\"}' --data-urlencode 'start='$(date -d '1 hour ago' +%s)000000000 --data-urlencode 'end='$(date +%s)000000000"
+  },
+  {
+    "instruction": "Query Loki instant query via API",
+    "output": "<think>\nSo we need to query Loki instant query via API.\nLet me think through this step by step.\nThis calls for curl. Making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -G -s 'http://localhost:3100/loki/api/v1/query' --data-urlencode 'query=rate({job=\"nginx\"}[5m])' --data-urlencode 'time='$(date +%s)000000000"
+  },
+  {
+    "instruction": "Push log entry to Loki via API",
+    "output": "<think>\nThe task requires us to push log entry to Loki via API.\nLet me reason through this.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X POST 'http://localhost:3100/loki/api/v1/push' -H 'Content-Type: application/json' -d '{\"streams\":[{\"stream\":{\"job\":\"test\"},\"values\":[[\"'$(date +%s)000000000'\",\"test log message\"]]}]}'"
+  },
+  {
+    "instruction": "List Loki label names via API",
+    "output": "<think>\nAlright, we need to list Loki label names via API.\nLet me reason through this.\nThis calls for curl. Making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl http://localhost:3100/loki/api/v1/labels"
+  },
+  {
+    "instruction": "Get label values for specific label via API",
+    "output": "<think>\nWe're being asked to get label values for specific label via API.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl http://localhost:3100/loki/api/v1/label/job/values"
+  },
+  {
+    "instruction": "Get Loki series matching label",
+    "output": "<think>\nNeed to get Loki series matching label.\nI'll reach for curl here because making HTTP requests.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\ncurl -G 'http://localhost:3100/loki/api/v1/series' --data-urlencode 'match[]={job=\"nginx\"}'"
+  },
+  {
+    "instruction": "Check Loki configuration via API",
+    "output": "<think>\nThe task requires us to check Loki configuration via API.\nLet me consider what makes sense here.\nI'd use curl for this — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl http://localhost:3100/config"
+  },
+  {
+    "instruction": "Check metric export from Loki",
+    "output": "<think>\nSo we need to check metric export from Loki.\nI'd use curl for this — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl http://localhost:3100/metrics"
+  },
+  {
+    "instruction": "View Loki logs",
+    "output": "<think>\nWe should view Loki logs.\nLet me think about the best approach.\nBest tool here is journalctl — checking systemd logs.\nI'm using -u for show or sort by access time — important to get the expected behavior.\nWhy -n? Dry-run, no changes. needed for this specific use case.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u loki --no-pager -n 50"
+  },
+  {
+    "instruction": "View promtail logs",
+    "output": "<think>\nThe task requires us to view promtail logs.\nLet me reason through this.\nI'll reach for journalctl here because checking systemd logs.\nI've added -u to show or sort by access time — without it the command won't work as we need.\nI'm using -n for dry-run, no changes — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\njournalctl -u promtail --no-pager -n 50"
+  },
+  {
+    "instruction": "Follow promtail log output",
+    "output": "<think>\nThe goal is to follow promtail log output.\nLet me consider what makes sense here.\nI'll reach for journalctl here because checking systemd logs.\nThe -u flag handles show or sort by access time. Important because standard practice for this kind of operation.\nThe -f flag means force, suppress errors, which matters here because important to get the expected behavior.\nOld logs can be large — add --since to limit the range and avoid huge output.\nAfter running, I'll confirm the result looks right.\n</think>\njournalctl -u promtail -f"
+  },
+  {
+    "instruction": "Check promtail positions file",
+    "output": "<think>\nWe're being asked to check promtail positions file.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncat /var/lib/promtail/positions.yml"
+  },
+  {
+    "instruction": "Reset promtail positions file",
+    "output": "<think>\nSo we need to reset promtail positions file.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho '{}' > /var/lib/promtail/positions.yml"
+  },
+  {
+    "instruction": "Test Loki log shipping end to end",
+    "output": "<think>\nSo we need to test Loki log shipping end to end.\nLet me break this down.\nBest tool here is logcli — logcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nlogcli query '{job=\"promtail\"}' --limit=5 2>&1"
+  },
+  {
+    "instruction": "Query Loki stats for a log stream",
+    "output": "<think>\nWe're being asked to query Loki stats for a log stream.\nFor this, logcli is the right tool — logcli operations.\nLet me verify afterward that it worked correctly.\n</think>\nlogcli query 'count_over_time({job=\"nginx\"}[1h])'"
+  }
+]

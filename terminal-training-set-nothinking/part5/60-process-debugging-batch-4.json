@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'reverse-step' -ex 'reverse-next' ./reverse_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file reverse_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at reverse_demo.c:12\n12\t    int x = 42;\nTarget does not support reverse execution.\nTarget does not support reverse execution."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'record full' -ex 'continue' -ex 'reverse-continue' -ex 'print x' ./reverse_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file reverse_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at reverse_demo.c:12\n12\t    int x = 42;\nProcess record does not support instruction 0xf0 at address 0x4011a6."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'reverse-finish' ./reverse_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file reverse_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at reverse_demo.c:12\n12\t    int x = 42;\nTarget does not support reverse execution."
+  },
+  {
+    "instruction": "gdb -batch -ex 'checkpoint' -ex 'break main' -ex 'run' -ex 'checkpoint' -ex 'continue' -ex 'restart 1' ./checkpoint_app 2>&1",
+    "output": "checkpoint 1: fork returned pid 12390.\nBreakpoint 1 at 0x4011a6: file checkpoint_app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at checkpoint_app.c:12\n12\t    int x = 42;\ncheckpoint 2: fork returned pid 12391.\n[Inferior 1 (process 12390) exited normally]\nSwitching to process 12391"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'tstart' -ex 'step' -ex 'tstop' -ex 'tfind' -ex 'print x' ./trace_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file trace_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at trace_demo.c:12\n12\t    int x = 42;\nTarget does not support tracepoints."
+  },
+  {
+    "instruction": "gdb -batch -ex 'trace main' -ex 'tvariable $x' -ex 'tstart' -ex 'run' -ex 'tstop' -ex 'tfind start' -ex 'print $x' ./trace_demo 2>&1",
+    "output": "Tracepoint 1 at 0x4011a6: file trace_demo.c, line 12.\nTarget does not support tracepoints."
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'delete' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nDelete all breakpoints? (y or n) [answered Y - input not from terminal]"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'break 15' -ex 'disable' -ex 'info breakpoints' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 2 at 0x4011b8: file app.c, line 15.\nNum     Type           Disp Enb Address            What\n1       breakpoint     keep n   0x00000000004011a6 in main at app.c:12\n2       breakpoint     keep n   0x00000000004011b8 in main at app.c:15"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'condition 1 x > 10' -ex 'run' -ex 'print x' ./cond_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file cond_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at cond_demo.c:12\n12\t    int x = 5;\n$1 = 5"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'ignore 1 3' -ex 'continue' -ex 'print i' ./cond_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file cond_demo.c, line 12.\nWill ignore next 3 crossings of breakpoint 1.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at cond_demo.c:12\n12\t    int x = 5;\n$1 = 3"
+  },
+  {
+    "instruction": "gdb -q -ex 'break 18' -ex 'commands' -ex 'silent' -ex 'print i' -ex 'continue' -ex 'end' -ex 'run' -ex 'quit' ./loop_counter 2>&1",
+    "output": "Breakpoint 1 at 0x4011c8: file loop_counter.c, line 18.\nEnd with a line saying just \"end\".\n>silent\n>print i\n>continue\n>end\nBreakpoint 1, main () at loop_counter.c:18\n18\t        process(i);\n$2 = 0\n$3 = 1\n$4 = 2\nA debugging session is active.\nQuit anyway? (y or n) [answered Y - input not from terminal]"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set scheduler-locking step' -ex 'info threads' ./threaded_app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file threaded_app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at threaded_app.c:12\n12\t    pthread_t t1, t2;\n  Id   Target Id                                          Frame\n* 1    Thread 0x7ffff7d8c740 (LWP 12345) \"threaded_app\"   main (argc=1, argv=0x7fffffffe5b8) at threaded_app.c:12"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set detach-on-fork off' -ex 'info inferiors' ./fork_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file fork_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at fork_demo.c:12\n12\t    pid_t pid = fork();\n  Num  Description       Connection           Executable\n* 1    process 12345     1 (native)           /home/user/fork_demo\n  2    process 12346     1 (native)           /home/user/fork_demo"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set follow-fork-mode parent' -ex 'continue' ./fork_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file fork_demo.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at fork_demo.c:12\n12\t    pid_t pid = fork();\n[Attaching after Thread 0x7ffff7d8c740 (LWP 12345) fork to child process 12346]\n[New inferior 2 (process 12346)]\n[Detaching after fork from parent process 12345]\n[Inferior 1 (process 12345) detached]"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set print pretty off' -ex 'print complex_struct' ./struct_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file struct_demo.c, line 12.\nBreakpoint 1, main () at struct_demo.c:12\n12\t    struct data d = {1, \"hello\", 3.14};\n$1 = {id = 1, name = \"hello\", value = 3.1400000000000001}"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set print elements 0' -ex 'print long_string' ./string_demo 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file string_demo.c, line 12.\nBreakpoint 1, main () at string_demo.c:12\n12\t    char *s = \"This is a very long string that should be truncated\";\n$1 = \"This is a very long string that should be truncated\""
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'set logging file session.log' -ex 'set logging redirect on' -ex 'set logging on' -ex 'print x' -ex 'set logging off' ./app 2>&1",
+    "output": "Copying output to session.log.\nBreakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nDone logging to session.log."
+  },
+  {
+    "instruction": "gcore 1234 2>&1",
+    "output": "Saved corefile core.1234"
+  },
+  {
+    "instruction": "gdb -batch -ex 'core-file /tmp/core.app' -ex 'bt full' -ex 'frame 0' -ex 'info locals' ./app 2>&1",
+    "output": "[New LWP 12345]\nCore was generated by `./app'.\nProgram terminated with signal SIGSEGV, Segmentation fault."
+  },
+  {
+    "instruction": "gdb -batch -ex 'attach 5678' -ex 'bt 5' -ex 'thread apply all bt 3' -ex 'detach' 2>&1",
+    "output": "Attaching to process 5678\n[New LWP 5679]\n[Thread debugging using libthread_db enabled]\nUsing host libthread_db library \"/lib/x86_64-linux-gnu/libthread_db.so.1\".\n0x00007ffff7afcf9f in __GI___clock_nanosleep () at clock_nanosleep.c:50"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'maintenance info sections' ./app ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nExec file:\n    `/home/user/app', file type elf64-x86-64.\n    0x0000000000400200 - 0x0000000000400218 is .interp\n    0x0000000000400218 - 0x000000000040023c is .note.gnu.property\n    0x000000000040023c - 0x0000000000400260 is .note.gnu.build-id\n    0x0000000000400260 - 0x0000000000400280 is .note.ABI-tag\n    0x0000000000400280 - 0x00000000004002cc is .gnu.hash\n    0x00000000004002cc - 0x00000000004003bc is .dynsym\n    0x00000000004003bc - 0x000000000040044b is .dynstr\n    0x000000000040044b - 0x000000000040045f is .gnu.version"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'maintenance print statistics' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nStatistics for `/home/user/app':\n  Number of \"minimal\" symbols read: 78\n  Number of \"partial\" symbols read: 0\n  Number of \"full\" symbols read: 3\n  Number of \"types\" defined: 0\n  Number of \"external\" symbols read: 1\n  Number of \"static\" symbols read: 9"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'info handle SIGINT' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\nSignal       Stop\tPrint\tPass to program\tDescription\nSIGINT       Yes\tYes\tNo\t\tInterrupt"
+  },
+  {
+    "instruction": "gdb -batch -ex 'break main' -ex 'run' -ex 'info programs' ./app 2>&1",
+    "output": "Breakpoint 1 at 0x4011a6: file app.c, line 12.\nBreakpoint 1, main (argc=1, argv=0x7fffffffe5b8) at app.c:12\n12\t    int x = 42;\n\tUsing the running image of child process 12345.\nProgram stopped at 0x4011a6."
+  }
+]

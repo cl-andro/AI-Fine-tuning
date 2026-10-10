@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: users(id, name, created_at)\nPivot a column to present values as columns",
+    "output": "SELECT * FROM (SELECT cateredcol FROM users) src PIVOT (COUNT(*) FOR cateredcol IN (1, 2, 3));"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nUnpivot columns back to rows",
+    "output": "SELECT * FROM users UNPIVOT (val FOR keycol IN (a, b, c));"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nUse CASE to map a numeric to a label",
+    "output": "SELECT *, CASE WHEN col > 100 THEN 'high' WHEN col > 50 THEN 'mid' ELSE 'low' END AS bucket FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nExtract a value from a JSON column",
+    "output": "SELECT users.*, attrs ->> 'color' AS color FROM users WHERE attrs ->> 'color' = 'red';"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nFull-text search against a text column",
+    "output": "SELECT * FROM users WHERE to_tsvector('english', col) @@ to_tsquery('english', 'term');"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nRegex find rows matching a pattern",
+    "output": "SELECT * FROM users WHERE col ~ '^[A-Z]2[0-9]+$';"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nCoalesce to replace null with a fallback",
+    "output": "SELECT users.*, COALESCE(col, 'UNKNOWN') AS col_filled FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nPrevent division by zero using NULLIF",
+    "output": "SELECT users.*, price / NULLIF(discount, 0) AS effective FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nUpsert with a single statement",
+    "output": "INSERT INTO users (id, col) VALUES (1, 'x') ON CONFLICT (id) DO UPDATE SET col = EXCLUDED.col;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nSelf join to compare rows to their previous one",
+    "output": "SELECT a.* FROM users a JOIN users b ON a.id = b.id + 1;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nRecursive query expanding a tree",
+    "output": "WITH RECURSIVE t AS (SELECT id FROM users WHERE parent_id IS NULL UNION ALL SELECT c.id FROM users c JOIN t ON c.parent_id = t.id) SELECT * FROM t;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nGrouped string aggregation combining text values",
+    "output": "SELECT grp, STRING_AGG(col, ', ') FROM users GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nWindow rank used to select a top row",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY col DESC) rn FROM users) x WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nDate truncation to bucket into weeks",
+    "output": "SELECT date_trunc('week', dt), COUNT(*) FROM users GROUP BY date_trunc('week', dt);"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nGREATEST/LEAST to clamp a value",
+    "output": "SELECT *, GREATEST(col, 0) AS clamped FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nUse EXTRACT to pull the year from a date",
+    "output": "SELECT *, EXTRACT(YEAR FROM dt) AS yr FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nArray unnest to flatten into rows",
+    "output": "SELECT users.*, unnest(tags) AS tag FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nGaps-and-islands via window differences",
+    "output": "SELECT *, SUM(new_grp) OVER (ORDER BY dt) AS grp FROM (SELECT *, CASE WHEN LAG(dt) OVER (ORDER BY dt) IS NULL OR dt - LAG(dt) OVER (ORDER BY dt) > INTERVAL '1 day' THEN 1 ELSE 0 END AS new_grp FROM users) x;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nCondensation of a table into delimited string",
+    "output": "SELECT STRING_AGG(DISTINCT grp, '|') FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nCompute a running percentile",
+    "output": "SELECT col, PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY col) OVER () FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nBackfill missing values with LAST_VALUE ignoring nulls",
+    "output": "SELECT *, COALESCE(col, LAST_VALUE(col IGNORE NULLS) OVER (ORDER BY dt)) FROM users;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nGenerate a date series joined to data",
+    "output": "SELECT gs, COUNT(t.id) FROM generate_series('2024-01-01','2024-01-10','1 day') gs LEFT JOIN users t ON t.dt::date = gs GROUP BY gs;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nTranslate / pivot using FILTER clause",
+    "output": "SELECT grp, COUNT(*) FILTER (WHERE col = 'x') AS xs, COUNT(*) FILTER (WHERE col = 'y') AS ys FROM users GROUP BY grp;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nMulti-column UNPIVOT style via CROSS JOIN LATERAL",
+    "output": "SELECT t.*, k.v FROM users t CROSS JOIN LATERAL (VALUES ('col1',col1),('col2',col2)) AS k(k,v);"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nWindow difference between partition first and current",
+    "output": "SELECT *, col - FIRST_VALUE(col) OVER (PARTITION BY grp ORDER BY dt) AS delta FROM users;"
+  }
+]

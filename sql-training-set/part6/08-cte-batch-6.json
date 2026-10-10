@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE returning count per user_id",
+    "output": "WITH counts AS (SELECT user_id, COUNT(*) c FROM referrals GROUP BY user_id) SELECT * FROM counts WHERE c > 2;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE computing average referred_by",
+    "output": "WITH avg_cte AS (SELECT AVG(referred_by) a FROM referrals) SELECT * FROM referrals WHERE referred_by > (SELECT a FROM avg_cte);"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nTwo CTEs joined together",
+    "output": "WITH a AS (SELECT user_id, SUM(referred_by) s FROM referrals GROUP BY user_id), b AS (SELECT user_id, COUNT(*) c FROM referrals GROUP BY user_id) SELECT a.user_id, a.s FROM a JOIN b ON a.user_id = b.user_id WHERE b.c > 3;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nApply filters before entering a CTE",
+    "output": "WITH filtered AS (SELECT * FROM referrals WHERE referred_by > 50) SELECT user_id, COUNT(*) FROM filtered GROUP BY user_id;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE then order by aggregate",
+    "output": "WITH total AS (SELECT user_id, SUM(referred_by) s FROM referrals GROUP BY user_id) SELECT * FROM total ORDER BY s DESC;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nModify via CTE then select window rank",
+    "output": "WITH base AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY referred_by DESC) rn FROM referrals) SELECT * FROM base WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nRecursive CTE to create a number sequence",
+    "output": "WITH RECURSIVE num(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM num WHERE n < 10) SELECT * FROM num;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nRecursive CTE walking a holiday-date chain",
+    "output": "WITH RECURSIVE dates(d) AS (SELECT '2024-01-01'::date UNION ALL SELECT (d + INTERVAL '1 day')::date FROM dates WHERE d < '2024-01-10') SELECT d FROM dates;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE combining two aggregates in one pass",
+    "output": "WITH agg AS (SELECT user_id, SUM(referred_by) s, AVG(referred_by) a FROM referrals GROUP BY user_id) SELECT user_id, s, a FROM agg WHERE s > 100;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nMultiple CTEs chained (a then b referencing a)",
+    "output": "WITH a AS (SELECT user_id, COUNT(*) c FROM referrals GROUP BY user_id), b AS (SELECT * FROM a WHERE c > 1) SELECT COUNT(*) FROM b;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nSet expressions inside a CTE",
+    "output": "WITH c AS (SELECT user_id FROM referrals WHERE referred_by > 10 UNION SELECT user_id FROM referrals WHERE referred_by < 2) SELECT * FROM c;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE for deduplication using row number",
+    "output": "WITH dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY joined_on) rn FROM referrals) SELECT * FROM dedup WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nRecursive hierarchy emulating parent-child with depth",
+    "output": "WITH RECURSIVE tree AS (SELECT id, user_id FROM referrals WHERE parent_id IS NULL UNION ALL SELECT c.id, c.user_id FROM referrals c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nMaterialize then refilter a CTE",
+    "output": "WITH m AS (SELECT user_id, SUM(referred_by) s FROM referrals GROUP BY user_id HAVING SUM(referred_by) > 0) SELECT *, s * 1.0 / (SELECT SUM(s) FROM m) AS share FROM m;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nTally CTE feeding a LEFT JOIN to fill missing grouping rows",
+    "output": "WITH RECURSIVE grp AS (SELECT 1 g UNION ALL SELECT g + 1 FROM grp WHERE g < 10) SELECT g, COUNT(t.user_id) FROM grp LEFT JOIN referrals t ON t.user_id = g GROUP BY g;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE with ordered window and outer filter on rank",
+    "output": "WITH r AS (SELECT *, RANK() OVER (PARTITION BY user_id ORDER BY referred_by DESC) rk FROM referrals) SELECT * FROM r WHERE rk <= 3;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE used twice via self reference pattern",
+    "output": "WITH c AS (SELECT user_id, referred_by FROM referrals WHERE referred_by IS NOT NULL) SELECT * FROM c WHERE referred_by > (SELECT AVG(referred_by) FROM c);"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nInline aggregate then filter in outer query",
+    "output": "WITH g AS (SELECT user_id FROM referrals GROUP BY user_id HAVING COUNT(*) > 2) SELECT * FROM referrals WHERE user_id IN (SELECT * FROM g);"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nPivot-like pivot using multiple aggregate CTEs",
+    "output": "WITH wide AS (SELECT user_id, SUM(CASE WHEN referred_by > 100 THEN 1 ELSE 0 END) over100, SUM(CASE WHEN referred_by <= 100 THEN 1 ELSE 0 END) under FROM referrals GROUP BY user_id) SELECT * FROM wide;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nRecursive CTE to expand an interval of ranges",
+    "output": "WITH RECURSIVE iv(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM iv WHERE n < 100) SELECT n FROM iv;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE for lead-lag difference",
+    "output": "WITH lg AS (SELECT user_id, referred_by, LAG(referred_by) OVER (PARTITION BY user_id ORDER BY joined_on) prev FROM referrals) SELECT *, referred_by - COALESCE(prev,referred_by) AS delta FROM lg;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nChained CTEs for multi-stage business calc",
+    "output": "WITH step1 AS (SELECT user_id, SUM(referred_by) s FROM referrals GROUP BY user_id), step2 AS (SELECT *, s * 2 doubled FROM step1) SELECT * FROM step2 WHERE doubled > 20;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE referencing a correlated subquery",
+    "output": "WITH big AS (SELECT user_id FROM referrals GROUP BY user_id HAVING SUM(referred_by) > 100) SELECT * FROM referrals t WHERE EXISTS (SELECT 1 FROM big b WHERE b.user_id = t.user_id);"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nRecursive CTE producing factorial numbers",
+    "output": "WITH RECURSIVE f(n, fact) AS (SELECT 1, 1 UNION ALL SELECT n+1, fact*(n+1) FROM f WHERE n < 10) SELECT * FROM f;"
+  },
+  {
+    "instruction": "Schema: referrals(user_id, referred_by, joined_on)\nCTE on itself to compute growth from prior period",
+    "output": "WITH p AS (SELECT user_id, SUM(referred_by) cur FROM referrals GROUP BY user_id), q AS (SELECT *, LAG(cur) OVER (ORDER BY user_id) prev FROM p) SELECT *, cur - prev AS growth FROM q;"
+  }
+]

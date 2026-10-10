@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Add scrape_config for JSON log files",
+    "output": "<think>\nWe're being asked to add scrape_config for JSON log files.\nLet me consider what makes sense here.\nI'll reach for cat here because cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: json-logs\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: json-logs\n      __path__: /var/log/json/*.log\n  pipeline_stages:\n  - json:\n      expressions:\n        level: level\n        msg: msg\n        time: time\n  - timestamp:\n      source: time\n      format: RFC3339Nano\n  - labels:\n      level:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for multiline java logs",
+    "output": "<think>\nSo the request is to add scrape_config for multiline java logs.\ncat is what we need — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: java-logs\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: java\n      __path__: /var/log/java/app.log\n  pipeline_stages:\n  - multiline:\n      firstline: '^\\d{4}-\\d{2}-\\d{2}'\n      max_wait_time: 3s\n      max_lines: 1000\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for docker container logs",
+    "output": "<think>\nThis is asking us to add scrape_config for docker container logs.\nThis calls for cat. Cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: docker\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: docker\n      __path__: /var/lib/docker/containers/*/*.log\n  pipeline_stages:\n  - json:\n      expressions:\n        log: log\n        stream: stream\n        time: time\n  - timestamp:\n      source: time\n      format: RFC3339Nano\n  - labels:\n      stream:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for syslog file",
+    "output": "<think>\nSo we need to add scrape_config for syslog file.\nLet me reason through this.\nThis calls for cat. Cat operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: syslog\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: syslog\n      __path__: /var/log/syslog\n  pipeline_stages:\n  - regex:\n      expression: '^(?P<timestamp>\\w+\\s+\\d+\\s+\\d{2}:\\d{2}:\\d{2}) (?P<hostname>\\S+) (?P<process>[^\\[]+)(?:\\[(?P<pid>\\d+)\\])?: (?P<message>.*)$'\n  - timestamp:\n      source: timestamp\n      format: 'Jan  2 15:04:05'\n  - labels:\n      hostname:\n      process:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for Apache error logs",
+    "output": "<think>\nWe're being asked to add scrape_config for Apache error logs.\nLet me break this down.\nFor this, cat is the right tool — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: apache-error\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: apache-error\n      __path__: /var/log/apache2/error.log\n  pipeline_stages:\n  - regex:\n      expression: '^\\[(?P<timestamp>[^\\]]+)\\] \\[(?P<level>[^\\]]+)\\] \\[pid (?P<pid>\\d+)\\] (?P<message>.*)$'\n  - timestamp:\n      source: timestamp\n      format: 'Mon Jan 02 15:04:05.123456 2006'\n  - labels:\n      level:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for auth log",
+    "output": "<think>\nThe goal is to add scrape_config for auth log.\nThe tool for this job is cat — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: auth\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: auth\n      __path__: /var/log/auth.log\n  pipeline_stages:\n  - regex:\n      expression: '^(?P<timestamp>\\w+\\s+\\d+\\s+\\d{2}:\\d{2}:\\d{2}) (?P<hostname>\\S+) (?P<process>[^:]+): (?P<message>.*)$'\n  - timestamp:\n      source: timestamp\n      format: 'Jan  2 15:04:05'\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for nginx error logs",
+    "output": "<think>\nWe should add scrape_config for nginx error logs.\ncat is what we need — cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: nginx-error\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: nginx-error\n      __path__: /var/log/nginx/error.log\n  pipeline_stages:\n  - regex:\n      expression: '^(?P<timestamp>\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}) \\[(?P<level>\\w+)\\] (?P<pid>\\d+)#(?P<tid>\\d+): \\*(?P<cid>\\d+) (?P<message>.*)$'\n  - timestamp:\n      source: timestamp\n      format: '2006/01/02 15:04:05'\n  - labels:\n      level:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for kubelet logs",
+    "output": "<think>\nThe user wants to add scrape_config for kubelet logs.\nThe tool for this job is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: kubelet\n  kubernetes_sd_configs:\n  - role: pod\n  relabel_configs:\n  - source_labels: [__meta_kubernetes_namespace]\n    target_label: namespace\n  - source_labels: [__meta_kubernetes_pod_name]\n    target_label: pod\n  - source_labels: [__meta_kubernetes_pod_container_name]\n    target_label: container\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage to extract spans from logs",
+    "output": "<think>\nWe should add pipeline stage to extract spans from logs.\nLet me reason through this.\nThe tool for this job is cat — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: 'trace_id=(?P<trace_id>[^\\s]+) span_id=(?P<span_id>[^\\s]+)'\n- labels:\n    trace_id:\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage for log level normalization",
+    "output": "<think>\nSo the request is to add pipeline stage for log level normalization.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: '\\b(?P<level>INFO|WARN|ERROR|DEBUG|FATAL|TRACE)\\b'\n- template:\n    source: level\n    template: '{{ .Value | ToLower }}'\n- labels:\n    level:\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage to parse CSV log format",
+    "output": "<think>\nThe user wants to add pipeline stage to parse CSV log format.\nFor this, cat is the right tool — cat operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: '^(?P<timestamp>[^,]+),(?P<level>[^,]+),(?P<logger>[^,]+),(?P<message>.*)$'\n- timestamp:\n    source: timestamp\n    format: '2006-01-02T15:04:05Z07:00'\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage to extract HTTP status",
+    "output": "<think>\nSo we need to add pipeline stage to extract HTTP status.\nBest tool here is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: 'HTTP/\\d\\.\\d\" (?P<status>\\d{3})'\n- labels:\n    status:\nEOF"
+  },
+  {
+    "instruction": "Add metric counter for error levels",
+    "output": "<think>\nAlright, we need to add metric counter for error levels.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- metrics:\n    error_count:\n      type: Counter\n      description: error count by level\n      source: level\n      config:\n        action: inc\n        match_all: false\n        value: error|fatal\nEOF"
+  },
+  {
+    "instruction": "Add histogram metric for response times",
+    "output": "<think>\nAlright, we need to add histogram metric for response times.\nHere's how I'd approach this.\nI'll reach for cat here because cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: 'response_time=(?P<resp_time>\\d+)ms'\n- metrics:\n    response_time_ms:\n      type: Histogram\n      description: response time in ms\n      source: resp_time\n      config:\n        buckets: [50, 100, 200, 500, 1000]\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage to filter out healthcheck logs",
+    "output": "<think>\nAlright, we need to add pipeline stage to filter out healthcheck logs.\nLet me break this down.\nThe tool for this job is cat — cat operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- drop:\n    source: message\n    expression: '^(GET|POST|PUT|DELETE) /healthz?$'\nEOF"
+  },
+  {
+    "instruction": "Add pipeline stage to extract kubernetes annotations",
+    "output": "<think>\nWe're being asked to add pipeline stage to extract kubernetes annotations.\nFirst, let me understand what's needed here.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: 'k8s_app=(?P<app>[^\\s]+) k8s_version=(?P<version>[^\\s]+)'\n- labels:\n    app:\nEOF"
+  },
+  {
+    "instruction": "Add scrape_config for Windows Event Log",
+    "output": "<think>\nThis is asking us to add scrape_config for Windows Event Log.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: windows-events\n  windows_events:\n    use_incoming_timestamp: false\n    bookmark_path: ./bookmark.xml\n    eventlog_name: Application\n    xpath_query: '*'\n    locale: 0x0409\nEOF"
+  },
+  {
+    "instruction": "Add pipeline to handle gzipped log rotation",
+    "output": "<think>\nThe goal is to add pipeline to handle gzipped log rotation.\nLet me think about the best approach.\nThe tool for this job is cat — cat operations.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: rotated-logs\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: rotated\n      __path__: /var/log/archive/*.gz\n  decompress:\n    enabled: true\nEOF"
+  },
+  {
+    "instruction": "Add loki push with TLS client cert",
+    "output": "<think>\nNeed to add loki push with TLS client cert.\ncat is what we need — cat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: https://loki.example.com:3100/loki/api/v1/push\n    tls_config:\n      cert_file: /etc/promtail/cert.pem\n      key_file: /etc/promtail/key.pem\n      ca_file: /etc/promtail/ca.pem\n      insecure_skip_verify: false\nEOF"
+  },
+  {
+    "instruction": "Add pipeline to extract request ID from headers",
+    "output": "<think>\nWe should add pipeline to extract request ID from headers.\nLet me reason through this.\nThis calls for cat. Cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat >> /etc/promtail/config.yml << 'EOF'\npipeline_stages:\n- regex:\n    expression: 'X-Request-ID: (?P<request_id>[a-f0-9-]+)'\n- labels:\n    request_id:\nEOF"
+  }
+]

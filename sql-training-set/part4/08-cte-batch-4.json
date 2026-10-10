@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE returning count per customer_id",
+    "output": "WITH counts AS (SELECT customer_id, COUNT(*) c FROM orders GROUP BY customer_id) SELECT * FROM counts WHERE c > 2;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE computing average total",
+    "output": "WITH avg_cte AS (SELECT AVG(total) a FROM orders) SELECT * FROM orders WHERE total > (SELECT a FROM avg_cte);"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nTwo CTEs joined together",
+    "output": "WITH a AS (SELECT customer_id, SUM(total) s FROM orders GROUP BY customer_id), b AS (SELECT customer_id, COUNT(*) c FROM orders GROUP BY customer_id) SELECT a.customer_id, a.s FROM a JOIN b ON a.customer_id = b.customer_id WHERE b.c > 3;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nApply filters before entering a CTE",
+    "output": "WITH filtered AS (SELECT * FROM orders WHERE total > 50) SELECT customer_id, COUNT(*) FROM filtered GROUP BY customer_id;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE then order by aggregate",
+    "output": "WITH total AS (SELECT customer_id, SUM(total) s FROM orders GROUP BY customer_id) SELECT * FROM total ORDER BY s DESC;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nModify via CTE then select window rank",
+    "output": "WITH base AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY total DESC) rn FROM orders) SELECT * FROM base WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nRecursive CTE to create a number sequence",
+    "output": "WITH RECURSIVE num(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM num WHERE n < 10) SELECT * FROM num;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nRecursive CTE walking a holiday-date chain",
+    "output": "WITH RECURSIVE dates(d) AS (SELECT '2024-01-01'::date UNION ALL SELECT (d + INTERVAL '1 day')::date FROM dates WHERE d < '2024-01-10') SELECT d FROM dates;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE combining two aggregates in one pass",
+    "output": "WITH agg AS (SELECT customer_id, SUM(total) s, AVG(total) a FROM orders GROUP BY customer_id) SELECT customer_id, s, a FROM agg WHERE s > 100;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nMultiple CTEs chained (a then b referencing a)",
+    "output": "WITH a AS (SELECT customer_id, COUNT(*) c FROM orders GROUP BY customer_id), b AS (SELECT * FROM a WHERE c > 1) SELECT COUNT(*) FROM b;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nSet expressions inside a CTE",
+    "output": "WITH c AS (SELECT customer_id FROM orders WHERE total > 10 UNION SELECT customer_id FROM orders WHERE total < 2) SELECT * FROM c;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE for deduplication using row number",
+    "output": "WITH dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date) rn FROM orders) SELECT * FROM dedup WHERE rn = 1;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nRecursive hierarchy emulating parent-child with depth",
+    "output": "WITH RECURSIVE tree AS (SELECT id, customer_id FROM orders WHERE parent_id IS NULL UNION ALL SELECT c.id, c.customer_id FROM orders c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nMaterialize then refilter a CTE",
+    "output": "WITH m AS (SELECT customer_id, SUM(total) s FROM orders GROUP BY customer_id HAVING SUM(total) > 0) SELECT *, s * 1.0 / (SELECT SUM(s) FROM m) AS share FROM m;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nTally CTE feeding a LEFT JOIN to fill missing grouping rows",
+    "output": "WITH RECURSIVE grp AS (SELECT 1 g UNION ALL SELECT g + 1 FROM grp WHERE g < 10) SELECT g, COUNT(t.customer_id) FROM grp LEFT JOIN orders t ON t.customer_id = g GROUP BY g;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE with ordered window and outer filter on rank",
+    "output": "WITH r AS (SELECT *, RANK() OVER (PARTITION BY customer_id ORDER BY total DESC) rk FROM orders) SELECT * FROM r WHERE rk <= 3;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE used twice via self reference pattern",
+    "output": "WITH c AS (SELECT customer_id, total FROM orders WHERE total IS NOT NULL) SELECT * FROM c WHERE total > (SELECT AVG(total) FROM c);"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nInline aggregate then filter in outer query",
+    "output": "WITH g AS (SELECT customer_id FROM orders GROUP BY customer_id HAVING COUNT(*) > 2) SELECT * FROM orders WHERE customer_id IN (SELECT * FROM g);"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nPivot-like pivot using multiple aggregate CTEs",
+    "output": "WITH wide AS (SELECT customer_id, SUM(CASE WHEN total > 100 THEN 1 ELSE 0 END) over100, SUM(CASE WHEN total <= 100 THEN 1 ELSE 0 END) under FROM orders GROUP BY customer_id) SELECT * FROM wide;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nRecursive CTE to expand an interval of ranges",
+    "output": "WITH RECURSIVE iv(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM iv WHERE n < 100) SELECT n FROM iv;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE for lead-lag difference",
+    "output": "WITH lg AS (SELECT customer_id, total, LAG(total) OVER (PARTITION BY customer_id ORDER BY order_date) prev FROM orders) SELECT *, total - COALESCE(prev,total) AS delta FROM lg;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nChained CTEs for multi-stage business calc",
+    "output": "WITH step1 AS (SELECT customer_id, SUM(total) s FROM orders GROUP BY customer_id), step2 AS (SELECT *, s * 2 doubled FROM step1) SELECT * FROM step2 WHERE doubled > 20;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE referencing a correlated subquery",
+    "output": "WITH big AS (SELECT customer_id FROM orders GROUP BY customer_id HAVING SUM(total) > 100) SELECT * FROM orders t WHERE EXISTS (SELECT 1 FROM big b WHERE b.customer_id = t.customer_id);"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nRecursive CTE producing factorial numbers",
+    "output": "WITH RECURSIVE f(n, fact) AS (SELECT 1, 1 UNION ALL SELECT n+1, fact*(n+1) FROM f WHERE n < 10) SELECT * FROM f;"
+  },
+  {
+    "instruction": "Schema: orders(customer_id, total, order_date)\nCTE on itself to compute growth from prior period",
+    "output": "WITH p AS (SELECT customer_id, SUM(total) cur FROM orders GROUP BY customer_id), q AS (SELECT *, LAG(cur) OVER (ORDER BY customer_id) prev FROM p) SELECT *, cur - prev AS growth FROM q;"
+  }
+]

@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "How to show all qdiscs on network interfaces",
+    "output": "<think>\nWe're being asked to show all qdiscs on network interfaces.\nLet me think through this step by step.\nThe tool for this job is tc — tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc show"
+  },
+  {
+    "instruction": "How to show qdisc on a specific interface",
+    "output": "<think>\nSo the request is to show qdisc on a specific interface.\nLet me think through this step by step.\nThe tool for this job is tc — tc operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc show dev eth0"
+  },
+  {
+    "instruction": "How to show all classes on a device",
+    "output": "<think>\nWe should show all classes on a device.\nFirst, let me understand what's needed here.\nI'll reach for tc here because tc operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc class show dev eth0"
+  },
+  {
+    "instruction": "How to show all filters on a device",
+    "output": "<think>\nThe goal is to show all filters on a device.\nI'll reach for tc here because tc operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ntc filter show dev eth0"
+  },
+  {
+    "instruction": "How to add a pfifo_fast qdisc to eth0",
+    "output": "<think>\nThe task requires us to add a pfifo_fast qdisc to eth0.\nLet me reason through this.\nI'll reach for tc here because tc operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root pfifo_fast"
+  },
+  {
+    "instruction": "How to add a pfifo_fast qdisc to an interface",
+    "output": "<think>\nSo we need to add a pfifo_fast qdisc to an interface.\nThe tool for this job is tc — tc operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root handle 1: pfifo_fast"
+  },
+  {
+    "instruction": "How to add a fifo (pfifo) qdisc",
+    "output": "<think>\nAlright, we need to add a fifo (pfifo) qdisc.\nLet me think through this step by step.\nI'll reach for tc here because tc operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc add dev eth0 root pfifo limit 1000"
+  },
+  {
+    "instruction": "How to add a bfifo (byte-limited fifo) qdisc",
+    "output": "<think>\nThe goal is to add a bfifo (byte-limited fifo) qdisc.\nThe tool for this job is tc — tc operations.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root bfifo limit 65536"
+  },
+  {
+    "instruction": "How to add a fq_codel qdisc to eth0",
+    "output": "<think>\nWe're being asked to add a fq_codel qdisc to eth0.\nBest tool here is tc — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root fq_codel"
+  },
+  {
+    "instruction": "How to set target latency for fq_codel",
+    "output": "<think>\nThe goal is to set target latency for fq_codel.\nLet me break this down.\nThe tool for this job is tc — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root fq_codel target 10ms"
+  },
+  {
+    "instruction": "How to set change a qdisc to fq_codel with custom interval",
+    "output": "<think>\nThe user wants to set change a qdisc to fq_codel with custom interval.\nFirst, let me understand what's needed here.\nI'll reach for tc here because tc operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc change dev eth0 root fq_codel interval 150ms"
+  },
+  {
+    "instruction": "How to set memory limit for fq_codel",
+    "output": "<think>\nNeed to set memory limit for fq_codel.\ntc is what we need — tc operations.\n</think>\ntc qdisc add dev eth0 root fq_codel memory_limit 32mb"
+  },
+  {
+    "instruction": "How to add an HTB qdisc with root class",
+    "output": "<think>\nWe should add an HTB qdisc with root class.\nHere's how I'd approach this.\nThis calls for tc. Tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30"
+  },
+  {
+    "instruction": "How to add an HTB class for bandwidth limiting",
+    "output": "<think>\nSo the request is to add an HTB class for bandwidth limiting.\nBest tool here is tc — tc operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ntc class add dev eth0 parent 1: classid 1:10 htb rate 10mbit ceil 10mbit"
+  },
+  {
+    "instruction": "How to add an HTB class with burst",
+    "output": "<think>\nWe're being asked to add an HTB class with burst.\nHere's how I'd approach this.\nI'd use tc for this — tc operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ntc class add dev eth0 parent 1:10 classid 1:20 htb rate 1mbit ceil 5mbit burst 15k"
+  },
+  {
+    "instruction": "How to add a leaf class with a qdisc in HTB",
+    "output": "<think>\nAlright, we need to add a leaf class with a qdisc in HTB.\nLet me break this down.\nFor this, tc is the right tool — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntc class add dev eth0 parent 1:10 classid 1:30 htb rate 5mbit && tc qdisc add dev eth0 parent 1:30 sfq perturb 10"
+  },
+  {
+    "instruction": "How to add a TBF (Token Bucket Filter) qdisc",
+    "output": "<think>\nSo the request is to add a TBF (Token Bucket Filter) qdisc.\nLet me break this down.\nThis calls for tc. Tc operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root tbf rate 1mbit burst 32kbit latency 50ms"
+  },
+  {
+    "instruction": "How to add a PRIO qdisc with multiple bands",
+    "output": "<think>\nSo we need to add a PRIO qdisc with multiple bands.\ntc is what we need — tc operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ntc qdisc add dev eth0 root handle 1: prio bands 3 priomap 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 0"
+  },
+  {
+    "instruction": "How to add a netem qdisc for packet delay",
+    "output": "<think>\nSo the request is to add a netem qdisc for packet delay.\nI'd use tc for this — tc operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root netem delay 100ms"
+  },
+  {
+    "instruction": "How to add netem with delay variation",
+    "output": "<think>\nSo we need to add netem with delay variation.\nFirst, let me understand what's needed here.\nThis calls for tc. Tc operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root netem delay 100ms 20ms"
+  },
+  {
+    "instruction": "How to add netem with packet loss",
+    "output": "<think>\nAlright, we need to add netem with packet loss.\nFor this, tc is the right tool — tc operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc add dev eth0 root netem loss 5%"
+  },
+  {
+    "instruction": "How to add netem with duplicate packets",
+    "output": "<think>\nWe should add netem with duplicate packets.\nHere's how I'd approach this.\nBest tool here is tc — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntc qdisc add dev eth0 root netem duplicate 1%"
+  },
+  {
+    "instruction": "How to add netem with corrupt packets",
+    "output": "<think>\nWe should add netem with corrupt packets.\nLet me reason through this.\nI'd use tc for this — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc add dev eth0 root netem corrupt 0.5%"
+  },
+  {
+    "instruction": "How to add netem with packet reordering",
+    "output": "<think>\nAlright, we need to add netem with packet reordering.\nFor this, tc is the right tool — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root netem delay 50ms 10ms reorder 25% 50%"
+  },
+  {
+    "instruction": "How to change netem parameters",
+    "output": "<think>\nAlright, we need to change netem parameters.\nI'd use tc for this — tc operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntc qdisc change dev eth0 root netem delay 200ms 30ms distribution normal"
+  },
+  {
+    "instruction": "How to delete a qdisc from eth0",
+    "output": "<think>\nThe goal is to delete a qdisc from eth0.\ntc is what we need — tc operations.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc del dev eth0 root"
+  }
+]

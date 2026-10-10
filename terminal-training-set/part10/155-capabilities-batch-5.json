@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Show effective capability mask as hex",
+    "output": "<think>\nThe user wants to show effective capability mask as hex.\nLet me consider what makes sense here.\nI'll reach for cat here because cat operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat /proc/self/status | grep CapEff"
+  },
+  {
+    "instruction": "Show inheritable capability mask",
+    "output": "<think>\nAlright, we need to show inheritable capability mask.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/self/status | grep CapInh"
+  },
+  {
+    "instruction": "Show permitted capability mask",
+    "output": "<think>\nThis is asking us to show permitted capability mask.\nI'll reach for cat here because cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/self/status | grep CapPrm"
+  },
+  {
+    "instruction": "Show bounding capability set",
+    "output": "<think>\nWe're being asked to show bounding capability set.\nI'll reach for cat here because cat operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/self/status | grep CapBnd"
+  },
+  {
+    "instruction": "Show ambient capability set",
+    "output": "<think>\nSo we need to show ambient capability set.\nThe tool for this job is cat — cat operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/self/status | grep CapAmb"
+  },
+  {
+    "instruction": "Decode all capability masks for PID",
+    "output": "<think>\nSo the request is to decode all capability masks for PID.\nLet me think about the best approach.\nfor is what we need — for operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nfor cap in CapEff CapInh CapPrm CapBnd CapAmb; do mask=$(grep $cap /proc/1234/status | awk '{print $2}'); echo \"$cap ($mask) -> $(capsh --decode=$mask)\"; done"
+  },
+  {
+    "instruction": "Write simple script to decode process caps",
+    "output": "<think>\nThe goal is to write simple script to decode process caps.\nI'd use cat for this — cat operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat > /usr/local/bin/decode-caps.sh << 'EOF'\n#!/bin/bash\nPID=${1:-$$}\nfor cap in CapEff CapInh CapPrm CapBnd CapAmb; do\n    if mask=$(grep $cap /proc/$PID/status 2>/dev/null | awk '{print $2}'); then\n        echo \"$cap ($mask): $(capsh --decode=$mask 2>/dev/null || echo 'unknown')\"\n    fi\ndone\nEOF\nchmod +x /usr/local/bin/decode-caps.sh"
+  },
+  {
+    "instruction": "Run decode-caps on PID",
+    "output": "<think>\nNeed to run decode-caps on PID.\nLet me think about the best approach.\nbash is what we need — bash operations.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nbash /usr/local/bin/decode-caps.sh 1"
+  },
+  {
+    "instruction": "Check if specific cap is in effective set",
+    "output": "<think>\nAlright, we need to check if specific cap is in effective set.\nFirst, let me understand what's needed here.\nThe tool for this job is grep — pattern searching.\nI've added -I to ignore case — standard practice for this kind of operation.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ngrep CapEff /proc/self/status | awk '{print $2}' | xargs -I{} sh -c 'capsh --has-cap=cap_net_raw -- -c \"echo yes\" 2>/dev/null || echo no'"
+  },
+  {
+    "instruction": "Compare bounding set to permitted set",
+    "output": "<think>\nThis is asking us to compare bounding set to permitted set.\nLet me think through this step by step.\nBest tool here is capsh — capsh operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\ncapsh --print 2>&1 | grep -E 'Bounding|Permitted'"
+  },
+  {
+    "instruction": "View capability difference between users",
+    "output": "<think>\nThe goal is to view capability difference between users.\nLet me think through this step by step.\nI'd use su for this — su operations.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nsu -c 'capsh --print | grep Current' nobody; capsh --print | grep Current"
+  },
+  {
+    "instruction": "Permissions for running file with capability",
+    "output": "<think>\nThe goal is to permissions for running file with capability.\nFor this, chmod is the right tool — file permission changes.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever chmod 777. Use the most restrictive permissions that still work.\nLet me verify afterward that it worked correctly.\n</think>\nchmod u+s /bin/ping && getcap /bin/ping"
+  },
+  {
+    "instruction": "Setcap on script file (shebang)",
+    "output": "<think>\nThe task requires us to setcap on script file (shebang).\nThis calls for setcap. Setcap operations.\nI'll check the output to make sure it did what we expected.\n</think>\nsetcap cap_net_raw+ep /usr/local/bin/myscript.py"
+  },
+  {
+    "instruction": "Remove suid and use capabilities instead",
+    "output": "<think>\nThe user wants to remove suid and use capabilities instead.\nI'd use chmod for this — file permission changes.\nNever chmod 777. Use the most restrictive permissions that still work.\n</think>\nchmod u-s /bin/ping; setcap cap_net_raw+ep /bin/ping"
+  },
+  {
+    "instruction": "Check cap vs suid precedence",
+    "output": "<think>\nThe user wants to check cap vs suid precedence.\nHere's how I'd approach this.\nThis calls for getcap. Getcap operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ngetcap /bin/ping; ls -la /bin/ping"
+  },
+  {
+    "instruction": "Compare binary with and without cap set",
+    "output": "<think>\nThis is asking us to compare binary with and without cap set.\nLet me think through this step by step.\ngetcap is what we need — getcap operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ngetcap /bin/ping && echo 'has cap'; cp /bin/ping /tmp/ping.nocap && setcap -r /tmp/ping.nocap && getcap /tmp/ping.nocap"
+  },
+  {
+    "instruction": "Grant cap to binary inside container",
+    "output": "<think>\nAlright, we need to grant cap to binary inside container.\nLet me reason through this.\nBest tool here is docker — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run --rm -v /bin/ping:/ping ubuntu setcap cap_net_raw+ep /ping"
+  },
+  {
+    "instruction": "Restrict setcap to user namespace",
+    "output": "<think>\nSo the request is to restrict setcap to user namespace.\nHere's how I'd approach this.\nFor this, unshare is the right tool — unshare operations.\n</think>\nunshare -Ur setcap cap_net_raw+ep /bin/ping"
+  },
+  {
+    "instruction": "Test if user namespace has CAP_SETUID",
+    "output": "<think>\nAlright, we need to test if user namespace has CAP_SETUID.\nLet me think about the best approach.\nI'll reach for unshare here because unshare operations.\n</think>\nunshare -Ur capsh --has-cap=cap_setuid$$"
+  },
+  {
+    "instruction": "Capabilities inside flatpak sandbox",
+    "output": "<think>\nAlright, we need to capabilities inside flatpak sandbox.\nLet me think through this step by step.\nThe tool for this job is flatpak — Flatpak application management.\nI've added -c to count or create — standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nSimilar to snaps — check permissions with flatpak info if an app can't access files.\n</think>\nflatpak run --command=bash org.gnome.Epiphany -c 'capsh --print'"
+  },
+  {
+    "instruction": "Snap confinement and capabilities",
+    "output": "<think>\nNeed to snap confinement and capabilities.\nFirst, let me understand what's needed here.\nI'd use snap for this — Snap package management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSnap packages are sandboxed but have limited filesystem access — check permissions if things don't work.\nLet me verify afterward that it worked correctly.\n</think>\nsnap run --shell firefox && capsh --print"
+  }
+]

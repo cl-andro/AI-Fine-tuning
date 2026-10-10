@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Connect to a WebSocket server with websocat",
+    "output": "websocat wss://echo.example.com/ws\n(connected)\nhello\nhello\nping\nping"
+  },
+  {
+    "instruction": "Send a message and receive response via websocat",
+    "output": "websocat wss://api.example.com/chat\n{\"type\":\"join\",\"room\":\"general\"}\n{\"type\":\"join_ack\",\"room\":\"general\",\"users\":5}\n{\"type\":\"message\",\"user\":\"Alice\",\"text\":\"Hello!\"}\n{\"type\":\"message\",\"user\":\"Bob\",\"text\":\"Hi Alice!\"}"
+  },
+  {
+    "instruction": "Connect to a WebSocket with a subprotocol via websocat",
+    "output": "websocat -s protocol-v1 wss://stream.example.com\n(connected with subprotocol: protocol-v1)"
+  },
+  {
+    "instruction": "Pipe HTTP response to websocat for WebSocket connection",
+    "output": "websocat -U -v wss://ws.example.com/events\n[2026-07-25 10:00:00] Connected to wss://ws.example.com/events\n{\"event\":\"connected\",\"id\":\"sess_abc123\"}"
+  },
+  {
+    "instruction": "K6 load test with a simple HTTP GET endpoint",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nimport { check } from 'k6';\nexport default function () {\n  let res = http.get('https://api.example.com/health');\n  check(res, { 'status is 200': (r) => r.status === 200 });\n}\nEOF\n\n     execution: local\n        script: -\n        output: -\n     scenarios: 1 scenario, 1 max VUs\n     default: 1 iterations for each of 1 VUs\n     http_req_duration: avg=215ms\n     http_reqs: 1\n     iterations: 1"
+  },
+  {
+    "instruction": "K6 load test with multiple virtual users and duration",
+    "output": "k6 run --vus 10 --duration 30s - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  http.get('https://api.example.com/users');\n}\nEOF\n\n     execution: local\n     scenarios: 1 scenario, 10 max VUs\n     default: 10 looping VUs for 30s\n     http_req_duration: avg=45ms  min=12ms  med=38ms  max=210ms\n     http_reqs: 23456  781.9/s\n     vus: 10 min=10 max=10\n     iterations: 23456\n\nrunning (0m30.0s), 0/10 VUs, 23456 complete"
+  },
+  {
+    "instruction": "K6 load test with ramping stages",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nexport let options = {\n  stages: [\n    { duration: '30s', target: 20 },\n    { duration: '1m', target: 20 },\n    { duration: '30s', target: 0 },\n  ],\n};\nexport default function () {\n  http.get('https://api.example.com/api');\n}\nEOF\n\n     execution: local\n     scenarios: 1 scenario, 20 max VUs\n     stage 1: 0s to 30s, 0 to 20 VUs\n     stage 2: 30s to 1m30s, 20 to 20 VUs\n     stage 3: 1m30s to 2m0s, 20 to 0 VUs\n     http_reqs: 45892  382.43/s\n     http_req_duration: avg=52ms  min=8ms  med=45ms  max=450ms\n\nrunning (2m00.0s), 0/20 VUs, 45892 complete"
+  },
+  {
+    "instruction": "K6 load test with thresholds for pass/fail criteria",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nimport { check } from 'k6';\nexport let options = {\n  vus: 5,\n  duration: '10s',\n  thresholds: {\n    http_req_duration: [\"p(95)<500\", \"avg<200\"],\n    http_req_failed: [\"rate<0.01\"],\n  },\n};\nexport default function () {\n  let res = http.get('https://api.example.com/data');\n  check(res, { 'status 200': (r) => r.status === 200 });\n}\nEOF\n\n     execution: local\n     checks: 100.00% 523      0\n     http_req_duration: avg=42ms  min=15ms  med=38ms  max=195ms\n     http_req_failed: 0.00%\n     http_reqs: 523  52.3/s\n     thresholds: http_req_duration p(95)<500 avg<200 OK\n     thresholds: http_req_failed rate<0.01 OK\n\nrunning (0m10.0s), 0/5 VUs, 523 complete"
+  },
+  {
+    "instruction": "K6 load test with POST request and JSON body",
+    "output": "k6 run --vus 3 --duration 5s - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  let payload = JSON.stringify({ name: 'test', value: Math.random() });\n  let params = { headers: { 'Content-Type': 'application/json' } };\n  http.post('https://api.example.com/items', payload, params);\n}\nEOF\n\n     http_req_duration: avg=55ms  min=18ms  med=48ms  max=178ms\n     http_reqs: 263  52.6/s"
+  },
+  {
+    "instruction": "K6 load test with custom metrics and output to JSON",
+    "output": "k6 run --out json=results.json --vus 2 --duration 5s - <<'EOF'\nimport http from 'k6/http';\nimport { Trend } from 'k6/metrics';\nlet myTrend = new Trend('api_response_time');\nexport default function () {\n  let res = http.get('https://api.example.com/endpoint');\n  myTrend.add(res.timings.duration);\n}\nEOF\n\n     execution: local\n     api_response_time: avg=48ms  min=22ms  med=44ms  max=156ms\n     http_reqs: 174  34.8/s\nResults written to results.json"
+  },
+  {
+    "instruction": "K6 load test with group and check for multiple endpoints",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nimport { check, group } from 'k6';\nexport default function () {\n  group('user API', function () {\n    let users = http.get('https://api.example.com/users');\n    check(users, { 'users status 200': (r) => r.status === 200 });\n  });\n  group('product API', function () {\n    let products = http.get('https://api.example.com/products');\n    check(products, { 'products status 200': (r) => r.status === 200 });\n  });\n}\nEOF\n\n     checks: 100.00%\n     http_reqs: 2  19.8/s\n\nrunning (0.1s), 0/1 VUs, 1 complete"
+  },
+  {
+    "instruction": "K6 spike test with rapid increase in virtual users",
+    "output": "k6 run --vus 0 --stage 5s:100 --stage 10s:100 --stage 5s:0 - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  http.get('https://api.example.com/search?q=test');\n}\nEOF\n\n     http_reqs: 8475  423.75/s\n     http_req_duration: avg=118ms  min=15ms  med=95ms  max=890ms\n     http_req_failed: 0.02%"
+  },
+  {
+    "instruction": "K6 load test with environment variable for target URL",
+    "output": "k6 run -e BASE_URL=https://api.example.com - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  http.get(__ENV.BASE_URL + '/health');\n}\nEOF\n\n     http_reqs: 1  4.97/s\n     http_req_duration: avg=189ms  min=189ms  med=189ms  max=189ms"
+  },
+  {
+    "instruction": "K6 load test with cookie jar",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  let jar = http.cookieJar();\n  jar.set('https://api.example.com', 'session', 'abc123');\n  let res = http.get('https://api.example.com/profile');\n}\nEOF\n\n     http_req_duration: avg=198ms  min=198ms  med=198ms  max=198ms\n     http_reqs: 1  4.95/s"
+  },
+  {
+    "instruction": "K6 load test with abort-on-fail threshold",
+    "output": "k6 run --abort-on-fail --vus 3 --duration 5s - <<'EOF'\nimport http from 'k6/http';\nexport let options = {\n  thresholds: {\n    http_req_duration: [{ threshold: 'p(99)<100', abortOnFail: true }],\n  },\n};\nexport default function () {\n  http.get('https://api.example.com/fast-endpoint');\n}\nEOF\n\n     thresholds: http_req_duration p(99)<100 = 95ms\n     http_reqs: 156  31.2/s"
+  },
+  {
+    "instruction": "K6 smoke test with single iteration",
+    "output": "k6 run --vus 1 --iterations 1 - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  let res = http.get('https://api.example.com/version');\n  console.log('Version: ' + res.body);\n}\nEOF\n\n     INFO[0000] Version: {\"version\":\"2.1.0\"}\n     http_reqs: 1  4.98/s"
+  },
+  {
+    "instruction": "K6 load test with custom scenario using ramping-arrival-rate",
+    "output": "k6 run - <<'EOF'\nimport http from 'k6/http';\nexport let options = {\n  scenarios: {\n    contacts: {\n      executor: 'ramping-arrival-rate',\n      startRate: 10,\n      timeUnit: '1s',\n      preAllocatedVUs: 10,\n      stages: [\n        { target: 50, duration: '20s' },\n        { target: 50, duration: '30s' },\n        { target: 0, duration: '10s' },\n      ],\n    },\n  },\n};\nexport default function () {\n  http.get('https://api.example.com/contacts');\n}\nEOF\n\n     execution: local\n     scenario: contacts, executor: ramping-arrival-rate\n     startRate: 10, timeUnit: 1s\n     http_reqs: 12500  208.33/s\n     http_req_duration: avg=48ms  min=5ms  med=35ms  max=380ms"
+  },
+  {
+    "instruction": "K6 load test with checks and custom tags",
+    "output": "k6 run --vus 2 --duration 5s - <<'EOF'\nimport http from 'k6/http';\nimport { check } from 'k6';\nexport default function () {\n  let res = http.get('https://api.example.com/status', { tags: { type: 'health' } });\n  check(res, {\n    'status is 200': (r) => r.status === 200,\n    'response body has ok': (r) => r.body.includes('ok'),\n  });\n}\nEOF\n\n     checks: 100.00%\n     http_reqs: 210  42.0/s\n     http_req_duration: avg=42ms  min=15ms  med=38ms  max=112ms"
+  },
+  {
+    "instruction": "K6 load test output to CSV and summary",
+    "output": "k6 run --out csv=results.csv --summary-export=summary.json --vus 3 --duration 10s - <<'EOF'\nimport http from 'k6/http';\nexport default function () {\n  http.get('https://api.example.com/data');\n}\nEOF\n\n     http_reqs: 630  63.0/s\n     http_req_duration: avg=46ms  min=12ms  med=40ms  max=198ms\nResults exported to results.csv\nSummary exported to summary.json"
+  },
+  {
+    "instruction": "K6 gRPC load test",
+    "output": "k6 run --vus 2 --duration 5s - <<'EOF'\nimport grpc from 'k6/net/grpc';\nimport { check } from 'k6';\nlet client = new grpc.Client();\nclient.load(['./protos'], 'service.proto');\nexport default function () {\n  client.connect('localhost:8080', {});\n  let resp = client.invoke('myservice.MyService/GetUser', { id: 1 });\n  check(resp, { 'status is OK': (r) => r.status === grpc.StatusOK });\n  client.close();\n}\nEOF\n\n     checks: 100.00%\n     http_reqs: 0\n     grpc_streams_msgs_sent: 10\n     grpc_streams_msgs_received: 10\n     iterations: 10\n     vus: 2"
+  },
+  {
+    "instruction": "K6 browser test with page interaction",
+    "output": "k6 run --vus 1 --duration 5s - <<'EOF'\nimport { browser } from 'k6/experimental/browser';\nexport default function () {\n  const page = browser.newPage();\n  page.goto('https://test.example.com');\n  page.fill('"
+  }
+]

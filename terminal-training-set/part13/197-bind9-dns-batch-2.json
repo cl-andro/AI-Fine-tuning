@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to enable query logging in BIND",
+    "output": "<think>\nThe user wants to enable query logging in BIND.\nBest tool here is rndc — BIND9 remote name daemon control.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nrndc querylog on"
+  },
+  {
+    "instruction": "How to set up a TSIG key for zone transfer",
+    "output": "<think>\nWe're being asked to set up a TSIG key for zone transfer.\nThis calls for tsig-keygen. Tsig-keygen operations.\nWhy -a? AND operator in find. this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntsig-keygen -a hmac-sha256 zone-transfer-key"
+  },
+  {
+    "instruction": "How to add TSIG key to named.conf",
+    "output": "<think>\nThe goal is to add TSIG key to named.conf.\nOne command does the job. Simple is better.\n</think>\necho 'key \"zone-transfer-key\" { algorithm hmac-sha256; secret \"base64key==\"; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to allow zone transfer to a specific IP",
+    "output": "<think>\nWe're being asked to allow zone transfer to a specific IP.\nLet me reason through this.\n</think>\necho 'zone \"example.com\" { type master; allow-transfer { 192.168.1.2; }; };' >> /etc/bind/named.conf.local"
+  },
+  {
+    "instruction": "How to create a reverse zone file",
+    "output": "<think>\nSo the request is to create a reverse zone file.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\n</think>\necho 'zone \"1.168.192.in-addr.arpa\" { type master; file \"/etc/bind/db.192.168.1\"; };' >> /etc/bind/named.conf.local"
+  },
+  {
+    "instruction": "How to add PTR records to reverse zone",
+    "output": "<think>\nThe goal is to add PTR records to reverse zone.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '10 IN PTR ns1.example.com.' >> /etc/bind/db.192.168.1"
+  },
+  {
+    "instruction": "How to restrict recursive queries to local network",
+    "output": "<think>\nSo we need to restrict recursive queries to local network.\n</think>\necho 'options { allow-recursion { 127.0.0.1; 10.0.0.0/8; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set up response rate limiting",
+    "output": "<think>\nSo the request is to set up response rate limiting.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'options { rate-limit { responses-per-second 5; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to configure a stub zone",
+    "output": "<think>\nWe're being asked to configure a stub zone.\nLet me think through this step by step.\n</think>\necho 'zone \"example.com\" { type stub; masters { 192.168.1.1; }; file \"stubs/db.example.com\"; };' >> /etc/bind/named.conf.local"
+  },
+  {
+    "instruction": "How to set TTL for a zone file",
+    "output": "<think>\nThe user wants to set TTL for a zone file.\nLet me think through this step by step.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho '$TTL 86400' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to add SRV record to zone file",
+    "output": "<think>\nAlright, we need to add SRV record to zone file.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho '_sip._tcp IN SRV 10 60 5060 sip.example.com.' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to check rndc connection status",
+    "output": "<think>\nThe user wants to check rndc connection status.\nI'll reach for rndc here because BIND9 remote name daemon control.\nOne command does the job. Simple is better.\n</think>\nrndc status"
+  },
+  {
+    "instruction": "How to dump BIND cache to a file",
+    "output": "<think>\nThe goal is to dump BIND cache to a file.\nLet me think about the best approach.\nThis calls for rndc. BIND9 remote name daemon control.\n</think>\nrndc dumpdb"
+  },
+  {
+    "instruction": "How to freeze a zone for editing",
+    "output": "<think>\nThe task requires us to freeze a zone for editing.\nLet me consider what makes sense here.\nI'll reach for rndc here because BIND9 remote name daemon control.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nrndc freeze example.com"
+  },
+  {
+    "instruction": "How to thaw a zone after editing",
+    "output": "<think>\nThis is asking us to thaw a zone after editing.\nHere's how I'd approach this.\nI'd use rndc for this — BIND9 remote name daemon control.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nrndc thaw example.com"
+  },
+  {
+    "instruction": "How to notify slaves of zone changes",
+    "output": "<think>\nAlright, we need to notify slaves of zone changes.\nI'll reach for rndc here because BIND9 remote name daemon control.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrndc notify example.com"
+  },
+  {
+    "instruction": "How to re-sign a DNSSEC zone",
+    "output": "<think>\nAlright, we need to re-sign a DNSSEC zone.\ndnssec-signzone is what we need — dnssec-signzone operations.\nWhy -o? Output to file, OR operator in find. this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ndnssec-signzone -A -o example.com -N INCREMENT /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to check DNSSEC DS record",
+    "output": "<think>\nWe're being asked to check DNSSEC DS record.\nLet me think about the best approach.\nI'll reach for dig here because DNS querying.\nI'll check the output to make sure it did what we expected.\n</think>\ndig DS example.com"
+  },
+  {
+    "instruction": "How to configure BIND to listen on a specific IP",
+    "output": "<think>\nThe user wants to configure BIND to listen on a specific IP.\nLet me verify afterward that it worked correctly.\n</think>\necho 'options { listen-on { 192.168.1.1; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to enable IPv6 in BIND",
+    "output": "<think>\nThe goal is to enable IPv6 in BIND.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'options { listen-on-v6 { any; }; };' >> /etc/bind/named.conf.options"
+  },
+  {
+    "instruction": "How to set up RFC 1912 compliance logging",
+    "output": "<think>\nThis is asking us to set up RFC 1912 compliance logging.\nLet me think about the best approach.\nrndc is what we need — BIND9 remote name daemon control.\nQuick verification after execution to be safe.\n</think>\nrndc logging"
+  },
+  {
+    "instruction": "How to create a delegation in zone file",
+    "output": "<think>\nNeed to create a delegation in zone file.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'sub IN NS ns1.sub.example.com.' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to add glue record for subdomain",
+    "output": "<think>\nAlright, we need to add glue record for subdomain.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'ns1.sub IN A 10.0.1.1' >> /etc/bind/db.example.com"
+  },
+  {
+    "instruction": "How to configure rndc controls in named.conf",
+    "output": "<think>\nThis is asking us to configure rndc controls in named.conf.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'controls { inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { \"rndc-key\"; }; };' >> /etc/bind/named.conf"
+  },
+  {
+    "instruction": "How to update serial number in SOA record",
+    "output": "<think>\nThe goal is to update serial number in SOA record.\nI'd use sed for this — text stream editing.\nWhy -i? Interactive, prompt before action. needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\nsed -i 's/2024010101/2024010102/' /etc/bind/db.example.com"
+  }
+]

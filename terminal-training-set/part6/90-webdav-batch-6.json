@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Configure Apache WebDAV with SSL",
+    "output": "<think>\nAlright, we need to configure Apache WebDAV with SSL.\nThis calls for a2enmod. A2enmod operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo a2enmod ssl && sudo a2ensite default-ssl && echo 'Alias /webdav /var/www/webdav\n<Directory /var/www/webdav>\n    DAV On\n    SSLRequireSSL\n</Directory>' | sudo tee /etc/apache2/conf-available/webdav-ssl.conf && sudo a2enconf webdav-ssl && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Check which DAV methods are allowed on the server",
+    "output": "<think>\nWe're being asked to check which DAV methods are allowed on the server.\nLet me consider what makes sense here.\ncurl is what we need — making HTTP requests.\nI'm using -I for ignore case — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X OPTIONS http://localhost/webdav/ -I --user alice:secretpass | grep Allow"
+  },
+  {
+    "instruction": "Install ownCloud from tarball and set permissions",
+    "output": "<think>\nSo we need to install ownCloud from tarball and set permissions.\nHere's how I'd approach this.\ncd is what we need — cd operations.\nI've added -R to recursive operation — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ncd /tmp && wget https://download.owncloud.org/community/owncloud-10.15.0.tar.bz2 && sudo tar -xjf owncloud-10.15.0.tar.bz2 -C /var/www/ && sudo chown -R www-data:www-data /var/www/owncloud"
+  },
+  {
+    "instruction": "Configure ownCloud database with occ",
+    "output": "<think>\nAlright, we need to configure ownCloud database with occ.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ maintenance:install --database pgsql --database-name owncloud --database-user owncloud --database-pass owncloudpass --admin-user admin --admin-pass admin123"
+  },
+  {
+    "instruction": "List ownCloud apps with occ",
+    "output": "<think>\nThe goal is to list ownCloud apps with occ.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data php /var/www/owncloud/occ app:list"
+  },
+  {
+    "instruction": "Enable encryption in ownCloud via occ",
+    "output": "<think>\nThis is asking us to enable encryption in ownCloud via occ.\nHere's how I'd approach this.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ encryption:enable"
+  },
+  {
+    "instruction": "Disable encryption in ownCloud via occ",
+    "output": "<think>\nAlright, we need to disable encryption in ownCloud via occ.\nLet me think through this step by step.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ encryption:disable"
+  },
+  {
+    "instruction": "View ownCloud encryption status via occ",
+    "output": "<think>\nAlright, we need to view ownCloud encryption status via occ.\nLet me think through this step by step.\nI've added -u to show or sort by access time — this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo -u www-data php /var/www/owncloud/occ encryption:status"
+  },
+  {
+    "instruction": "Add user to group in Nextcloud via occ",
+    "output": "<think>\nSo the request is to add user to group in Nextcloud via occ.\nHere's how I'd approach this.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo -u www-data nextcloud.occ group:adduser staff dave"
+  },
+  {
+    "instruction": "Remove user from group in Nextcloud via occ",
+    "output": "<think>\nWe should remove user from group in Nextcloud via occ.\nLet me think through this step by step.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data nextcloud.occ group:removeuser staff dave"
+  },
+  {
+    "instruction": "Delete Nextcloud group via occ",
+    "output": "<think>\nThe task requires us to delete Nextcloud group via occ.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ group:delete oldgroup"
+  },
+  {
+    "instruction": "List Nextcloud users with occ",
+    "output": "<think>\nWe should list Nextcloud users with occ.\nLet me consider what makes sense here.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ user:list"
+  },
+  {
+    "instruction": "Report WebDAV quota usage with curl and PROPFIND",
+    "output": "<think>\nWe should report WebDAV quota usage with curl and PROPFIND.\nFirst, let me understand what's needed here.\nThe tool for this job is curl — making HTTP requests.\nI'm using -H for follow symlinks on command line only — without it the command won't work as we need.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X PROPFIND http://localhost/webdav/ --user alice:secretpass -H 'Depth: 0' -H 'Content-Type: text/xml' -d '<?xml version=\"1.0\"?><D:propfind xmlns:D=\"DAV:\"><D:prop><D:quota-available-bytes/><D:quota-used-bytes/></D:prop></D:propfind>'"
+  },
+  {
+    "instruction": "Set custom WebDAV property with PROPPATCH",
+    "output": "<think>\nThe user wants to set custom WebDAV property with PROPPATCH.\nLet me think through this step by step.\ncurl is what we need — making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because important to get the expected behavior.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X PROPPATCH http://localhost/webdav/note.txt --user alice:secretpass -H 'Content-Type: text/xml' -d '<D:propertyupdate xmlns:D=\"DAV:\"><D:set><D:prop><my:custom xmlns:my=\"http://example.com/\">value</my:custom></D:prop></D:set></D:propertyupdate>'"
+  },
+  {
+    "instruction": "Lock a WebDAV resource with timeout",
+    "output": "<think>\nAlright, we need to lock a WebDAV resource with timeout.\nHere's how I'd approach this.\nFor this, curl is the right tool — making HTTP requests.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\ncurl -X LOCK http://localhost/webdav/edit.txt --user alice:secretpass -H 'Content-Type: text/xml' -H 'Timeout: Infinite-Second' -d '<D:lockinfo xmlns:D=\"DAV:\"><D:lockscope><D:shared/></D:lockscope><D:locktype><D:write/></D:locktype><D:owner><D:href>alice</D:href></D:owner></D:lockinfo>'"
+  },
+  {
+    "instruction": "Refresh WebDAV lock with new timeout",
+    "output": "<think>\nThe task requires us to refresh WebDAV lock with new timeout.\nFor this, curl is the right tool — making HTTP requests.\nWhy -H? Follow symlinks on command line only. without it the command won't work as we need.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X LOCK http://localhost/webdav/edit.txt --user alice:secretpass -H 'Content-Type: text/xml' -H 'If: <urn:uuid:locktoken>' -d '<D:lockinfo xmlns:D=\"DAV:\"><D:lockscope><D:shared/></D:lockscope><D:locktype><D:write/></D:locktype></D:lockinfo>'"
+  },
+  {
+    "instruction": "Perform COPY with depth infinity",
+    "output": "<think>\nSo we need to perform COPY with depth infinity.\nLet me consider what makes sense here.\nBest tool here is curl — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -X COPY http://localhost/webdav/srcdir/ --header 'Destination: http://localhost/webdav/destdir/' --header 'Depth: Infinity' --user alice:secretpass"
+  },
+  {
+    "instruction": "Move a WebDAV directory with depth infinity",
+    "output": "<think>\nSo the request is to move a WebDAV directory with depth infinity.\nLet me reason through this.\nFor this, curl is the right tool — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X MOVE http://localhost/webdav/olddir/ --header 'Destination: http://localhost/webdav/newdir/' --header 'Depth: Infinity' --user alice:secretpass"
+  },
+  {
+    "instruction": "cadaver command to view remote file line by line",
+    "output": "<think>\nWe're being asked to cadaver command to view remote file line by line.\nI'll reach for cadaver here because cadaver operations.\n</think>\ncadaver http://localhost/webdav/ <<< 'cat log.txt'"
+  },
+  {
+    "instruction": "Check if wsgiDAV is running",
+    "output": "<think>\nThe user wants to check if wsgiDAV is running.\nLet me consider what makes sense here.\nps is what we need — process listing.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nps aux | grep wsgidav"
+  },
+  {
+    "instruction": "Install the litmus WebDAV test suite from source",
+    "output": "<think>\nSo the request is to install the litmus WebDAV test suite from source.\nLet me reason through this.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo apt install build-essential && cd /tmp && git clone https://github.com/neil-lindquist/litmus.git && cd litmus && ./configure && make && sudo make install"
+  },
+  {
+    "instruction": "Test WebDAV server with curl for Basic auth",
+    "output": "<think>\nNeed to test WebDAV server with curl for Basic auth.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nWhy -u? Show or sort by access time. needed for this specific use case.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\n</think>\ncurl -u alice:secretpass http://localhost/webdav/ -X PROPFIND -H 'Depth: 0'"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Enable systemd-journald for audit logging",
+    "output": "journalctl --flush && journalctl --rotate"
+  },
+  {
+    "instruction": "Forward audit logs to remote syslog",
+    "output": "echo '*.* @@192.168.1.200:514' > /etc/rsyslog.d/audit-remote.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Check auditd status and rules",
+    "output": "auditctl -s && auditctl -l"
+  },
+  {
+    "instruction": "Monitor file access with auditd",
+    "output": "auditctl -w /etc/passwd -p rwxa -k passwd_access"
+  },
+  {
+    "instruction": "Search audit logs for file access",
+    "output": "ausearch -k passwd_access --start today"
+  },
+  {
+    "instruction": "Generate an audit summary report",
+    "output": "aureport --summary"
+  },
+  {
+    "instruction": "Check the number of failed logins with aureport",
+    "output": "aureport -l -i --failed"
+  },
+  {
+    "instruction": "List all authentication failures from logs",
+    "output": "ausearch -m USER_LOGIN -sv no --start today | head -20"
+  },
+  {
+    "instruction": "Monitor user account modifications",
+    "output": "auditctl -w /etc/shadow -p wa -k shadow_changes"
+  },
+  {
+    "instruction": "Monitor command execution with auditd (execve syscall)",
+    "output": "auditctl -a always,exit -S execve -k command_exec"
+  },
+  {
+    "instruction": "Generate a report of all commands executed",
+    "output": "ausearch -k command_exec --start today | aureport -x -i"
+  },
+  {
+    "instruction": "Search audit log for a specific user",
+    "output": "ausearch -ua john --start today"
+  },
+  {
+    "instruction": "Block an IP with iptables permanently",
+    "output": "iptables -A INPUT -s 10.0.0.5 -j DROP && iptables-save > /etc/iptables/rules.v4"
+  },
+  {
+    "instruction": "Create an iptables whitelist for SSH",
+    "output": "iptables -A INPUT -p tcp --dport 22 -s 192.168.1.0/24 -j ACCEPT && iptables -A INPUT -p tcp --dport 22 -j DROP"
+  },
+  {
+    "instruction": "Rate limit SSH with iptables (max 3 connections/min)",
+    "output": "iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set && iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 3 -j DROP"
+  },
+  {
+    "instruction": "Block all traffic except HTTP and HTTPS",
+    "output": "iptables -A INPUT -p tcp --dport 80 -j ACCEPT && iptables -A INPUT -p tcp --dport 443 -j ACCEPT && iptables -A INPUT -j DROP"
+  },
+  {
+    "instruction": "Allow established connections in iptables",
+    "output": "iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+  },
+  {
+    "instruction": "Log and drop packets with a prefix",
+    "output": "iptables -A INPUT -j LOG --log-prefix 'DROPPED: ' --log-level 4 && iptables -A INPUT -j DROP"
+  },
+  {
+    "instruction": "Save iptables rules (Debian/Ubuntu)",
+    "output": "apt install -y iptables-persistent && netfilter-persistent save"
+  },
+  {
+    "instruction": "Restore iptables rules on boot",
+    "output": "systemctl enable netfilter-persistent"
+  },
+  {
+    "instruction": "List nftables rules",
+    "output": "nft list ruleset"
+  },
+  {
+    "instruction": "Flush nftables rules",
+    "output": "nft flush ruleset"
+  },
+  {
+    "instruction": "Create a simple nftables firewall",
+    "output": "echo -e '"
+  },
+  {
+    "instruction": "Add an nftables rule to allow a specific IP",
+    "output": "nft add rule inet filter input ip saddr 192.168.1.100 accept"
+  }
+]

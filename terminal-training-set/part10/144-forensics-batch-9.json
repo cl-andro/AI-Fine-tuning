@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Extract all files created at a specific time range",
+    "output": "<think>\nNeed to extract all files created at a specific time range.\nLet me consider what makes sense here.\nThe tool for this job is fls — fls operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfls -o 2048 -r -p image.dd | grep -E '2026-07-04 1[0-9]:'"
+  },
+  {
+    "instruction": "Analyze an image using multiple partition offsets",
+    "output": "<think>\nThe task requires us to analyze an image using multiple partition offsets.\nLet me think through this step by step.\nI'll reach for fls here because fls operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nfls -o 1048576 -r image.dd"
+  },
+  {
+    "instruction": "Run bulk_extractor on a partition offset from image",
+    "output": "<think>\nSo we need to run bulk_extractor on a partition offset from image.\nI'd use bulk_extractor for this — bulk_extractor operations.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nbulk_extractor -o /tmp/part2 -O 2048 image.dd"
+  },
+  {
+    "instruction": "Generate timeline for a specific file path pattern",
+    "output": "<think>\nWe should generate timeline for a specific file path pattern.\nLet me reason through this.\nThis calls for psort.py. Psort.py operations.\nI'm using -o for output to file, OR operator in find — needed for this specific use case.\nI'm using -q for quiet mode, minimal output — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\npsort.py -o csv -w path_filter.csv -q 'pathname CONTAINS \"/tmp/\"' /tmp/timeline.plaso"
+  },
+  {
+    "instruction": "Find files with zero size (potential hidden data)",
+    "output": "<think>\nThis is asking us to find files with zero size (potential hidden data).\nFirst, let me understand what's needed here.\nThis calls for fls. Fls operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nfls -o 2048 -r image.dd | awk '$4 == 0 && $2 !~ /^d/'"
+  },
+  {
+    "instruction": "Extract MFT resident files (small files in MFT)",
+    "output": "<think>\nThe task requires us to extract MFT resident files (small files in MFT).\nThe tool for this job is icat — icat operations.\nWhy -o? Output to file, OR operator in find. without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nicat -o 2048 image.dd 0 > mft_raw.bin && strings mft_raw.bin | head -100"
+  },
+  {
+    "instruction": "List all symlink targets in an image",
+    "output": "<think>\nThe user wants to list all symlink targets in an image.\nLet me reason through this.\nThis calls for fls. Fls operations.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nI've added -r to recursive operation (descend into subdirectories) — important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\nfls -o 2048 -r image.dd | awk '$2 ~ /^l/' | while read line; do echo \"$line\" | grep -oE '->.*'; done"
+  },
+  {
+    "instruction": "Extract iPhone/iOS backup files from an image",
+    "output": "<think>\nWe're being asked to extract iPhone/iOS backup files from an image.\nfls is what we need — fls operations.\nI've added -o to output to file, OR operator in find — important to get the expected behavior.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nfls -o 2048 -r image.dd | grep -i 'Apple' | grep -E 'Backup|MobileSync'"
+  },
+  {
+    "instruction": "Analyze a sparse image with sleuthkit",
+    "output": "<think>\nWe should analyze a sparse image with sleuthkit.\nThe tool for this job is fls — fls operations.\nI've added -i to interactive, prompt before action — this controls how the output is formatted.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nfls -i raw -o 2048 -r sparse_image.dd"
+  },
+  {
+    "instruction": "Extract config files from /etc/ directory in Linux image",
+    "output": "<think>\nWe're being asked to extract config files from /etc/ directory in Linux image.\nLet me reason through this.\nI'll reach for fls here because fls operations.\nThe -o flag handles output to file, OR operator in find. Important because this controls how the output is formatted.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nfls -o 2048 -r image.dd | grep -E '^/etc/'"
+  },
+  {
+    "instruction": "Find all files containing the word confidential",
+    "output": "<think>\nNeed to find all files containing the word confidential.\nLet me consider what makes sense here.\nI'll reach for strings here because strings operations.\nThe -t flag means sort by modification time, which matters here because without it the command won't work as we need.\nWhy -i? Interactive, prompt before action. without it the command won't work as we need.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nI'll check the output to make sure it did what we expected.\n</think>\nstrings -t d image.dd | grep -i 'confidential' | head -20"
+  },
+  {
+    "instruction": "Run log2timeline with a specific extraction filter",
+    "output": "<think>\nNeed to run log2timeline with a specific extraction filter.\nFor this, log2timeline.py is the right tool — log2timeline.py operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nlog2timeline.py --storage-file /tmp/tl.plaso --artifact-filters WindowsTimeline image.dd"
+  },
+  {
+    "instruction": "Extract the SOFTWARE registry hive from image",
+    "output": "<think>\nThe goal is to extract the SOFTWARE registry hive from image.\nLet me think about the best approach.\nThe tool for this job is fls — fls operations.\nThe -o flag means output to file, OR operator in find, which matters here because important to get the expected behavior.\nI'm using -r for recursive operation (descend into subdirectories) — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\nfls -o 2048 -r image.dd | grep '/Windows/System32/config/SOFTWARE$'"
+  },
+  {
+    "instruction": "List all devices that were connected via USB",
+    "output": "<think>\nThe goal is to list all devices that were connected via USB.\nFirst, let me understand what's needed here.\nI'd use fls for this — fls operations.\nThe -o flag means output to file, OR operator in find, which matters here because without it the command won't work as we need.\nI've added -r to recursive operation (descend into subdirectories) — without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nfls -o 2048 -r image.dd | grep -i 'USBSTOR' | head -10"
+  },
+  {
+    "instruction": "Extract Google Chrome cookies from an image",
+    "output": "<think>\nThe user wants to extract Google Chrome cookies from an image.\nFirst, let me understand what's needed here.\nI'd use fls for this — fls operations.\nI've added -o to output to file, OR operator in find — standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\n</think>\nfls -o 2048 -r image.dd | grep -i 'Chrome' | grep -i 'Cookies'"
+  },
+  {
+    "instruction": "Find all files modified within 48 hours of a reference",
+    "output": "<think>\nWe're being asked to find all files modified within 48 hours of a reference.\nFor this, fls is the right tool — fls operations.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nI'm using -r for recursive operation (descend into subdirectories) — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nfls -o 2048 -r -p image.dd | awk -F'|' '$3 >= 1700000000 && $3 <= 1700086400'"
+  },
+  {
+    "instruction": "Extract image with Slack space analysis",
+    "output": "<think>\nNeed to extract image with Slack space analysis.\nThe tool for this job is bulk_extractor — bulk_extractor operations.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nThe -S flag means sort by size, which matters here because standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nbulk_extractor -o /tmp/slackspace -S image.dd"
+  },
+  {
+    "instruction": "Analyze an image with AFF4 format",
+    "output": "<think>\nThis is asking us to analyze an image with AFF4 format.\nFor this, fls is the right tool — fls operations.\nLet me verify afterward that it worked correctly.\n</think>\nfls -i aff4 -o 2048 -r image.aff4"
+  },
+  {
+    "instruction": "List all executable files installed via MSI",
+    "output": "<think>\nThe user wants to list all executable files installed via MSI.\nLet me consider what makes sense here.\nI'll reach for fls here because fls operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nfls -o 2048 -r image.dd | grep -iE '\\.msi$|Installer'"
+  },
+  {
+    "instruction": "Extract SAM file and system hive for password cracking",
+    "output": "<think>\nSo we need to extract SAM file and system hive for password cracking.\nLet me think about the best approach.\nI'll reach for fls here because fls operations.\nI've added -o to output to file, OR operator in find — needed for this specific use case.\nThe -r flag handles recursive operation (descend into subdirectories). Important because this controls how the output is formatted.\nWhy -E? Extended regex. standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nfls -o 2048 -r image.dd | grep -E 'SAM$|SYSTEM$' | awk '{print $2}' | tr -d ':' | xargs -I{} icat -o 2048 image.dd {} > {}"
+  },
+  {
+    "instruction": "Find files with no modification time (zero timestamp)",
+    "output": "<think>\nThe goal is to find files with no modification time (zero timestamp).\nThe tool for this job is fls — fls operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nfls -o 2048 -r -p image.dd | awk -F'|' '$3 == 0 || $4 == 0 || $5 == 0'"
+  },
+  {
+    "instruction": "Extract Firefox profile data from an image",
+    "output": "<think>\nThe task requires us to extract Firefox profile data from an image.\nLet me think through this step by step.\nfls is what we need — fls operations.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nWhy -r? Recursive operation (descend into subdirectories). without it the command won't work as we need.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nfls -o 2048 -r image.dd | grep -i 'Firefox' | grep -E 'places\\.sqlite|cookies\\.sqlite'"
+  },
+  {
+    "instruction": "Extract all files from an image's root directory",
+    "output": "<think>\nThe task requires us to extract all files from an image's root directory.\nfls is what we need — fls operations.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\nfls -o 2048 image.dd"
+  },
+  {
+    "instruction": "Run psort to merge multiple Plaso storage files",
+    "output": "<think>\nThis is asking us to run psort to merge multiple Plaso storage files.\nFirst, let me understand what's needed here.\nThis calls for psort.py. Psort.py operations.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nOne command does the job. Simple is better.\n</think>\npsort.py -o csv -w merged.csv /tmp/timeline1.plaso /tmp/timeline2.plaso"
+  },
+  {
+    "instruction": "List all .git folders found in an image",
+    "output": "<think>\nThe user wants to list all .git folders found in an image.\nLet me reason through this.\nFor this, fls is the right tool — fls operations.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nfls -o 2048 -r image.dd | grep -i '/\\.git/'"
+  }
+]

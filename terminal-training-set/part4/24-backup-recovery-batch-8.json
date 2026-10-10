@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Rsync removing source files after transfer",
+    "output": "<think>\nThe goal is to rsync removing source files after transfer.\nLet me break this down.\nThis calls for rsync. Efficient file synchronization.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrsync -avh --remove-source-files /home/user/ /backup/data/"
+  },
+  {
+    "instruction": "Borg create with lock wait timeout",
+    "output": "<think>\nSo we need to borg create with lock wait timeout.\nLet me think about the best approach.\nFor this, borg is the right tool — deduplicating backups.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nborg create --lock-wait 60 /backup/borg::home-{now:%Y-%m-%d} /home/user"
+  },
+  {
+    "instruction": "Restic backup with upload speed limit",
+    "output": "<think>\nNeed to restic backup with upload speed limit.\nLet me reason through this.\nBest tool here is restic — encrypted backups.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nrestic -r /backup/restic backup --limit-upload 1000 /home/user"
+  },
+  {
+    "instruction": "Skip file-stat comparison in rdiff-backup",
+    "output": "<think>\nThe user wants to skip file-stat comparison in rdiff-backup.\nI'd use rdiff-backup for this — rdiff-backup operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrdiff-backup --no-file-stat /etc /backup/etc"
+  },
+  {
+    "instruction": "Duplicity with custom volume size",
+    "output": "<think>\nThe user wants to duplicity with custom volume size.\nI'd use duplicity for this — duplicity operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nduplicity --volsize 250 /home/user file:///backup/duplicity"
+  },
+  {
+    "instruction": "Skip nodump files in DAR",
+    "output": "<think>\nNeed to skip nodump files in DAR.\nThe tool for this job is dar — dar operations.\nThe -c flag means count or create, which matters here because this controls how the output is formatted.\nWhy -R? Recursive operation. this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ndar -c /backup/home-dar --nodump -R /home/user"
+  },
+  {
+    "instruction": "Check dump progress",
+    "output": "<think>\nAlright, we need to check dump progress.\nLet me consider what makes sense here.\nBest tool here is dump — dump operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndump -0uf /backup/sda1.dump /dev/sda1 &; sleep 5; dump -W"
+  },
+  {
+    "instruction": "Restore file system interactively",
+    "output": "<think>\nNeed to restore file system interactively.\nLet me consider what makes sense here.\nI'd use restore for this — restore operations.\nThe -i flag means interactive, prompt before action, which matters here because without it the command won't work as we need.\nThe -f flag means force, suppress errors, which matters here because needed for this specific use case.\n</think>\nrestore -i -f /backup/sda1.dump"
+  },
+  {
+    "instruction": "Sparse file handling in dd",
+    "output": "<think>\nThe user wants to sparse file handling in dd.\nLet me think through this step by step.\nThe tool for this job is dd — dd operations.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/dev/sda of=/backup/sda.img bs=4M conv=sparse status=progress"
+  },
+  {
+    "instruction": "Synchronous ddrescue mode",
+    "output": "<think>\nWe should synchronous ddrescue mode.\nHere's how I'd approach this.\nThe tool for this job is ddrescue — ddrescue operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nddrescue --synchronous /dev/sda /backup/sda.img /backup/sda.log"
+  },
+  {
+    "instruction": "Tar incremental with snapshot bookkeeping",
+    "output": "<think>\nSo we need to tar incremental with snapshot bookkeeping.\nLet me break this down.\nBest tool here is tar — file archiving.\nOne command does the job. Simple is better.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar --listed-incremental=/backup/snapshot.snar -czvf /backup/home-$(date +%Y%m%d).tar.gz /home/user"
+  },
+  {
+    "instruction": "Cpio with progress dots",
+    "output": "<think>\nThis is asking us to cpio with progress dots.\nLet me reason through this.\nI'd use find for this — file searching.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind /home/user -type f | cpio -o | pv | gzip > /backup/home.cpio.gz"
+  },
+  {
+    "instruction": "Pass extended options to pax",
+    "output": "<think>\nThe task requires us to pass extended options to pax.\nHere's how I'd approach this.\nThis calls for pax. Pax operations.\nNo need for complex pipelines here — one command is sufficient.\nI'll check the output to make sure it did what we expected.\n</think>\npax -w -o 'mtime=@0' -f /backup/www.pax /var/www"
+  },
+  {
+    "instruction": "Configure rclone with interactive setup",
+    "output": "<think>\nThe user wants to configure rclone with interactive setup.\nLet me break this down.\nBest tool here is rclone — cloud storage sync.\nLike rsync — --dry-run first. Cloud transfers might incur costs for large syncs.\n</think>\nrclone config"
+  },
+  {
+    "instruction": "Exclude patterns with s3cmd sync",
+    "output": "<think>\nThe goal is to exclude patterns with s3cmd sync.\nLet me think through this step by step.\nFor this, s3cmd is the right tool — s3cmd operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ns3cmd sync --exclude '.git/*' --exclude '*.log' /home/user/ s3://my-backup-bucket/"
+  },
+  {
+    "instruction": "Dump PostgreSQL with clean drop statements",
+    "output": "<think>\nNeed to dump PostgreSQL with clean drop statements.\nLet me think through this step by step.\nI'll reach for pg_dump here because PostgreSQL database backup.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\nLet me verify afterward that it worked correctly.\n</think>\npg_dump --clean mydb > /backup/mydb.sql"
+  },
+  {
+    "instruction": "Compact MySQL dump output",
+    "output": "<think>\nSo the request is to compact MySQL dump output.\nBest tool here is mysqldump — MySQL database backup.\nUse --single-transaction for InnoDB to get a consistent snapshot without locking.\n</think>\nmysqldump --compact --no-create-info mydb > /backup/mydb-data.sql"
+  },
+  {
+    "instruction": "Restore MongoDB with namespace include",
+    "output": "<think>\nThe user wants to restore MongoDB with namespace include.\nFirst, let me understand what's needed here.\nThis calls for mongorestore. Mongorestore operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nmongorestore --nsInclude 'mydb.users' /backup/mongodb"
+  },
+  {
+    "instruction": "Borg with custom remote SSH path",
+    "output": "<think>\nThe goal is to borg with custom remote SSH path.\nLet me think through this step by step.\nFor this, borg is the right tool — deduplicating backups.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nborg create --remote-path /usr/local/bin/borg user@host:/backup/borg::home-{now:%Y-%m-%d} /home/user"
+  },
+  {
+    "instruction": "Generate Restic bash completion",
+    "output": "<think>\nWe're being asked to generate Restic bash completion.\nrestic is what we need — encrypted backups.\nQuick verification after execution to be safe.\n</think>\nrestic generate --bash-completion /etc/bash_completion.d/restic"
+  },
+  {
+    "instruction": "Restore specific inode from dump",
+    "output": "<think>\nWe should restore specific inode from dump.\nFirst, let me understand what's needed here.\nThis calls for restore. Restore operations.\nI'm using -f for force, suppress errors — needed for this specific use case.\nThe -i flag handles interactive, prompt before action. Important because standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nrestore -x -f /backup/sda1.dump -i 123456"
+  },
+  {
+    "instruction": "List directories in dump archive",
+    "output": "<think>\nThe user wants to list directories in dump archive.\nFor this, restore is the right tool — restore operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrestore -t -f /backup/sda1.dump"
+  },
+  {
+    "instruction": "Create incremental level 3 dump",
+    "output": "<think>\nSo the request is to create incremental level 3 dump.\nFirst, let me understand what's needed here.\ndump is what we need — dump operations.\n</think>\ndump -3uf /backup/sda1-level3.dump /dev/sda1"
+  },
+  {
+    "instruction": "Borg list with JSON output",
+    "output": "<think>\nThis is asking us to borg list with JSON output.\nThe tool for this job is borg — deduplicating backups.\nCheck the output for errors before proceeding to the next step.\n</think>\nborg list /backup/borg --json"
+  },
+  {
+    "instruction": "Restic backup to SFTP repository",
+    "output": "<think>\nSo we need to restic backup to SFTP repository.\nHere's how I'd approach this.\nBest tool here is restic — encrypted backups.\nThe -r flag handles recursive operation (descend into subdirectories). Important because without it the command won't work as we need.\nI'll check the output to make sure it did what we expected.\n</think>\nrestic -r sftp:user@host:/backup/restic backup /home/user"
+  }
+]

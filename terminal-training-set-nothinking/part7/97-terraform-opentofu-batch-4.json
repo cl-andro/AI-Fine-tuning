@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Initialize and apply in one command",
+    "output": "terraform init && terraform apply -auto-approve"
+  },
+  {
+    "instruction": "Use backend type s3 with dynamodb locking",
+    "output": "terraform init -backend-config='bucket=my-tf-state' -backend-config='key=prod/terraform.tfstate' -backend-config='region=us-east-1' -backend-config='dynamodb_table=tf-locks'"
+  },
+  {
+    "instruction": "Migrate state from local to remote",
+    "output": "terraform init -migrate-state"
+  },
+  {
+    "instruction": "Reconfigure backend without migration prompt",
+    "output": "terraform init -reconfigure"
+  },
+  {
+    "instruction": "Lock state manually",
+    "output": "terraform plan -lock=true -lock-timeout=5m"
+  },
+  {
+    "instruction": "Override an input variable from environment",
+    "output": "TF_VAR_region=eu-west-1 terraform plan"
+  },
+  {
+    "instruction": "Use sensitive variable in output without showing",
+    "output": "terraform output -json | jq -r '.db_password.value'"
+  },
+  {
+    "instruction": "Mark an output as sensitive in configuration check",
+    "output": "grep 'sensitive = true' outputs.tf"
+  },
+  {
+    "instruction": "Create a data source dependency test",
+    "output": "terraform plan -refresh-only -target=data.aws_ami.ubuntu"
+  },
+  {
+    "instruction": "Use terraform_data resource to force a timestamp dependency",
+    "output": "echo 'resource \"terraform_data\" \"replacement\" { input = timestamp() }' > trigger.tf"
+  },
+  {
+    "instruction": "Use for_each with a map to create multiple resources",
+    "output": "echo 'resource \"aws_s3_bucket\" \"this\" { for_each = var.buckets bucket = each.value }' > s3.tf"
+  },
+  {
+    "instruction": "Use count to create conditional resources",
+    "output": "echo 'resource \"aws_instance\" \"bastion\" { count = var.create_bastion ? 1 : 0 }' > bastion.tf"
+  },
+  {
+    "instruction": "Use try function to handle missing attributes",
+    "output": "echo 'output \"ip\" { value = try(aws_instance.web.public_ip, \"\") }' > outputs.tf"
+  },
+  {
+    "instruction": "Use one function for module version selection",
+    "output": "echo 'module \"vpc\" { source = one([for m in data.terraform_remote_state.modules : m.outputs.vpc_module]) }'"
+  },
+  {
+    "instruction": "Create a local value for shorthand",
+    "output": "echo 'locals { name_prefix = \"${var.environment}-${var.project}\" }' > locals.tf"
+  },
+  {
+    "instruction": "Use templatefile function for user data",
+    "output": "echo 'user_data = templatefile(\"${path.module}/init.sh.tpl\", { hostname = \"web01\" })' > ec2.tf"
+  },
+  {
+    "instruction": "Use jsonencode in Terraform for IAM policies",
+    "output": "echo 'policy = jsonencode({ Version = \"2012-10-17\", Statement = [{ Effect = \"Allow\", Action = \"s3:*\", Resource = \"*\" }] })' > iam.tf"
+  },
+  {
+    "instruction": "Use yamlencode for Kubernetes manifests",
+    "output": "echo 'manifest = yamlencode({ apiVersion = \"v1\", kind = \"Pod\", metadata = { name = \"nginx\" } })' > k8s.tf"
+  },
+  {
+    "instruction": "Create a null_resource with a provisioner",
+    "output": "echo 'resource \"null_resource\" \"provision\" { provisioner \"local-exec\" { command = \"echo hello\" } }' > provision.tf"
+  },
+  {
+    "instruction": "Use depends_on for implicit ordering",
+    "output": "echo 'resource \"aws_instance\" \"app\" { depends_on = [aws_security_group.this] }' > app.tf"
+  },
+  {
+    "instruction": "Use lifecycle prevent_destroy",
+    "output": "echo 'resource \"aws_instance\" \"db\" { lifecycle { prevent_destroy = true } }' > db.tf"
+  },
+  {
+    "instruction": "Use lifecycle create_before_destroy",
+    "output": "echo 'resource \"aws_instance\" \"web\" { lifecycle { create_before_destroy = true } }' > web.tf"
+  },
+  {
+    "instruction": "Use lifecycle ignore_changes for auto-scaling",
+    "output": "echo 'resource \"aws_instance\" \"web\" { lifecycle { ignore_changes = [ami] } }' > web.tf"
+  },
+  {
+    "instruction": "Plan with -no-color for machine parsing",
+    "output": "terraform plan -no-color"
+  },
+  {
+    "instruction": "Apply with detailed exit code for CI checks",
+    "output": "terraform apply -auto-approve -detailed-exitcode"
+  }
+]

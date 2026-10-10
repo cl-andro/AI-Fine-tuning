@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Run a canary deployment with 10% traffic",
+    "output": "<think>\nWe're being asked to run a canary deployment with 10% traffic.\nLet me think through this step by step.\nI'd use kubectl for this — Kubernetes cluster management.\nWhy -f? Force, suppress errors. important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - << 'EOF'\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: myapp-canary\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: myapp\n      track: canary\n  template:\n    metadata:\n      labels:\n        app: myapp\n        track: canary\n    spec:\n      containers:\n      - name: myapp\n        image: myapp:canary\nEOF"
+  },
+  {
+    "instruction": "Create a blue-green deployment strategy",
+    "output": "<think>\nSo we need to create a blue-green deployment strategy.\nHere's how I'd approach this.\nkubectl is what we need — Kubernetes cluster management.\nThe -f flag handles force, suppress errors. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl create deployment myapp-blue --image=myapp:blue && kubectl expose deployment myapp-blue --port=80 && kubectl apply -f - << 'EOF'\napiVersion: v1\nkind: Service\nmetadata:\n  name: myapp\nspec:\n  selector:\n    app: myapp-blue\n  ports:\n  - port: 80\nEOF"
+  },
+  {
+    "instruction": "Switch from blue to green deployment",
+    "output": "<think>\nThe task requires us to switch from blue to green deployment.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl patch service myapp -p '{\"spec\":{\"selector\":{\"app\":\"myapp-green\"}}}'"
+  },
+  {
+    "instruction": "Use kubectl patch to update a deployment image",
+    "output": "<think>\nThe user wants to use kubectl patch to update a deployment image.\nThe tool for this job is kubectl — Kubernetes cluster management.\nI'm using -p for create parent directories as needed — without it the command won't work as we need.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl patch deployment myapp -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"myapp\",\"image\":\"myapp:v2\"}]}}}}'"
+  },
+  {
+    "instruction": "Use kubectl set to update env vars",
+    "output": "<think>\nThe task requires us to use kubectl set to update env vars.\nLet me think through this step by step.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl set env deployment/myapp NODE_ENV=production"
+  },
+  {
+    "instruction": "Use kubectl set to update resources",
+    "output": "<think>\nThe user wants to use kubectl set to update resources.\nLet me think through this step by step.\nBest tool here is kubectl — Kubernetes cluster management.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl set resources deployment myapp --limits=cpu=500m,memory=512Mi --requests=cpu=200m,memory=256Mi"
+  },
+  {
+    "instruction": "Scale deployment to zero (pause)",
+    "output": "<think>\nAlright, we need to scale deployment to zero (pause).\nkubectl is what we need — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl scale deployment myapp --replicas=0"
+  },
+  {
+    "instruction": "Pause a deployment rollout (prevent updates)",
+    "output": "<think>\nNeed to pause a deployment rollout (prevent updates).\nFirst, let me understand what's needed here.\nThe tool for this job is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl rollout pause deployment/myapp"
+  },
+  {
+    "instruction": "Resume a paused deployment rollout",
+    "output": "<think>\nSo the request is to resume a paused deployment rollout.\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl rollout resume deployment/myapp"
+  },
+  {
+    "instruction": "Check rollout history",
+    "output": "<think>\nWe're being asked to check rollout history.\nFirst, let me understand what's needed here.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl rollout history deployment/myapp"
+  },
+  {
+    "instruction": "Rollback to a specific revision",
+    "output": "<think>\nAlright, we need to rollback to a specific revision.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl rollout undo deployment/myapp --to-revision=3"
+  },
+  {
+    "instruction": "Restart a deployment (gracefully restart pods)",
+    "output": "<think>\nWe should restart a deployment (gracefully restart pods).\nHere's how I'd approach this.\nkubectl is what we need — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl rollout restart deployment/myapp"
+  },
+  {
+    "instruction": "Watch rollout status verbosely",
+    "output": "<think>\nNeed to watch rollout status verbosely.\nLet me reason through this.\nThe tool for this job is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl rollout status deployment/myapp --watch"
+  },
+  {
+    "instruction": "Get resource usage for all pods by label",
+    "output": "<think>\nThis is asking us to get resource usage for all pods by label.\nLet me break this down.\nI'll reach for kubectl here because Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl top pods -l app=myapp"
+  },
+  {
+    "instruction": "Get resource usage for all containers in a pod",
+    "output": "<think>\nThe task requires us to get resource usage for all containers in a pod.\nLet me consider what makes sense here.\nBest tool here is kubectl — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl top pod mypod --containers"
+  },
+  {
+    "instruction": "Check node resource allocation",
+    "output": "<think>\nThe user wants to check node resource allocation.\nLet me think about the best approach.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl describe node node1 | grep -A 10 Allocated"
+  },
+  {
+    "instruction": "Install the VPA (Vertical Pod Autoscaler)",
+    "output": "<think>\nAlright, we need to install the VPA (Vertical Pod Autoscaler).\nBest tool here is git — version control operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ngit clone https://github.com/kubernetes/autoscaler.git && cd autoscaler/vertical-pod-autoscaler && ./hack/vpa-up.sh"
+  },
+  {
+    "instruction": "Create a VPA config",
+    "output": "<think>\nAlright, we need to create a VPA config.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f - << 'EOF'\napiVersion: autoscaling.k8s.io/v1\nkind: VerticalPodAutoscaler\nmetadata:\n  name: myapp-vpa\nspec:\n  targetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: myapp\n  updatePolicy:\n    updateMode: Auto\nEOF"
+  },
+  {
+    "instruction": "Install the PDB checker",
+    "output": "<think>\nWe're being asked to install the PDB checker.\nLet me think through this step by step.\nkubectl is what we need — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pdb --all-namespaces"
+  },
+  {
+    "instruction": "Check which pods are controlled by an owner",
+    "output": "<think>\nWe're being asked to check which pods are controlled by an owner.\nLet me think through this step by step.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{\" -> \"}{.metadata.ownerReferences[].name}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "List all custom resource definitions",
+    "output": "<think>\nAlright, we need to list all custom resource definitions.\nkubectl is what we need — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl get crd"
+  },
+  {
+    "instruction": "Create a custom resource definition (CRD)",
+    "output": "<think>\nSo we need to create a custom resource definition (CRD).\nFirst, let me understand what's needed here.\nBest tool here is cat — cat operations.\n</think>\ncat > crd.yaml << 'EOF'\napiVersion: apiextensions.k8s.io/v1\nkind: CustomResourceDefinition\nmetadata:\n  name: myresources.example.com\nspec:\n  group: example.com\n  names:\n    kind: MyResource\n    plural: myresources\n  scope: Namespaced\n  versions:\n  - name: v1\n    served: true\n    storage: true\n    schema:\n      openAPIV3Schema:\n        type: object\n        properties:\n          spec:\n            type: object\n            properties:\n              message:\n                type: string\nEOF\nkubectl apply -f crd.yaml"
+  },
+  {
+    "instruction": "List custom resources",
+    "output": "<think>\nSo the request is to list custom resources.\nkubectl is what we need — Kubernetes cluster management.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl get myresources"
+  },
+  {
+    "instruction": "Use kubectl wait for condition",
+    "output": "<think>\nWe should use kubectl wait for condition.\nHere's how I'd approach this.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck the output for errors before proceeding to the next step.\n</think>\nkubectl wait --for=condition=Ready pod/mypod --timeout=60s"
+  },
+  {
+    "instruction": "Wait for deployment to be available",
+    "output": "<think>\nThis is asking us to wait for deployment to be available.\nLet me reason through this.\nI'll reach for kubectl here because Kubernetes cluster management.\n</think>\nkubectl wait --for=condition=Available deployment/myapp --timeout=120s"
+  },
+  {
+    "instruction": "Use kubectl diff to preview changes",
+    "output": "<think>\nNeed to use kubectl diff to preview changes.\nLet me think about the best approach.\nThis calls for kubectl. Kubernetes cluster management.\nThe -f flag means force, suppress errors, which matters here because this controls how the output is formatted.\n</think>\nkubectl diff -f updated-manifest.yaml"
+  }
+]

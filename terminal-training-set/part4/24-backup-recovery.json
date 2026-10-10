@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Sync /home/user/data to /backup/data using rsync locally",
+    "output": "<think>\nWe should sync /home/user/data to /backup/data using rsync locally.\nThe tool for this job is rsync — efficient file synchronization.\nA single command handles this cleanly — no need to overcomplicate it.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nLet me verify afterward that it worked correctly.\n</think>\nrsync -avh /home/user/data/ /backup/data/"
+  },
+  {
+    "instruction": "Sync /home/user/data to remote server backup using rsync over SSH",
+    "output": "<think>\nThe user wants to sync /home/user/data to remote server backup using rsync over SSH.\nFirst, let me understand what's needed here.\nThis calls for rsync. Efficient file synchronization.\nI've added -e to edit or executable — standard practice for this kind of operation.\nMistakes with rsync can overwrite files on the destination. Use --dry-run first to preview.\nI'll check the output to make sure it did what we expected.\n</think>\nrsync -avh -e ssh /home/user/data/ user@192.168.1.100:/backup/data/"
+  },
+  {
+    "instruction": "Initialize a Borg repository at /backup/borg",
+    "output": "<think>\nSo the request is to initialize a Borg repository at /backup/borg.\nThis calls for borg. Deduplicating backups.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nborg init --encryption=repokey-blake2 /backup/borg"
+  },
+  {
+    "instruction": "Create a Borg backup of /home/user with compression",
+    "output": "<think>\nThe task requires us to create a Borg backup of /home/user with compression.\nLet me think through this step by step.\nThe tool for this job is borg — deduplicating backups.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nborg create --compression lz4 /backup/borg::home-{now:%Y-%m-%d} /home/user"
+  },
+  {
+    "instruction": "List all archives in a Borg repository",
+    "output": "<think>\nSo the request is to list all archives in a Borg repository.\nLet me break this down.\nborg is what we need — deduplicating backups.\nQuick verification after execution to be safe.\n</think>\nborg list /backup/borg"
+  },
+  {
+    "instruction": "Extract a specific Borg archive to /tmp/restore",
+    "output": "<think>\nThis is asking us to extract a specific Borg archive to /tmp/restore.\nLet me think about the best approach.\nI'll reach for borg here because deduplicating backups.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\n</think>\nborg extract --destination /tmp/restore /backup/borg::home-2026-07-20"
+  },
+  {
+    "instruction": "Prune Borg archives keeping only last 7 daily and 4 weekly",
+    "output": "<think>\nNeed to prune Borg archives keeping only last 7 daily and 4 weekly.\nLet me consider what makes sense here.\nThe tool for this job is borg — deduplicating backups.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nborg prune --keep-daily 7 --keep-weekly 4 /backup/borg"
+  },
+  {
+    "instruction": "Show info about a Borg archive",
+    "output": "<think>\nNeed to show info about a Borg archive.\nLet me break this down.\nBest tool here is borg — deduplicating backups.\n</think>\nborg info /backup/borg::home-2026-07-20"
+  },
+  {
+    "instruction": "Check Borg repository for consistency",
+    "output": "<think>\nSo the request is to check Borg repository for consistency.\nLet me reason through this.\nThis calls for borg. Deduplicating backups.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nborg check /backup/borg"
+  },
+  {
+    "instruction": "Show diff between two Borg archives",
+    "output": "<think>\nThis is asking us to show diff between two Borg archives.\nBest tool here is borg — deduplicating backups.\nA quick sanity check afterward saves debugging time later.\n</think>\nborg diff /backup/borg::home-2026-07-20 home-2026-07-21"
+  },
+  {
+    "instruction": "Initialize a Restic repository at /backup/restic",
+    "output": "<think>\nNeed to initialize a Restic repository at /backup/restic.\nI'll reach for restic here because encrypted backups.\n</think>\nrestic init --repo /backup/restic"
+  },
+  {
+    "instruction": "Backup /home/user with Restic",
+    "output": "<think>\nSo we need to backup /home/user with Restic.\nBest tool here is restic — encrypted backups.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\nrestic --repo /backup/restic backup /home/user"
+  },
+  {
+    "instruction": "Restore latest Restic snapshot to /tmp/restore",
+    "output": "<think>\nSo we need to restore latest Restic snapshot to /tmp/restore.\nrestic is what we need — encrypted backups.\nI'll check the output to make sure it did what we expected.\n</think>\nrestic --repo /backup/restic restore latest --target /tmp/restore"
+  },
+  {
+    "instruction": "List all Restic snapshots",
+    "output": "<think>\nAlright, we need to list all Restic snapshots.\nLet me reason through this.\nThe tool for this job is restic — encrypted backups.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nrestic --repo /backup/restic snapshots"
+  },
+  {
+    "instruction": "Check Restic repository integrity",
+    "output": "<think>\nSo we need to check Restic repository integrity.\nrestic is what we need — encrypted backups.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nrestic --repo /backup/restic check"
+  },
+  {
+    "instruction": "Forget old Restic snapshots keeping last 5 daily",
+    "output": "<think>\nSo the request is to forget old Restic snapshots keeping last 5 daily.\nThis calls for restic. Encrypted backups.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrestic --repo /backup/restic forget --keep-daily 5 --prune"
+  },
+  {
+    "instruction": "Prune Restic repository to remove unreferenced data",
+    "output": "<think>\nAlright, we need to prune Restic repository to remove unreferenced data.\nLet me think about the best approach.\nrestic is what we need — encrypted backups.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrestic --repo /backup/restic prune"
+  },
+  {
+    "instruction": "Mount a Restic snapshot at /mnt/restore",
+    "output": "<think>\nThe user wants to mount a Restic snapshot at /mnt/restore.\nThis calls for restic. Encrypted backups.\nCheck the output for errors before proceeding to the next step.\n</think>\nrestic --repo /backup/restic mount /mnt/restore"
+  },
+  {
+    "instruction": "Create an rdiff-backup of /etc to /backup/etc",
+    "output": "<think>\nThe user wants to create an rdiff-backup of /etc to /backup/etc.\nrdiff-backup is what we need — rdiff-backup operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nrdiff-backup /etc /backup/etc"
+  },
+  {
+    "instruction": "Create a GNU tar incremental backup of /home/user",
+    "output": "<think>\nWe're being asked to create a GNU tar incremental backup of /home/user.\nLet me consider what makes sense here.\nI'll reach for tar here because file archiving.\nCheck that the target device has enough space before extracting large archives.\nAfter running, I'll confirm the result looks right.\n</think>\ntar --listed-incremental=/backup/snapshot.snar -czvf /backup/home-inc.tar.gz /home/user"
+  },
+  {
+    "instruction": "Backup files using cpio from a find list",
+    "output": "<think>\nNeed to backup files using cpio from a find list.\nLet me think through this step by step.\nfind is what we need — file searching.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nQuick verification after execution to be safe.\n</think>\nfind /home/user -type f -print | cpio -oav > /backup/home.cpio"
+  },
+  {
+    "instruction": "Create a pax archive of /var/www",
+    "output": "<think>\nSo the request is to create a pax archive of /var/www.\nI'll reach for pax here because pax operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\npax -w -f /backup/www.pax /var/www"
+  },
+  {
+    "instruction": "Clone a disk to another using dd",
+    "output": "<think>\nAlright, we need to clone a disk to another using dd.\nLet me reason through this.\nBest tool here is dd — dd operations.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/dev/sda of=/dev/sdb bs=4M status=progress"
+  },
+  {
+    "instruction": "Rescue data from failing disk /dev/sda to an image file",
+    "output": "<think>\nThe user wants to rescue data from failing disk /dev/sda to an image file.\nI'd use ddrescue for this — ddrescue operations.\nThe -f flag handles force, suppress errors. Important because standard practice for this kind of operation.\n</think>\nddrescue -f /dev/sda /backup/sda.img /backup/sda.log"
+  }
+]

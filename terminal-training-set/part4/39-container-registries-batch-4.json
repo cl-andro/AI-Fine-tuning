@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Get a login password for Amazon ECR and authenticate Docker",
+    "output": "<think>\nThe user wants to get a login password for Amazon ECR and authenticate Docker.\nBest tool here is aws — AWS cloud management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\naws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com"
+  },
+  {
+    "instruction": "Create an Amazon ECR repository",
+    "output": "<think>\nThis is asking us to create an Amazon ECR repository.\nLet me consider what makes sense here.\nThis calls for aws. AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr create-repository --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Describe all ECR repositories in the account",
+    "output": "<think>\nWe should describe all ECR repositories in the account.\nLet me think about the best approach.\nThis calls for aws. AWS cloud management.\n</think>\naws ecr describe-repositories --region us-east-1"
+  },
+  {
+    "instruction": "List images in an ECR repository",
+    "output": "<think>\nSo we need to list images in an ECR repository.\naws is what we need — AWS cloud management.\nCheck the output for errors before proceeding to the next step.\n</think>\naws ecr list-images --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Batch delete images from ECR by image ID",
+    "output": "<think>\nWe should batch delete images from ECR by image ID.\nLet me think through this step by step.\nI'd use aws for this — AWS cloud management.\nWhy -delete? Delete matching files (use with extreme caution). needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\naws ecr batch-delete-image --repository-name myapp --image-ids imageTag=old-version --region us-east-1"
+  },
+  {
+    "instruction": "Delete all untagged images from ECR",
+    "output": "<think>\nAlright, we need to delete all untagged images from ECR.\nI'll reach for aws here because AWS cloud management.\nThe -delete flag means delete matching files (use with extreme caution), which matters here because important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr list-images --repository-name myapp --filter tagStatus=UNTAGGED --query 'imageIds[*]' --region us-east-1 | aws ecr batch-delete-image --repository-name myapp --image-ids file:///dev/stdin --region us-east-1"
+  },
+  {
+    "instruction": "Put a lifecycle policy on an ECR repository",
+    "output": "<think>\nWe're being asked to put a lifecycle policy on an ECR repository.\nLet me think about the best approach.\nThe tool for this job is aws — AWS cloud management.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\naws ecr put-lifecycle-policy --repository-name myapp --lifecycle-policy-text '{\"rules\":[{\"rulePriority\":1,\"description\":\"Expire old images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":100},\"action\":{\"type\":\"expire\"}}]}' --region us-east-1"
+  },
+  {
+    "instruction": "Get the lifecycle policy from an ECR repository",
+    "output": "<think>\nThe task requires us to get the lifecycle policy from an ECR repository.\nLet me consider what makes sense here.\naws is what we need — AWS cloud management.\nAfter running, I'll confirm the result looks right.\n</think>\naws ecr get-lifecycle-policy --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Tag an ECR image with a specific tag",
+    "output": "<think>\nNeed to tag an ECR image with a specific tag.\nLet me think about the best approach.\nThis calls for aws. AWS cloud management.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\naws ecr batch-get-image --repository-name myapp --image-ids imageTag=latest --region us-east-1 | aws ecr put-image --repository-name myapp --image-tag stable --image-manifest file:///dev/stdin --region us-east-1"
+  },
+  {
+    "instruction": "Set ECR repository image scanning on push",
+    "output": "<think>\nWe should set ECR repository image scanning on push.\nLet me reason through this.\naws is what we need — AWS cloud management.\n</think>\naws ecr put-image-scanning-configuration --repository-name myapp --image-scanning-configuration scanOnPush=true --region us-east-1"
+  },
+  {
+    "instruction": "Get ECR repository policy",
+    "output": "<think>\nThe user wants to get ECR repository policy.\nI'd use aws for this — AWS cloud management.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\naws ecr get-repository-policy --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Set ECR cross-account repository policy",
+    "output": "<think>\nThe task requires us to set ECR cross-account repository policy.\nI'd use aws for this — AWS cloud management.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr set-repository-policy --repository-name myapp --policy-text '{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::OTHER_ACCOUNT:root\"},\"Action\":[\"ecr:BatchGetImage\",\"ecr:GetDownloadUrlForLayer\"]}]}' --region us-east-1"
+  },
+  {
+    "instruction": "Describe ECR image scan findings",
+    "output": "<think>\nThe goal is to describe ECR image scan findings.\nLet me consider what makes sense here.\nFor this, aws is the right tool — AWS cloud management.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr describe-image-scan-findings --repository-name myapp --image-id imageTag=1.0 --region us-east-1"
+  },
+  {
+    "instruction": "Start an ECR image scan",
+    "output": "<think>\nNeed to start an ECR image scan.\nFor this, aws is the right tool — AWS cloud management.\nA quick sanity check afterward saves debugging time later.\n</think>\naws ecr start-image-scan --repository-name myapp --image-id imageTag=1.0 --region us-east-1"
+  },
+  {
+    "instruction": "Create an ECR repository with encryption",
+    "output": "<think>\nNeed to create an ECR repository with encryption.\nLet me reason through this.\naws is what we need — AWS cloud management.\nQuick verification after execution to be safe.\n</think>\naws ecr create-repository --repository-name myapp --encryption-configuration encryptionType=AES256 --region us-east-1"
+  },
+  {
+    "instruction": "Tag an ECR repository",
+    "output": "<think>\nSo we need to tag an ECR repository.\nBest tool here is aws — AWS cloud management.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\naws ecr tag-resource --resource-arn arn:aws:ecr:us-east-1:123456789012:repository/myapp --tags Key=Environment,Value=prod"
+  },
+  {
+    "instruction": "List tags on an ECR repository",
+    "output": "<think>\nAlright, we need to list tags on an ECR repository.\nFirst, let me understand what's needed here.\nBest tool here is aws — AWS cloud management.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr list-tags-for-resource --resource-arn arn:aws:ecr:us-east-1:123456789012:repository/myapp"
+  },
+  {
+    "instruction": "Create a public ECR repository",
+    "output": "<think>\nThe goal is to create a public ECR repository.\nFirst, let me understand what's needed here.\nI'll reach for aws here because AWS cloud management.\n</think>\naws ecr-public create-repository --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Describe ECR public repositories",
+    "output": "<think>\nNeed to describe ECR public repositories.\nLet me think through this step by step.\nThe tool for this job is aws — AWS cloud management.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\naws ecr-public describe-repositories --region us-east-1"
+  },
+  {
+    "instruction": "Get ECR authorization token",
+    "output": "<think>\nNeed to get ECR authorization token.\nThe tool for this job is aws — AWS cloud management.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\naws ecr get-authorization-token --region us-east-1"
+  },
+  {
+    "instruction": "Complete an ECR layer upload",
+    "output": "<think>\nThe user wants to complete an ECR layer upload.\nLet me think through this step by step.\nThis calls for aws. AWS cloud management.\nNo need for complex pipelines here — one command is sufficient.\n</think>\naws ecr complete-layer-upload --repository-name myapp --upload-id 123456 --layer-digest sha256:abc123 --region us-east-1"
+  },
+  {
+    "instruction": "Initiate a multi-part layer upload to ECR",
+    "output": "<think>\nNeed to initiate a multi-part layer upload to ECR.\naws is what we need — AWS cloud management.\nI'll check the output to make sure it did what we expected.\n</think>\naws ecr initiate-layer-upload --repository-name myapp --region us-east-1"
+  },
+  {
+    "instruction": "Delete an ECR repository (force)",
+    "output": "<think>\nNeed to delete an ECR repository (force).\nI'd use aws for this — AWS cloud management.\nWhy --force? Override warnings. standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\naws ecr delete-repository --repository-name myapp --force --region us-east-1"
+  },
+  {
+    "instruction": "Upload a layer part to ECR",
+    "output": "<think>\nThe task requires us to upload a layer part to ECR.\nLet me consider what makes sense here.\nFor this, aws is the right tool — AWS cloud management.\n</think>\naws ecr upload-layer-part --repository-name myapp --upload-id 123456 --part-first-byte 0 --part-last-byte 1048575 --layer-part-blob fileb://layer.tar --region us-east-1"
+  },
+  {
+    "instruction": "Install AWS CLI on Debian 12",
+    "output": "<think>\nThis is asking us to install AWS CLI on Debian 12.\nFirst, let me understand what's needed here.\nThe tool for this job is apt-get — apt-get operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo apt-get install awscli -y"
+  }
+]

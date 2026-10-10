@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Enable systemd-journald for audit logging",
+    "output": "<think>\nThis is asking us to enable systemd-journald for audit logging.\nFirst, let me understand what's needed here.\nBest tool here is journalctl — checking systemd logs.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nOld logs can be large — add --since to limit the range and avoid huge output.\nI'll check the output to make sure it did what we expected.\n</think>\njournalctl --flush && journalctl --rotate"
+  },
+  {
+    "instruction": "Forward audit logs to remote syslog",
+    "output": "<think>\nThe goal is to forward audit logs to remote syslog.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '*.* @@192.168.1.200:514' > /etc/rsyslog.d/audit-remote.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Check auditd status and rules",
+    "output": "<think>\nAlright, we need to check auditd status and rules.\nLet me think about the best approach.\nThe tool for this job is auditctl — auditctl operations.\nThe -s flag means summarize or silent mode, which matters here because this controls how the output is formatted.\nI'm using -l for long format with details — standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nauditctl -s && auditctl -l"
+  },
+  {
+    "instruction": "Monitor file access with auditd",
+    "output": "<think>\nAlright, we need to monitor file access with auditd.\nLet me think through this step by step.\nI'd use auditctl for this — auditctl operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nauditctl -w /etc/passwd -p rwxa -k passwd_access"
+  },
+  {
+    "instruction": "Search audit logs for file access",
+    "output": "<think>\nThe user wants to search audit logs for file access.\nI'll reach for ausearch here because ausearch operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\nausearch -k passwd_access --start today"
+  },
+  {
+    "instruction": "Generate an audit summary report",
+    "output": "<think>\nThe task requires us to generate an audit summary report.\nFor this, aureport is the right tool — aureport operations.\n</think>\naureport --summary"
+  },
+  {
+    "instruction": "Check the number of failed logins with aureport",
+    "output": "<think>\nThe user wants to check the number of failed logins with aureport.\nHere's how I'd approach this.\nBest tool here is aureport — aureport operations.\nI'm using -l for long format with details — needed for this specific use case.\nQuick verification after execution to be safe.\n</think>\naureport -l -i --failed"
+  },
+  {
+    "instruction": "List all authentication failures from logs",
+    "output": "<think>\nWe're being asked to list all authentication failures from logs.\nLet me break this down.\nI'd use ausearch for this — ausearch operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nausearch -m USER_LOGIN -sv no --start today | head -20"
+  },
+  {
+    "instruction": "Monitor user account modifications",
+    "output": "<think>\nNeed to monitor user account modifications.\nFirst, let me understand what's needed here.\nThe tool for this job is auditctl — auditctl operations.\nAfter running, I'll confirm the result looks right.\n</think>\nauditctl -w /etc/shadow -p wa -k shadow_changes"
+  },
+  {
+    "instruction": "Monitor command execution with auditd (execve syscall)",
+    "output": "<think>\nThe user wants to monitor command execution with auditd (execve syscall).\nLet me break this down.\nFor this, auditctl is the right tool — auditctl operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nauditctl -a always,exit -S execve -k command_exec"
+  },
+  {
+    "instruction": "Generate a report of all commands executed",
+    "output": "<think>\nAlright, we need to generate a report of all commands executed.\nLet me reason through this.\nI'll reach for ausearch here because ausearch operations.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nausearch -k command_exec --start today | aureport -x -i"
+  },
+  {
+    "instruction": "Search audit log for a specific user",
+    "output": "<think>\nThe user wants to search audit log for a specific user.\nThis calls for ausearch. Ausearch operations.\nI'll check the output to make sure it did what we expected.\n</think>\nausearch -ua john --start today"
+  },
+  {
+    "instruction": "Block an IP with iptables permanently",
+    "output": "<think>\nThe goal is to block an IP with iptables permanently.\nLet me break this down.\nThe tool for this job is iptables — firewall management.\nI've added -s to summarize or silent mode — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -s 10.0.0.5 -j DROP && iptables-save > /etc/iptables/rules.v4"
+  },
+  {
+    "instruction": "Create an iptables whitelist for SSH",
+    "output": "<think>\nWe should create an iptables whitelist for SSH.\nHere's how I'd approach this.\nThis calls for iptables. Firewall management.\nThe -p flag means create parent directories as needed, which matters here because without it the command won't work as we need.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -p tcp --dport 22 -s 192.168.1.0/24 -j ACCEPT && iptables -A INPUT -p tcp --dport 22 -j DROP"
+  },
+  {
+    "instruction": "Rate limit SSH with iptables (max 3 connections/min)",
+    "output": "<think>\nWe're being asked to rate limit SSH with iptables (max 3 connections/min).\nLet me think about the best approach.\niptables is what we need — firewall management.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set && iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 3 -j DROP"
+  },
+  {
+    "instruction": "Block all traffic except HTTP and HTTPS",
+    "output": "<think>\nThe task requires us to block all traffic except HTTP and HTTPS.\niptables is what we need — firewall management.\nI've added -p to create parent directories as needed — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -p tcp --dport 80 -j ACCEPT && iptables -A INPUT -p tcp --dport 443 -j ACCEPT && iptables -A INPUT -j DROP"
+  },
+  {
+    "instruction": "Allow established connections in iptables",
+    "output": "<think>\nNeed to allow established connections in iptables.\nI'd use iptables for this — firewall management.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nQuick verification after execution to be safe.\n</think>\niptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+  },
+  {
+    "instruction": "Log and drop packets with a prefix",
+    "output": "<think>\nSo the request is to log and drop packets with a prefix.\nLet me consider what makes sense here.\nI'd use iptables for this — firewall management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A INPUT -j LOG --log-prefix 'DROPPED: ' --log-level 4 && iptables -A INPUT -j DROP"
+  },
+  {
+    "instruction": "Save iptables rules (Debian/Ubuntu)",
+    "output": "<think>\nSo the request is to save iptables rules (Debian/Ubuntu).\nLet me reason through this.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y iptables-persistent && netfilter-persistent save"
+  },
+  {
+    "instruction": "Restore iptables rules on boot",
+    "output": "<think>\nSo the request is to restore iptables rules on boot.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl enable netfilter-persistent"
+  },
+  {
+    "instruction": "List nftables rules",
+    "output": "<think>\nWe're being asked to list nftables rules.\nFor this, nft is the right tool — nftables firewall management.\nSame as iptables — test rules non-destructively first if possible.\n</think>\nnft list ruleset"
+  },
+  {
+    "instruction": "Flush nftables rules",
+    "output": "<think>\nSo we need to flush nftables rules.\nBest tool here is nft — nftables firewall management.\nNo need for complex pipelines here — one command is sufficient.\nSame as iptables — test rules non-destructively first if possible.\nQuick verification after execution to be safe.\n</think>\nnft flush ruleset"
+  },
+  {
+    "instruction": "Create a simple nftables firewall",
+    "output": "<think>\nThe task requires us to create a simple nftables firewall.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e '"
+  },
+  {
+    "instruction": "Add an nftables rule to allow a specific IP",
+    "output": "<think>\nWe're being asked to add an nftables rule to allow a specific IP.\nLet me consider what makes sense here.\nFor this, nft is the right tool — nftables firewall management.\nOne command does the job. Simple is better.\nSame as iptables — test rules non-destructively first if possible.\nQuick verification after execution to be safe.\n</think>\nnft add rule inet filter input ip saddr 192.168.1.100 accept"
+  }
+]

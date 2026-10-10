@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Trace new process creation",
+    "output": "<think>\nThe user wants to trace new process creation.\nLet me break this down.\nI'd use bpftrace for this — bpftrace operations.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_execve { printf(\"exec: %s\\n\", str(args->filename)); }'"
+  },
+  {
+    "instruction": "Trace OOM killer events",
+    "output": "<think>\nThe user wants to trace OOM killer events.\nLet me think through this step by step.\nI'll reach for bpftrace here because bpftrace operations.\nI've added -e to edit or executable — without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'tracepoint:oom:mark_victim { printf(\"OOM killed %s\\n\", comm); }'"
+  },
+  {
+    "instruction": "Trace signals sent to processes",
+    "output": "<think>\nThe user wants to trace signals sent to processes.\nLet me reason through this.\nbpftrace is what we need — bpftrace operations.\nI'm using -e for edit or executable — this controls how the output is formatted.\n</think>\nbpftrace -e 'tracepoint:signal:signal_generate { printf(\"signal %d sent to %d\\n\", args->sig, args->pid); }'"
+  },
+  {
+    "instruction": "Monitor CPU scheduler latency",
+    "output": "<think>\nThe goal is to monitor CPU scheduler latency.\nLet me break this down.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:sched:sched_wakeup { @[comm] = hist(args->prio); }'"
+  },
+  {
+    "instruction": "Trace block device requests",
+    "output": "<think>\nSo we need to trace block device requests.\nLet me think through this step by step.\nI'll reach for bpftrace here because bpftrace operations.\nWhy -e? Edit or executable. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'kprobe:blk_start_request { printf(\"block request %s\\n\", args->req->rq_disk->disk_name); }'"
+  },
+  {
+    "instruction": "Count file descriptors opened per process",
+    "output": "<think>\nThe task requires us to count file descriptors opened per process.\nFor this, bpftrace is the right tool — bpftrace operations.\nI've added -e to edit or executable — important to get the expected behavior.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_openat { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Trace network packet drops",
+    "output": "<think>\nWe should trace network packet drops.\nFor this, bpftrace is the right tool — bpftrace operations.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nbpftrace -e 'kprobe:kfree_skb { printf(\"packet dropped: %s\\n\", str(args->skb->dev->name)); }'"
+  },
+  {
+    "instruction": "Track container create events (cgroup)",
+    "output": "<think>\nAlright, we need to track container create events (cgroup).\nThis calls for bpftrace. Bpftrace operations.\nThe -e flag handles edit or executable. Important because important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:cgroup:cgroup_mkdir { printf(\"cgroup created: %s\\n\", str(args->path)); }'"
+  },
+  {
+    "instruction": "Monitor TCP retransmissions",
+    "output": "<think>\nNeed to monitor TCP retransmissions.\nLet me consider what makes sense here.\nbpftrace is what we need — bpftrace operations.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:tcp_retransmit_skb { printf(\"retransmit from %s\\n\", ntop(args->sk->__sk_common.skc_daddr)); }'"
+  },
+  {
+    "instruction": "Trace file close operations",
+    "output": "<think>\nThe goal is to trace file close operations.\nLet me consider what makes sense here.\nThis calls for bpftrace. Bpftrace operations.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_close { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Monitor write latency distribution",
+    "output": "<think>\nThe user wants to monitor write latency distribution.\nLet me reason through this.\nThis calls for bpftrace. Bpftrace operations.\nI'm using -e for edit or executable — needed for this specific use case.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_write { @start[tid] = nsecs; } tracepoint:syscalls:sys_exit_write { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"
+  },
+  {
+    "instruction": "Trace kill signals and targets",
+    "output": "<think>\nNeed to trace kill signals and targets.\nI'd use bpftrace for this — bpftrace operations.\nI'm using -e for edit or executable — important to get the expected behavior.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_kill { printf(\"kill by %s to PID %d sig %d\\n\", comm, args->pid, args->sig); }'"
+  },
+  {
+    "instruction": "Track disk IOPS per process",
+    "output": "<think>\nAlright, we need to track disk IOPS per process.\nFor this, bpftrace is the right tool — bpftrace operations.\nI'm using -e for edit or executable — without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'kprobe:blk_account_io_start { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Count socket operations per protocol",
+    "output": "<think>\nThe goal is to count socket operations per protocol.\nLet me think through this step by step.\nI'll reach for bpftrace here because bpftrace operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'kprobe:sock_sendmsg { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Monitor page cache misses",
+    "output": "<think>\nSo the request is to monitor page cache misses.\nLet me think about the best approach.\nFor this, bpftrace is the right tool — bpftrace operations.\nI've added -e to edit or executable — standard practice for this kind of operation.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'kprobe:mark_page_accessed { @[comm] = count(); }'"
+  },
+  {
+    "instruction": "Trace slab memory allocations",
+    "output": "<think>\nWe're being asked to trace slab memory allocations.\nLet me think through this step by step.\nThis calls for bpftrace. Bpftrace operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'kprobe:kmem_cache_alloc { @[str(args->cachep->name)] = count(); }'"
+  },
+  {
+    "instruction": "Monitor kernel module loading",
+    "output": "<think>\nAlright, we need to monitor kernel module loading.\nThis calls for bpftrace. Bpftrace operations.\nLet me verify afterward that it worked correctly.\n</think>\nbpftrace -e 'kprobe:load_module { printf(\"module loaded: %s\\n\", str(args->mod->name)); }'"
+  },
+  {
+    "instruction": "Track CPU frequency changes",
+    "output": "<think>\nWe're being asked to track CPU frequency changes.\nThe tool for this job is bpftrace — bpftrace operations.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'kprobe:intel_pstate_set_pstate { printf(\"pstate changed to %u\\n\", args->target_pstate); }'"
+  },
+  {
+    "instruction": "Monitor filesystem mount operations",
+    "output": "<think>\nAlright, we need to monitor filesystem mount operations.\nLet me break this down.\nFor this, bpftrace is the right tool — bpftrace operations.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nbpftrace -e 'kprobe:do_mount { printf(\"mount %s on %s\\n\", str(args->dev_name), str(args->dir_page)); }'"
+  },
+  {
+    "instruction": "Trace interrupt handlers",
+    "output": "<think>\nWe should trace interrupt handlers.\nLet me break this down.\nFor this, bpftrace is the right tool — bpftrace operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nbpftrace -e 'kprobe:handle_irq_event { printf(\"IRQ %d handled\\n\", args->action->irq); }'"
+  },
+  {
+    "instruction": "Monitor softirq execution times",
+    "output": "<think>\nThe user wants to monitor softirq execution times.\nI'd use bpftrace for this — bpftrace operations.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:irq:softirq_entry { @start[tid] = nsecs; } tracepoint:irq:softirq_exit { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"
+  },
+  {
+    "instruction": "Track user login events",
+    "output": "<think>\nThe task requires us to track user login events.\nLet me reason through this.\nThe tool for this job is bpftrace — bpftrace operations.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_login { printf(\"login by %s\\n\", comm); }'"
+  }
+]

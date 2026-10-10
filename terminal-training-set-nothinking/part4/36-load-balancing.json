@@ -1,0 +1,94 @@
+[
+  {
+    "instruction": "haproxy -v",
+    "output": "HAProxy version 2.8.5-1~deb12u1 2024/01/15"
+  },
+  {
+    "instruction": "haproxy -vv",
+    "output": "HAProxy version 2.8.5-1~deb12u1 2024/01/15\nStatus: stable\nBuild options :\n  OPTIONS = USE_OPENSSL=1 USE_ZLIB=1 USE_PCRE2=1 USE_SYSTEMD=1 USE_LUA=1\n  TARGET  = linux-glibc\n  CC      = gcc\nDefault settings :\n  BUFSIZE  = 16384\n  MAXREWRITE = 8192\nBuilt with OpenSSL version : OpenSSL 3.0.11 19 Sep 2023\nZLIB library version : 1.2.13\nBuilt with Lua version : Lua 5.4.4\nBuilt with PCRE2 version : 10.42\nBuilt with systemd support"
+  },
+  {
+    "instruction": "haproxy -c -f /etc/haproxy/haproxy.cfg",
+    "output": "Configuration file is valid"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -D",
+    "output": "haproxy -f /etc/haproxy/haproxy.cfg -D"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -sf 1234",
+    "output": "haproxy -f /etc/haproxy/haproxy.cfg -sf 1234"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -st 2345",
+    "output": "haproxy -f /etc/haproxy/haproxy.cfg -st 2345"
+  },
+  {
+    "instruction": "systemctl status haproxy",
+    "output": "\u25cf haproxy.service - HAProxy Load Balancer\n     Loaded: loaded (/lib/systemd/system/haproxy.service; enabled; preset: enabled)\n     Active: active (running) since Mon 2026-07-20 10:30:15 UTC; 5 days ago\n   Main PID: 3456 (haproxy)\n      Tasks: 3 (limit: 23042)\n     Memory: 28.7M\n     CGroup: /system.slice/haproxy.service\n             \u2514\u25003456 /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid"
+  },
+  {
+    "instruction": "systemctl reload haproxy",
+    "output": "systemctl reload haproxy"
+  },
+  {
+    "instruction": "journalctl -u haproxy -n 5 --no-pager",
+    "output": "Jul 25 10:00:01 debian haproxy[3456]: Connect from 10.0.0.1:54321 to 0.0.0.0:443 (frontend_https)\nJul 25 10:00:01 debian haproxy[3456]: 10.0.0.1:54321 [25/Jul/2026:10:00:01.234] frontend_https backend_http/srv1 0/0/1/12/13 200 1234\nJul 25 10:00:02 debian haproxy[3456]: Server backend_http/srv1 is UP, check duration 2ms\nJul 25 10:00:03 debian haproxy[3456]: Server backend_http/srv2 is DOWN, reason: Layer4 timeout"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid -D",
+    "output": "haproxy -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid -D"
+  },
+  {
+    "instruction": "haproxy -d -f /etc/haproxy/haproxy.cfg 2>&1 | head -10",
+    "output": "Available polling systems : epoll, poll, select\nTotal: 3 (3 usable), will use epoll.\nUsing epoll() as the polling mechanism.\n[NOTICE] (1) : haproxy version is 2.8.5-1~deb12u1\n[NOTICE] (1) : Starting frontend frontend_http\n[NOTICE] (1) : Starting backend backend_http: 2 servers active, 0 servers backup"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -n 10000",
+    "output": "haproxy -f /etc/haproxy/haproxy.cfg -n 10000"
+  },
+  {
+    "instruction": "ulimit -n && haproxy -f /etc/haproxy/haproxy.cfg 2>&1",
+    "output": "1024\n[ALERT] (1) : [haproxy.main()] FD limit (1024) is too low for maxconn. Please raise 'ulimit-n' to at least 10000."
+  },
+  {
+    "instruction": "ls /etc/haproxy/",
+    "output": "haproxy.cfg  errors/  maps/  ssl/"
+  },
+  {
+    "instruction": "mkdir -p /etc/haproxy/errors && ls /etc/haproxy/errors/",
+    "output": "400.http  403.http  404.http  408.http  500.http  502.http  503.http  504.http"
+  },
+  {
+    "instruction": "haproxy -f /etc/haproxy/haproxy.cfg -C /var/lib/haproxy -D",
+    "output": "[WARNING] Chroot directory '/var/lib/haproxy' is not empty, some files may become inaccessible."
+  },
+  {
+    "instruction": "ps aux | grep haproxy",
+    "output": "root      3456  0.0  0.5 123456 8765 ? Ss   Jul20   0:12 /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid"
+  },
+  {
+    "instruction": "kill -USR1 $(cat /run/haproxy.pid)",
+    "output": "kill -USR1 $(cat /run/haproxy.pid)"
+  },
+  {
+    "instruction": "kill -HUP $(cat /run/haproxy.pid)",
+    "output": "kill -HUP $(cat /run/haproxy.pid)"
+  },
+  {
+    "instruction": "dpkg -l haproxy | tail -1",
+    "output": "ii  haproxy  2.8.5-1~deb12u1  amd64  fast and reliable load balancing reverse proxy"
+  },
+  {
+    "instruction": "haproxy -c -f /etc/haproxy/haproxy.cfg 2>&1",
+    "output": "Configuration file is valid\n[NOTICE] (1) : haproxy version is 2.8.5-1~deb12u1"
+  },
+  {
+    "instruction": "which haproxy && haproxy -v",
+    "output": "/usr/sbin/haproxy\nHAProxy version 2.8.5-1~deb12u1 2024/01/15"
+  },
+  {
+    "instruction": "apt list --installed 2>/dev/null | grep haproxy",
+    "output": "haproxy/stable,now 2.8.5-1~deb12u1 amd64 [installed]"
+  }
+]

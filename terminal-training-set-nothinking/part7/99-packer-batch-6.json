@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use the ansible provisioner with extra vars in Packer",
+    "output": "echo 'provisioner \"ansible\" { playbook_file = \"playbook.yml\" extra_arguments = [\"--extra-vars\", \"@vars/packer.json\"] ansible_env_vars = [\"ANSIBLE_HOST_KEY_CHECKING=False\"] }' > ansible-extra.pkr.hcl"
+  },
+  {
+    "instruction": "Use the ansible provisioner in local mode",
+    "output": "echo 'provisioner \"ansible-local\" { playbook_file = \"/tmp/playbook.yml\" }' > ansible-local.pkr.hcl"
+  },
+  {
+    "instruction": "Use the file provisioner to download from guest",
+    "output": "echo 'provisioner \"file\" { source = \"/var/log/install.log\" destination = \"logs/\" direction = \"download\" }' > file-download.pkr.hcl"
+  },
+  {
+    "instruction": "Upload entire directory via file provisioner",
+    "output": "echo 'provisioner \"file\" { source = \"dist/\" destination = \"/opt/app/\" }' > file-upload.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Windows restart with custom timeout",
+    "output": "echo 'provisioner \"windows-restart\" { restart_timeout = \"15m\" }' > win-restart.pkr.hcl"
+  },
+  {
+    "instruction": "Use the puppet-server provisioner",
+    "output": "echo 'provisioner \"puppet-server\" { puppet_server = \"puppet.example.com\" puppet_node = var.node_name }' > puppet-server.pkr.hcl"
+  },
+  {
+    "instruction": "Use the Chef Solo provisioner with JSON attributes",
+    "output": "echo 'provisioner \"chef-solo\" { cookbook_paths = [\"cookbooks\"] json = { \"nginx\" => { \"port\" => 8080 } } }' > chef-json.pkr.hcl"
+  },
+  {
+    "instruction": "Use the converge provisioner with params",
+    "output": "echo 'provisioner \"converge\" { module = \"app\" params = { \"version\" => var.app_version } }' > converge-params.pkr.hcl"
+  },
+  {
+    "instruction": "Install multiple packages via shell provisioner",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt install -y nginx postgresql-client redis-tools\"] }' > install-multi.pkr.hcl"
+  },
+  {
+    "instruction": "Create a user during Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo useradd -m -s /bin/bash deploy\", \"sudo mkdir -p ~deploy/.ssh\", \"sudo chmod 700 ~deploy/.ssh\"] }' > user-create.pkr.hcl"
+  },
+  {
+    "instruction": "Harden SSH config in a Packer provisioner",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config\", \"sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\"] }' > harden-ssh.pkr.hcl"
+  },
+  {
+    "instruction": "Install and configure fail2ban in Packer",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt install -y fail2ban\", \"sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local\", \"sudo systemctl enable fail2ban\"] }' > fail2ban.pkr.hcl"
+  },
+  {
+    "instruction": "Set up a simple firewall with ufw in Packer",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo ufw default deny incoming\", \"sudo ufw default allow outgoing\", \"sudo ufw allow ssh\", \"sudo ufw --force enable\"] }' > ufw.pkr.hcl"
+  },
+  {
+    "instruction": "Install Docker in the Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"curl -fsSL https://get.docker.com | sudo sh\", \"sudo usermod -aG docker ubuntu\"] }' > docker-install.pkr.hcl"
+  },
+  {
+    "instruction": "Install Node.js and npm in a Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -\", \"sudo apt install -y nodejs\"] }' > nodejs.pkr.hcl"
+  },
+  {
+    "instruction": "Install Python 3 and pip in Packer",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt install -y python3 python3-pip python3-venv\"] }' > python.pkr.hcl"
+  },
+  {
+    "instruction": "Create a swap file during Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo fallocate -l 2G /swapfile\", \"sudo chmod 600 /swapfile\", \"sudo mkswap /swapfile\", \"sudo swapon /swapfile\"] }' > swap.pkr.hcl"
+  },
+  {
+    "instruction": "Configure sysctl parameters in the image",
+    "output": "echo 'provisioner \"shell\" { inline = [\"echo 'net.ipv4.tcp_tw_reuse=1' | sudo tee -a /etc/sysctl.conf\", \"sudo sysctl -p\"] }' > sysctl.pkr.hcl"
+  },
+  {
+    "instruction": "Set timezone during Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo timedatectl set-timezone UTC\"] }' > timezone.pkr.hcl"
+  },
+  {
+    "instruction": "Update CA certificates in the image",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt install -y ca-certificates\", \"sudo update-ca-certificates\"] }' > ca-certs.pkr.hcl"
+  },
+  {
+    "instruction": "Install CloudWatch agent via Packer",
+    "output": "echo 'provisioner \"shell\" { inline = [\"curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb\", \"sudo dpkg -i amazon-cloudwatch-agent.deb\"] }' > cw-agent.pkr.hcl"
+  },
+  {
+    "instruction": "Install the SSM agent in a Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"curl -O https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\", \"sudo dpkg -i amazon-ssm-agent.deb\"] }' > ssm-agent.pkr.hcl"
+  },
+  {
+    "instruction": "Install New Relic agent in a Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"curl -Ls https://download.newrelic.com/debian/newrelic.list | sudo tee /etc/apt/sources.list.d/newrelic.list\", \"sudo apt update\", \"sudo apt install -y newrelic-infra\"] }' > newrelic.pkr.hcl"
+  },
+  {
+    "instruction": "Install Datadog agent in a Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"DD_API_KEY=${var.dd_api_key} bash -c \\\"$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)\\\"\"] }' > datadog.pkr.hcl"
+  },
+  {
+    "instruction": "Clean up package cache at the end of a Packer build",
+    "output": "echo 'provisioner \"shell\" { inline = [\"sudo apt clean\", \"sudo apt autoremove -y\", \"sudo rm -rf /var/log/*.log\", \"sudo rm -rf /tmp/*\"] }' > cleanup.pkr.hcl"
+  }
+]

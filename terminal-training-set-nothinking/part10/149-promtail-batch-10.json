@@ -1,0 +1,23 @@
+[
+  {"instruction": "Create full promtail config from scratch", "output": "cat > /etc/promtail/config.yml << 'EOF'\nserver:\n  http_listen_port: 9080\n  grpc_listen_port: 0\npositions:\n  filename: /var/lib/promtail/positions.yml\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\nscrape_configs:\n- job_name: system\n  static_configs:\n  - targets: [localhost]\n    labels:\n      job: varlogs\n      __path__: /var/log/*log\nEOF"},
+  {"instruction": "Debug promtail file discovery", "output": "promtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -iE 'found|reading|position'"},
+  {"instruction": "Check which files promtail is tailing", "output": "curl -s http://localhost:9080/targets | python3 -c 'import sys,json; data=json.load(sys.stdin); [print(t[\"labels\"][\"__path__\"]) for t in data if \"__path__\" in t.get(\"labels\",{})]'"},
+  {"instruction": "View number of active promtail streams", "output": "curl -s http://localhost:9080/metrics | grep 'promtail_read_bytes_total' | head -5"},
+  {"instruction": "Check promtail request latency", "output": "curl -s http://localhost:9080/metrics | grep 'promtail_request_duration_seconds'"},
+  {"instruction": "Check promtail sent bytes to Loki", "output": "curl -s http://localhost:9080/metrics | grep 'promtail_sent_bytes_total'"},
+  {"instruction": "Test promtail pipeline on a log line", "output": "echo '2025-03-15T10:30:00Z INFO This is a test log message' | promtail -config.file=/etc/promtail/config.yml -dry-run -stdin 2>&1"},
+  {"instruction": "Check pipeline stage processing per file", "output": "promtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -i pipeline"},
+  {"instruction": "Verify promtail sends to correct Loki URL", "output": "promtail -config.file=/etc/promtail/config.yml -dry-run 2>&1 | grep -iE 'client|url|loki'"},
+  {"instruction": "List all promtail commands", "output": "promtail --help 2>&1"},
+  {"instruction": "Check promtail systemd service file", "output": "cat /lib/systemd/system/promtail.service"},
+  {"instruction": "Edit promtail systemd override", "output": "systemctl edit promtail"},
+  {"instruction": "View promtail service environment", "output": "systemctl show promtail -p Environment"},
+  {"instruction": "Restart promtail with new config", "output": "systemctl restart promtail"},
+  {"instruction": "Stop promtail", "output": "systemctl stop promtail"},
+  {"instruction": "Start promtail manually with debug output", "output": "promtail -config.file=/etc/promtail/config.yml -log.level=debug"},
+  {"instruction": "Create promtail config test script", "output": "cat > /usr/local/bin/promtail-check.sh << 'EOF'\n#!/bin/bash\necho \"Checking promtail config...\"\npromtail -config.file=/etc/promtail/config.yml -check-syntax && echo \"Syntax OK\"\necho \"Checking targets...\"\ncurl -s http://localhost:9080/targets | python3 -m json.tool\necho \"Checking Loki connection...\"\ncurl -s http://localhost:3100/ready\necho \"Done\"\nEOF\nchmod +x /usr/local/bin/promtail-check.sh"},
+  {"instruction": "Performance test Loki query", "output": "time logcli query '{job=\"nginx\"}' --from=2025-01-01T00:00:00Z --limit=1000 2>&1"},
+  {"instruction": "Check Loki memory usage", "output": "ps aux | grep loki | awk '{print $6/1024 \" MB\"}'"},
+  {"instruction": "Check Loki disk usage", "output": "du -sh /var/lib/loki/"},
+  {"instruction": "Purge Loki data to free disk space", "output": "systemctl stop loki && rm -rf /var/lib/loki/* && systemctl start loki"}
+]

@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "Boot into emergency mode for recovery",
+    "output": "<think>\nWe're being asked to boot into emergency mode for recovery.\nLet me break this down.\nBest tool here is systemctl — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl emergency"
+  },
+  {
+    "instruction": "Boot into rescue mode single-user shell",
+    "output": "<think>\nThe goal is to boot into rescue mode single-user shell.\nFirst, let me understand what's needed here.\nI'd use systemctl for this — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl rescue"
+  },
+  {
+    "instruction": "Create a drop-in override to add environment variable",
+    "output": "<think>\nNeed to create a drop-in override to add environment variable.\nLet me consider what makes sense here.\nFor this, mkdir is the right tool — directory creation.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo mkdir -p /etc/systemd/system/ssh.service.d && sudo tee /etc/systemd/system/ssh.service.d/env.conf <<'EOF'\n[Service]\nEnvironment=MYCUSTOMVAR=value\nEOF"
+  },
+  {
+    "instruction": "Create a drop-in to extend service timeout",
+    "output": "<think>\nSo the request is to create a drop-in to extend service timeout.\nLet me break this down.\nI'll reach for tee here because tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/ssh.service.d/timeout.conf <<'EOF'\n[Service]\nTimeoutStartSec=30\nTimeoutStopSec=15\nEOF"
+  },
+  {
+    "instruction": "Merge crypttab and fstab into systemd units",
+    "output": "<think>\nWe should merge crypttab and fstab into systemd units.\nI'll reach for systemctl here because managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemctl daemon-reload && sudo systemctl start cryptsetup.target"
+  },
+  {
+    "instruction": "Create a systemd sysusers config for a system user",
+    "output": "<think>\nSo we need to create a systemd sysusers config for a system user.\nThe tool for this job is tee — tee operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo tee /etc/sysusers.d/myapp.conf <<'EOF'\nu myapp 424 - /var/lib/myapp /usr/sbin/nologin\nEOF"
+  },
+  {
+    "instruction": "Apply systemd sysusers configuration",
+    "output": "<think>\nWe should apply systemd sysusers configuration.\nLet me consider what makes sense here.\nFor this, systemd-sysusers is the right tool — systemd-sysusers operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemd-sysusers"
+  },
+  {
+    "instruction": "Initialize systemd-firstboot for a fresh system",
+    "output": "<think>\nSo the request is to initialize systemd-firstboot for a fresh system.\nLet me consider what makes sense here.\nI'll reach for systemd-firstboot here because systemd-firstboot operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemd-firstboot --locale=en_US.UTF-8 --timezone=UTC --hostname=debian-server"
+  },
+  {
+    "instruction": "Set root password with systemd-firstboot",
+    "output": "<think>\nThis is asking us to set root password with systemd-firstboot.\nThe tool for this job is systemd-firstboot — systemd-firstboot operations.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo systemd-firstboot --root=/mnt --root-password-hash='$y$j9T$...'"
+  },
+  {
+    "instruction": "Query systemd-ask-password from a script",
+    "output": "<think>\nThe user wants to query systemd-ask-password from a script.\nLet me think through this step by step.\nsystemd-ask-password is what we need — systemd-ask-password operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemd-ask-password 'Enter decryption passphrase:' --no-tty"
+  },
+  {
+    "instruction": "Forward a password prompt via agent",
+    "output": "<think>\nThis is asking us to forward a password prompt via agent.\nI'll reach for systemd-tty-ask-password-agent here because systemd-tty-ask-password-agent operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-tty-ask-password-agent"
+  },
+  {
+    "instruction": "Watch all password requests with the agent",
+    "output": "<think>\nWe should watch all password requests with the agent.\nLet me reason through this.\nI'd use systemd-tty-ask-password-agent for this — systemd-tty-ask-password-agent operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-tty-ask-password-agent --watch"
+  },
+  {
+    "instruction": "Create a systemd-repart partition definition",
+    "output": "<think>\nThe task requires us to create a systemd-repart partition definition.\nLet me think about the best approach.\nBest tool here is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/repart.d/10-data.conf <<'EOF'\n[Partition]\nType=linux-generic\nLabel=data\nSizeMinBytes=1G\nSizeMaxBytes=10G\nEOF"
+  },
+  {
+    "instruction": "Apply systemd-repart to create partitions",
+    "output": "<think>\nNeed to apply systemd-repart to create partitions.\nFirst, let me understand what's needed here.\nBest tool here is systemd-repart — systemd-repart operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-repart /dev/sdb"
+  },
+  {
+    "instruction": "View systemd-repart table without writing",
+    "output": "<think>\nThe goal is to view systemd-repart table without writing.\nLet me reason through this.\nThe tool for this job is systemd-repart — systemd-repart operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemd-repart --dry-run=yes /dev/sdb"
+  },
+  {
+    "instruction": "Create a user-scope systemd service manually",
+    "output": "<think>\nThe goal is to create a user-scope systemd service manually.\nFirst, let me understand what's needed here.\nBest tool here is mkdir — directory creation.\nI've added -p to create parent directories as needed — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nmkdir -p ~/.config/systemd/user && tee ~/.config/systemd/user/myuser.service <<'EOF'\n[Service]\nExecStart=/usr/bin/sleep 1000\nEOF"
+  },
+  {
+    "instruction": "Manage user services with --user flag",
+    "output": "<think>\nWe're being asked to manage user services with --user flag.\nLet me think about the best approach.\nBest tool here is systemctl — managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl --user daemon-reload && systemctl --user start myuser.service"
+  },
+  {
+    "instruction": "Enable lingering for a user to run user services at boot",
+    "output": "<think>\nSo we need to enable lingering for a user to run user services at boot.\nLet me break this down.\nThis calls for loginctl. Session management.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo loginctl enable-linger myuser"
+  },
+  {
+    "instruction": "Disable lingering for a user",
+    "output": "<think>\nAlright, we need to disable lingering for a user.\nLet me think about the best approach.\nI'll reach for loginctl here because session management.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo loginctl disable-linger myuser"
+  },
+  {
+    "instruction": "Show all services with a specific systemd state",
+    "output": "<think>\nSo the request is to show all services with a specific systemd state.\nI'd use systemctl for this — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl list-units --state=failed --no-pager"
+  },
+  {
+    "instruction": "Mask multiple services at once with a wildcard",
+    "output": "<think>\nNeed to mask multiple services at once with a wildcard.\nLet me consider what makes sense here.\nI'd use systemctl for this — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl mask 'cups*'"
+  },
+  {
+    "instruction": "Show the systemd version and features compiled in",
+    "output": "<think>\nThe goal is to show the systemd version and features compiled in.\nLet me consider what makes sense here.\nThis calls for systemctl. Managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl --version"
+  },
+  {
+    "instruction": "Create a service with PrivateTmp for security isolation",
+    "output": "<think>\nAlright, we need to create a service with PrivateTmp for security isolation.\nFirst, let me understand what's needed here.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/secure-app.service <<'EOF'\n[Service]\nPrivateTmp=yes\nProtectSystem=strict\nProtectHome=yes\nExecStart=/usr/local/bin/secure-app\nEOF"
+  },
+  {
+    "instruction": "Create a service with no new privileges security hardening",
+    "output": "<think>\nAlright, we need to create a service with no new privileges security hardening.\nI'd use tee for this — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/nopriv.service <<'EOF'\n[Service]\nNoNewPrivileges=yes\nCapabilityBoundingSet=-CAP_SYS_ADMIN\nExecStart=/usr/local/bin/app\nEOF"
+  },
+  {
+    "instruction": "Analyze security of all running services side by side",
+    "output": "<think>\nNeed to analyze security of all running services side by side.\nLet me think through this step by step.\nFor this, systemd-analyze is the right tool — systemd-analyze operations.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemd-analyze security --no-pager --table"
+  },
+  {
+    "instruction": "List all systemd-nspawn containers",
+    "output": "<think>\nNeed to list all systemd-nspawn containers.\nThe tool for this job is machinectl — container management with systemd.\nOne command does the job. Simple is better.\n</think>\nmachinectl list"
+  }
+]

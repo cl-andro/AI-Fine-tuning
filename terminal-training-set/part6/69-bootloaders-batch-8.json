@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "List all dmidecode SMBIOS entries related to boot",
+    "output": "<think>\nThe goal is to list all dmidecode SMBIOS entries related to boot.\nBest tool here is dmidecode — dmidecode operations.\nI'm using -t for sort by modification time — important to get the expected behavior.\nThe -t flag handles sort by modification time. Important because important to get the expected behavior.\n</think>\ndmidecode -t 0 -t 1 -t 11"
+  },
+  {
+    "instruction": "Show system enclosure (chassis) information",
+    "output": "<think>\nThe user wants to show system enclosure (chassis) information.\nBest tool here is dmidecode — dmidecode operations.\nI'm using -t for sort by modification time — without it the command won't work as we need.\n</think>\ndmidecode -t chassis"
+  },
+  {
+    "instruction": "Display processor information from BIOS",
+    "output": "<think>\nAlright, we need to display processor information from BIOS.\nLet me think through this step by step.\nBest tool here is dmidecode — dmidecode operations.\nThe -t flag handles sort by modification time. Important because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ndmidecode -t processor"
+  },
+  {
+    "instruction": "Show memory device details from DMI",
+    "output": "<think>\nAlright, we need to show memory device details from DMI.\nLet me think through this step by step.\ndmidecode is what we need — dmidecode operations.\nThe -t flag handles sort by modification time. Important because important to get the expected behavior.\nCheck the output for errors before proceeding to the next step.\n</think>\ndmidecode -t memory"
+  },
+  {
+    "instruction": "Display TPM device information",
+    "output": "<think>\nWe're being asked to display TPM device information.\nLet me consider what makes sense here.\nThis calls for dmidecode. Dmidecode operations.\nI've added -t to sort by modification time — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndmidecode -t 43"
+  },
+  {
+    "instruction": "Show on-board devices from BIOS",
+    "output": "<think>\nWe're being asked to show on-board devices from BIOS.\nHere's how I'd approach this.\nFor this, dmidecode is the right tool — dmidecode operations.\nI'm using -t for sort by modification time — this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ndmidecode -t onboard"
+  },
+  {
+    "instruction": "List system slot information (PCIe slots)",
+    "output": "<think>\nThe goal is to list system slot information (PCIe slots).\nLet me consider what makes sense here.\ndmidecode is what we need — dmidecode operations.\nI've added -t to sort by modification time — needed for this specific use case.\nQuick verification after execution to be safe.\n</think>\ndmidecode -t slot"
+  },
+  {
+    "instruction": "Show hardware security (SecureBoot) status",
+    "output": "<think>\nThis is asking us to show hardware security (SecureBoot) status.\nHere's how I'd approach this.\nThis calls for mokutil. Mokutil operations.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nmokutil --sb-state && dmesg | grep -i 'secure boot'"
+  },
+  {
+    "instruction": "Find the boot order from EFI firmware",
+    "output": "<think>\nSo we need to find the boot order from EFI firmware.\nLet me break this down.\nefibootmgr is what we need — efibootmgr operations.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\nefibootmgr | grep BootOrder"
+  },
+  {
+    "instruction": "Set the first-stage bootloader timeout via efibootmgr",
+    "output": "<think>\nThe goal is to set the first-stage bootloader timeout via efibootmgr.\nLet me think about the best approach.\nBest tool here is efibootmgr — efibootmgr operations.\nI've added -t to sort by modification time — important to get the expected behavior.\n</think>\nefibootmgr -t 15"
+  },
+  {
+    "instruction": "Check whether the system was booted via UEFI",
+    "output": "<think>\nThe task requires us to check whether the system was booted via UEFI.\nBest tool here is ls — ls operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nls /sys/firmware/efi/efivars > /dev/null 2>&1 && echo 'UEFI' || echo 'BIOS'"
+  },
+  {
+    "instruction": "Find the size of the EFI System Partition",
+    "output": "<think>\nThe goal is to find the size of the EFI System Partition.\nLet me think through this step by step.\nBest tool here is lsblk — block device listing.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nlsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT | grep -i EFI"
+  },
+  {
+    "instruction": "Backup the EFI System Partition",
+    "output": "<think>\nWe should backup the EFI System Partition.\nLet me think about the best approach.\nFor this, dd is the right tool — dd operations.\nNo need for complex pipelines here — one command is sufficient.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\nQuick verification after execution to be safe.\n</think>\ndd if=/dev/sda1 of=/tmp/efi_backup.img bs=4M status=progress"
+  },
+  {
+    "instruction": "Restore an EFI System Partition",
+    "output": "<think>\nNeed to restore an EFI System Partition.\nLet me break this down.\nThis calls for dd. Dd operations.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/tmp/efi_backup.img of=/dev/sda1 bs=4M status=progress"
+  },
+  {
+    "instruction": "Check if the ESP has the correct partition type GUID",
+    "output": "<think>\nWe're being asked to check if the ESP has the correct partition type GUID.\nI'd use blkid for this — block device attribute lookup.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nblkid /dev/sda1 | grep 'PARTTYPE=\"c12a7328-f81f-11d2-ba4b-00a0c93ec93b\"'"
+  },
+  {
+    "instruction": "List all EFI executables on the ESP",
+    "output": "<think>\nNeed to list all EFI executables on the ESP.\nLet me think about the best approach.\nThis calls for find. File searching.\nThe -name flag means filter by filename pattern, which matters here because important to get the expected behavior.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind /boot/efi/EFI -name '*.efi' 2>/dev/null"
+  },
+  {
+    "instruction": "Check available space on the ESP",
+    "output": "<think>\nWe're being asked to check available space on the ESP.\nI'll reach for df here because disk space checking.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ndf -h /boot/efi"
+  },
+  {
+    "instruction": "Create the standard EFI directory structure for GRUB",
+    "output": "<think>\nThe task requires us to create the standard EFI directory structure for GRUB.\nLet me reason through this.\nBest tool here is mkdir — directory creation.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmkdir -p /boot/efi/EFI/GRUB"
+  },
+  {
+    "instruction": "Copy GRUB EFI binary to the ESP manually",
+    "output": "<think>\nThe task requires us to copy GRUB EFI binary to the ESP manually.\nI'd use cp for this — file copying.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\nAfter running, I'll confirm the result looks right.\n</think>\ncp /usr/lib/grub/x86_64-efi/grubx64.efi /boot/efi/EFI/GRUB/"
+  },
+  {
+    "instruction": "Delete a GRUB EFI boot entry and reinstall from scratch",
+    "output": "<think>\nThe user wants to delete a GRUB EFI boot entry and reinstall from scratch.\nLet me reason through this.\nI'd use efibootmgr for this — efibootmgr operations.\nI'm using -b for brief output — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nefibootmgr -b 0001 -B && grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB"
+  },
+  {
+    "instruction": "Check for EFI runtime services availability",
+    "output": "<think>\nWe're being asked to check for EFI runtime services availability.\nBest tool here is dmesg — kernel ring buffer inspection.\nI've added -i to interactive, prompt before action — standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ndmesg | grep -i 'efi: EFI'"
+  },
+  {
+    "instruction": "Verify the EFI framebuffer is active",
+    "output": "<think>\nWe're being asked to verify the EFI framebuffer is active.\nHere's how I'd approach this.\nThe tool for this job is dmesg — kernel ring buffer inspection.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ndmesg | grep 'efifb'"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a mount unit for a data partition",
+    "output": "<think>\nNeed to create a mount unit for a data partition.\nLet me think about the best approach.\nThe tool for this job is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo tee /etc/systemd/system/mnt-data.mount <<'EOF'\n[Unit]\nDescription=Data partition\n\n[Mount]\nWhat=/dev/sdb1\nWhere=/mnt/data\nType=ext4\nOptions=defaults\n\n[Install]\nWantedBy=local-fs.target\nEOF"
+  },
+  {
+    "instruction": "Create an automount unit for lazy mounting",
+    "output": "<think>\nWe're being asked to create an automount unit for lazy mounting.\nThe tool for this job is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo tee /etc/systemd/system/mnt-data.automount <<'EOF'\n[Unit]\nDescription=Automount data partition\n\n[Automount]\nWhere=/mnt/data\n\n[Install]\nWantedBy=local-fs.target\nEOF"
+  },
+  {
+    "instruction": "Activate a mount unit and mount immediately",
+    "output": "<think>\nThe task requires us to activate a mount unit and mount immediately.\nFirst, let me understand what's needed here.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl start mnt-data.mount"
+  },
+  {
+    "instruction": "Activate an automount unit for on-demand mounting",
+    "output": "<think>\nAlright, we need to activate an automount unit for on-demand mounting.\nLet me think through this step by step.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl enable --now mnt-data.automount"
+  },
+  {
+    "instruction": "Create a mount unit for a tmpfs in-memory filesystem",
+    "output": "<think>\nAlright, we need to create a mount unit for a tmpfs in-memory filesystem.\nBest tool here is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo tee /etc/systemd/system/run-myapp.mount <<'EOF'\n[Unit]\nDescription=MyApp runtime tmpfs\n\n[Mount]\nWhat=tmpfs\nWhere=/run/myapp\nType=tmpfs\nOptions=mode=0755,size=64M\n\n[Install]\nWantedBy=local-fs.target\nEOF"
+  },
+  {
+    "instruction": "Create a swap unit for a swap file",
+    "output": "<think>\nSo we need to create a swap unit for a swap file.\nLet me think about the best approach.\nI'd use tee for this — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/swapfile.swap <<'EOF'\n[Unit]\nDescription=Swap file\n\n[Swap]\nWhat=/swapfile\n\n[Install]\nWantedBy=swap.target\nEOF"
+  },
+  {
+    "instruction": "Create a swap unit for a swap partition",
+    "output": "<think>\nThe goal is to create a swap unit for a swap partition.\nThe tool for this job is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/dev-sdb2.swap <<'EOF'\n[Unit]\nDescription=Swap partition\n\n[Swap]\nWhat=/dev/sdb2\n\n[Install]\nWantedBy=swap.target\nEOF"
+  },
+  {
+    "instruction": "Activate a swap unit",
+    "output": "<think>\nSo we need to activate a swap unit.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl start swapfile.swap"
+  },
+  {
+    "instruction": "Create a custom target that groups related services",
+    "output": "<think>\nSo we need to create a custom target that groups related services.\nLet me reason through this.\nThis calls for tee. Tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/myapp.target <<'EOF'\n[Unit]\nDescription=My Application Stack\nRequires=postgresql.service myapp-web.service\nWants=myapp-worker.service\nAfter=postgresql.service myapp-web.service\nEOF"
+  },
+  {
+    "instruction": "Set a target as default boot target",
+    "output": "<think>\nAlright, we need to set a target as default boot target.\nHere's how I'd approach this.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl set-default myapp.target"
+  },
+  {
+    "instruction": "Show all active mount units",
+    "output": "<think>\nSo the request is to show all active mount units.\nLet me break this down.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-units --type=mount"
+  },
+  {
+    "instruction": "Show all swap units and their status",
+    "output": "<think>\nThe task requires us to show all swap units and their status.\nLet me reason through this.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-units --type=swap"
+  },
+  {
+    "instruction": "Show all loaded target units",
+    "output": "<think>\nWe're being asked to show all loaded target units.\nsystemctl is what we need — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl list-units --type=target"
+  },
+  {
+    "instruction": "Reload systemd after creating mount units",
+    "output": "<think>\nNeed to reload systemd after creating mount units.\nThis calls for systemctl. Managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsudo systemctl daemon-reload"
+  },
+  {
+    "instruction": "Unmount a systemd-managed mount point cleanly",
+    "output": "<think>\nThe goal is to unmount a systemd-managed mount point cleanly.\nThe tool for this job is systemctl — managing systemd services.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl stop mnt-data.mount"
+  },
+  {
+    "instruction": "Deactivate a swap unit",
+    "output": "<think>\nSo we need to deactivate a swap unit.\nsystemctl is what we need — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsudo systemctl stop swapfile.swap"
+  },
+  {
+    "instruction": "Create a mount unit with network dependency",
+    "output": "<think>\nThe goal is to create a mount unit with network dependency.\nHere's how I'd approach this.\nI'll reach for tee here because tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/mnt-nfs.mount <<'EOF'\n[Unit]\nDescription=NFS mount\nRequires=network-online.target\nAfter=network-online.target\n\n[Mount]\nWhat=192.168.1.100:/exports/data\nWhere=/mnt/nfs\nType=nfs\nOptions=defaults\n\n[Install]\nWantedBy=remote-fs.target\nEOF"
+  },
+  {
+    "instruction": "Create a mount unit for a CIFS/Samba share",
+    "output": "<think>\nNeed to create a mount unit for a CIFS/Samba share.\nBest tool here is tee — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/mnt-share.mount <<'EOF'\n[Unit]\nDescription=Samba share\n\n[Mount]\nWhat=//192.168.1.100/share\nWhere=/mnt/share\nType=cifs\nOptions=credentials=/etc/smbcreds,uid=1000,gid=1000\n\n[Install]\nWantedBy=remote-fs.target\nEOF"
+  },
+  {
+    "instruction": "Create a systemd target for maintenance mode",
+    "output": "<think>\nAlright, we need to create a systemd target for maintenance mode.\nLet me reason through this.\nThis calls for tee. Tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo tee /etc/systemd/system/maintenance.target <<'EOF'\n[Unit]\nDescription=Maintenance Mode\nRequires=multi-user.target\nConflicts=rescue.target\nAllowIsolate=yes\nEOF"
+  },
+  {
+    "instruction": "Isolate to the maintenance target",
+    "output": "<think>\nNeed to isolate to the maintenance target.\nHere's how I'd approach this.\nBest tool here is systemctl — managing systemd services.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo systemctl isolate maintenance.target"
+  },
+  {
+    "instruction": "Change to rescue mode",
+    "output": "<think>\nNeed to change to rescue mode.\nBest tool here is systemctl — managing systemd services.\nOne command does the job. Simple is better.\nRestarting services has downtime. If possible, use reload instead of restart.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo systemctl rescue"
+  },
+  {
+    "instruction": "Change to emergency mode",
+    "output": "<think>\nWe're being asked to change to emergency mode.\nI'd use systemctl for this — managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo systemctl emergency"
+  },
+  {
+    "instruction": "Show default target and dependencies",
+    "output": "<think>\nWe should show default target and dependencies.\nLet me think through this step by step.\nFor this, systemctl is the right tool — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-dependencies $(systemctl get-default)"
+  },
+  {
+    "instruction": "List all targets available for isolation",
+    "output": "<think>\nWe're being asked to list all targets available for isolation.\nLet me break this down.\nThis calls for systemctl. Managing systemd services.\nA single command handles this cleanly — no need to overcomplicate it.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl list-units --type=target --state=active"
+  },
+  {
+    "instruction": "Create a mount unit with nofail option to avoid boot failure",
+    "output": "<think>\nThe goal is to create a mount unit with nofail option to avoid boot failure.\nLet me consider what makes sense here.\nFor this, tee is the right tool — tee operations.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tee /etc/systemd/system/mnt-optional.mount <<'EOF'\n[Unit]\nDescription=Optional mount\n[Mount]\nWhat=/dev/sdc1\nWhere=/mnt/optional\nType=ext4\nOptions=nofail\nEOF"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Docker builder in Packer",
+    "output": "echo 'source \"docker\" \"ubuntu\" { image = \"ubuntu:22.04\" commit = true }' > docker-source.pkr.hcl"
+  },
+  {
+    "instruction": "Export a Docker image from Packer build",
+    "output": "echo 'post-processor \"docker-tag\" { repository = \"myapp\" tags = [\"latest\"] } post-processor \"docker-push\" {}' > docker-push.pkr.hcl"
+  },
+  {
+    "instruction": "Build a Docker image and export to tar",
+    "output": "echo 'post-processor \"docker-export\" { output = \"builds/myapp.tar\" }' > docker-export.pkr.hcl"
+  },
+  {
+    "instruction": "Save a Docker image after commit (save post-processor)",
+    "output": "echo 'post-processor \"docker-save\" { output = \"builds/ubuntu-{{timestamp}}.tar\" }' > docker-save.pkr.hcl"
+  },
+  {
+    "instruction": "Tag Docker image with custom version",
+    "output": "echo 'post-processor \"docker-tag\" { repository = \"registry.example.com/myapp\" tags = [var.version] }' > docker-tag.pkr.hcl"
+  },
+  {
+    "instruction": "Create a vSphere/VMware builder in Packer",
+    "output": "echo 'source \"vsphere-iso\" \"ubuntu\" { vcenter_server = var.vcenter_server username = var.vcenter_user password = var.vcenter_password datacenter = \"DC1\" cluster = \"Cluster1\" vm_name = \"ubuntu-22.04-{{timestamp}}\" guest_os_type = \"ubuntu64Guest\" }' > vsphere.pkr.hcl"
+  },
+  {
+    "instruction": "Create a QEMU builder for local VM images",
+    "output": "echo 'source \"qemu\" \"ubuntu\" { iso_url = \"https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso\" iso_checksum = \"sha256:xxxxx\" output_directory = \"output/qemu\" ssh_username = \"ubuntu\" memory = 2048 }' > qemu.pkr.hcl"
+  },
+  {
+    "instruction": "Create a VirtualBox builder",
+    "output": "echo 'source \"virtualbox-iso\" \"ubuntu\" { iso_url = \"https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso\" iso_checksum = \"sha256:xxxxx\" ssh_username = \"ubuntu\" guest_additions_mode = \"disable\" }' > vbox.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Google Cloud builder in Packer",
+    "output": "echo 'source \"googlecompute\" \"ubuntu\" { project_id = var.gcp_project zone = \"us-central1-a\" machine_type = \"e2-micro\" source_image_family = \"ubuntu-2204-lts\" ssh_username = \"ubuntu\" }' > gcp.pkr.hcl"
+  },
+  {
+    "instruction": "Create an Azure builder in Packer",
+    "output": "echo 'source \"azure-arm\" \"ubuntu\" { client_id = var.arm_client_id client_secret = var.arm_client_secret subscription_id = var.arm_subscription_id managed_image_resource_group_name = \"packer-images\" managed_image_name = \"ubuntu-22.04-{{timestamp}}\" os_type = \"Linux\" image_publisher = \"Canonical\" image_offer = \"UbuntuServer\" image_sku = \"22.04-LTS\" }' > azure.pkr.hcl"
+  },
+  {
+    "instruction": "Create a DigitalOcean builder in Packer",
+    "output": "echo 'source \"digitalocean\" \"ubuntu\" { api_token = var.do_token image = \"ubuntu-22-04-x64\" region = \"nyc3\" size = \"s-1vcpu-1gb\" ssh_username = \"root\" }' > do.pkr.hcl"
+  },
+  {
+    "instruction": "Create an OpenStack builder in Packer",
+    "output": "echo 'source \"openstack\" \"ubuntu\" { identity_endpoint = var.os_auth_url tenant_name = var.os_tenant_name username = var.os_username password = var.os_password region = \"RegionOne\" image_name = \"Ubuntu 22.04\" flavor = \"m1.small\" ssh_username = \"ubuntu\" }' > openstack.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Null builder for testing",
+    "output": "echo 'source \"null\" \"basic\" { communicator = \"none\" }' > null-source.pkr.hcl"
+  },
+  {
+    "instruction": "Build a multi-source template (same image to multiple clouds)",
+    "output": "echo 'build { sources = [\"source.amazon-ebs.ubuntu\", \"source.googlecompute.ubuntu\"] provisioner \"shell\" { inline = [\"echo built\"] } }' > multi-cloud.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Packer data source for secrets",
+    "output": "echo 'data \"amazon-secretsmanager\" \"db_pass\" { name = \"prod/db/password\" }' > data.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Packer data source for HTTP content",
+    "output": "echo 'data \"http\" \"keys\" { url = \"https://example.com/authorized_keys\" }' > data-http.pkr.hcl"
+  },
+  {
+    "instruction": "Use a file data source to read local content",
+    "output": "echo 'data \"file\" \"config\" { source = \"./config.yml\" }' > data-file.pkr.hcl"
+  },
+  {
+    "instruction": "Reference a data source in a provisioner",
+    "output": "echo 'provisioner \"file\" { content = data.file.config.content destination = \"/tmp/config.yml\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the templatefile function in Packer",
+    "output": "echo 'provisioner \"file\" { content = templatefile(\"${path.root}/templates/nginx.conf.tpl\", { server_name = \"example.com\" }) destination = \"/etc/nginx/nginx.conf\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use path.root in Packer for relative paths",
+    "output": "echo 'provisioner \"shell\" { script = \"${path.root}/scripts/install.sh\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the uuidv4 function in Packer",
+    "output": "echo 'locals { id = uuidv4() }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the timestamp function for unique naming",
+    "output": "echo 'locals { build_id = formatdate(\"YYYYMMDDhhmmss\", timestamp()) }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the timeadd function for scheduled builds",
+    "output": "echo 'locals { expiry = timeadd(timestamp(), \"24h\") }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the base64encode and base64decode functions",
+    "output": "echo 'provisioner \"shell\" { inline = [\"echo {{ base64encode(\\\"hello\\\") }}\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the length function to validate lists",
+    "output": "echo 'locals { count = length(var.additional_packages) }' > locals.pkr.hcl"
+  }
+]

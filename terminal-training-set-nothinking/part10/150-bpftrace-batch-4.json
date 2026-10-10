@@ -1,0 +1,23 @@
+[
+  {"instruction": "Count system calls per second", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_* { @[probe] = count(); } interval:s:1 { print(@); clear(@); }'"},
+  {"instruction": "Trace file reads over 1MB", "output": "bpftrace -e 'tracepoint:syscalls:sys_exit_read /args->ret > 1048576/ { printf(\"large read: %d bytes by %s\\n\", args->ret, comm); }'"},
+  {"instruction": "Monitor TCP connection rates", "output": "bpftrace -e 'kprobe:tcp_v4_connect { @ = count(); } interval:s:1 { printf(\"conn/s: %d\\n\", @); clear(@); }'"},
+  {"instruction": "Track disk write latency", "output": "bpftrace -e 'kprobe:blk_start_request { @start[args->req] = nsecs; } kprobe:blk_complete_request { @usecs = hist((nsecs - @start[args->req]) / 1000); delete(@start[args->req]); }'"},
+  {"instruction": "Show top processes by CPU using profile", "output": "bpftrace -e 'profile:hz:99 { @[comm] = count(); } interval:s:5 { print(@, 5); clear(@); }'"},
+  {"instruction": "Show processes causing context switches", "output": "bpftrace -e 'tracepoint:sched:sched_switch { @[args->next_comm] = count(); }'"},
+  {"instruction": "Trace memory allocations per binary", "output": "bpftrace -e 'tracepoint:kmem:kmalloc { @[comm] = sum(args->size); }'"},
+  {"instruction": "Count file types opened", "output": "bpftrace -e 'kprobe:do_sys_open { @[str(args->filename).strrchr(\".\")] = count(); }'"},
+  {"instruction": "Monitor directory traversal patterns", "output": "bpftrace -e 'kprobe:do_sys_open { @[str(args->filename).substr(0, 20)] = count(); }'"},
+  {"instruction": "Track mutex contention", "output": "bpftrace -e 'kprobe:mutex_lock { @start[tid] = nsecs; } kprobe:mutex_unlock { @usecs = hist((nsecs - @start[tid]) / 1000); delete(@start[tid]); }'"},
+  {"instruction": "Monitor spinlock contention", "output": "bpftrace -e 'kprobe:_raw_spin_lock { @[kstack] = count(); }'"},
+  {"instruction": "Count socket read/write by type", "output": "bpftrace -e 'kprobe:sock_recvmsg { @[\"recv\"] = count(); } kprobe:sock_sendmsg { @[\"send\"] = count(); }'"},
+  {"instruction": "Trace file deletion events", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_unlinkat { printf(\"deleted: %s\\n\", str(args->name)); }'"},
+  {"instruction": "Monitor symlink creation", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_symlinkat { printf(\"symlink %s -> %s\\n\", str(args->link), str(args->target)); }'"},
+  {"instruction": "Track inotify watch additions", "output": "bpftrace -e 'kprobe:inotify_add_watch { printf(\"inotify watch added by %s\\n\", comm); }'"},
+  {"instruction": "Count file locks acquired", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_flock { @[comm] = count(); }'"},
+  {"instruction": "Track poll/select calls", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_poll { @[comm] = count(); }'"},
+  {"instruction": "Monitor pipe reads and writes", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_read /args->fd == -1/ { @[\"pipe_read\"] = count(); }'"},
+  {"instruction": "Count shared memory operations", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_shmget { @[comm] = count(); }'"},
+  {"instruction": "Track process group changes", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_setpgid { printf(\"setpgid: %d -> %d\\n\", args->pid, args->pgid); }'"},
+  {"instruction": "Monitor clone and fork rates", "output": "bpftrace -e 'tracepoint:syscalls:sys_enter_clone { @ = count(); } interval:s:1 { printf(\"clone/s: %d\\n\", @); clear(@); }'"}
+]

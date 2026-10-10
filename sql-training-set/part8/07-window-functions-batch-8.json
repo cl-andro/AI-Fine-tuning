@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRank rows by score within each student_id",
+    "output": "SELECT *, RANK() OVER (PARTITION BY student_id ORDER BY score DESC) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nDense rank of rows by score",
+    "output": "SELECT *, DENSE_RANK() OVER (ORDER BY score DESC) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRow number per student_id ordered by exam_date",
+    "output": "SELECT *, ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRunning total of score ordered by exam_date",
+    "output": "SELECT *, SUM(score) OVER (ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRunning total of score per student_id",
+    "output": "SELECT *, SUM(score) OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nAverage of score over all rows",
+    "output": "SELECT *, AVG(score) OVER () FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nPrevious score value (lag) per student_id",
+    "output": "SELECT *, LAG(score, 1) OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nNext score value (lead) per student_id",
+    "output": "SELECT *, LEAD(score, 1) OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nMaximum score per student_id across all rows",
+    "output": "SELECT *, MAX(score) OVER (PARTITION BY student_id) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nMinimum score per student_id",
+    "output": "SELECT *, MIN(score) OVER (PARTITION BY student_id) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nMoving average window of 3 rows per student_id",
+    "output": "SELECT *, AVG(score) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nWindow frame from first row to current per student_id",
+    "output": "SELECT *, SUM(score) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nFirst value of score per student_id",
+    "output": "SELECT *, FIRST_VALUE(score) OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nLast value of score per student_id across full partition",
+    "output": "SELECT *, LAST_VALUE(score) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nPercent rank of score",
+    "output": "SELECT *, PERCENT_RANK() OVER (ORDER BY score) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nCumulative distribution of score",
+    "output": "SELECT *, CUME_DIST() OVER (ORDER BY score) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nQuartile bucket using NTILE",
+    "output": "SELECT *, NTILE(4) OVER (ORDER BY score) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nDifference of score from its group max",
+    "output": "SELECT student_id, score, score - MAX(score) OVER (PARTITION BY student_id) AS diff FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRank of score with ties allowed to skip",
+    "output": "SELECT student_id, score, RANK() OVER (ORDER BY score DESC) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nSliding window of total over preceding 5 rows",
+    "output": "SELECT *, SUM(score) OVER (ORDER BY exam_date ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nRunning count per student_id",
+    "output": "SELECT *, COUNT(*) OVER (PARTITION BY student_id ORDER BY exam_date) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nTop 2 by score within each student_id using ROW_NUMBER",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY score DESC) rn FROM scores) x WHERE rn <= 2;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nNth value of score within partition",
+    "output": "SELECT *, NTH_VALUE(score, 2) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nExpressed ratio of score to group total",
+    "output": "SELECT student_id, score, score / SUM(score) OVER (PARTITION BY student_id) AS ratio FROM scores;"
+  },
+  {
+    "instruction": "Schema: scores(student_id, exam_date, score)\nWindow with custom unbounded following frame",
+    "output": "SELECT *, SUM(score) OVER (PARTITION BY student_id ORDER BY exam_date ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM scores;"
+  }
+]

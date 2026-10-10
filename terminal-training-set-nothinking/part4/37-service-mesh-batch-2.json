@@ -1,0 +1,22 @@
+[
+  {"instruction": "istioctl experimental describe pod sleep-6c9f78b8d6-abc12 -n default", "output": "Pod: sleep-6c9f78b8d6-abc12\n   Revision: default\n   Pod Ports: 80 (sleep), 15090 (istio-proxy)\n   Service: sleep (10.96.0.20:80)\n   DestinationRules: sleep-dr (host: sleep.default.svc.cluster.local)\n   VirtualServices: sleep-vs (host: sleep.default.svc.cluster.local)\n   Authorization Policies: allow-all (action: ALLOW)"},
+  {"instruction": "istioctl experimental injector list", "output": "NAME               NAMESPACE       WORKLOAD SELECTOR\nsidecar-injector   istio-system    <all workloads>\nRevision: default, injection enabled namespaces:\n  - ns/default\n  - ns/prod\n"},
+  {"instruction": "istioctl operator init", "output": "\u2713 Istio operator init completed\n\u2713 Created operator deployment: istio-operator\n\u2713 Created CRDs: IstioOperator, IstioRevision, WasmPlugin"},
+  {"instruction": "istioctl operator remove", "output": "\u2713 Istio operator removed successfully\n\u2713 Removed istio-operator deployment\n\u2713 Removed CRDs"},
+  {"instruction": "istioctl profile list", "output": "Istio configuration profiles:\n    default\n    demo\n    minimal\n    remote\n    ambient\n    preview\n    stable"},
+  {"instruction": "istioctl profile dump default", "output": "components:\n  base:\n    enabled: true\n  pilot:\n    enabled: true\n    k8s:\n      resources:\n        requests:\n          cpu: 100m\n          memory: 128Mi\n  ingressGateways:\n  - name: istio-ingressgateway\n    enabled: true\nmeshConfig:\n  accessLogFile: /dev/stdout\nvalues:\n  global:\n    meshID: mesh1\n"},
+  {"instruction": "istioctl manifest generate --set profile=default -o /tmp/istio-manifest", "output": "\u2713 Generating manifest for profile default\n\u2713 Manifest written to /tmp/istio-manifest"},
+  {"instruction": "ls /tmp/istio-manifest/", "output": "base  crds  gateway  istiod  namespaces  profile.yaml"},
+  {"instruction": "istioctl manifest apply -f /tmp/istio-manifest/", "output": "\u2713 Applying manifest\n\u2713 Istio core installed\n\u2713 Istiod installed\n\u2713 Ingress gateways installed\n\u2713 Installation complete"},
+  {"instruction": "istioctl manifest diff /tmp/istio-manifest/ /tmp/istio-manifest-v2/", "output": "--- /tmp/istio-manifest/profile.yaml\n+++ /tmp/istio-manifest-v2/profile.yaml\n@@ -1,5 +1,6 @@\n profile: default\n pilot:\n   enabled: true\n+  k8s:\n+    resources:\n+      requests:\n+        cpu: 200m\n+        memory: 256Mi\n"},
+  {"instruction": "istioctl install --set profile=demo --set meshConfig.accessLogFile=/dev/stdout -y", "output": "\u2713 Istio core installed\n\u2713 Istiod installed\n\u2713 Egress gateways installed\n\u2713 Ingress gateways installed\n\u2713 Installation complete"},
+  {"instruction": "istioctl manifest versions", "output": "1.22.0\n1.21.4\n1.20.7"},
+  {"instruction": "istioctl experimental revision list", "output": "REVISION    ENABLED    ACTIVE    ACTIVE_PROXIES\ndefault     true       true      3\ncanary      false      false     1"},
+  {"instruction": "istioctl experimental revision tag list", "output": "TAG         REVISION    NAMESPACES\nstable      default     default,prod\ncanary-tag  canary      staging"},
+  {"instruction": "istioctl experimental revision tag set canary-tag --revision canary", "output": "\u2713 Revision tag 'canary-tag' set for revision 'canary'. Use `kubectl label ns <namespace> istio.io/rev=canary-tag` to enable injection."},
+  {"instruction": "istioctl x uninstall --purge -y", "output": "\u2713 Uninstall confirmed\n\u2713 Removing Istio resources...\n\u2713 All Istio resources removed successfully"},
+  {"instruction": "istioctl experimental revision tag remove canary-tag", "output": "\u2713 Revision tag 'canary-tag' removed"},
+  {"instruction": "istioctl experimental revision describe default", "output": "Revision: default\n  Enabled: true\n  Active: true\n  Proxies: 3\n  Injection Enabled Namespaces: default, prod\n  Ingress Gateways: istio-ingressgateway\n  Egress Gateways: istio-egressgateway\n  CNI Enabled: false\n"},
+  {"instruction": "istioctl experimental version --remote=false", "output": "client version: 1.22.0"},
+  {"instruction": "istioctl experimental istiod-injector-list", "output": "injector: sidecar-injector (istio-system)\n  revision: default\n  namespaces:\n    - default (label: istio-injection=enabled)\n    - prod (label: istio-injection=enabled)\n"}
+]

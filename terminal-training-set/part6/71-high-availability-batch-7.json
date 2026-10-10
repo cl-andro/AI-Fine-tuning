@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Clone a DRBD resource in Pacemaker",
+    "output": "<think>\nAlright, we need to clone a DRBD resource in Pacemaker.\nLet me break this down.\npcs is what we need — pcs operations.\nI'll check the output to make sure it did what we expected.\n</think>\npcs resource clone DRBD ms-drbd"
+  },
+  {
+    "instruction": "Promote DRBD clone to master role",
+    "output": "<think>\nThe goal is to promote DRBD clone to master role.\nLet me break this down.\nThe tool for this job is pcs — pcs operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\npcs resource master ms-drbd"
+  },
+  {
+    "instruction": "Create a Pacemaker resource for DLM",
+    "output": "<think>\nNeed to create a Pacemaker resource for DLM.\nThe tool for this job is pcs — pcs operations.\nLet me verify afterward that it worked correctly.\n</think>\npcs resource create dlm ocf:pacemaker:controld op monitor interval=30s"
+  },
+  {
+    "instruction": "Create a Pacemaker resource for clvmd",
+    "output": "<think>\nThis is asking us to create a Pacemaker resource for clvmd.\nLet me break this down.\nThe tool for this job is pcs — pcs operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\npcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s"
+  },
+  {
+    "instruction": "Build a complete GFS2 cluster stack in Pacemaker",
+    "output": "<think>\nThe user wants to build a complete GFS2 cluster stack in Pacemaker.\nLet me break this down.\nThe tool for this job is pcs — pcs operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\npcs resource create dlm ocf:pacemaker:controld clone && pcs resource create clvmd ocf:heartbeat:clvm clone && pcs resource create gfs2-1 ocf:heartbeat:Filesystem device=/dev/drbd0 directory=/mnt/gfs2 fstype=gfs2"
+  },
+  {
+    "instruction": "Check DLM lockspace status",
+    "output": "<think>\nSo we need to check DLM lockspace status.\nLet me break this down.\nFor this, dlm_tool is the right tool — dlm_tool operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ndlm_tool status"
+  },
+  {
+    "instruction": "Check DLM lockspace log",
+    "output": "<think>\nSo we need to check DLM lockspace log.\nThis calls for dlm_tool. Dlm_tool operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ndlm_tool log_plock"
+  },
+  {
+    "instruction": "Check DLM lockspace with lsof",
+    "output": "<think>\nWe should check DLM lockspace with lsof.\nFor this, dlm_tool is the right tool — dlm_tool operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\ndlm_tool dump"
+  },
+  {
+    "instruction": "Check O2CB (Oracle Cluster) status",
+    "output": "<think>\nWe're being asked to check O2CB (Oracle Cluster) status.\no2cb is what we need — o2cb operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\no2cb status"
+  },
+  {
+    "instruction": "Configure O2CB heartbeat for OCFS2",
+    "output": "<think>\nThe task requires us to configure O2CB heartbeat for OCFS2.\nThe tool for this job is o2cb — o2cb operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\no2cb configure-cluster --heartbeat local"
+  },
+  {
+    "instruction": "Mount a GFS2 filesystem from a cluster",
+    "output": "<think>\nWe should mount a GFS2 filesystem from a cluster.\nFirst, let me understand what's needed here.\nI'd use mount for this — filesystem mounting.\nCheck the output for errors before proceeding to the next step.\n</think>\nmount -t gfs2 /dev/drbd0 /mnt/gfs2"
+  },
+  {
+    "instruction": "Create a GFS2 filesystem on DRBD",
+    "output": "<think>\nThe goal is to create a GFS2 filesystem on DRBD.\nLet me consider what makes sense here.\nFor this, mkfs.gfs2 is the right tool — mkfs.gfs2 operations.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\nmkfs.gfs2 -p lock_dlm -j 3 -t cluster1:gfs2 /dev/drbd0"
+  },
+  {
+    "instruction": "Add a journal to an existing GFS2 filesystem",
+    "output": "<think>\nWe're being asked to add a journal to an existing GFS2 filesystem.\nLet me think about the best approach.\nThis calls for gfs2_jadd. Gfs2_jadd operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngfs2_jadd -j 1 /dev/drbd0"
+  },
+  {
+    "instruction": "Grow a GFS2 filesystem to fill the device",
+    "output": "<think>\nAlright, we need to grow a GFS2 filesystem to fill the device.\nLet me think through this step by step.\nBest tool here is gfs2_grow — gfs2_grow operations.\nOne command does the job. Simple is better.\n</think>\ngfs2_grow /dev/drbd0"
+  },
+  {
+    "instruction": "Check the GFS2 filesystem",
+    "output": "<think>\nNeed to check the GFS2 filesystem.\nBest tool here is fsck.gfs2 — fsck.gfs2 operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nfsck.gfs2 -y /dev/drbd0"
+  },
+  {
+    "instruction": "Edit the Keepalived config for two VRRP instances",
+    "output": "<think>\nNeed to edit the Keepalived config for two VRRP instances.\nI'd use vrrp_instance for this — vrrp_instance operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nvrrp_instance VI_1 {\n  interface eth0\n  virtual_router_id 51\n  priority 100\n}\nvrrp_instance VI_2 {\n  interface eth1\n  virtual_router_id 52\n  priority 50\n}"
+  },
+  {
+    "instruction": "Configure a VRRP sync group in Keepalived",
+    "output": "<think>\nThis is asking us to configure a VRRP sync group in Keepalived.\nFor this, vrrp_sync_group is the right tool — vrrp_sync_group operations.\n</think>\nvrrp_sync_group VG1 {\n  group {\n    VI_1\n    VI_2\n  }\n}"
+  },
+  {
+    "instruction": "Set Keepalived to use strong hash on the VRRP advertisement",
+    "output": "<think>\nSo the request is to set Keepalived to use strong hash on the VRRP advertisement.\nLet me consider what makes sense here.\nFor this, use_vmac is the right tool — use_vmac operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nuse_vmac 0"
+  },
+  {
+    "instruction": "Run Keepalived in foreground for debugging",
+    "output": "<think>\nAlright, we need to run Keepalived in foreground for debugging.\nThis calls for keepalived. Keepalived operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nkeepalived --dont-fork -f /etc/keepalived/keepalived.conf"
+  },
+  {
+    "instruction": "Reload Keepalived configuration after changes",
+    "output": "<think>\nThe user wants to reload Keepalived configuration after changes.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl reload keepalived"
+  },
+  {
+    "instruction": "Show Keepalived logs in real time",
+    "output": "<think>\nNeed to show Keepalived logs in real time.\nLet me think about the best approach.\njournalctl is what we need — checking systemd logs.\nOld logs can be large — add --since to limit the range and avoid huge output.\n</think>\njournalctl -u keepalived -f"
+  },
+  {
+    "instruction": "Corosync log file location",
+    "output": "<think>\nSo the request is to corosync log file location.\nHere's how I'd approach this.\nI'd use tail for this — tail operations.\nI've added -f to force, suppress errors — this controls how the output is formatted.\n</think>\ntail -f /var/log/corosync/corosync.log"
+  },
+  {
+    "instruction": "Run Corosync in no-daemon mode for debugging",
+    "output": "<think>\nSo the request is to run Corosync in no-daemon mode for debugging.\nHere's how I'd approach this.\nBest tool here is corosync — corosync operations.\nI've added -d to directory listing, don't descend — standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ncorosync -d"
+  },
+  {
+    "instruction": "Check Corosync configuration syntax",
+    "output": "<think>\nThe goal is to check Corosync configuration syntax.\nHere's how I'd approach this.\ncorosync-cfgtool is what we need — corosync-cfgtool operations.\nI've added -s to summarize or silent mode — important to get the expected behavior.\nThe -i flag handles interactive, prompt before action. Important because this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\ncorosync-cfgtool -s 2>&1 | grep -i error"
+  },
+  {
+    "instruction": "Check if Corosync is running with all expected nodes",
+    "output": "<think>\nThe task requires us to check if Corosync is running with all expected nodes.\nFor this, corosync-quorumtool is the right tool — corosync-quorumtool operations.\nWhy -s? Summarize or silent mode. important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ncorosync-quorumtool -s | grep 'Membership'"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Get Alertmanager alerts via API",
+    "output": "curl http://localhost:9093/api/v2/alerts | jq '.'"
+  },
+  {
+    "instruction": "Add Alertmanager silence via API",
+    "output": "curl -X POST http://localhost:9093/api/v2/silences -H 'Content-Type: application/json' -d '{\"matchers\": [{\"name\": \"alertname\", \"value\": \"HighCPU\", \"isRegex\": false}], \"startsAt\": \"2026-07-26T00:00:00Z\", \"endsAt\": \"2026-07-27T00:00:00Z\", \"createdBy\": \"admin\", \"comment\": \"Maintenance\"}'"
+  },
+  {
+    "instruction": "List Alertmanager silences via API",
+    "output": "curl http://localhost:9093/api/v2/silences | jq '.'"
+  },
+  {
+    "instruction": "Delete Alertmanager silence via API",
+    "output": "curl -X DELETE http://localhost:9093/api/v2/silence/silence-uuid"
+  },
+  {
+    "instruction": "Get Alertmanager groups via API",
+    "output": "curl http://localhost:9093/api/v2/alerts/groups | jq '.'"
+  },
+  {
+    "instruction": "Get Alertmanager receivers via API",
+    "output": "curl http://localhost:9093/api/v2/receivers | jq '.'"
+  },
+  {
+    "instruction": "Use promtool to lint recording rules",
+    "output": "promtool check rules --lint recording_rules.yml"
+  },
+  {
+    "instruction": "Promtool rules unit test format",
+    "output": "echo 'rule_files: - rules.yml evaluation_interval: 1m tests: - interval: 1m input_series: - series: up{instance=\"test\"} values: 1x10 alert_rule_test: - alertname: InstanceDown eval_time: 5m exp_alerts: []' > test.yml"
+  },
+  {
+    "instruction": "Run promtool rules unit tests",
+    "output": "promtool test rules test.yml"
+  },
+  {
+    "instruction": "Promtool check metrics format",
+    "output": "promtool check metrics < metrics.txt"
+  },
+  {
+    "instruction": "Promtool check agent mode config",
+    "output": "promtool check config --agent prometheus.yml"
+  },
+  {
+    "instruction": "Start Prometheus in agent mode",
+    "output": "prometheus --config.file prometheus.yml --agent"
+  },
+  {
+    "instruction": "Use Prometheus agent mode with remote write only",
+    "output": "echo 'global: scrape_interval: 15s remote_write: - url: http://remote:8080/write scrape_configs: - job_name: node static_configs: - targets: - localhost:9100' > agent.yml && prometheus --config.file agent.yml --agent"
+  },
+  {
+    "instruction": "Start prometheus with feature flags",
+    "output": "prometheus --config.file prometheus.yml --enable-feature expanded-exemplars"
+  },
+  {
+    "instruction": "Enable exemplar storage in Prometheus",
+    "output": "prometheus --config.file prometheus.yml --storage.tsdb.exemplars-retention 72h"
+  },
+  {
+    "instruction": "Enable memory snapshot for faster startup",
+    "output": "prometheus --config.file prometheus.yml --enable-feature memory-snapshot-on-shutdown"
+  },
+  {
+    "instruction": "Enable auto-gomemlimit in Prometheus",
+    "output": "prometheus --config.file prometheus.yml --enable-feature auto-gomemlimit"
+  },
+  {
+    "instruction": "Check prometheus OTLP endpoint config",
+    "output": "echo 'otlp: receiver: protocols: grpc: endpoint: 0.0.0.0:4317' > otlp.yml"
+  },
+  {
+    "instruction": "Enable OTLP ingestion in Prometheus",
+    "output": "prometheus --config.file prometheus.yml --enable-feature otlp-write-receiver"
+  },
+  {
+    "instruction": "Use PromQL subquery for aggregation over time",
+    "output": "max_over_time(rate(http_requests_total[5m])[1h:1m])"
+  },
+  {
+    "instruction": "Calculate availability percentage with PromQL",
+    "output": "avg_over_time(up{job=\"api\"}[30d])"
+  },
+  {
+    "instruction": "Calculate SLO burn rate with PromQL",
+    "output": "sum(rate(http_requests_total{status!~\"5..\"}[1h])) / sum(rate(http_requests_total[1h]))"
+  },
+  {
+    "instruction": "Query to find empty scrape results",
+    "output": "count(up) by (job) == 0"
+  },
+  {
+    "instruction": "Query to detect metric staleness",
+    "output": "count(last_over_time(up[5m]) == 1) by (job)"
+  }
+]

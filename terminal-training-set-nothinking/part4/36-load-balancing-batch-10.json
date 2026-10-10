@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 10 'backend weighted_split'",
+    "output": "backend weighted_split\n  balance roundrobin\n  server v1 10.0.0.10:8080 check weight 70\n  server v2 10.0.0.11:8080 check weight 20\n  server v3 10.0.0.12:8080 check weight 10"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/ab-testing.conf",
+    "output": "upstream ab_test {\n    zone ab 64k;\n    server 10.0.0.10:8080;\n    server 10.0.0.100:8080;\n}\nsplit_clients \"${arg_variant}\" $upstream {\n    50%     ab_test;\n    50%     ab_test;\n}\nserver {\n    listen 80;\n    server_name test.example.com;\n    location / {\n        proxy_pass http://ab_test;\n        add_header X-Ab-Variant $upstream;\n    }\n}"
+  },
+  {
+    "instruction": "curl -H 'X-Canary: canary' http://canary.example.com/",
+    "output": "<!DOCTYPE html>\n<html><head><title>Canary Deploy v2.0.1-rc1</title></head><body>Canary Release - Build 456</body></html>"
+  },
+  {
+    "instruction": "curl -H 'X-Canary: stable' http://canary.example.com/",
+    "output": "<!DOCTYPE html>\n<html><head><title>Production v2.0.0</title></body></html>"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 12 'frontend canary_frontend'",
+    "output": "frontend canary_frontend\n  bind *:80\n  acl is_canary req.hdr(X-Canary) -m str canary\n  acl is_stable req.hdr(X-Canary) -m str stable\n  acl random_canary rand(100) lt 5\n  use_backend canary_backend if is_canary\n  use_backend stable_backend if is_stable\n  use_backend canary_backend if random_canary\n  default_backend stable_backend\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 8 'backend blue_deployment'",
+    "output": "backend blue_deployment\n  balance roundrobin\n  cookie SRV insert indirect nocache\n  server blue 10.0.0.50:8080 check weight 100 cookie blue\n"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 8 'backend green_deployment'",
+    "output": "backend green_deployment\n  balance roundrobin\n  cookie SRV insert indirect nocache\n  server green 10.0.0.51:8080 check weight 0 cookie green\n"
+  },
+  {
+    "instruction": "echo 'set weight backend/blue 0' | socat /var/run/haproxy/admin.sock stdio",
+    "output": "echo 'set weight backend/blue 0' | socat /var/run/haproxy/admin.sock stdio"
+  },
+  {
+    "instruction": "echo 'set weight backend/green 100' | socat /var/run/haproxy/admin.sock stdio",
+    "output": "echo 'set weight backend/green 100' | socat /var/run/haproxy/admin.sock stdio"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/blue-green.conf | grep -A 15 'upstream blue'",
+    "output": "upstream blue {\n    zone blue 64k;\n    server 10.0.0.50:8080 max_fails=3 fail_timeout=30s;\n}\nupstream green {\n    zone green 64k;\n    server 10.0.0.51:8080 max_fails=3 fail_timeout=30s;\n}"
+  },
+  {
+    "instruction": "sed -i 's/proxy_pass http:\\/\\/blue/proxy_pass http:\\/\\/green/' /etc/nginx/conf.d/blue-green.conf && nginx -s reload",
+    "output": "sed -i 's/proxy_pass http:\\/\\/blue/proxy_pass http:\\/\\/green/' /etc/nginx/conf.d/blue-green.conf && nginx -s reload"
+  },
+  {
+    "instruction": "curl -s http://localhost/ | grep -o 'Build [0-9]*'",
+    "output": "Build 789"
+  },
+  {
+    "instruction": "ab -n 100 -c 10 -H 'X-Canary: canary' http://localhost/ 2>&1 | grep 'Requests per second'",
+    "output": "Requests per second:    456.78 [#/sec] (mean)"
+  },
+  {
+    "instruction": "ab -n 100 -c 10 http://localhost/ 2>&1 | grep 'Requests per second'",
+    "output": "Requests per second:    423.56 [#/sec] (mean)"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 15 'backend progressive_rollout'",
+    "output": "backend progressive_rollout\n  balance roundrobin\n  http-request set-header X-Deployment stable\n  http-request set-var(txn.deployment) canary if { rand(100) lt 10 }\n  server stable 10.0.0.10:8080 check\n  server canary 10.0.0.100:8080 check"
+  },
+  {
+    "instruction": "for i in 10 20 30 40 50; do echo \"set server progressive_rollout/canary weight $i\" | socat /var/run/haproxy/admin.sock stdio; done",
+    "output": "for i in 10 20 30 40 50; do echo \"set server progressive_rollout/canary weight $i\" | socat /var/run/haproxy/admin.sock stdio; done"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/weighted-routing.conf",
+    "output": "upstream weighted {\n    zone weighted 64k;\n    server 10.0.0.10:8080 weight=50;\n    server 10.0.0.11:8080 weight=30;\n    server 10.0.0.12:8080 weight=15;\n    server 10.0.0.13:8080 weight=5;\n}"
+  },
+  {
+    "instruction": "for i in $(seq 1 20); do curl -s http://localhost/ | grep -o 'srv[0-9]'; done | sort | uniq -c | sort -rn",
+    "output": "     10 srv1\n      6 srv2\n      3 srv3\n      1 srv4"
+  },
+  {
+    "instruction": "cat /etc/haproxy/haproxy.cfg | grep -A 15 'backend geo_aware'",
+    "output": "backend geo_aware\n  balance roundrobin\n  acl from_europe src_geoip(us)\n  acl from_asia src_geoip(cn)\n  use-server eu-srv1 if from_europe\n  use-server asia-srv1 if from_asia\n  server eu-srv1 10.0.0.10:8080 check weight 100\n  server asia-srv1 10.0.0.20:8080 check weight 100\n  server us-srv1 10.0.0.30:8080 check weight 100\n"
+  },
+  {
+    "instruction": "cat /etc/nginx/conf.d/canary-deploy.conf",
+    "output": "upstream stable { server 10.0.0.10:8080; }\nupstream canary { server 10.0.0.100:8080; }\nserver {\n    listen 80;\n    server_name deploy.example.com;\n    set $backend \"stable\";\n    if ($cookie_canary = \"1\") { set $backend \"canary\"; }\n    location / { proxy_pass http://$backend; }\n}"
+  },
+  {
+    "instruction": "echo 'set server progressive_rollout/stable weight 0' | socat /var/run/haproxy/admin.sock stdio && echo 'set server progressive_rollout/canary weight 100' | socat /var/run/haproxy/admin.sock stdio",
+    "output": "echo 'set server progressive_rollout/stable weight 0' | socat /var/run/haproxy/admin.sock stdio && echo 'set server progressive_rollout/canary weight 100' | socat /var/run/haproxy/admin.sock stdio"
+  }
+]

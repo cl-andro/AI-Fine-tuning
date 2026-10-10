@@ -1,0 +1,106 @@
+[
+  {
+    "instruction": "List installed packages with size info",
+    "output": "<think>\nThis is asking us to list installed packages with size info.\nI'd use dpkg-query for this — dpkg-query operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\ndpkg-query -W --showformat='${Installed-Size}\\t${Package}\\n' | sort -rh | head -20"
+  },
+  {
+    "instruction": "Show total size of all installed packages",
+    "output": "<think>\nSo we need to show total size of all installed packages.\nHere's how I'd approach this.\nThe tool for this job is dpkg-query — dpkg-query operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ndpkg-query -W --showformat='${Installed-Size}\\n' | awk '{s+=$1} END {print s \" KB\"}'"
+  },
+  {
+    "instruction": "Find the largest installed packages",
+    "output": "<think>\nThe task requires us to find the largest installed packages.\nThe tool for this job is dpkg-query — dpkg-query operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ndpkg-query -W --showformat='${Installed-Size}\\t${Package}\\n' | sort -rh | head -10"
+  },
+  {
+    "instruction": "Show the 10 most recently installed packages",
+    "output": "<think>\nNeed to show the 10 most recently installed packages.\nLet me reason through this.\nBest tool here is grep — pattern searching.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ngrep \" install \" /var/log/dpkg.log | tail -10"
+  },
+  {
+    "instruction": "Search dpkg log for a package",
+    "output": "<think>\nThe task requires us to search dpkg log for a package.\nHere's how I'd approach this.\nThis calls for grep. Pattern searching.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrep \" nginx \" /var/log/dpkg.log"
+  },
+  {
+    "instruction": "List packages by section (e.g., admin)",
+    "output": "<think>\nWe should list packages by section (e.g., admin).\nI'd use apt-cache for this — apt-cache operations.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\napt-cache dumpavail | grep -A 1000 'Section: admin' | grep 'Package:' | head -20"
+  },
+  {
+    "instruction": "Install packages from a specific release (e.g., testing)",
+    "output": "<think>\nSo we need to install packages from a specific release (e.g., testing).\nLet me consider what makes sense here.\nI'd use apt for this — apt operations.\nA single command handles this cleanly — no need to overcomplicate it.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -t testing -y nginx"
+  },
+  {
+    "instruction": "Pin a package to a specific version",
+    "output": "<think>\nAlright, we need to pin a package to a specific version.\nLet me consider what makes sense here.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho \"Package: docker\\nPin: version 20.10.*\\nPin-Priority: 1001\" > /etc/apt/preferences.d/docker"
+  },
+  {
+    "instruction": "List all apt sources",
+    "output": "<think>\nNeed to list all apt sources.\nLet me think about the best approach.\nThe tool for this job is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /etc/apt/sources.list && cat /etc/apt/sources.list.d/*.list 2>/dev/null"
+  },
+  {
+    "instruction": "Add a deb-src source for source packages",
+    "output": "<think>\nAlright, we need to add a deb-src source for source packages.\nLet me break this down.\nQuick verification after execution to be safe.\n</think>\necho \"deb-src http://deb.debian.org/debian bookworm main\" >> /etc/apt/sources.list"
+  },
+  {
+    "instruction": "Download source package of an installed program",
+    "output": "<think>\nThe goal is to download source package of an installed program.\nFirst, let me understand what's needed here.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt source nginx"
+  },
+  {
+    "instruction": "Build a package from source with apt",
+    "output": "<think>\nWe're being asked to build a package from source with apt.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt build-dep nginx && apt source nginx && cd nginx-* && dpkg-buildpackage -b"
+  },
+  {
+    "instruction": "Patch a package before building",
+    "output": "<think>\nThe user wants to patch a package before building.\nHere's how I'd approach this.\nThe tool for this job is apt — apt operations.\nThe -b flag handles brief output. Important because standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt source nginx && cd nginx-* && patch -p1 < ../my.patch && dpkg-buildpackage -b"
+  },
+  {
+    "instruction": "Check for broken packages",
+    "output": "<think>\nThe goal is to check for broken packages.\nThis calls for apt-get. Apt-get operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\napt-get check"
+  },
+  {
+    "instruction": "Find recently added apt repositories",
+    "output": "<think>\nThis is asking us to find recently added apt repositories.\nFirst, let me understand what's needed here.\nFor this, ls is the right tool — ls operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nls -lt /etc/apt/sources.list.d/"
+  },
+  {
+    "instruction": "Check if a reboot is needed after updates",
+    "output": "<think>\nWe should check if a reboot is needed after updates.\nLet me break this down.\nThis calls for cat. Cat operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat /var/run/reboot-required 2>/dev/null || echo no reboot needed"
+  },
+  {
+    "instruction": "List packages that require a reboot",
+    "output": "<think>\nThis is asking us to list packages that require a reboot.\nThis calls for cat. Cat operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ncat /var/run/reboot-required.pkgs 2>/dev/null"
+  },
+  {
+    "instruction": "Upgrade only a specific package",
+    "output": "<think>\nSo the request is to upgrade only a specific package.\napt is what we need — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install --only-upgrade -y nginx"
+  },
+  {
+    "instruction": "Dist-upgrade to handle changing dependencies",
+    "output": "<think>\nSo we need to dist-upgrade to handle changing dependencies.\nLet me think about the best approach.\nI'd use apt for this — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt dist-upgrade -y"
+  },
+  {
+    "instruction": "Full system upgrade (apt equivalent)",
+    "output": "<think>\nSo we need to full system upgrade (apt equivalent).\nFirst, let me understand what's needed here.\nI'd use apt for this — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt full-upgrade -y"
+  },
+  {
+    "instruction": "Perform a dry-run of a full upgrade",
+    "output": "<think>\nThe goal is to perform a dry-run of a full upgrade.\nFor this, apt is the right tool — apt operations.\nI'm using --dry-run for simulate without making changes — without it the command won't work as we need.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt full-upgrade --dry-run"
+  },
+  {
+    "instruction": "Check available space before upgrading",
+    "output": "<think>\nSo the request is to check available space before upgrading.\nLet me consider what makes sense here.\nI'll reach for df here because disk space checking.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ndf -h / && apt clean && apt autoclean"
+  },
+  {
+    "instruction": "Run a non-interactive install (answer yes to everything)",
+    "output": "<think>\nThis is asking us to run a non-interactive install (answer yes to everything).\nLet me think about the best approach.\nDEBIAN_FRONTEND is what we need — DEBIAN_FRONTEND operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nDEBIAN_FRONTEND=noninteractive apt install -y nginx"
+  },
+  {
+    "instruction": "Show whether a reboot is required for kernel",
+    "output": "<think>\nThe user wants to show whether a reboot is required for kernel.\nLet me consider what makes sense here.\nI'll reach for ls here because ls operations.\nThe -q flag means quiet mode, minimal output, which matters here because without it the command won't work as we need.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nls -1 /boot/vmlinuz-* | sort -V | tail -1 | xargs basename | grep -q $(uname -r) || echo reboot needed"
+  },
+  {
+    "instruction": "Keep configuration files when removing a package",
+    "output": "<think>\nSo the request is to keep configuration files when removing a package.\nLet me reason through this.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt remove -y nginx"
+  },
+  {
+    "instruction": "Remove configuration files along with package",
+    "output": "<think>\nSo the request is to remove configuration files along with package.\napt is what we need — apt operations.\nI'll check the output to make sure it did what we expected.\n</think>\napt purge -y nginx"
+  }
+]

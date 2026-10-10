@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Acquire a lock in etcd with etcdctl",
+    "output": "etcdctl lock mylock 'echo \"critical section running\"'\nmylock/1234567890abcdef\ncritical section running\n"
+  },
+  {
+    "instruction": "Execute a transaction in etcd with etcdctl",
+    "output": "etcdctl txn <<'EOF'\ncompare:\n  value(\"/config/app/version\") = \"2\"\nsuccess:\n  put /config/app/version \"3\"\nfailure:\n  put /config/app/version-error \"mismatch\"\nEOF\nSUCCESS\n\n/config/app/version\n3"
+  },
+  {
+    "instruction": "Test a transaction in etcd that should fail",
+    "output": "etcdctl txn <<'EOF'\ncompare:\n  value(\"/config/app/version\") = \"99\"\nsuccess:\n  put /config/app/version \"100\"\nfailure:\n  put /config/app/version-error \"expected version 99, got 3\"\nEOF\nFAILURE\n\n/config/app/version-error\nexpected version 99, got 3"
+  },
+  {
+    "instruction": "Grant a new lease in etcd with etcdctl",
+    "output": "etcdctl lease grant 60\nlease 1234567890abcdef granted with TTL(60s)"
+  },
+  {
+    "instruction": "Revoke a lease in etcd with etcdctl",
+    "output": "etcdctl lease revoke 1234567890abcdef\nlease 1234567890abcdef revoked"
+  },
+  {
+    "instruction": "Keep a lease alive in etcd with etcdctl",
+    "output": "etcdctl lease keep-alive 1234567890abcdef\nlease 1234567890abcdef keepalived with TTL(60)\nlease 1234567890abcdef keepalived with TTL(60)\n..."
+  },
+  {
+    "instruction": "List all leases in etcd with etcdctl",
+    "output": "etcdctl lease list\nfound 3 leases\n1234567890abcdef\n234567890abcdef1\n34567890abcdef12"
+  },
+  {
+    "instruction": "Add a member to the etcd cluster",
+    "output": "etcdctl member add infra3 --peer-urls=http://10.0.1.4:2380\nMember 45678901abcdef12 added to cluster ef12ab345678cd90\n\nETCD_NAME=\"infra3\"\nETCD_INITIAL_CLUSTER=\"infra0=http://10.0.1.1:2380,infra1=http://10.0.1.2:2380,infra2=http://10.0.1.3:2380,infra3=http://10.0.1.4:2380\"\nETCD_INITIAL_CLUSTER_STATE=\"existing\""
+  },
+  {
+    "instruction": "Remove a member from the etcd cluster",
+    "output": "etcdctl member remove 45678901abcdef12\nMember 45678901abcdef12 removed from cluster ef12ab345678cd90"
+  },
+  {
+    "instruction": "Update a member's peer URL in etcd",
+    "output": "etcdctl member update 8214f0d9b4675f94 --peer-urls=http://10.0.1.1:2380,http://10.0.1.10:2380\nMember 8214f0d9b4675f94 updated in cluster ef12ab345678cd90"
+  },
+  {
+    "instruction": "List etcd members with JSON output",
+    "output": "etcdctl member list -w json\n{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"members\":[{\"ID\":82150644016928900,\"name\":\"infra0\",\"peerURLs\":[\"http://10.0.1.1:2380\"],\"clientURLs\":[\"http://10.0.1.1:2379\"]},{\"ID\":10501334649042895635,\"name\":\"infra1\",\"peerURLs\":[\"http://10.0.1.2:2380\"],\"clientURLs\":[\"http://10.0.1.2:2379\"]}]}"
+  },
+  {
+    "instruction": "Check etcd cluster status",
+    "output": "etcdctl endpoint status -w table\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|    ENDPOINT    |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n| 127.0.0.1:2379 | 8214f0d9b4675f94 |  3.5.9  |   25 MB |      true |      false |         4 |      12458 |              12458 |        |\n| 127.0.0.1:22379| f3a7d0e9b4675c12 |  3.5.9  |   24 MB |     false |      false |         4 |      12458 |              12458 |        |\n| 127.0.0.1:32379| c5e8a2b9d4675d34 |  3.5.9  |   24 MB |     false |      false |         4 |      12458 |              12458 |        |\n+----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+"
+  },
+  {
+    "instruction": "Check etcd endpoint health",
+    "output": "etcdctl endpoint health -w table\n+----------------+--------+------------+-------+\n|    ENDPOINT    | HEALTH |    TOOK    | ERROR |\n+----------------+--------+------------+-------+\n| 127.0.0.1:2379 |   true | 2.345678ms |       |\n| 127.0.0.1:22379|   true | 3.123456ms |       |\n| 127.0.0.1:32379|   true | 2.987654ms |       |\n+----------------+--------+------------+-------+"
+  },
+  {
+    "instruction": "Get the hash of an etcd KV store",
+    "output": "etcdctl endpoint hashkv -w table\n+----------------+------------------+------------------+\n|    ENDPOINT    |        ID        |      HASH        |\n+----------------+------------------+------------------+\n| 127.0.0.1:2379 | 8214f0d9b4675f94 | 0xabcd1234ef567890 |\n| 127.0.0.1:22379| f3a7d0e9b4675c12 | 0xabcd1234ef567890 |\n| 127.0.0.1:32379| c5e8a2b9d4675d34 | 0xabcd1234ef567890 |\n+----------------+------------------+------------------+"
+  },
+  {
+    "instruction": "Check etcd status on a specific endpoint",
+    "output": "etcdctl endpoint status --endpoints=https://10.0.1.1:2379 -w json\n[{\"Endpoint\":\"https://10.0.1.1:2379\",\"Status\":{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"version\":\"3.5.9\",\"dbSize\":26214400,\"leader\":9372539479320773524,\"raftIndex\":12458,\"raftTerm\":4}}]"
+  },
+  {
+    "instruction": "Get etcd cluster member list with JSON output",
+    "output": "etcdctl member list -w fields\nID : 8214f0d9b4675f94\nName : infra0\nPeerURLs : [http://10.0.1.1:2380]\nClientURLs : [http://10.0.1.1:2379]"
+  },
+  {
+    "instruction": "List etcd members by endpoint",
+    "output": "etcdctl member list --endpoints=https://10.0.1.1:2379 -w table\n+------------------+---------+--------+---------------------------+----------------------------+\n|        ID        | STATUS  |  NAME  |       PEER ADDRS          |      CLIENT ADDRS          |\n+------------------+---------+--------+---------------------------+----------------------------+\n| 8214f0d9b4675f94 | started | infra0 | http://10.0.1.1:2380      | http://10.0.1.1:2379       |\n+------------------+---------+--------+---------------------------+----------------------------+"
+  },
+  {
+    "instruction": "Add a new etcd user with password",
+    "output": "etcdctl user add bob --new-user-password=s3cret!\nUser bob created"
+  },
+  {
+    "instruction": "Grant a role to an etcd user",
+    "output": "etcdctl user grant-role bob admin\nRole admin is granted to user bob"
+  },
+  {
+    "instruction": "Get etcd endpoint status with JSON output",
+    "output": "etcdctl endpoint status -w json\n[{\"Endpoint\":\"127.0.0.1:2379\",\"Status\":{\"header\":{\"cluster_id\":17237436991929493444,\"member_id\":9372539479320773524},\"version\":\"3.5.9\",\"dbSize\":26214400,\"leader\":9372539479320773524,\"raftIndex\":12458,\"raftTerm\":4}}]"
+  },
+  {
+    "instruction": "Move etcd leader to another member",
+    "output": "etcdctl move-leader f3a7d0e9b4675c12\nLeadership transferred from 8214f0d9b4675f94 to f3a7d0e9b4675c12"
+  }
+]

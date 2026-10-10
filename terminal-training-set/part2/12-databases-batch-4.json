@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Install MySQL server",
+    "output": "<think>\nThis is asking us to install MySQL server.\nLet me break this down.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y mysql-server && systemctl start mysql"
+  },
+  {
+    "instruction": "Secure MySQL installation (set root pass, remove anon users)",
+    "output": "<think>\nSo the request is to secure MySQL installation (set root pass, remove anon users).\nLet me consider what makes sense here.\nFor this, mysql_secure_installation is the right tool — mysql_secure_installation operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nmysql_secure_installation"
+  },
+  {
+    "instruction": "Install PostgreSQL server",
+    "output": "<think>\nThis is asking us to install PostgreSQL server.\nLet me consider what makes sense here.\nThe tool for this job is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y postgresql postgresql-contrib && systemctl start postgresql"
+  },
+  {
+    "instruction": "Install MongoDB server",
+    "output": "<think>\nSo we need to install MongoDB server.\nLet me reason through this.\nThe tool for this job is apt — apt operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y gnupg && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb.gpg && echo 'deb [signed-by=/usr/share/keyrings/mongodb.gpg] http://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main' > /etc/apt/sources.list.d/mongodb-org-7.0.list && apt update && apt install -y mongodb-org"
+  },
+  {
+    "instruction": "Install Redis server",
+    "output": "<think>\nSo the request is to install Redis server.\nLet me think through this step by step.\napt is what we need — apt operations.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y redis-server"
+  },
+  {
+    "instruction": "Install SQLite browser (GUI)",
+    "output": "<think>\nSo the request is to install SQLite browser (GUI).\nFirst, let me understand what's needed here.\nI'll reach for apt here because apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y sqlitebrowser"
+  },
+  {
+    "instruction": "Install the MySQL client only",
+    "output": "<think>\nThe user wants to install the MySQL client only.\nLet me break this down.\nI'll reach for apt here because apt operations.\nNo need for complex pipelines here — one command is sufficient.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y default-mysql-client"
+  },
+  {
+    "instruction": "Install the PostgreSQL client only",
+    "output": "<think>\nThe task requires us to install the PostgreSQL client only.\nI'll reach for apt here because apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y postgresql-client"
+  },
+  {
+    "instruction": "Install the MongoDB client (mongosh)",
+    "output": "<think>\nSo the request is to install the MongoDB client (mongosh).\nThe tool for this job is apt — apt operations.\nNo need for complex pipelines here — one command is sufficient.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y mongodb-mongosh"
+  },
+  {
+    "instruction": "Install phpMyAdmin (MySQL web GUI)",
+    "output": "<think>\nThe user wants to install phpMyAdmin (MySQL web GUI).\nThis calls for apt. Apt operations.\nA single command handles this cleanly — no need to overcomplicate it.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y phpmyadmin"
+  },
+  {
+    "instruction": "Install pgAdmin (PostgreSQL web GUI)",
+    "output": "<think>\nThe task requires us to install pgAdmin (PostgreSQL web GUI).\nBest tool here is curl — making HTTP requests.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\ncurl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | gpg --dearmor -o /usr/share/keyrings/pgadmin.gpg && echo 'deb [signed-by=/usr/share/keyrings/pgadmin.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main' > /etc/apt/sources.list.d/pgadmin4.list && apt update && apt install -y pgadmin4"
+  },
+  {
+    "instruction": "Create a MySQL database and import schema",
+    "output": "<think>\nSo we need to create a MySQL database and import schema.\nmysql is what we need — MySQL database queries.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nI've added -e to edit or executable — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e 'CREATE DATABASE mydb;' && mysql -u root -p mydb < schema.sql"
+  },
+  {
+    "instruction": "Create a full MySQL backup with all databases",
+    "output": "<think>\nThe task requires us to create a full MySQL backup with all databases.\nI'll reach for mysqldump here because MySQL database backup.\nUse --single-transaction for InnoDB to get a consistent snapshot without locking.\n</think>\nmysqldump --all-databases -u root -p > full_backup.sql"
+  },
+  {
+    "instruction": "Restore a full MySQL backup",
+    "output": "<think>\nAlright, we need to restore a full MySQL backup.\nBest tool here is mysql — MySQL database queries.\nI've added -u to show or sort by access time — needed for this specific use case.\nSame as psql — test destructive queries on a staging db first.\nAfter running, I'll confirm the result looks right.\n</think>\nmysql -u root -p < full_backup.sql"
+  },
+  {
+    "instruction": "Set up MySQL replication: master config",
+    "output": "<think>\nThe user wants to set up MySQL replication: master config.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e '[mysqld]\\nserver-id=1\\nlog-bin=mysql-bin\\nbinlog-do-db=mydb' >> /etc/mysql/my.cnf && systemctl restart mysql"
+  },
+  {
+    "instruction": "Create replication user for MySQL",
+    "output": "<think>\nWe're being asked to create replication user for MySQL.\nLet me break this down.\nThe tool for this job is mysql — MySQL database queries.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"CREATE USER 'replica'@'%' IDENTIFIED BY 'password'; GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%'; FLUSH PRIVILEGES;\""
+  },
+  {
+    "instruction": "Show MySQL master status",
+    "output": "<think>\nThis is asking us to show MySQL master status.\nI'll reach for mysql here because MySQL database queries.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e 'SHOW MASTER STATUS;'"
+  },
+  {
+    "instruction": "Set up MySQL replica: slave config",
+    "output": "<think>\nWe're being asked to set up MySQL replica: slave config.\nBest tool here is mysql — MySQL database queries.\nI've added -u to show or sort by access time — without it the command won't work as we need.\nSame as psql — test destructive queries on a staging db first.\n</think>\nmysql -u root -p -e \"CHANGE MASTER TO MASTER_HOST='192.168.1.10', MASTER_USER='replica', MASTER_PASSWORD='password', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=123; START SLAVE;\""
+  },
+  {
+    "instruction": "Check MySQL replica status",
+    "output": "<think>\nThe task requires us to check MySQL replica status.\nFirst, let me understand what's needed here.\nI'll reach for mysql here because MySQL database queries.\nSame as psql — test destructive queries on a staging db first.\nQuick verification after execution to be safe.\n</think>\nmysql -u root -p -e 'SHOW SLAVE STATUS\\G'"
+  },
+  {
+    "instruction": "Set up PostgreSQL streaming replication: standby",
+    "output": "<think>\nThe task requires us to set up PostgreSQL streaming replication: standby.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'primary_conninfo = \"host=192.168.1.10 port=5432 user=replicator password=replicapass\"' >> /etc/postgresql/16/main/postgresql.conf && touch /var/lib/postgresql/16/main/standby.signal && systemctl restart postgresql"
+  },
+  {
+    "instruction": "Check PostgreSQL replication lag",
+    "output": "<think>\nSo the request is to check PostgreSQL replication lag.\nLet me break this down.\nThe tool for this job is psql — PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -U postgres -c 'SELECT pid, application_name, client_addr, pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) AS lag_bytes FROM pg_stat_replication;'"
+  },
+  {
+    "instruction": "Promote PostgreSQL standby to primary",
+    "output": "<think>\nThe user wants to promote PostgreSQL standby to primary.\nFirst, let me understand what's needed here.\nFor this, touch is the right tool — touch operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ntouch /var/lib/postgresql/16/main/standby.signal && rm /var/lib/postgresql/16/main/standby.signal || systemctl restart postgresql"
+  },
+  {
+    "instruction": "Take a PostgreSQL base backup (pg_basebackup)",
+    "output": "<think>\nWe're being asked to take a PostgreSQL base backup (pg_basebackup).\nI'll reach for pg_basebackup here because pg_basebackup operations.\nThe -h flag means human-readable format, which matters here because standard practice for this kind of operation.\nWhy -U? Use full user name instead of UID. important to get the expected behavior.\nThe -v flag means verbose output, which matters here because this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\npg_basebackup -h 192.168.1.10 -D /var/lib/postgresql/16/main -U replicator -P -v --wal-method=stream"
+  },
+  {
+    "instruction": "Enable PostgreSQL query logging",
+    "output": "<think>\nSo we need to enable PostgreSQL query logging.\nI'm using -e for edit or executable — important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'log_statement = all\\nlog_directory = /var/log/postgresql\\nlog_filename = postgresql-%Y-%m-%d.log' >> /etc/postgresql/16/main/postgresql.conf && systemctl restart postgresql"
+  }
+]

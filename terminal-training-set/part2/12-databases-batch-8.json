@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a MongoDB capped collection",
+    "output": "<think>\nThe goal is to create a MongoDB capped collection.\nI'd use mongosh for this — MongoDB operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nmongosh mydb --eval 'db.createCollection(\"logs\",{capped:true,size:10485760,max:1000})'"
+  },
+  {
+    "instruction": "Aggregate documents in MongoDB",
+    "output": "<think>\nAlright, we need to aggregate documents in MongoDB.\nLet me reason through this.\nmongosh is what we need — MongoDB operations.\nAfter running, I'll confirm the result looks right.\n</think>\nmongosh mydb --eval 'db.users.aggregate([{$group:{_id:\"$city\",count:{$sum:1}}},{$sort:{count:-1}}])'"
+  },
+  {
+    "instruction": "Create a MongoDB text index",
+    "output": "<think>\nWe should create a MongoDB text index.\nFor this, mongosh is the right tool — MongoDB operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nmongosh mydb --eval 'db.users.createIndex({name:\"text\",email:\"text\"})'"
+  },
+  {
+    "instruction": "Search text in MongoDB",
+    "output": "<think>\nWe're being asked to search text in MongoDB.\nLet me consider what makes sense here.\nI'll reach for mongosh here because MongoDB operations.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nmongosh mydb --eval 'db.users.find({$text:{$search:\"john\"}})'"
+  },
+  {
+    "instruction": "Backup MongoDB database with mongodump",
+    "output": "<think>\nThis is asking us to backup MongoDB database with mongodump.\nBest tool here is mongodump — mongodump operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmongodump --db mydb --out /backups/mongo/"
+  },
+  {
+    "instruction": "Restore MongoDB database with mongorestore",
+    "output": "<think>\nWe should restore MongoDB database with mongorestore.\nFirst, let me understand what's needed here.\nBest tool here is mongorestore — mongorestore operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nmongorestore --db mydb /backups/mongo/mydb"
+  },
+  {
+    "instruction": "Create a MariaDB user with full privileges",
+    "output": "<think>\nAlright, we need to create a MariaDB user with full privileges.\nBest tool here is mariadb — mariadb operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nmariadb -u root -p -e \"CREATE USER 'dev'@'%' IDENTIFIED BY 'devpass'; GRANT ALL PRIVILEGES ON *.* TO 'dev'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;\""
+  },
+  {
+    "instruction": "Check MariaDB storage engine status",
+    "output": "<think>\nAlright, we need to check MariaDB storage engine status.\nLet me think through this step by step.\nFor this, mariadb is the right tool — mariadb operations.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nQuick verification after execution to be safe.\n</think>\nmariadb -u root -p -e 'SHOW ENGINES;'"
+  },
+  {
+    "instruction": "Convert a MariaDB table to InnoDB",
+    "output": "<think>\nThis is asking us to convert a MariaDB table to InnoDB.\nLet me think about the best approach.\nFor this, mariadb is the right tool — mariadb operations.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nmariadb -u root -p mydb -e 'ALTER TABLE users ENGINE=InnoDB;'"
+  },
+  {
+    "instruction": "Show MariaDB binary log files",
+    "output": "<think>\nThe goal is to show MariaDB binary log files.\nFirst, let me understand what's needed here.\nBest tool here is mariadb — mariadb operations.\nThe -u flag means show or sort by access time, which matters here because important to get the expected behavior.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\nmariadb -u root -p -e 'SHOW BINARY LOGS;'"
+  },
+  {
+    "instruction": "Write data to InfluxDB using v1 API",
+    "output": "<think>\nSo the request is to write data to InfluxDB using v1 API.\nLet me break this down.\nI'll reach for curl here because making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s -XPOST http://localhost:8086/write?db=mydb --data-binary 'measurement,host=web01 value=3.14 1717200000'"
+  },
+  {
+    "instruction": "Show InfluxDB databases (v1 API)",
+    "output": "<think>\nNeed to show InfluxDB databases (v1 API).\nHere's how I'd approach this.\nFor this, curl is the right tool — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://localhost:8086/query?q=SHOW+DATABASES | jq '.'"
+  },
+  {
+    "instruction": "Install and query Neo4j with cypher-shell",
+    "output": "<think>\nSo we need to install and query Neo4j with cypher-shell.\nwget is what we need — downloading files.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\nI'll check the output to make sure it did what we expected.\n</think>\nwget -qO- https://go.neo4j.com/download-thanks-core?edition=community&release=5.15.0&platform=linux&architecture=amd64&package=tar.gz | tar xz && mv neo4j-community-5.15.0 /opt/neo4j && /opt/neo4j/bin/cypher-shell -u neo4j -p password 'CREATE (:User {name:\"John\"})'"
+  },
+  {
+    "instruction": "Query Neo4j graph database",
+    "output": "<think>\nWe should query Neo4j graph database.\nI'm using -u for show or sort by access time — this controls how the output is formatted.\nI'm using -p for create parent directories as needed — standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\n/opt/neo4j/bin/cypher-shell -u neo4j -p password 'MATCH (n:User) RETURN n.name LIMIT 10;'"
+  },
+  {
+    "instruction": "Create an index in Neo4j",
+    "output": "<think>\nThe user wants to create an index in Neo4j.\nThe -u flag handles show or sort by access time. Important because without it the command won't work as we need.\nThe -p flag handles create parent directories as needed. Important because standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\n/opt/neo4j/bin/cypher-shell -u neo4j -p password 'CREATE INDEX user_name IF NOT EXISTS FOR (n:User) ON (n.name);'"
+  },
+  {
+    "instruction": "Install Apache CouchDB v3",
+    "output": "<think>\nAlright, we need to install Apache CouchDB v3.\nThe tool for this job is apt — apt operations.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nWhy -d? Directory listing, don't descend. important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y couchdb && curl -X PUT http://localhost:5984/_node/couchdb@localhost/_config/admins/admin -H 'Content-Type: application/json' -d '\"password\"'"
+  },
+  {
+    "instruction": "Create a design document in CouchDB",
+    "output": "<think>\nThis is asking us to create a design document in CouchDB.\nLet me break this down.\nFor this, curl is the right tool — making HTTP requests.\nI'm using -H for follow symlinks on command line only — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X PUT http://admin:password@localhost:5984/mydb/_design/docs -H 'Content-Type: application/json' -d '{\"views\":{\"by_name\":{\"map\":\"function(doc){emit(doc.name,1)}\"}}}'"
+  },
+  {
+    "instruction": "Query a CouchDB view",
+    "output": "<think>\nThe task requires us to query a CouchDB view.\nI'll reach for curl here because making HTTP requests.\nI'm using -s for summarize or silent mode — important to get the expected behavior.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://admin:password@localhost:5984/mydb/_design/docs/_view/by_name | jq '.'"
+  },
+  {
+    "instruction": "Delete a CouchDB database",
+    "output": "<think>\nWe're being asked to delete a CouchDB database.\nI'll reach for curl here because making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X DELETE http://admin:password@localhost:5984/mydb"
+  },
+  {
+    "instruction": "Create a MergeTree table in ClickHouse",
+    "output": "<think>\nSo the request is to create a MergeTree table in ClickHouse.\nThe tool for this job is clickhouse-client — clickhouse-client operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nclickhouse-client --query 'CREATE TABLE mydb.events (event_date Date, event_type String, value UInt32) ENGINE = MergeTree() ORDER BY event_date'"
+  },
+  {
+    "instruction": "Insert bulk data into ClickHouse",
+    "output": "<think>\nWe're being asked to insert bulk data into ClickHouse.\nI'd use clickhouse-client for this — clickhouse-client operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nclickhouse-client --query 'INSERT INTO mydb.events FORMAT CSV' < events.csv"
+  },
+  {
+    "instruction": "Analyze ClickHouse query performance with EXPLAIN",
+    "output": "<think>\nSo we need to analyze ClickHouse query performance with EXPLAIN.\nLet me consider what makes sense here.\nThe tool for this job is clickhouse-client — clickhouse-client operations.\nLet me verify afterward that it worked correctly.\n</think>\nclickhouse-client --query 'EXPLAIN SELECT event_type, count() FROM mydb.events WHERE event_date > today() - 7 GROUP BY event_type'"
+  },
+  {
+    "instruction": "Install and configure Caddy reverse proxy for databases",
+    "output": "<think>\nNeed to install and configure Caddy reverse proxy for databases.\nI'd use apt for this — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y caddy && echo 'localhost:3306 { reverse_proxy 127.0.0.1:3306 }' > /etc/caddy/Caddyfile && systemctl restart caddy"
+  },
+  {
+    "instruction": "Monitor database connections with ss",
+    "output": "<think>\nWe should monitor database connections with ss.\nFirst, let me understand what's needed here.\nI'd use ss for this — socket diagnostics.\nI've added -E to extended regex — needed for this specific use case.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\nss -tulpn | grep -E '3306|5432|27017|6379|9042'"
+  },
+  {
+    "instruction": "Kill idle PostgreSQL connections",
+    "output": "<think>\nThe user wants to kill idle PostgreSQL connections.\nHere's how I'd approach this.\nThe tool for this job is psql — PostgreSQL database queries.\nI've added -U to use full user name instead of UID — this controls how the output is formatted.\nThe -c flag handles count or create. Important because needed for this specific use case.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -U postgres -c \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle' AND query_start < now() - interval '1 hour';\""
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use the vault data source in Packer for secrets",
+    "output": "echo 'data \"vault\" \"secret\" { path = \"secret/data/app\" }' > vault.pkr.hcl"
+  },
+  {
+    "instruction": "Use the consul data source in Packer",
+    "output": "echo 'data \"consul\" \"config\" { path = \"packer/config\" }' > consul.pkr.hcl"
+  },
+  {
+    "instruction": "Enable SSH agent forwarding in Packer build",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ssh_agent_auth = true }' > ssh-agent.pkr.hcl"
+  },
+  {
+    "instruction": "Set custom SSH port in Packer builder",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ssh_port = 2222 }' > ssh-port.pkr.hcl"
+  },
+  {
+    "instruction": "Use a bastion host for Packer SSH connection",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ssh_bastion_host = \"bastion.example.com\" ssh_bastion_username = \"jump\" }' > bastion.pkr.hcl"
+  },
+  {
+    "instruction": "Set private key path for SSH in Packer",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ssh_private_key_file = \"~/.ssh/packer.pem\" }' > ssh-key.pkr.hcl"
+  },
+  {
+    "instruction": "Set SSH connection timeout in Packer",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { ssh_timeout = \"10m\" }' > ssh-timeout.pkr.hcl"
+  },
+  {
+    "instruction": "Temporarily open a port in security group during Packer build",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { temporary_security_group_source_cidr = \"0.0.0.0/0\" }' > sg-cidr.pkr.hcl"
+  },
+  {
+    "instruction": "Set IAM instance profile for Packer builder",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { iam_instance_profile = \"packer-build\" }' > iam-profile.pkr.hcl"
+  },
+  {
+    "instruction": "Use a non-public AMI via source_ami_filter",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { source_ami_filter { filters = { owner-id = \"123456789012\" } } }' > ami-owner.pkr.hcl"
+  },
+  {
+    "instruction": "Create an encrypted AMI with Packer",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { encrypt_boot = true kms_key_id = \"alias/packer\" }' > encrypted.pkr.hcl"
+  },
+  {
+    "instruction": "Create a snapshot of instance store volumes",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { snapshot_tags = { Environment = \"prod\" } }' > snapshot.pkr.hcl"
+  },
+  {
+    "instruction": "Add tags to the created AMI in Packer",
+    "output": "echo 'build { sources = [\"source.amazon-ebs.ubuntu\"] post-processor \"amazon-ami-management\" { ami_tags = { Name = \"ubuntu-base\" Version = var.version } } }' > ami-tags.pkr.hcl"
+  },
+  {
+    "instruction": "Copy AMI to another region after build",
+    "output": "echo 'post-processor \"amazon-ami-copy\" { regions = [\"eu-west-1\", \"ap-southeast-1\"] }' > ami-copy.pkr.hcl"
+  },
+  {
+    "instruction": "Share the built AMI with another AWS account",
+    "output": "echo 'post-processor \"amazon-ami-share\" { account_ids = [\"123456789012\"] }' > ami-share.pkr.hcl"
+  },
+  {
+    "instruction": "Deprecate an older AMI after building a new one",
+    "output": "echo 'post-processor \"amazon-ami-deprecate\" { deprecate_at = timeadd(timestamp(), \"720h\") }' > ami-deprecate.pkr.hcl"
+  },
+  {
+    "instruction": "Set up a Windows builder with WinRM in Packer",
+    "output": "echo 'source \"amazon-ebs\" \"windows\" { communicator = \"winrm\" winrm_username = \"Administrator\" winrm_use_ssl = true }' > windows.pkr.hcl"
+  },
+  {
+    "instruction": "Set up a Windows build with userdata to enable WinRM",
+    "output": "echo 'source \"amazon-ebs\" \"windows\" { user_data_file = \"scripts/winrm-bootstrap.txt\" }' > winrm.pkr.hcl"
+  },
+  {
+    "instruction": "Install Windows features with PowerShell provisioner",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Install-WindowsFeature -Name Web-Server\"] }' > win-provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Windows restart provisioner",
+    "output": "echo 'provisioner \"windows-restart\" { restart_command = \"shutdown /r /t 5 /f\" }' > win-restart.pkr.hcl"
+  },
+  {
+    "instruction": "Wait for a specific service after reboot in Packer",
+    "output": "echo 'provisioner \"windows-restart\" { check_registry = true restart_check_command = \"powershell Get-Service sshd | ? {$_.Status -eq \\\"Running\\\"}\" }' > win-check.pkr.hcl"
+  },
+  {
+    "instruction": "Use the salt-masterless provisioner in Packer",
+    "output": "echo 'provisioner \"salt-masterless\" { local_state_tree = \"./salt/states\" }' > salt.pkr.hcl"
+  },
+  {
+    "instruction": "Use the puppet-masterless provisioner",
+    "output": "echo 'provisioner \"puppet-masterless\" { manifest_file = \"manifests/site.pp\" }' > puppet.pkr.hcl"
+  },
+  {
+    "instruction": "Use the chef-client provisioner",
+    "output": "echo 'provisioner \"chef-client\" { server_url = \"https://chef.example.com\" validation_client_name = \"validator\" validation_key_path = \"./keys/validator.pem\" }' > chef-client.pkr.hcl"
+  },
+  {
+    "instruction": "Use the converge provisioner for immutable infra",
+    "output": "echo 'provisioner \"converge\" { module = \"https://github.com/asteris-llc/converge-modules/app\" }' > converge.pkr.hcl"
+  }
+]

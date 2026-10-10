@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Execute an arbitrary command on all Consul nodes",
+    "output": "consul exec uptime\nnode1:  10:15:42 up 3 days,  2:15,  0 users,  load average: 0.15, 0.10, 0.05\nnode2:  10:15:42 up 3 days,  2:15,  0 users,  load average: 0.08, 0.05, 0.03\nnode3:  10:15:42 up 2 days,  1:10,  0 users,  load average: 0.20, 0.12, 0.08\n\n3 nodes completed / 3 acknowledged"
+  },
+  {
+    "instruction": "Execute a command on a subset of Consul nodes via filter",
+    "output": "consul exec -service web 'df -h /'\nnode1: Filesystem      Size  Used Avail Use% Mounted on\nnode1: /dev/sda1        40G   15G   23G  40% /\nnode2: Filesystem      Size  Used Avail Use% Mounted on\nnode2: /dev/sda1        40G   12G   26G  32% /\n\n2 nodes completed / 2 acknowledged"
+  },
+  {
+    "instruction": "Acquire a Consul lock and run a command",
+    "output": "consul lock myapp/deploy-lock 'echo \"deploying...\"; sleep 5'\nAcquired lock at myapp/deploy-lock (hold time: 5s)\nRunning: echo \"deploying...\"; sleep 5\ndeploying..."
+  },
+  {
+    "instruction": "Try to acquire a Consul lock with a specific lock delay",
+    "output": "consul lock -try 10s myapp/deploy-lock './deploy.sh'\nAcquired lock at myapp/deploy-lock (hold time: 0s)\nRunning: ./deploy.sh\nDeployment completed successfully\nReleased lock at myapp/deploy-lock"
+  },
+  {
+    "instruction": "Fire a custom Consul user event",
+    "output": "consul event deploy v1.2.3\nEvent 'deploy' fired! Payload: \"v1.2.3\"\nEvent ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  },
+  {
+    "instruction": "Fire a Consul event filtered to a service",
+    "output": "consul event -service web config-reload\nEvent 'config-reload' fired! Payload: nil\nEvent ID: b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  },
+  {
+    "instruction": "Monitor Consul log output",
+    "output": "consul monitor\n    2026-07-25T10:15:42.000Z [INFO]  agent: detected service \"web\" has changed\n    2026-07-25T10:15:43.000Z [INFO]  agent: Synced service \"web\"\n    2026-07-25T10:15:44.000Z [WARN]  agent: Check 'service:db' is getting critical"
+  },
+  {
+    "instruction": "Monitor Consul logs at a specific log level",
+    "output": "consul monitor -log-level WARN\n    2026-07-25T10:16:00.000Z [WARN]  agent: Check 'service:db' is getting critical\n    2026-07-25T10:16:05.000Z [WARN]  agent: Check 'service:db' is now critical\n    2026-07-25T10:16:10.000Z [WARN]  agent: Detected possible network partition"
+  },
+  {
+    "instruction": "Reload Consul agent TLS certificates",
+    "output": "consul reload\nConfiguration reload initiated\n    2026-07-25T10:17:00.000Z [INFO]  agent: Reloading configuration\n    2026-07-25T10:17:00.000Z [INFO]  agent: Parsed new TLS certificate\n    2026-07-25T10:17:00.000Z [INFO]  agent: Reload completed"
+  },
+  {
+    "instruction": "Enable maintenance mode for a Consul service",
+    "output": "consul maint -enable -service web -reason \"scheduled update\"\nMaintenance mode enabled for web (reason: scheduled update)"
+  },
+  {
+    "instruction": "Disable maintenance mode for a Consul service",
+    "output": "consul maint -disable -service web\nMaintenance mode disabled for web"
+  },
+  {
+    "instruction": "Enable maintenance mode for a whole Consul node",
+    "output": "consul maint -enable -reason \"kernel update requires reboot\"\nMaintenance mode enabled for node1 (reason: kernel update requires reboot)"
+  },
+  {
+    "instruction": "Check Consul maintenance mode status",
+    "output": "consul maint -status\nMaintenance mode is enabled on node1 (reason: kernel update requires reboot)"
+  },
+  {
+    "instruction": "Execute a command on Consul nodes with a tag filter",
+    "output": "consul exec -tag production 'cat /etc/hostname'\nnode1: node1\nnode2: node2\n\n2 nodes completed / 2 acknowledged"
+  },
+  {
+    "instruction": "Execute a long-running command via Consul exec with timeout",
+    "output": "consul exec -timeout=30s 'sleep 20 && echo done'\nnode1: done\nnode2: done\n1 node completed / 3 acknowledged  (2 timed out)"
+  },
+  {
+    "instruction": "Use Consul lock with a name for better identification",
+    "output": "consul lock -name=ci-deploy lock/ci './ci.sh'\nAcquired lock at lock/ci (name: ci-deploy, hold time: 12s)\nRunning: ./ci.sh\nCI pipeline completed\nReleased lock at lock/ci"
+  },
+  {
+    "instruction": "Fire a Consul event with a node filter",
+    "output": "consul event -node node1 'restart-nginx'\nEvent 'restart-nginx' fired! Payload: nil\nEvent ID: c3d4e5f6-a7b8-9012-cdef-123456789012"
+  },
+  {
+    "instruction": "Fire a Consul event with a datacenter filter",
+    "output": "consul event -datacenter=dc2 failover\nEvent 'failover' fired! Payload: nil\nEvent ID: d4e5f6a7-b8c9-0123-defa-234567890123"
+  },
+  {
+    "instruction": "Run a command via Consul exec and display verbose output",
+    "output": "consul exec -verbose 'whoami'\nnode1 (10.0.0.1): root\nnode2 (10.0.0.2): root\n\nSummary: 2/2 nodes completed. 0 failures. 0 pending."
+  },
+  {
+    "instruction": "Monitor Consul logs from a specific node",
+    "output": "consul monitor -node node2\n    2026-07-25T10:18:00.000Z [INFO]  agent: Node 'node2' joining cluster\n    2026-07-25T10:18:01.000Z [INFO]  agent: Synced service 'db' on node2"
+  }
+]

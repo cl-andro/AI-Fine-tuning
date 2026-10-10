@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "List all active database connections",
+    "output": "<think>\nNeed to list all active database connections.\nI'd use psql for this — PostgreSQL database queries.\nWhy -c? Count or create. this controls how the output is formatted.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -c \"SELECT * FROM pg_stat_activity WHERE state = 'active'\""
+  },
+  {
+    "instruction": "Show all databases and their sizes",
+    "output": "<think>\nThis is asking us to show all databases and their sizes.\nFirst, let me understand what's needed here.\npsql is what we need — PostgreSQL database queries.\nI'm using -c for count or create — important to get the expected behavior.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT datname, pg_size_pretty(pg_database_size(datname)) FROM pg_database ORDER BY pg_database_size(datname) DESC\""
+  },
+  {
+    "instruction": "Find running queries with duration",
+    "output": "<think>\nThe task requires us to find running queries with duration.\nLet me think through this step by step.\npsql is what we need — PostgreSQL database queries.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT pid, now() - pg_stat_activity.query_start AS duration, query, state FROM pg_stat_activity WHERE state != 'idle' ORDER BY duration DESC\""
+  },
+  {
+    "instruction": "Terminate a PostgreSQL connection by PID",
+    "output": "<think>\nThe user wants to terminate a PostgreSQL connection by PID.\nBest tool here is psql — PostgreSQL database queries.\nI'm using -c for count or create — important to get the expected behavior.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SELECT pg_terminate_backend(12345)\""
+  },
+  {
+    "instruction": "Show table sizes with live/dead tuple counts",
+    "output": "<think>\nWe're being asked to show table sizes with live/dead tuple counts.\nBest tool here is psql — PostgreSQL database queries.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"SELECT relname, n_live_tup, n_dead_tup, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY n_dead_tup DESC\""
+  },
+  {
+    "instruction": "Show index usage statistics sorted by scan count",
+    "output": "<think>\nThis is asking us to show index usage statistics sorted by scan count.\nBest tool here is psql — PostgreSQL database queries.\nI'm using -c for count or create — without it the command won't work as we need.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -c \"SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read, idx_tup_fetch FROM pg_stat_user_indexes ORDER BY idx_scan\""
+  },
+  {
+    "instruction": "Find unused indexes (never scanned)",
+    "output": "<think>\nThe user wants to find unused indexes (never scanned).\nI'll reach for psql here because PostgreSQL database queries.\nI've added -c to count or create — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nQuick verification after execution to be safe.\n</think>\npsql -c \"SELECT schemaname, tablename, indexname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0\""
+  },
+  {
+    "instruction": "Run VACUUM ANALYZE on a specific table",
+    "output": "<think>\nThe goal is to run VACUUM ANALYZE on a specific table.\nI'll reach for psql here because PostgreSQL database queries.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nOne command does the job. Simple is better.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"VACUUM ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run VACUUM FULL on a database",
+    "output": "<think>\nThis is asking us to run VACUUM FULL on a database.\nLet me think through this step by step.\nI'll reach for psql here because PostgreSQL database queries.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\npsql -d mydb -c \"VACUUM FULL\""
+  },
+  {
+    "instruction": "Run VACUUM VERBOSE on a table",
+    "output": "<think>\nSo the request is to run VACUUM VERBOSE on a table.\nFirst, let me understand what's needed here.\nI'll reach for psql here because PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"VACUUM VERBOSE ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run REINDEX on the entire database",
+    "output": "<think>\nThe user wants to run REINDEX on the entire database.\nFirst, let me understand what's needed here.\npsql is what we need — PostgreSQL database queries.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"REINDEX DATABASE mydb\""
+  },
+  {
+    "instruction": "Run REINDEX CONCURRENTLY on a specific index",
+    "output": "<think>\nSo the request is to run REINDEX CONCURRENTLY on a specific index.\nLet me consider what makes sense here.\nI'll reach for psql here because PostgreSQL database queries.\nThe -c flag handles count or create. Important because important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nLet me verify afterward that it worked correctly.\n</think>\npsql -c \"REINDEX INDEX CONCURRENTLY myindex\""
+  },
+  {
+    "instruction": "Cluster a table on an index",
+    "output": "<think>\nThe user wants to cluster a table on an index.\nThis calls for psql. PostgreSQL database queries.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"CLUSTER mytable USING myindex\""
+  },
+  {
+    "instruction": "Analyze a table for the query planner",
+    "output": "<think>\nAlright, we need to analyze a table for the query planner.\nHere's how I'd approach this.\nI'll reach for psql here because PostgreSQL database queries.\nThe -c flag handles count or create. Important because this controls how the output is formatted.\nRunning SQL directly from stdin can be dangerous — test your queries first.\nI'll check the output to make sure it did what we expected.\n</think>\npsql -c \"ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run EXPLAIN ANALYZE on a query",
+    "output": "<think>\nThe task requires us to run EXPLAIN ANALYZE on a query.\npsql is what we need — PostgreSQL database queries.\nI've added -c to count or create — without it the command won't work as we need.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > '2024-01-01'\""
+  },
+  {
+    "instruction": "Run EXPLAIN with buffers and timing options",
+    "output": "<think>\nSo we need to run EXPLAIN with buffers and timing options.\npsql is what we need — PostgreSQL database queries.\nWhy -c? Count or create. without it the command won't work as we need.\nRunning SQL directly from stdin can be dangerous — test your queries first.\n</think>\npsql -c \"EXPLAIN (ANALYZE, BUFFERS, TIMING) SELECT * FROM users JOIN orders ON users.id = orders.user_id WHERE users.active = true\""
+  },
+  {
+    "instruction": "Dump database to custom format",
+    "output": "<think>\nSo we need to dump database to custom format.\nFor this, pg_dump is the right tool — PostgreSQL database backup.\nAfter running, confirm it worked as expected before moving on.\n</think>\npg_dump -Fc mydb > mydb.dump"
+  },
+  {
+    "instruction": "Dump database with maximum compression",
+    "output": "<think>\nThe user wants to dump database with maximum compression.\nI'd use pg_dump for this — PostgreSQL database backup.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\n</think>\npg_dump -Z 9 mydb > mydb.sql.gz"
+  },
+  {
+    "instruction": "Dump only the schema (no data)",
+    "output": "<think>\nAlright, we need to dump only the schema (no data).\nLet me break this down.\nFor this, pg_dump is the right tool — PostgreSQL database backup.\nOne command does the job. Simple is better.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\n</think>\npg_dump --schema-only mydb > schema.sql"
+  },
+  {
+    "instruction": "Dump only data from a specific table",
+    "output": "<think>\nWe should dump only data from a specific table.\nLet me consider what makes sense here.\nThis calls for pg_dump. PostgreSQL database backup.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\n</think>\npg_dump --data-only --table=orders mydb > orders_data.sql"
+  },
+  {
+    "instruction": "Dump excluding a specific table",
+    "output": "<think>\nWe're being asked to dump excluding a specific table.\nHere's how I'd approach this.\nBest tool here is pg_dump — PostgreSQL database backup.\nFor live databases, use --lock-wait-timeout to avoid blocking production queries.\nLet me verify afterward that it worked correctly.\n</think>\npg_dump --exclude-table=logs mydb > mydb.sql"
+  },
+  {
+    "instruction": "Dump all databases with globals",
+    "output": "<think>\nNeed to dump all databases with globals.\nLet me think through this step by step.\npg_dumpall is what we need — pg_dumpall operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\npg_dumpall > full_backup.sql"
+  }
+]

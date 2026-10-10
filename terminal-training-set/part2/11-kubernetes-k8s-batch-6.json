@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Install etcdctl (etcd CLI)",
+    "output": "<think>\nAlright, we need to install etcdctl (etcd CLI).\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y etcd-client"
+  },
+  {
+    "instruction": "Check etcd cluster health",
+    "output": "<think>\nSo we need to check etcd cluster health.\nI'll reach for etcdctl here because etcdctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\netcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key endpoint health"
+  },
+  {
+    "instruction": "List etcd keys",
+    "output": "<think>\nThe task requires us to list etcd keys.\nFirst, let me understand what's needed here.\nThe tool for this job is ETCDCTL_API — ETCDCTL_API operations.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\nETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key get / --prefix --keys-only | head -20"
+  },
+  {
+    "instruction": "Take an etcd snapshot",
+    "output": "<think>\nSo we need to take an etcd snapshot.\nLet me reason through this.\nETCDCTL_API is what we need — ETCDCTL_API operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nETCDCTL_API=3 etcdctl snapshot save /backup/etcd-snapshot.db"
+  },
+  {
+    "instruction": "Restore etcd from snapshot",
+    "output": "<think>\nWe're being asked to restore etcd from snapshot.\nLet me consider what makes sense here.\nThis calls for ETCDCTL_API. ETCDCTL_API operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-snapshot.db --data-dir=/var/lib/etcd-backup"
+  },
+  {
+    "instruction": "Get Kubernetes control plane pod status",
+    "output": "<think>\nSo the request is to get Kubernetes control plane pod status.\nFirst, let me understand what's needed here.\nI'd use kubectl for this — Kubernetes cluster management.\nI'm using -n for dry-run, no changes — without it the command won't work as we need.\nWhy -l? Long format with details. this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl get pods -n kube-system -l component=kube-apiserver"
+  },
+  {
+    "instruction": "Check kube-apiserver logs",
+    "output": "<think>\nNeed to check kube-apiserver logs.\nLet me think through this step by step.\nI'll reach for kubectl here because Kubernetes cluster management.\nWhy -n? Dry-run, no changes. important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl logs -n kube-system kube-apiserver-node1 | head -20"
+  },
+  {
+    "instruction": "Check kube-controller-manager logs",
+    "output": "<think>\nAlright, we need to check kube-controller-manager logs.\nkubectl is what we need — Kubernetes cluster management.\nI'm using -n for dry-run, no changes — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl logs -n kube-system kube-controller-manager-node1 | head -20"
+  },
+  {
+    "instruction": "Check kube-scheduler logs",
+    "output": "<think>\nThe goal is to check kube-scheduler logs.\nBest tool here is kubectl — Kubernetes cluster management.\nI'm using -n for dry-run, no changes — this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl logs -n kube-system kube-scheduler-node1 | head -20"
+  },
+  {
+    "instruction": "Check kube-proxy config",
+    "output": "<think>\nThe user wants to check kube-proxy config.\nLet me break this down.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -n flag handles dry-run, no changes. Important because needed for this specific use case.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get configmap -n kube-system kube-proxy -o yaml | head -40"
+  },
+  {
+    "instruction": "Check kubelet version on node",
+    "output": "<think>\nThis is asking us to check kubelet version on node.\nThis calls for kubectl. Kubernetes cluster management.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get nodes -o wide"
+  },
+  {
+    "instruction": "Check container runtime on nodes",
+    "output": "<think>\nWe should check container runtime on nodes.\nLet me consider what makes sense here.\nkubectl is what we need — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name} {.status.nodeInfo.containerRuntimeVersion}\\n{end}'"
+  },
+  {
+    "instruction": "Check kubelet logs",
+    "output": "<think>\nWe're being asked to check kubelet logs.\nLet me reason through this.\nBest tool here is journalctl — checking systemd logs.\nOld logs can be large — add --since to limit the range and avoid huge output.\nAfter running, I'll confirm the result looks right.\n</think>\njournalctl -u kubelet -n 50 --no-pager"
+  },
+  {
+    "instruction": "Restart kubelet service",
+    "output": "<think>\nThe user wants to restart kubelet service.\nFirst, let me understand what's needed here.\nI'll reach for systemctl here because managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl restart kubelet"
+  },
+  {
+    "instruction": "Check kubelet config",
+    "output": "<think>\nWe should check kubelet config.\nFirst, let me understand what's needed here.\nI'll reach for kubelet here because kubelet operations.\nThe --version flag means show version info, which matters here because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nkubelet --version && cat /var/lib/kubelet/config.yaml | head -20"
+  },
+  {
+    "instruction": "Initialize a Kubernetes control plane with kubeadm",
+    "output": "<think>\nThe goal is to initialize a Kubernetes control plane with kubeadm.\nLet me reason through this.\nThe tool for this job is kubeadm — kubeadm operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nkubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.10"
+  },
+  {
+    "instruction": "Join a worker node to the cluster",
+    "output": "<think>\nWe should join a worker node to the cluster.\nHere's how I'd approach this.\nI'd use kubeadm for this — kubeadm operations.\n</think>\nkubeadm join 192.168.1.10:6443 --token mytoken --discovery-token-ca-cert-hash sha256:xxx"
+  },
+  {
+    "instruction": "Generate a new join token",
+    "output": "<think>\nNeed to generate a new join token.\nLet me reason through this.\nFor this, kubeadm is the right tool — kubeadm operations.\n</think>\nkubeadm token create --print-join-command"
+  },
+  {
+    "instruction": "List kubeadm tokens",
+    "output": "<think>\nThe task requires us to list kubeadm tokens.\nThe tool for this job is kubeadm — kubeadm operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nkubeadm token list"
+  },
+  {
+    "instruction": "Reset kubeadm (teardown cluster node)",
+    "output": "<think>\nWe should reset kubeadm (teardown cluster node).\nI'll reach for kubeadm here because kubeadm operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nkubeadm reset -f"
+  },
+  {
+    "instruction": "Install a CNI plugin (Flannel)",
+    "output": "<think>\nAlright, we need to install a CNI plugin (Flannel).\nBest tool here is kubectl — Kubernetes cluster management.\nI'm using -f for force, suppress errors — important to get the expected behavior.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml"
+  },
+  {
+    "instruction": "Install Calico CNI",
+    "output": "<think>\nAlright, we need to install Calico CNI.\nLet me reason through this.\nThe tool for this job is kubectl — Kubernetes cluster management.\nThe -f flag means force, suppress errors, which matters here because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml"
+  },
+  {
+    "instruction": "Check node conditions",
+    "output": "<think>\nSo we need to check node conditions.\nkubectl is what we need — Kubernetes cluster management.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl describe node node1 | grep -A 5 Conditions"
+  },
+  {
+    "instruction": "Check node capacity",
+    "output": "<think>\nThe user wants to check node capacity.\nLet me break this down.\nThe tool for this job is kubectl — Kubernetes cluster management.\nThe -E flag handles extended regex. Important because without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl describe node node1 | grep -E 'Capacity:|Allocatable:'"
+  },
+  {
+    "instruction": "Evacuate a node with pod disruption budget",
+    "output": "<think>\nThe user wants to evacuate a node with pod disruption budget.\nLet me reason through this.\nBest tool here is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl drain node1 --ignore-daemonsets --delete-emptydir-data --disable-eviction"
+  }
+]

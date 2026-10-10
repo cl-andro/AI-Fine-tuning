@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRank rows by cost within each dept",
+    "output": "SELECT *, RANK() OVER (PARTITION BY dept ORDER BY cost DESC) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nDense rank of rows by cost",
+    "output": "SELECT *, DENSE_RANK() OVER (ORDER BY cost DESC) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRow number per dept ordered by incurred_on",
+    "output": "SELECT *, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRunning total of cost ordered by incurred_on",
+    "output": "SELECT *, SUM(cost) OVER (ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRunning total of cost per dept",
+    "output": "SELECT *, SUM(cost) OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nAverage of cost over all rows",
+    "output": "SELECT *, AVG(cost) OVER () FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nPrevious cost value (lag) per dept",
+    "output": "SELECT *, LAG(cost, 1) OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nNext cost value (lead) per dept",
+    "output": "SELECT *, LEAD(cost, 1) OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nMaximum cost per dept across all rows",
+    "output": "SELECT *, MAX(cost) OVER (PARTITION BY dept) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nMinimum cost per dept",
+    "output": "SELECT *, MIN(cost) OVER (PARTITION BY dept) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nMoving average window of 3 rows per dept",
+    "output": "SELECT *, AVG(cost) OVER (PARTITION BY dept ORDER BY incurred_on ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nWindow frame from first row to current per dept",
+    "output": "SELECT *, SUM(cost) OVER (PARTITION BY dept ORDER BY incurred_on ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nFirst value of cost per dept",
+    "output": "SELECT *, FIRST_VALUE(cost) OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nLast value of cost per dept across full partition",
+    "output": "SELECT *, LAST_VALUE(cost) OVER (PARTITION BY dept ORDER BY incurred_on ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nPercent rank of cost",
+    "output": "SELECT *, PERCENT_RANK() OVER (ORDER BY cost) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nCumulative distribution of cost",
+    "output": "SELECT *, CUME_DIST() OVER (ORDER BY cost) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nQuartile bucket using NTILE",
+    "output": "SELECT *, NTILE(4) OVER (ORDER BY cost) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nDifference of cost from its group max",
+    "output": "SELECT dept, cost, cost - MAX(cost) OVER (PARTITION BY dept) AS diff FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRank of cost with ties allowed to skip",
+    "output": "SELECT dept, cost, RANK() OVER (ORDER BY cost DESC) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nSliding window of total over preceding 5 rows",
+    "output": "SELECT *, SUM(cost) OVER (ORDER BY incurred_on ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nRunning count per dept",
+    "output": "SELECT *, COUNT(*) OVER (PARTITION BY dept ORDER BY incurred_on) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nTop 2 by cost within each dept using ROW_NUMBER",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY cost DESC) rn FROM expenses) x WHERE rn <= 2;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nNth value of cost within partition",
+    "output": "SELECT *, NTH_VALUE(cost, 2) OVER (PARTITION BY dept ORDER BY incurred_on ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nExpressed ratio of cost to group total",
+    "output": "SELECT dept, cost, cost / SUM(cost) OVER (PARTITION BY dept) AS ratio FROM expenses;"
+  },
+  {
+    "instruction": "Schema: expenses(dept, cost, incurred_on)\nWindow with custom unbounded following frame",
+    "output": "SELECT *, SUM(cost) OVER (PARTITION BY dept ORDER BY incurred_on ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM expenses;"
+  }
+]

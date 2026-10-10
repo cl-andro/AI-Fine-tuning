@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: employees(id, name, salary)\nPivot salaries into columns for low, medium, high ranges",
+    "output": "SELECT SUM(CASE WHEN salary < 30000 THEN 1 ELSE 0 END) AS low, SUM(CASE WHEN salary BETWEEN 30000 AND 70000 THEN 1 ELSE 0 END) AS medium, SUM(CASE WHEN salary > 70000 THEN 1 ELSE 0 END) AS high FROM employees;"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total, status)\nGet users who have orders in every status using relational division",
+    "output": "SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(DISTINCT status) = (SELECT COUNT(DISTINCT status) FROM orders);"
+  },
+  {
+    "instruction": "Schema: events(id, user_id, event_type, ts)\nFind consecutive login streaks per user using gaps and islands",
+    "output": "WITH numbered AS (SELECT user_id, ts, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY ts) AS rn FROM events WHERE event_type = 'login'), grouped AS (SELECT user_id, ts, ts - INTERVAL '1 day' * rn AS grp FROM numbered) SELECT user_id, MIN(ts), MAX(ts), COUNT(*) AS streak FROM grouped GROUP BY user_id, grp;"
+  },
+  {
+    "instruction": "Schema: products(id, name, attributes JSONB)\nQuery JSON field to find products where color is red in PostgreSQL",
+    "output": "SELECT name FROM products WHERE attributes->>'color' = 'red';"
+  },
+  {
+    "instruction": "Schema: documents(id, title, content)\nSearch for documents containing the word 'database' using full-text search",
+    "output": "SELECT title FROM documents WHERE to_tsvector('english', content) @@ to_tsquery('english', 'database');"
+  },
+  {
+    "instruction": "Schema: users(id, name, email)\nUse UPSERT to insert or update on conflict in PostgreSQL",
+    "output": "INSERT INTO users (id, name, email) VALUES (1, 'John', 'john@test.com') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email;"
+  },
+  {
+    "instruction": "Schema: users(id, name, email)\nUse INSERT IGNORE to skip duplicates in MySQL",
+    "output": "INSERT IGNORE INTO users (id, name, email) VALUES (1, 'John', 'john@test.com');"
+  },
+  {
+    "instruction": "Schema: logs(id, message, level)\nUse CASE to categorize log levels as numeric values",
+    "output": "SELECT id, message, CASE level WHEN 'INFO' THEN 1 WHEN 'WARN' THEN 2 WHEN 'ERROR' THEN 3 ELSE 0 END AS severity FROM logs;"
+  },
+  {
+    "instruction": "Schema: orders(id, total, currency)\nConvert all totals to USD using conditional logic",
+    "output": "SELECT id, CASE currency WHEN 'USD' THEN total WHEN 'EUR' THEN total * 1.1 WHEN 'GBP' THEN total * 1.27 ELSE total END AS total_usd FROM orders;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, department_id)\nUse LATERAL join to get top 2 employees per department in PostgreSQL",
+    "output": "SELECT d.id, e.name, e.salary FROM departments d CROSS JOIN LATERAL (SELECT name, salary FROM employees WHERE department_id = d.id ORDER BY salary DESC LIMIT 2) e;"
+  },
+  {
+    "instruction": "Schema: sales(id, region, amount, sale_date)\nUse PIVOT syntax to show regions as columns in SQL Server",
+    "output": "SELECT * FROM (SELECT region, amount FROM sales) src PIVOT (SUM(amount) FOR region IN ([North],[South],[East],[West])) pvt;"
+  },
+  {
+    "instruction": "Schema: users(id, name, created_at)\nGenerate a series of dates and count signups per day in PostgreSQL",
+    "output": "SELECT d::date, COUNT(u.id) FROM generate_series('2024-01-01'::date, '2024-01-31'::date, '1 day') d LEFT JOIN users u ON u.created_at::date = d GROUP BY d ORDER BY d;"
+  },
+  {
+    "instruction": "Schema: inventory(product_id, qty)\nUse MERGE to upsert inventory from a staging table",
+    "output": "MERGE INTO inventory i USING staging s ON i.product_id = s.product_id WHEN MATCHED THEN UPDATE SET qty = i.qty + s.qty WHEN NOT MATCHED THEN INSERT (product_id, qty) VALUES (s.product_id, s.qty);"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary)\nCalculate percentile rank without window functions",
+    "output": "SELECT e1.name, e1.salary, (SELECT COUNT(*) FROM employees e2 WHERE e2.salary <= e1.salary)::float / (SELECT COUNT(*) FROM employees) AS percentile FROM employees e1;"
+  },
+  {
+    "instruction": "Schema: transactions(id, account_id, amount, tx_date)\nFind accounts with suspicious activity (more than 10 transactions in 1 hour)",
+    "output": "SELECT t1.account_id FROM transactions t1 JOIN transactions t2 ON t1.account_id = t2.account_id AND t2.tx_date BETWEEN t1.tx_date AND t1.tx_date + INTERVAL '1 hour' GROUP BY t1.account_id, t1.id HAVING COUNT(t2.id) > 10;"
+  },
+  {
+    "instruction": "Schema: nodes(id, parent_id, name)\nMaterialized path query to get full path of a node",
+    "output": "WITH RECURSIVE path_cte AS (SELECT id, parent_id, name, CAST(name AS TEXT) AS path FROM nodes WHERE id = 5 UNION ALL SELECT n.id, n.parent_id, n.name, n.name || '/' || p.path FROM nodes n JOIN path_cte p ON n.id = p.parent_id) SELECT path FROM path_cte WHERE parent_id IS NULL;"
+  },
+  {
+    "instruction": "Schema: events(id, user_id, ts)\nSessionize events into sessions with 30-minute timeout",
+    "output": "WITH lagged AS (SELECT user_id, ts, LAG(ts) OVER (PARTITION BY user_id ORDER BY ts) AS prev_ts FROM events), flagged AS (SELECT user_id, ts, CASE WHEN prev_ts IS NULL OR ts - prev_ts > INTERVAL '30 minutes' THEN 1 ELSE 0 END AS new_session FROM lagged), sessioned AS (SELECT user_id, ts, SUM(new_session) OVER (PARTITION BY user_id ORDER BY ts) AS session_id FROM flagged) SELECT user_id, session_id, MIN(ts) AS start_time, MAX(ts) AS end_time, COUNT(*) AS event_count FROM sessioned GROUP BY user_id, session_id;"
+  },
+  {
+    "instruction": "Schema: products(id, name, tags)\nUnnest array column to get one row per tag in PostgreSQL",
+    "output": "SELECT id, name, unnest(tags) AS tag FROM products;"
+  },
+  {
+    "instruction": "Schema: users(id, name, email)\nUse REGEXP to find emails that are not valid format",
+    "output": "SELECT name, email FROM users WHERE email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$';"
+  },
+  {
+    "instruction": "Schema: orders(id, user_id, total)\nCreate a view that shows order summary per user",
+    "output": "CREATE VIEW user_order_summary AS SELECT user_id, COUNT(*) AS order_count, SUM(total) AS total_spent, AVG(total) AS avg_order FROM orders GROUP BY user_id;"
+  },
+  {
+    "instruction": "Schema: employees(id, name, salary)\nUse COALESCE to handle NULL salaries",
+    "output": "SELECT name, COALESCE(salary, 0) AS salary FROM employees;"
+  },
+  {
+    "instruction": "Schema: products(id, name, price, discount)\nUse NULLIF to prevent division by zero when calculating effective price",
+    "output": "SELECT name, price / NULLIF(1 - discount, 0) AS original_price FROM products;"
+  },
+  {
+    "instruction": "Schema: logs(id, message, level)\nAggregate messages into a single comma-separated string per level",
+    "output": "SELECT level, STRING_AGG(message, ', ') FROM logs GROUP BY level;"
+  },
+  {
+    "instruction": "Schema: users(id, name, scores[])\nFilter users whose scores array contains the value 100 in PostgreSQL",
+    "output": "SELECT name FROM users WHERE 100 = ANY(scores);"
+  },
+  {
+    "instruction": "Schema: events(id, type, payload JSONB)\nExtract nested JSON value safely with default",
+    "output": "SELECT id, COALESCE(payload->>'status', 'unknown') AS status FROM events;"
+  }
+]

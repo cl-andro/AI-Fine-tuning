@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Sign a zone with DNSSEC using dnssec-signzone",
+    "output": "dnssec-signzone -o example.com db.example.com"
+  },
+  {
+    "instruction": "Sign a zone with NSEC3 and a custom salt",
+    "output": "dnssec-signzone -o example.com -S db.example.com"
+  },
+  {
+    "instruction": "Generate a DNSSEC key pair (zone signing key)",
+    "output": "Generating ZSK key pair (256 bits)...\nKexample.com.+008+12345\n\nCreated key: /etc/bind/Kexample.com.+008+12345.key\nCreated private: /etc/bind/Kexample.com.+008+12345.private\n\nKey tag: 12345\nAlgorithm: RSASHA256 (8)\nSize: 256 bits\nUse dnssec-keygen -f KSK for a Key Signing Key."
+  },
+  {
+    "instruction": "Generate a KSK (Key Signing Key) for DNSSEC",
+    "output": "Generating KSK key pair (2048 bits)...\nKexample.com.+008+67890\n\nCreated key: /etc/bind/Kexample.com.+008+67890.key\nCreated private: /etc/bind/Kexample.com.+008+67890.private\n\nKey tag: 67890\nAlgorithm: RSASHA256 (8)\nSize: 2048 bits\nKSK should have a higher bit length for security."
+  },
+  {
+    "instruction": "Generate a DNSSEC key with ECDSAP256SHA256 algorithm",
+    "output": "Generating ZSK key pair (256 bits)...\nKexample.com.+013+11111\n\nCreated key: /etc/bind/Kexample.com.+013+11111.key\nCreated private: /etc/bind/Kexample.com.+013+11111.private\n\nKey tag: 11111\nAlgorithm: ECDSAP256SHA256 (13)\nSize: 256 bits\n\nEC algorithm keys are smaller and faster than RSA."
+  },
+  {
+    "instruction": "Set the activation time on a DNSSEC key",
+    "output": "Key Kexample.com.+008+12345:\n  Active: now (2024-07-25 11:40:00)\n  Inactive: (unset)\n  Delete: (unset)\n  Published: now (2024-07-25 11:40:00)\n  Revoke: (unset)\n\nUse dnssec-settime -P now -A now +180d to schedule future activation."
+  },
+  {
+    "instruction": "Set key timing for DNSSEC rollover",
+    "output": "Key Kexample.com.+008+12345:\n  Active: 2024-08-25 00:00:00\n  Inactive: 2024-10-25 00:00:00\n  Delete: 2024-11-25 00:00:00\n  Published: 2024-08-01 00:00:00\n  Revoke: (unset)\n\nScheduled ZSK rollover. Publish before active to allow cache expiration."
+  },
+  {
+    "instruction": "Revoke a DNSSEC key",
+    "output": "Key Kexample.com.+008+67890:\n  Published: now\n  Active: now\n  Revoked: now\n\nSETREVOKE flag set. The key will be published with the REVOKE bit set.\nUse dnssec-settime -R now to set the revocation time."
+  },
+  {
+    "instruction": "Set a DS publication date for a DNSSEC key",
+    "output": "Key Kexample.com.+008+67890:\n  Published: now\n  Active: 2024-08-25 00:00:00\n  DS: 2024-08-01 00:00:00 (parent publishes DS record)\n\nThe DS publish time should precede the key activation time."
+  },
+  {
+    "instruction": "View DNSSEC key details",
+    "output": "Key: Kexample.com.+008+12345\nAlgorithm: RSASHA256 (8)\nKey Size: 256 bits\nKey Tag: 12345\nTiming:\n  Published: Thu 25 Jul 2024 11:40:00 AM UTC\n  Active: Thu 25 Jul 2024 11:40:00 AM UTC\n  Inactive: (not set)\n  Delete: (not set)\n\nKey flags: ZSK (Zone Signing Key)"
+  },
+  {
+    "instruction": "Generate a key pair with specific publication date",
+    "output": "Generating ZSK key pair (256 bits)...\nKexample.com.+008+22222\n\nKey created with:\n  Published: 2024-07-01 00:00:00\n  Active: 2024-07-15 00:00:00\n\nUse -P and -A to set publication and activation timestamps."
+  },
+  {
+    "instruction": "Check DNSSEC key timings",
+    "output": "Key: Kexample.com.+008+12345\n  Publish: 2024-07-25 11:40:00\n  Activate: 2024-07-25 11:40:00\n  Inactive: 2025-07-25 11:40:00\n  Delete: 2025-08-01 11:40:00\n  Revoke: (unset)\n\nNext rollover: ZSK scheduled at 2025-07-25"
+  },
+  {
+    "instruction": "Resign a zone with updated keys",
+    "output": "Re-signing zone with existing keys:\n- ZSK: Kexample.com.+008+12345\n- KSK: Kexample.com.+008+67890\n\nSignatures refreshed for all RRsets.\nRRSIG validity: 30 days\n\nSigned zone file updated."
+  },
+  {
+    "instruction": "Verify DNSSEC signatures in a zone file",
+    "output": "dnssec-signzone -o example.com -N INCREMENT db.example.com"
+  },
+  {
+    "instruction": "Sign a zone with a specific key directory",
+    "output": "Using keys from /etc/bind/keys/\n\nZone signing complete:\nAlgorithm: NSEC3RSASHA256\nSignatures generated: 15\nSignatures verified: 15\nSigning time: 0.18 seconds\nSigned zone file: /etc/bind/db.example.com.signed"
+  },
+  {
+    "instruction": "Print the DNSSEC key tag for management",
+    "output": "Kexample.com.+008+12345.key: tag = 12345\nKexample.com.+008+67890.key: tag = 67890\n\nUse the key tag to reference keys in dnssec-settime and dnssec-revoke."
+  },
+  {
+    "instruction": "Re-sign a zone without changing keys",
+    "output": "Maintaining existing keys:\n- ZSK: 12345 (Kexample.com.+008+12345)\n- KSK: 67890 (Kexample.com.+008+67890)\n\nSignatures refreshed: 12\nValidity period extended for another 30 days."
+  },
+  {
+    "instruction": "Generate an ECDSA key for DNSSEC",
+    "output": "Generating ZSK key pair (384 bits)...\nKexample.com.+014+33333\n\nAlgorithm: ECDSAP384SHA384 (14)\nKey Tag: 33333\n\nECDSAP384SHA384 is FIPS-compliant and provides strong security."
+  },
+  {
+    "instruction": "Set the inactive time on a ZSK before rollover",
+    "output": "Key Kexample.com.+008+12345 inactive time set to 2024-09-25 00:00:00.\n\nExisting ZSK becomes inactive after the new ZSK is active."
+  },
+  {
+    "instruction": "Check the DNSSEC key state before a rollover",
+    "output": "Key: Kexample.com.+008+12345 (ZSK)\n  Published: 2024-07-25 11:40:00\n  Active: 2024-07-25 11:40:00\n  Retired: (not set)\n  Removed: (not set)\n\nUse dnssec-settime -I <date> to schedule key retirement."
+  }
+]

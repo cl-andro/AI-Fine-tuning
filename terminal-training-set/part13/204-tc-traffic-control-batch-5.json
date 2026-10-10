@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to set netem delay for specific traffic via filter",
+    "output": "<think>\nSo the request is to set netem delay for specific traffic via filter.\nHere's how I'd approach this.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 root handle 1: prio && tc qdisc add dev eth0 parent 1:3 handle 30: netem delay 200ms && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 10.0.0.2 flowid 1:3"
+  },
+  {
+    "instruction": "How to simulate packet loss only for UDP on eth0",
+    "output": "<think>\nWe should simulate packet loss only for UDP on eth0.\nLet me break this down.\nI'd use tc for this — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntc qdisc add dev eth0 root handle 1: prio && tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 10% && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff flowid 1:3"
+  },
+  {
+    "instruction": "How to limit bandwidth for a specific IP",
+    "output": "<think>\nAlright, we need to limit bandwidth for a specific IP.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:10 htb rate 1mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src 10.0.0.1 flowid 1:10"
+  },
+  {
+    "instruction": "How to set up rate limiting per IP with HTB",
+    "output": "<think>\nThe user wants to set up rate limiting per IP with HTB.\nLet me reason through this.\nI'll reach for tc here because tc operations.\nThe -d flag handles directory listing, don't descend. Important because this controls how the output is formatted.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc qdisc add dev eth0 root handle 1: htb && for ip in 10.0.0.1 10.0.0.2 10.0.0.3; do tc class add dev eth0 parent 1: classid 1:$(echo $ip | cut -d. -f4) htb rate 512kbit ceil 1mbit; tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip src $ip flowid 1:$(echo $ip | cut -d. -f4); done"
+  },
+  {
+    "instruction": "How to combine HTB and netem",
+    "output": "<think>\nWe should combine HTB and netem.\nThe tool for this job is tc — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:10 htb rate 1mbit && tc qdisc add dev eth0 parent 1:10 handle 20: netem delay 50ms loss 2%"
+  },
+  {
+    "instruction": "How to add a qdisc hierarchy with prio and netem",
+    "output": "<think>\nThe task requires us to add a qdisc hierarchy with prio and netem.\nHere's how I'd approach this.\nI'll reach for tc here because tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntc qdisc add dev eth0 root handle 1: prio bands 3 && tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 100ms && tc qdisc add dev eth0 parent 1:2 handle 20: pfifo_fast"
+  },
+  {
+    "instruction": "How to set up tc with ingress policing",
+    "output": "<think>\nThe user wants to set up tc with ingress policing.\nHere's how I'd approach this.\nI'd use tc for this — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntc qdisc add dev eth0 ingress && tc filter add dev eth0 parent ffff: protocol ip prio 1 u32 match ip src 10.0.0.1 police rate 100kbps burst 10k drop"
+  },
+  {
+    "instruction": "How to delete a specific class",
+    "output": "<think>\nSo the request is to delete a specific class.\nLet me think about the best approach.\nBest tool here is tc — tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc class del dev eth0 classid 1:10"
+  },
+  {
+    "instruction": "How to delete a specific filter",
+    "output": "<think>\nSo we need to delete a specific filter.\nLet me think about the best approach.\ntc is what we need — tc operations.\n</think>\ntc filter del dev eth0 parent 1: prio 1"
+  },
+  {
+    "instruction": "How to replace a qdisc",
+    "output": "<think>\nAlright, we need to replace a qdisc.\ntc is what we need — tc operations.\nOne command does the job. Simple is better.\n</think>\ntc qdisc replace dev eth0 root fq_codel"
+  },
+  {
+    "instruction": "How to add a qdisc with handle for a child class",
+    "output": "<think>\nThe task requires us to add a qdisc with handle for a child class.\nLet me reason through this.\nBest tool here is tc — tc operations.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 parent 1:10 handle 20: sfq perturb 10"
+  },
+  {
+    "instruction": "How to use tc to shape traffic based on port",
+    "output": "<think>\nThe goal is to use tc to shape traffic based on port.\nThe tool for this job is tc — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:10 htb rate 5mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dport 80 0xffff flowid 1:10"
+  },
+  {
+    "instruction": "How to prioritize ACK traffic over other traffic",
+    "output": "<think>\nAlright, we need to prioritize ACK traffic over other traffic.\nThis calls for tc. Tc operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip protocol 6 0xff match tcp flags 0x10 0xff priority 1"
+  },
+  {
+    "instruction": "How to use tc with iptables connmark",
+    "output": "<think>\nWe're being asked to use tc with iptables connmark.\nLet me reason through this.\nThe tool for this job is iptables — firewall management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nAfter running, I'll confirm the result looks right.\n</think>\niptables -A FORWARD -t mangle -j CONNMARK --restore-mark && tc filter add dev eth0 parent 1: handle 1 fw flowid 1:10"
+  },
+  {
+    "instruction": "How to use tc with iptables to DSCP",
+    "output": "<think>\nSo the request is to use tc with iptables to DSCP.\nThe tool for this job is iptables — firewall management.\nI've added -t to sort by modification time — standard practice for this kind of operation.\nI've added -d to directory listing, don't descend — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -A FORWARD -t mangle -d 10.0.0.1 -j DSCP --set-dscp 46 && tc qdisc add dev eth0 root handle 1: htb default 30 && tc class add dev eth0 parent 1: classid 1:10 htb rate 10mbit && tc filter add dev eth0 parent 1: protocol ip prio 1 match ip tos 0xb8 0xfc flowid 1:10"
+  },
+  {
+    "instruction": "How to set up traffic shaping for a multi-tenant network",
+    "output": "<think>\nThe task requires us to set up traffic shaping for a multi-tenant network.\nThe tool for this job is tc — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ntc qdisc add dev eth0 root handle 1: htb && tc class add dev eth0 parent 1: classid 1:1 htb rate 100mbit && tc class add dev eth0 parent 1:1 classid 1:10 htb rate 30mbit ceil 50mbit && tc class add dev eth0 parent 1:1 classid 1:20 htb rate 20mbit ceil 30mbit && tc qdisc add dev eth0 parent 1:10 handle 10: sfq perturb 10 && tc qdisc add dev eth0 parent 1:20 handle 20: sfq perturb 10"
+  },
+  {
+    "instruction": "How to limit egress bandwidth on an interface",
+    "output": "<think>\nSo we need to limit egress bandwidth on an interface.\nI'll reach for tc here because tc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntc qdisc add dev eth0 root tbf rate 10mbit burst 32kbit latency 50ms"
+  },
+  {
+    "instruction": "How to limit ingress bandwidth on an interface",
+    "output": "<think>\nThe goal is to limit ingress bandwidth on an interface.\nLet me reason through this.\nI'd use tc for this — tc operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\ntc qdisc add dev eth0 ingress && tc filter add dev eth0 parent ffff: protocol ip prio 1 u32 match u32 0 0 police rate 10mbit burst 1mbyte drop"
+  },
+  {
+    "instruction": "How to use HTB with ceiling (ceil)",
+    "output": "<think>\nThis is asking us to use HTB with ceiling (ceil).\nFor this, tc is the right tool — tc operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\ntc class add dev eth0 parent 1: classid 1:10 htb rate 1mbit ceil 5mbit"
+  },
+  {
+    "instruction": "How to set quantum burst in HTB",
+    "output": "<think>\nSo we need to set quantum burst in HTB.\nLet me think through this step by step.\nThis calls for tc. Tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ntc class add dev eth0 parent 1: classid 1:10 htb rate 1mbit ceil 2mbit burst 15k cburst 15k quantum 3000"
+  },
+  {
+    "instruction": "How to add a DRR (Deficit Round Robin) qdisc",
+    "output": "<think>\nThe goal is to add a DRR (Deficit Round Robin) qdisc.\nHere's how I'd approach this.\ntc is what we need — tc operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root drr && tc class add dev eth0 parent 1: classid 1:10 drr quantum 1500"
+  },
+  {
+    "instruction": "How to add an HHDS (heavy hitter detection) qdisc",
+    "output": "<think>\nNeed to add an HHDS (heavy hitter detection) qdisc.\nLet me think about the best approach.\nI'd use tc for this — tc operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc qdisc add dev eth0 root hhds limit 1000"
+  },
+  {
+    "instruction": "How to add a QRED qdisc for adaptive RED",
+    "output": "<think>\nThe goal is to add a QRED qdisc for adaptive RED.\nFor this, tc is the right tool — tc operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ntc qdisc add dev eth0 root qred limit 10000 min 2000 max 10000 probability 0.1"
+  },
+  {
+    "instruction": "How to monitor tc statistics with watch",
+    "output": "<think>\nWe're being asked to monitor tc statistics with watch.\nwatch is what we need — watch operations.\nI've added -n to dry-run, no changes — this controls how the output is formatted.\nThe -s flag means summarize or silent mode, which matters here because without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\n</think>\nwatch -n 1 'tc -s qdisc show dev eth0'"
+  },
+  {
+    "instruction": "How to check tc qdisc for a specific class",
+    "output": "<think>\nNeed to check tc qdisc for a specific class.\nLet me reason through this.\nThis calls for tc. Tc operations.\nI'm using -s for summarize or silent mode — standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\ntc -s class show dev eth0 classid 1:10"
+  }
+]

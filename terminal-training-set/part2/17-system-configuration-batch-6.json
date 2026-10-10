@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure a telnet server (insecure, legacy)",
+    "output": "<think>\nNeed to configure a telnet server (insecure, legacy).\nLet me break this down.\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y telnetd xinetd && systemctl restart xinetd"
+  },
+  {
+    "instruction": "Install and configure TFTP server",
+    "output": "<think>\nSo the request is to install and configure TFTP server.\nThe tool for this job is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y tftpd-hpa && echo 'TFTP_DIRECTORY=\"/srv/tftp\"' >> /etc/default/tftpd-hpa && systemctl restart tftpd-hpa"
+  },
+  {
+    "instruction": "Install FTP server (vsftpd)",
+    "output": "<think>\nWe should install FTP server (vsftpd).\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y vsftpd && sed -i 's/anonymous_enable=YES/anonymous_enable=NO/' /etc/vsftpd.conf && echo 'local_enable=YES' >> /etc/vsftpd.conf && systemctl restart vsftpd"
+  },
+  {
+    "instruction": "Configure vsftpd with chroot jail",
+    "output": "<think>\nNeed to configure vsftpd with chroot jail.\nLet me think about the best approach.\nThe -e flag means edit or executable, which matters here because needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -e 'chroot_local_user=YES\\nallow_writeable_chroot=YES' >> /etc/vsftpd.conf && systemctl restart vsftpd"
+  },
+  {
+    "instruction": "Install SFTP-only chroot server (already configured via SSH)",
+    "output": "<think>\nThe task requires us to install SFTP-only chroot server (already configured via SSH).\nLet me think through this step by step.\nI'll reach for groupadd here because group creation.\nThe -s flag handles summarize or silent mode. Important because needed for this specific use case.\nI'm using -e for edit or executable — without it the command won't work as we need.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ngroupadd sftp-only && useradd -m -s /sbin/nologin -G sftp-only sftpuser && echo -e '\\nMatch Group sftp-only\\n  ChrootDirectory %h\\n  ForceCommand internal-sftp\\n  X11Forwarding no\\n  AllowTcpForwarding no' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Install Roundcube webmail",
+    "output": "<think>\nThe user wants to install Roundcube webmail.\nLet me break this down.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y roundcube roundcube-mysql roundcube-plugins && systemctl restart apache2"
+  },
+  {
+    "instruction": "Install phpMyAdmin for web DB management",
+    "output": "<think>\nSo the request is to install phpMyAdmin for web DB management.\nLet me think about the best approach.\nI'd use apt for this — apt operations.\nOne command does the job. Simple is better.\n</think>\napt install -y phpmyadmin php-mysql php-mbstring"
+  },
+  {
+    "instruction": "Secure phpMyAdmin with .htaccess",
+    "output": "<think>\nThis is asking us to secure phpMyAdmin with .htaccess.\nLet me consider what makes sense here.\nWhy -e? Edit or executable. without it the command won't work as we need.\nThe -user flag handles filter by owner. Important because this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho -e 'Alias /phpmyadmin /usr/share/phpmyadmin\\n<Directory /usr/share/phpmyadmin>\\n\\tAuthType Basic\\n\\tAuthName \"Restricted\"\\n\\tAuthUserFile /etc/phpmyadmin/.htpasswd\\n\\tRequire valid-user\\n</Directory>' > /etc/apache2/conf-available/phpmyadmin-secure.conf && a2enconf phpmyadmin-secure && systemctl reload apache2"
+  },
+  {
+    "instruction": "Install Webmin (web-based system admin)",
+    "output": "<think>\nThe user wants to install Webmin (web-based system admin).\nBest tool here is wget — downloading files.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget -qO- https://download.webmin.com/jcameron-key.asc | gpg --dearmor -o /usr/share/keyrings/webmin.gpg && echo 'deb [signed-by=/usr/share/keyrings/webmin.gpg] http://download.webmin.com/download/repository sarge contrib' > /etc/apt/sources.list.d/webmin.list && apt update && apt install -y webmin"
+  },
+  {
+    "instruction": "Check Webmin port",
+    "output": "<think>\nThe goal is to check Webmin port.\nLet me reason through this.\nss is what we need — socket diagnostics.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nss -tlnp | grep 10000"
+  },
+  {
+    "instruction": "Install Cockpit for container management",
+    "output": "<think>\nSo the request is to install Cockpit for container management.\nLet me reason through this.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\napt install -y cockpit cockpit-podman && systemctl enable --now cockpit"
+  },
+  {
+    "instruction": "Install and enable Cockpit for Docker",
+    "output": "<think>\nAlright, we need to install and enable Cockpit for Docker.\nLet me break this down.\nFor this, apt is the right tool — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y cockpit-docker && systemctl restart cockpit"
+  },
+  {
+    "instruction": "Install Portainer (container web UI)",
+    "output": "<think>\nThe goal is to install Portainer (container web UI).\nLet me reason through this.\nFor this, docker is the right tool — container management.\nWhy -d? Directory listing, don't descend. this controls how the output is formatted.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run -d --name=portainer --restart=always -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer-ce:latest"
+  },
+  {
+    "instruction": "Install and configure NoMachine (remote desktop)",
+    "output": "<think>\nThis is asking us to install and configure NoMachine (remote desktop).\nLet me reason through this.\nThis calls for wget. Downloading files.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nSame safety as curl — verify what you're downloading before executing it.\n</think>\nwget https://download.nomachine.com/download/8.11/Linux/nomachine_8.11.3_4_amd64.deb && dpkg -i nomachine_8.11.3_4_amd64.deb"
+  },
+  {
+    "instruction": "Install XRDP (RDP server for Linux)",
+    "output": "<think>\nWe're being asked to install XRDP (RDP server for Linux).\nThe tool for this job is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y xrdp && systemctl enable --now xrdp"
+  },
+  {
+    "instruction": "Configure XRDP with Xorg",
+    "output": "<think>\nThis is asking us to configure XRDP with Xorg.\nBest tool here is sed — text stream editing.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsed -i 's/port=3389/port=3390/' /etc/xrdp/xrdp.ini && systemctl restart xrdp"
+  },
+  {
+    "instruction": "Install TigerVNC server",
+    "output": "<think>\nWe're being asked to install TigerVNC server.\nLet me break this down.\nI'd use apt for this — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y tigervnc-standalone-server && vncserver :1 -geometry 1280x720 -depth 24"
+  },
+  {
+    "instruction": "Set up VNC password",
+    "output": "<think>\nWe should set up VNC password.\nFirst, let me understand what's needed here.\nvncpasswd is what we need — vncpasswd operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nvncpasswd"
+  },
+  {
+    "instruction": "Kill a VNC server session",
+    "output": "<think>\nSo the request is to kill a VNC server session.\nI'll reach for vncserver here because vncserver operations.\n</think>\nvncserver -kill :1"
+  },
+  {
+    "instruction": "Configure VNC to start on boot as a service",
+    "output": "<think>\nThe task requires us to configure VNC to start on boot as a service.\nFirst, let me understand what's needed here.\nI'd use cat for this — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /etc/systemd/system/vncserver@.service << 'EOF'\n[Unit]\nDescription=VNC Server\n[Service]\nExecStart=/usr/bin/vncserver %i -geometry 1280x720\nExecStop=/usr/bin/vncserver -kill %i\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl enable --now vncserver@1"
+  },
+  {
+    "instruction": "Create a VNC tunnel over SSH",
+    "output": "<think>\nWe should create a VNC tunnel over SSH.\nLet me break this down.\nI'd use ssh for this — remote system access.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nssh -L 5901:localhost:5901 user@host && vncviewer localhost:5901"
+  },
+  {
+    "instruction": "Install x11vnc for sharing existing desktop",
+    "output": "<think>\nWe should install x11vnc for sharing existing desktop.\nLet me break this down.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y x11vnc && x11vnc -display :0 -forever -shared -passwd mypass"
+  },
+  {
+    "instruction": "Use x11vnc with SSL for secure remote desktop",
+    "output": "<think>\nThis is asking us to use x11vnc with SSL for secure remote desktop.\nLet me reason through this.\nx11vnc is what we need — x11vnc operations.\n</think>\nx11vnc -display :0 -ssl TMPFS -forever -shared"
+  },
+  {
+    "instruction": "Install and configure Guacamole (web-based RDP/VNC)",
+    "output": "<think>\nWe should install and configure Guacamole (web-based RDP/VNC).\nFor this, docker is the right tool — container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\n</think>\ndocker run -d --name guacamole --restart=always -p 8080:8080 -v guacamole:/config oznu/guacamole"
+  },
+  {
+    "instruction": "Install and configure NFS server for Kubernetes PV",
+    "output": "<think>\nThe user wants to install and configure NFS server for Kubernetes PV.\nBest tool here is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y nfs-kernel-server && echo '/exports *(rw,sync,no_subtree_check,no_root_squash)' >> /etc/exports && exportfs -r && systemctl restart nfs-kernel-server"
+  }
+]

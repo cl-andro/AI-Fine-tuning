@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Analyze NFS performance with nfsstat",
+    "output": "<think>\nThe goal is to analyze NFS performance with nfsstat.\nLet me think through this step by step.\nI'd use nfsstat for this — nfsstat operations.\nI'm using -s for summarize or silent mode — this controls how the output is formatted.\n</think>\nnfsstat -s"
+  },
+  {
+    "instruction": "Check Samba throughput",
+    "output": "<think>\nThe goal is to check Samba throughput.\nLet me think through this step by step.\nI'd use smbstatus for this — smbstatus operations.\nI've added -p to create parent directories as needed — needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nsmbstatus -p"
+  },
+  {
+    "instruction": "Check process I/O wait",
+    "output": "<think>\nWe should check process I/O wait.\nLet me think through this step by step.\nThe tool for this job is iostat — disk I/O performance monitoring.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\niostat -x 1 3 | grep -A 2 'avg-cpu'"
+  },
+  {
+    "instruction": "Find processes with high I/O wait",
+    "output": "<think>\nThe task requires us to find processes with high I/O wait.\nFirst, let me understand what's needed here.\nFor this, iotop is the right tool — iotop operations.\nThe -o flag means output to file, OR operator in find, which matters here because without it the command won't work as we need.\nI've added -n to dry-run, no changes — needed for this specific use case.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\niotop -o -n 5"
+  },
+  {
+    "instruction": "Find processes with high context switch rate",
+    "output": "<think>\nThe goal is to find processes with high context switch rate.\nFor this, pidstat is the right tool — pidstat operations.\nI've added -p to create parent directories as needed — needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\npidstat -w 1 5 -p 1234"
+  },
+  {
+    "instruction": "Check interrupt rate per CPU",
+    "output": "<think>\nNeed to check interrupt rate per CPU.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nI've added -I to ignore case — standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncat /proc/interrupts | head -5 && mpstat -I CPU 1 2"
+  },
+  {
+    "instruction": "Check softirq rates",
+    "output": "<think>\nSo we need to check softirq rates.\nHere's how I'd approach this.\nThis calls for cat. Cat operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ncat /proc/softirqs | head -10"
+  },
+  {
+    "instruction": "Check network packet drop rate",
+    "output": "<think>\nThis is asking us to check network packet drop rate.\nLet me consider what makes sense here.\nBest tool here is netstat — netstat operations.\nI'm using -s for summarize or silent mode — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nnetstat -s | grep -E 'drop|overflow|error'"
+  },
+  {
+    "instruction": "Check interface packet drops",
+    "output": "<think>\nThe user wants to check interface packet drops.\nI'd use ip for this — network interface configuration.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\nip -s link show eth0 | grep -E 'RX|dropped'"
+  },
+  {
+    "instruction": "Check conntrack table usage",
+    "output": "<think>\nThe user wants to check conntrack table usage.\nLet me break this down.\nThe tool for this job is cat — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_count"
+  },
+  {
+    "instruction": "Check conntrack table max",
+    "output": "<think>\nNeed to check conntrack table max.\ncat is what we need — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_max"
+  },
+  {
+    "instruction": "Increase conntrack table size",
+    "output": "<think>\nThe task requires us to increase conntrack table size.\nFor this, sysctl is the right tool — kernel parameter tuning.\n</think>\nsysctl -w net.netfilter.nf_conntrack_max=524288"
+  },
+  {
+    "instruction": "Optimize for small file web serving",
+    "output": "<think>\nWe should optimize for small file web serving.\nThe tool for this job is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.ipv4.tcp_tw_reuse=1 && sysctl -w net.ipv4.tcp_fin_timeout=15"
+  },
+  {
+    "instruction": "Optimize for high-bandwidth video streaming",
+    "output": "<think>\nSo we need to optimize for high-bandwidth video streaming.\nFirst, let me understand what's needed here.\nBest tool here is sysctl — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\nsysctl -w net.core.rmem_default=262144 && sysctl -w net.core.wmem_default=262144 && sysctl -w net.ipv4.tcp_congestion_control=bbr"
+  },
+  {
+    "instruction": "Optimize for database server",
+    "output": "<think>\nSo the request is to optimize for database server.\nLet me reason through this.\nFor this, sysctl is the right tool — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nsysctl -w vm.swappiness=1 && sysctl -w vm.dirty_ratio=20 && sysctl -w vm.dirty_background_ratio=5 && sysctl -w vm.vfs_cache_pressure=50"
+  },
+  {
+    "instruction": "Optimize for virtualization host",
+    "output": "<think>\nNeed to optimize for virtualization host.\nLet me break this down.\nThe tool for this job is sysctl — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsysctl -w vm.nr_hugepages=1024 && sysctl -w kernel.sched_migration_cost_ns=5000000 && echo 'performance' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+  },
+  {
+    "instruction": "Check if PSI (Pressure Stall Info) is enabled",
+    "output": "<think>\nThe task requires us to check if PSI (Pressure Stall Info) is enabled.\nLet me think about the best approach.\nThis calls for cat. Cat operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/pressure/cpu 2>/dev/null || echo PSI not enabled"
+  },
+  {
+    "instruction": "Enable PSI if not enabled (kernel config)",
+    "output": "<think>\nThe task requires us to enable PSI if not enabled (kernel config).\nHere's how I'd approach this.\nThe -r flag handles recursive operation (descend into subdirectories). Important because this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'CONFIG_PSI=y' >> /boot/config-$(uname -r) && echo 'psi=1' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Check CPU pressure",
+    "output": "<think>\nNeed to check CPU pressure.\nThe tool for this job is cat — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/pressure/cpu"
+  },
+  {
+    "instruction": "Check memory pressure",
+    "output": "<think>\nSo we need to check memory pressure.\nThe tool for this job is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/pressure/memory"
+  },
+  {
+    "instruction": "Check I/O pressure",
+    "output": "<think>\nSo the request is to check I/O pressure.\nI'll reach for cat here because cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ncat /proc/pressure/io"
+  },
+  {
+    "instruction": "Run a sustained CPU test with stress-ng",
+    "output": "<think>\nNeed to run a sustained CPU test with stress-ng.\nFirst, let me understand what's needed here.\nstress-ng is what we need — stress-ng operations.\nThe --timeout flag means set max execution time, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nstress-ng --cpu $(nproc) --cpu-method matrixprod --timeout 60s"
+  },
+  {
+    "instruction": "Run a memory stress test with stress-ng",
+    "output": "<think>\nWe're being asked to run a memory stress test with stress-ng.\nLet me think through this step by step.\nI'd use stress-ng for this — stress-ng operations.\nI've added --timeout to set max execution time — important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nstress-ng --vm 2 --vm-bytes 512M --timeout 30s"
+  },
+  {
+    "instruction": "Run an I/O stress test with stress-ng",
+    "output": "<think>\nNeed to run an I/O stress test with stress-ng.\nLet me think through this step by step.\nstress-ng is what we need — stress-ng operations.\nThe --timeout flag means set max execution time, which matters here because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\nstress-ng --ioclass 3 --iostat 1 --hdd 1 --hdd-bytes 1G --timeout 30s"
+  },
+  {
+    "instruction": "Run a cache thrashing test",
+    "output": "<think>\nThe goal is to run a cache thrashing test.\nstress-ng is what we need — stress-ng operations.\nI've added --timeout to set max execution time — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nstress-ng --cache 4 --cache-ways 16 --timeout 30s"
+  }
+]

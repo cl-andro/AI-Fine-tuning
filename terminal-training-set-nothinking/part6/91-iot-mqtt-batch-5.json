@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Publish with message priority via mosquitto_pub",
+    "output": "mosquitto_pub --topic 'alerts/critical' --message 'device down' -V 5 -D pub message-expiry-interval '30' -D pub payload-format-indicator '0'"
+  },
+  {
+    "instruction": "Subscribe to system topics with MQTT v5",
+    "output": "mosquitto_sub --topic '$SYS/broker/"
+  },
+  {
+    "instruction": "Set MQTT session expiry to 1 hour on subscribe",
+    "output": "mosquitto_sub --topic 'data/"
+  },
+  {
+    "instruction": "Publish using topic alias in MQTT v5",
+    "output": "mosquitto_pub --topic 't' --message 'payload' -V 5 -D connect topic-alias-maximum '10' -D publish topic-alias '1'"
+  },
+  {
+    "instruction": "Mosquitto bridge configuration for multi-broker",
+    "output": "echo 'connection bridge-to-remote\naddress 10.0.0.2:1883\ntopic"
+  },
+  {
+    "instruction": "Reload Mosquitto config after bridge change",
+    "output": "sudo systemctl reload mosquitto"
+  },
+  {
+    "instruction": "Check Mosquitto broker status",
+    "output": "sudo systemctl status mosquitto"
+  },
+  {
+    "instruction": "View Mosquitto log file",
+    "output": "sudo tail -f /var/log/mosquitto/mosquitto.log"
+  },
+  {
+    "instruction": "Enable Mosquitto verbose logging",
+    "output": "echo 'log_type all\nconnection_messages true\nlog_dest file /var/log/mosquitto/mosquitto.log' | sudo tee /etc/mosquitto/conf.d/logging.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto listener on port 9001 for WebSocket",
+    "output": "echo 'listener 9001\nprotocol websockets' | sudo tee /etc/mosquitto/conf.d/websockets.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto TLS listener on port 8883",
+    "output": "echo 'listener 8883\ncafile /etc/mosquitto/ca.crt\ncertfile /etc/mosquitto/server.crt\nkeyfile /etc/mosquitto/server.key\nrequire_certificate false' | sudo tee /etc/mosquitto/conf.d/tls.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto password authentication",
+    "output": "echo 'password_file /etc/mosquitto/passwd\nallow_anonymous false' | sudo tee /etc/mosquitto/conf.d/auth.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto ACL file for fine-grained access",
+    "output": "echo 'acl_file /etc/mosquitto/acl' | sudo tee /etc/mosquitto/conf.d/acl.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Create Mosquitto ACL rules",
+    "output": "echo 'user alice\ntopic sensor/"
+  },
+  {
+    "instruction": "Set Mosquitto max connections limit",
+    "output": "echo 'max_connections 1000' | sudo tee /etc/mosquitto/conf.d/limits.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto message size limit",
+    "output": "echo 'message_size_limit 65535' | sudo tee /etc/mosquitto/conf.d/limits.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto to store retained messages to disk",
+    "output": "echo 'persistence true\npersistence_location /var/lib/mosquitto/' | sudo tee /etc/mosquitto/conf.d/persistence.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto to autosave every 60 seconds",
+    "output": "echo 'autosave_interval 60' | sudo tee -a /etc/mosquitto/conf.d/persistence.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Set Mosquitto queue QoS and max inflight",
+    "output": "echo 'max_inflight_messages 100\nmax_queued_messages 1000' | sudo tee /etc/mosquitto/conf.d/queues.conf && sudo systemctl restart mosquitto"
+  },
+  {
+    "instruction": "Test Mosquitto broker with PING/REQ",
+    "output": "mosquitto_sub --topic 'test/ping' -W 5 && mosquitto_pub --topic 'test/ping' --message '' -n"
+  },
+  {
+    "instruction": "Publish to MQTT via SSL with protocol version",
+    "output": "mosquitto_pub --topic 'secure/topic' --message 'data' --tls-version tlsv1.3 --cafile /etc/ssl/certs/ca-certificates.crt"
+  },
+  {
+    "instruction": "Subscribe with topic filter that has $ sign",
+    "output": "mosquitto_sub --topic '$SYS/#' -v"
+  }
+]

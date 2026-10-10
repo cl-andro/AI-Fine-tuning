@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up a cron job to check disk space and email alert",
+    "output": "<think>\nNeed to set up a cron job to check disk space and email alert.\nI've added -h to human-readable format — important to get the expected behavior.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\necho '0 * * * * df -h | mail -s \"Disk usage\" admin@example.com' | crontab -"
+  },
+  {
+    "instruction": "Create a simple bash monitoring script",
+    "output": "<think>\nThe task requires us to create a simple bash monitoring script.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho -e '"
+  },
+  {
+    "instruction": "Set up a dead man's switch cron",
+    "output": "<think>\nWe should set up a dead man's switch cron.\nWhy --retry? Retry on transient failure. this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '*/5 * * * * curl -fsS --retry 3 https://hc-ping.com/my-uuid > /dev/null' | crontab -"
+  },
+  {
+    "instruction": "Monitor a log file for specific keywords and alert",
+    "output": "<think>\nThe goal is to monitor a log file for specific keywords and alert.\nLet me think about the best approach.\nThe -e flag handles edit or executable. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e '"
+  },
+  {
+    "instruction": "Use monit for process monitoring",
+    "output": "<think>\nWe're being asked to use monit for process monitoring.\nThe tool for this job is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y monit && cat > /etc/monit/conf.d/nginx << 'EOF'\ncheck process nginx with pidfile /run/nginx.pid\n  start program = \"/usr/sbin/nginx\"\n  stop program = \"/usr/sbin/nginx -s stop\"\n  if failed port 80 protocol http then restart\n  if 5 restarts within 5 cycles then timeout\nEOF && monit reload && monit start nginx"
+  },
+  {
+    "instruction": "Check monit status",
+    "output": "<think>\nWe're being asked to check monit status.\nFirst, let me understand what's needed here.\nFor this, monit is the right tool — monit operations.\nOne command does the job. Simple is better.\n</think>\nmonit status"
+  },
+  {
+    "instruction": "Start all monit monitored processes",
+    "output": "<think>\nAlright, we need to start all monit monitored processes.\nFor this, monit is the right tool — monit operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nmonit start all"
+  },
+  {
+    "instruction": "Use god (process monitor in Ruby)",
+    "output": "<think>\nSo we need to use god (process monitor in Ruby).\nFirst, let me understand what's needed here.\nI'd use gem for this — gem operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ngem install god && cat > /etc/god/conf.god << 'EOF'\nGod.watch do |w|\n  w.name = \"nginx\"\n  w.start = \"nginx\"\n  w.restart = \"nginx -s reload\"\n  w.keepalive\nend\nEOF && god start"
+  },
+  {
+    "instruction": "Install supervisor (process control system)",
+    "output": "<think>\nThe user wants to install supervisor (process control system).\nLet me reason through this.\nFor this, apt is the right tool — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y supervisor && systemctl enable --now supervisor"
+  },
+  {
+    "instruction": "Add a supervisor program config",
+    "output": "<think>\nThe goal is to add a supervisor program config.\nLet me break this down.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/supervisor/conf.d/myapp.conf << 'EOF'\n[program:myapp]\ncommand=/usr/local/bin/myapp\nuser=john\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/myapp.err.log\nstdout_logfile=/var/log/myapp.out.log\nEOF && supervisorctl update"
+  },
+  {
+    "instruction": "Check supervisor program status",
+    "output": "<think>\nNeed to check supervisor program status.\nLet me reason through this.\nThis calls for supervisorctl. Supervisorctl operations.\nLet me verify afterward that it worked correctly.\n</think>\nsupervisorctl status"
+  },
+  {
+    "instruction": "Restart a supervisor program",
+    "output": "<think>\nNeed to restart a supervisor program.\nFor this, supervisorctl is the right tool — supervisorctl operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsupervisorctl restart myapp"
+  },
+  {
+    "instruction": "Stop a supervisor program",
+    "output": "<think>\nThe task requires us to stop a supervisor program.\nLet me consider what makes sense here.\nI'd use supervisorctl for this — supervisorctl operations.\n</think>\nsupervisorctl stop myapp"
+  },
+  {
+    "instruction": "Check if any service is consuming too much memory",
+    "output": "<think>\nThis is asking us to check if any service is consuming too much memory.\nBest tool here is ps — process listing.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nps aux --sort=-%mem | awk 'NR>1{if($4>10) print $11\" uses \"$4\"% memory\"}'"
+  },
+  {
+    "instruction": "Check if any process is using swap heavily",
+    "output": "<think>\nThe user wants to check if any process is using swap heavily.\nLet me break this down.\nThe tool for this job is for — for operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nfor f in /proc/*/status; do awk '/VmSwap|Name/{printf \"%s \", $2} END {print \"\"}' $f 2>/dev/null; done | sort -k2 -rh | head -10"
+  },
+  {
+    "instruction": "Check the number of running processes",
+    "output": "<think>\nSo we need to check the number of running processes.\nLet me reason through this.\nps is what we need — process listing.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nps aux | wc -l"
+  },
+  {
+    "instruction": "Check the number of open file handles system-wide",
+    "output": "<think>\nThis is asking us to check the number of open file handles system-wide.\nLet me think about the best approach.\nThe tool for this job is cat — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/sys/fs/file-nr | awk '{print \"Open: \" $1 \" Max: \" $3}'"
+  },
+  {
+    "instruction": "Check TCP connection states counts",
+    "output": "<think>\nThe user wants to check TCP connection states counts.\nFirst, let me understand what's needed here.\nBest tool here is netstat — netstat operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nnetstat -ant | awk '{print $6}' | sort | uniq -c | sort -rh"
+  },
+  {
+    "instruction": "Check the number of users currently logged in",
+    "output": "<think>\nSo we need to check the number of users currently logged in.\nI'd use who for this — who operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\nwho | wc -l"
+  },
+  {
+    "instruction": "Check system uptime trend over last week",
+    "output": "<think>\nWe're being asked to check system uptime trend over last week.\nThe tool for this job is last — last operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nlast -x | grep reboot | tail -7"
+  },
+  {
+    "instruction": "Install and run mtr for network path quality",
+    "output": "<think>\nSo we need to install and run mtr for network path quality.\nFor this, apt is the right tool — apt operations.\nThe -c flag handles count or create. Important because this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y mtr-tiny && mtr --report -c 10 8.8.8.8"
+  },
+  {
+    "instruction": "Install and run smokeping (latency graphing)",
+    "output": "<think>\nAlright, we need to install and run smokeping (latency graphing).\nLet me reason through this.\nThis calls for apt. Apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y smokeping && systemctl enable --now smokeping"
+  },
+  {
+    "instruction": "Check Smokeping targets",
+    "output": "<think>\nThe user wants to check Smokeping targets.\nThis calls for cat. Cat operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /etc/smokeping/config.d/Targets | head -30"
+  },
+  {
+    "instruction": "Install and run Icinga Web 2",
+    "output": "<think>\nWe should install and run Icinga Web 2.\nHere's how I'd approach this.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y icingaweb2 icingacli && icingacli setup token create"
+  },
+  {
+    "instruction": "Get Icinga Web 2 setup token",
+    "output": "<think>\nNeed to get Icinga Web 2 setup token.\nLet me think about the best approach.\nFor this, icingacli is the right tool — icingacli operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nicingacli setup token show"
+  }
+]

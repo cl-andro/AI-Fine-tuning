@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "cilium status",
+    "output": "<think>\nWe should cilium status.\nLet me reason through this.\n</think>\n    /\\__/\\  @ cilium status\n    /  \\__/  \\  /  \\\n    \\__/  \\__/  \\__/\n       \\__/  \\__/\n          \\__/\nDeployment       cilium-operator    Desired: 2, Ready: 2/2\nDeployment       hubble-relay       Desired: 1, Ready: 1/1\nDeployment       hubble-ui          Desired: 1, Ready: 1/1\nController Status: 4/4 healthy\nCluster health: 2/2 reachable"
+  },
+  {
+    "instruction": "cilium version",
+    "output": "<think>\nThe task requires us to cilium version.\ncilium-cli is what we need — cilium-cli operations.\n</think>\ncilium-cli: v0.16.0 compiled with go1.22.5 on linux/amd64\ncilium image (default): v1.15.0\ncilium image (stable): v1.15.0"
+  },
+  {
+    "instruction": "cilium connectivity test",
+    "output": "<think>\nThe task requires us to cilium connectivity test.\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\n✓ [cluster] Deployment/cilium-bank-backend created\n✓ [cluster] Deployment/cilium-bank-frontend created\n✓ [cluster] All 17 tests (77 actions) passed, 0 tests skipped, 0 scenarios skipped.\n✓ Connectivity tests passed"
+  },
+  {
+    "instruction": "cilium connectivity test --test pod-to-service",
+    "output": "<think>\nWe're being asked to cilium connectivity test --test pod-to-service.\nLet me reason through this.\nI'll check the output to make sure it did what we expected.\n</think>\n✓ [cluster] Running pod-to-service tests...\n  [.] Basic curl pod-to-service\n  [.] Basic curl pod-to-service with L7 policy\n✓ All pod-to-service tests passed"
+  },
+  {
+    "instruction": "cilium service list",
+    "output": "<think>\nSo we need to cilium service list.\nFirst, let me understand what's needed here.\nThis calls for ID. ID operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nID   Frontend              Service Type   Backend\n1    10.96.0.1:443         ClusterIP      1 -> 10.0.0.1:6443\n2    10.96.0.10:53         ClusterIP      1 -> 10.0.0.10:53\n3    10.96.0.20:80         ClusterIP      2 -> 10.244.0.5:80, 10.244.1.5:80\n4    10.96.0.21:80         ClusterIP      2 -> 10.244.0.6:80, 10.244.1.6:80"
+  },
+  {
+    "instruction": "cilium endpoint list",
+    "output": "<think>\nSo the request is to cilium endpoint list.\nLet me break this down.\nI'll reach for ENDPOINT here because ENDPOINT operations.\nLet me verify afterward that it worked correctly.\n</think>\nENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS   IPv6           IPv4           STATUS\n12345      Disabled           Disabled          1234       3        fd00::1234     10.244.0.5    ready\n12346      Disabled           Disabled          1234       3        fd00::1235     10.244.0.6    ready\n12347      Disabled           Disabled          5678       4        fd00::1236     10.244.1.5    ready"
+  },
+  {
+    "instruction": "cilium endpoint list -l k8s:io.kubernetes.namespace=default",
+    "output": "<think>\nThe task requires us to cilium endpoint list -l k8s:io.kubernetes.namespace=default.\nLet me break this down.\nI'd use ENDPOINT for this — ENDPOINT operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS   IPv6           IPv4           STATUS\n12345      Disabled           Disabled          1234       3        fd00::1234     10.244.0.5    ready\n12346      Disabled           Disabled          1234       3        fd00::1235     10.244.0.6    ready"
+  },
+  {
+    "instruction": "cilium identity list",
+    "output": "<think>\nSo the request is to cilium identity list.\nLet me think about the best approach.\nI'd use ID for this — ID operations.\nAfter running, I'll confirm the result looks right.\n</think>\nID     LABELS\n1234   k8s:app=httpbin, k8s:io.kubernetes.namespace=default\n5678   k8s:app=sleep, k8s:io.kubernetes.namespace=default\n9012   k8s:app=nginx, k8s:io.kubernetes.namespace=ingress-nginx"
+  },
+  {
+    "instruction": "cilium identity get 1234",
+    "output": "<think>\nSo the request is to cilium identity get 1234.\nThis calls for ID. ID operations.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nID     LABELS\n1234   k8s:app=httpbin\n       k8s:io.kubernetes.namespace=default\n       k8s:io.kubernetes.pod.namespace=default"
+  },
+  {
+    "instruction": "hubble observe",
+    "output": "<think>\nThe user wants to hubble observe.\nLet me reason through this.\nJul is what we need — Jul operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nJul 25 10:00:01.123  httpbin:54321 -> sleep:80  to-endpoint  FORWARDED (HTTP/GET)\nJul 25 10:00:01.456  sleep:54322 -> httpbin:80  to-endpoint  FORWARDED (HTTP/GET)\n"
+  },
+  {
+    "instruction": "hubble observe --from-pod httpbin-5c5944c88c-v9q5k",
+    "output": "<think>\nSo the request is to hubble observe --from-pod httpbin-5c5944c88c-v9q5k.\nThis calls for Jul. Jul operations.\nI'll check the output to make sure it did what we expected.\n</think>\nJul 25 10:00:01.123  httpbin:54321 -> sleep:80  to-endpoint  FORWARDED (HTTP/GET)\nJul 25 10:00:02.456  httpbin:54322 -> db:5432   to-endpoint  FORWARDED (TCP)"
+  },
+  {
+    "instruction": "hubble observe --namespace default --last 5",
+    "output": "<think>\nSo the request is to hubble observe --namespace default --last 5.\nLet me break this down.\nI'll reach for Jul here because Jul operations.\n</think>\nJul 25 10:00:01.123  httpbin:54321 -> sleep:80  to-endpoint  FORWARDED (HTTP/GET)\nJul 25 10:00:01.456  sleep:54322 -> httpbin:80  to-endpoint  FORWARDED (HTTP/GET)\nJul 25 10:00:02.000  httpbin:54323 -> db:5432   to-endpoint  FORWARDED (TCP)\nJul 25 10:00:02.500  sleep:54324 -> httpbin:80  to-endpoint  FORWARDED (HTTP/GET)\nJul 25 10:00:03.000  sleep:54325 -> httpbin:80  to-endpoint  FORWARDED (HTTP/GET)"
+  },
+  {
+    "instruction": "hubble status",
+    "output": "<think>\nThe goal is to hubble status.\nHere's how I'd approach this.\nI'll reach for Healthcheck here because Healthcheck operations.\n</think>\nHealthcheck (via localhost:4244): Ok\nCurrent/Max Flows: 12345/12345678\nFlows/s: 12.34\nConnected Nodes: 3/3"
+  },
+  {
+    "instruction": "hubble observe --protocol http --verdict DROPPED",
+    "output": "<think>\nNeed to hubble observe --protocol http --verdict DROPPED.\nLet me break this down.\nFor this, Jul is the right tool — Jul operations.\nQuick verification after execution to be safe.\n</think>\nJul 25 10:00:01.123  httpbin:54321 -> sleep:80  policy-verdict  DROPPED (L3/L4)\nJul 25 10:00:01.456  sleep:54322 -> httpbin:80  policy-verdict  DROPPED (HTTP)"
+  },
+  {
+    "instruction": "hubble serve --port 4245 &",
+    "output": "<think>\nSo the request is to hubble serve --port 4245 &.\n</think>\n[1] 12345\n2026-07-25T10:00:01.000Z [INFO] Hubble server listening on :4245"
+  },
+  {
+    "instruction": "cilium hubble enable",
+    "output": "<think>\nNeed to cilium hubble enable.\nQuick verification after execution to be safe.\n</think>\n✓ Hubble enabled\n✓ Hubble Relay deployed\n✓ Hubble UI deployed"
+  },
+  {
+    "instruction": "cilium hubble disable",
+    "output": "<think>\nAlright, we need to cilium hubble disable.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\n✓ Hubble disabled\n✓ Hubble resources removed"
+  },
+  {
+    "instruction": "hubble observe --service httpbin --verdict FORWARDED -o json",
+    "output": "<think>\nSo we need to hubble observe --service httpbin --verdict FORWARDED -o json.\nOne command does the job. Simple is better.\n</think>\n{\"flow\":{\"verdict\":\"FORWARDED\",\"http\":{\"method\":\"GET\",\"url\":\"/get\",\"protocol\":\"HTTP/1.1\",\"code\":200},\"source\":{\"pod_name\":\"sleep-6c9f78b8d6-abc12\"},\"destination\":{\"pod_name\":\"httpbin-5c5944c88c-v9q5k\"},\"time\":\"2026-07-25T10:00:01.123456789Z\"}}"
+  },
+  {
+    "instruction": "cilium clusterid list",
+    "output": "<think>\nWe're being asked to cilium clusterid list.\nCLUSTER is what we need — CLUSTER operations.\nQuick verification after execution to be safe.\n</think>\nCLUSTER ID   NAME           STATUS\n1            cluster-east   ready\n2            cluster-west   ready\n3            cluster-north  ready"
+  },
+  {
+    "instruction": "cilium config get debug",
+    "output": "<think>\nNeed to cilium config get debug.\nFirst, let me understand what's needed here.\nBest tool here is debug — debug operations.\nAfter running, I'll confirm the result looks right.\n</think>\ndebug: Enabled"
+  },
+  {
+    "instruction": "cilium config set debug false",
+    "output": "<think>\nThe task requires us to cilium config set debug false.\n</think>\n✓ Setting debug to false"
+  }
+]

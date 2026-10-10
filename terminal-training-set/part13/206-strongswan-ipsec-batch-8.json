@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to configure IKEv1 Aggressive Mode in strongSwan",
+    "output": "<think>\nWe should configure IKEv1 Aggressive Mode in strongSwan.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'connections {\n  ikev1-agg {\n    version = 1\n    aggressive = yes\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    local {\n      auth = psk\n      id = server\n    }\n    remote {\n      auth = psk\n      id = participant\n    }\n    children {\n      net {}\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IKEv1 Main Mode in strongSwan",
+    "output": "<think>\nWe're being asked to configure IKEv1 Main Mode in strongSwan.\nLet me think about the best approach.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'connections {\n  ikev1-main {\n    version = 1\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    local {\n      auth = psk\n    }\n    remote {\n      auth = psk\n    }\n    children {\n      net {}\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IPsec with AH protocol",
+    "output": "<think>\nThe goal is to configure IPsec with AH protocol.\nHere's how I'd approach this.\n</think>\necho 'connections {\n  ah {\n    children {\n      net {\n        ah_proposals = sha256\n        mode = tunnel\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure ESP with no encryption (null cipher)",
+    "output": "<think>\nSo we need to configure ESP with no encryption (null cipher).\nLet me verify afterward that it worked correctly.\n</think>\necho 'connections {\n  null-enc {\n    children {\n      net {\n        esp_proposals = null-sha256\n      }\n    }\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set particular DH group in IKE",
+    "output": "<think>\nWe should set particular DH group in IKE.\nLet me reason through this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  my-connection {\n    proposals = aes256-sha256-modp3072\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to use custom ESP lifetime",
+    "output": "<think>\nSo the request is to use custom ESP lifetime.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'children {\n  net {\n    life_time = 12h\n    rekey_time = 11h\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set the inactivity timeout in IPsec",
+    "output": "<think>\nThe goal is to set the inactivity timeout in IPsec.\nFirst, let me understand what's needed here.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'children {\n  net {\n    inactivity = 30m\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set IPsec hardware offload",
+    "output": "<think>\nSo we need to set IPsec hardware offload.\nHere's how I'd approach this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'charon {\n  plugins {\n    kernel-netlink {\n      hw_offload = yes\n    }\n  }\n}' >> /etc/strongswan.d/charon-kernel-netlink.conf"
+  },
+  {
+    "instruction": "How to check IPsec hardware offload status",
+    "output": "<think>\nSo we need to check IPsec hardware offload status.\nHere's how I'd approach this.\nethtool is what we need — ethtool operations.\nI'm using -i for interactive, prompt before action — important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nethtool -k eth0 | grep -i esp"
+  },
+  {
+    "instruction": "How to enable IPsec hw offload via ethtool",
+    "output": "<think>\nThis is asking us to enable IPsec hw offload via ethtool.\nLet me think about the best approach.\nBest tool here is ethtool — ethtool operations.\nOne command does the job. Simple is better.\n</think>\nethtool -K eth0 esp-hw-offload on"
+  },
+  {
+    "instruction": "How to configure IPsec for VLAN interfaces",
+    "output": "<think>\nWe're being asked to configure IPsec for VLAN interfaces.\nFirst, let me understand what's needed here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'connections {\n  vlan {\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    if_id_in = 100\n    if_id_out = 100\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to create a VTI (Virtual Tunnel Interface)",
+    "output": "<think>\nWe should create a VTI (Virtual Tunnel Interface).\nip is what we need — network interface configuration.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nip tunnel add vti0 local 192.168.1.10 remote 192.168.2.10 mode vti key 42 && ip link set vti0 up"
+  },
+  {
+    "instruction": "How to route to VTI for IPsec",
+    "output": "<think>\nSo we need to route to VTI for IPsec.\nFirst, let me understand what's needed here.\nThis calls for ip. Network interface configuration.\nOne command does the job. Simple is better.\n</think>\nip route add 10.0.2.0/24 dev vti0"
+  },
+  {
+    "instruction": "How to use iptables with VTI",
+    "output": "<think>\nWe should use iptables with VTI.\nLet me break this down.\nFor this, iptables is the right tool — firewall management.\nI've added -i to interactive, prompt before action — without it the command won't work as we need.\nI'm using -o for output to file, OR operator in find — standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A FORWARD -i vti0 -j ACCEPT && iptables -A FORWARD -o vti0 -j ACCEPT"
+  },
+  {
+    "instruction": "How to assign IP to VTI interface",
+    "output": "<think>\nThe task requires us to assign IP to VTI interface.\nLet me think about the best approach.\nThis calls for ip. Network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\nip addr add 10.200.0.1/30 dev vti0"
+  },
+  {
+    "instruction": "How to set up IPsec with VTI in strongSwan",
+    "output": "<think>\nSo we need to set up IPsec with VTI in strongSwan.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'connections {\n  vti-conn {\n    local_addrs = 192.168.1.10\n    remote_addrs = 192.168.2.10\n    vti = vti0\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set VTI mark in strongSwan",
+    "output": "<think>\nNeed to set VTI mark in strongSwan.\nFirst, let me understand what's needed here.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'connections {\n  vti-conn {\n    vti = 42\n    mark_in = 42\n    mark_out = 42\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to show VTI traffic stats",
+    "output": "<think>\nNeed to show VTI traffic stats.\nLet me think through this step by step.\nI'd use ip for this — network interface configuration.\nWhy -s? Summarize or silent mode. this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nip -s link show vti0"
+  },
+  {
+    "instruction": "How to delete VTI interface",
+    "output": "<think>\nSo the request is to delete VTI interface.\nLet me think about the best approach.\nI'll reach for ip here because network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nip tunnel del vti0"
+  },
+  {
+    "instruction": "How to configure IPsec with DSCP marking",
+    "output": "<think>\nNeed to configure IPsec with DSCP marking.\nHere's how I'd approach this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'connections {\n  my-connection {\n    tos = 0x04\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set IPsec inbound DSCP copying",
+    "output": "<think>\nWe're being asked to set IPsec inbound DSCP copying.\nQuick verification after execution to be safe.\n</think>\necho 'connections {\n  my-connection {\n    copy_df = no\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to limit IPsec maximum segment size",
+    "output": "<think>\nThe user wants to limit IPsec maximum segment size.\n</think>\necho 'connections {\n  my-connection {\n    mss = 1360\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to set IPsec minimum MTU",
+    "output": "<think>\nWe're being asked to set IPsec minimum MTU.\nLet me break this down.\nLet me verify afterward that it worked correctly.\n</think>\necho 'connections {\n  my-connection {\n    mtu = 1400\n  }\n}' >> /etc/swanctl/swanctl.conf"
+  },
+  {
+    "instruction": "How to configure IPsec to ignore DF bit",
+    "output": "<think>\nNeed to configure IPsec to ignore DF bit.\nLet me consider what makes sense here.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'charon {\n  syslog {\n    default = 2\n  }\n}' >> /etc/strongswan.d/charon.conf"
+  },
+  {
+    "instruction": "How to enable IPsec TCP MSS clamping",
+    "output": "<think>\nThe task requires us to enable IPsec TCP MSS clamping.\nBest tool here is iptables — firewall management.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu"
+  }
+]

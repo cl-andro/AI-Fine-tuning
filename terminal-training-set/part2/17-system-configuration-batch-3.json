@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a new ext4 filesystem",
+    "output": "<think>\nSo we need to create a new ext4 filesystem.\nLet me think about the best approach.\nThis calls for mkfs.ext4. Mkfs.ext4 operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nmkfs.ext4 /dev/sdb1"
+  },
+  {
+    "instruction": "Create a filesystem with a label",
+    "output": "<think>\nWe're being asked to create a filesystem with a label.\nLet me think about the best approach.\nFor this, mkfs.ext4 is the right tool — mkfs.ext4 operations.\nI'm using -L for follow symlinks when processing — important to get the expected behavior.\nQuick verification after execution to be safe.\n</think>\nmkfs.ext4 -L mydata /dev/sdb1"
+  },
+  {
+    "instruction": "Mount a filesystem by UUID",
+    "output": "<think>\nSo the request is to mount a filesystem by UUID.\nLet me break this down.\nmount is what we need — filesystem mounting.\nQuick verification after execution to be safe.\n</think>\nmount UUID=abc123-... /mnt/data"
+  },
+  {
+    "instruction": "Find UUID of a device",
+    "output": "<think>\nThe task requires us to find UUID of a device.\nLet me reason through this.\nThis calls for blkid. Block device attribute lookup.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nblkid /dev/sdb1"
+  },
+  {
+    "instruction": "Edit /etc/fstab to auto-mount a partition",
+    "output": "<think>\nSo we need to edit /etc/fstab to auto-mount a partition.\n</think>\necho 'UUID=abc123-... /mnt/data ext4 defaults 0 2' >> /etc/fstab"
+  },
+  {
+    "instruction": "Check a filesystem for errors (ext4)",
+    "output": "<think>\nAlright, we need to check a filesystem for errors (ext4).\nFor this, fsck.ext4 is the right tool — fsck.ext4 operations.\nThe -f flag means force, suppress errors, which matters here because this controls how the output is formatted.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nfsck.ext4 -f /dev/sdb1"
+  },
+  {
+    "instruction": "Force a filesystem check on next boot",
+    "output": "<think>\nSo we need to force a filesystem check on next boot.\nLet me consider what makes sense here.\ntune2fs is what we need — tune2fs operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ntune2fs -C 999 /dev/sda1"
+  },
+  {
+    "instruction": "Resize an ext4 filesystem",
+    "output": "<think>\nThe user wants to resize an ext4 filesystem.\nLet me reason through this.\nFor this, resize2fs is the right tool — resize2fs operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nresize2fs /dev/myvg/mylv"
+  },
+  {
+    "instruction": "Configure a disk partition with fdisk",
+    "output": "<think>\nThe goal is to configure a disk partition with fdisk.\nFirst, let me understand what's needed here.\nWhy -e? Edit or executable. without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\necho -e 'g\\nn\\n\\n\\n+10G\\nw' | fdisk /dev/sdb"
+  },
+  {
+    "instruction": "Create a GPT partition table on disk",
+    "output": "<think>\nWe should create a GPT partition table on disk.\nI'd use parted for this — disk partitioning.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted /dev/sdb mklabel gpt"
+  },
+  {
+    "instruction": "Create a partition with parted",
+    "output": "<think>\nWe're being asked to create a partition with parted.\nHere's how I'd approach this.\nFor this, parted is the right tool — disk partitioning.\nA single command handles this cleanly — no need to overcomplicate it.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted /dev/sdb mkpart primary ext4 1MiB 10GiB"
+  },
+  {
+    "instruction": "Print the partition table",
+    "output": "<think>\nSo we need to print the partition table.\nFirst, let me understand what's needed here.\nThis calls for parted. Disk partitioning.\nPartition changes are risky — verify with lsblk before applying.\n</think>\nparted /dev/sdb print"
+  },
+  {
+    "instruction": "Resize a partition with parted",
+    "output": "<think>\nThe user wants to resize a partition with parted.\nI'd use parted for this — disk partitioning.\nPartition changes are risky — verify with lsblk before applying.\nAfter running, I'll confirm the result looks right.\n</think>\nparted /dev/sdb resizepart 1 20GiB"
+  },
+  {
+    "instruction": "Create a swap partition",
+    "output": "<think>\nThe task requires us to create a swap partition.\nLet me reason through this.\nI'll reach for mkswap here because mkswap operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmkswap /dev/sdb2 && swapon /dev/sdb2"
+  },
+  {
+    "instruction": "Add swap to /etc/fstab",
+    "output": "<think>\nNeed to add swap to /etc/fstab.\nAfter running, I'll confirm the result looks right.\n</think>\necho '/dev/sdb2 none swap sw 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Configure tmpfs in /etc/fstab",
+    "output": "<think>\nAlright, we need to configure tmpfs in /etc/fstab.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\necho 'tmpfs /var/ramdisk tmpfs defaults,size=1G 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Configure a bind mount in /etc/fstab",
+    "output": "<think>\nNeed to configure a bind mount in /etc/fstab.\nLet me consider what makes sense here.\nQuick verification after execution to be safe.\n</think>\necho '/original/path /bound/path none bind 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Mount all filesystems from /etc/fstab",
+    "output": "<think>\nSo we need to mount all filesystems from /etc/fstab.\nThis calls for mount. Filesystem mounting.\nWhy -a? AND operator in find. without it the command won't work as we need.\n</think>\nmount -a"
+  },
+  {
+    "instruction": "Check which filesystems are mounted read-only",
+    "output": "<think>\nThe task requires us to check which filesystems are mounted read-only.\nI'd use mount for this — filesystem mounting.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmount | grep ro | head -5"
+  },
+  {
+    "instruction": "Remount a filesystem as read-write",
+    "output": "<think>\nThis is asking us to remount a filesystem as read-write.\nLet me reason through this.\nBest tool here is mount — filesystem mounting.\nThe -o flag handles output to file, OR operator in find. Important because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nmount -o remount,rw /"
+  },
+  {
+    "instruction": "Configure automount with autofs",
+    "output": "<think>\nSo the request is to configure automount with autofs.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y autofs && echo '/net /etc/auto.net --timeout=60' >> /etc/auto.master && echo 'server -fstype=nfs4 192.168.1.10:/srv/nfs' > /etc/auto.net && systemctl restart autofs"
+  },
+  {
+    "instruction": "Configure NTP client (chrony)",
+    "output": "<think>\nThe user wants to configure NTP client (chrony).\nLet me reason through this.\nI'd use apt for this — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y chrony && systemctl enable --now chrony"
+  },
+  {
+    "instruction": "Check NTP sync status with chronyc",
+    "output": "<think>\nSo we need to check NTP sync status with chronyc.\nHere's how I'd approach this.\nFor this, chronyc is the right tool — chronyc operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nchronyc tracking"
+  },
+  {
+    "instruction": "List NTP sources with chronyc",
+    "output": "<think>\nWe should list NTP sources with chronyc.\nchronyc is what we need — chronyc operations.\nThe -v flag means verbose output, which matters here because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nchronyc sources -v"
+  },
+  {
+    "instruction": "Configure a local NTP server in chrony",
+    "output": "<think>\nWe're being asked to configure a local NTP server in chrony.\nHere's how I'd approach this.\nThe -e flag means edit or executable, which matters here because this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e 'server 0.debian.pool.ntp.org iburst\\nserver 1.debian.pool.ntp.org iburst\\nallow 192.168.1.0/24' >> /etc/chrony/chrony.conf && systemctl restart chrony"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Enroll custom Secure Boot keys with sbctl and sign",
+    "output": "sbctl create-keys && sbctl enroll-keys --microsoft && sbctl sign -s /boot/vmlinuz && sbctl sign -s /boot/efi/EFI/GRUB/grubx64.efi"
+  },
+  {
+    "instruction": "sbctl: check if the boot chain is fully signed",
+    "output": "sbctl verify"
+  },
+  {
+    "instruction": "sbctl: generate a new secure boot key pair",
+    "output": "sbctl create-keys"
+  },
+  {
+    "instruction": "Sign a kernel with pesign using a custom token",
+    "output": "pesign -n /etc/pki/pesign -t 'My Token' -c 'My Cert' -i /boot/vmlinuz -o /boot/vmlinuz.signed -s"
+  },
+  {
+    "instruction": "Verify a signed EFI binary with pesign",
+    "output": "pesign -i /boot/efi/EFI/GRUB/grubx64.efi -S"
+  },
+  {
+    "instruction": "Import a PKCS#12 cert into pesign NSS db",
+    "output": "pkcs12 -in cert.p12 -out cert.pem -nodes && certutil -A -d /etc/pki/pesign -n 'My Cert' -t 'u,u,u' -i cert.pem"
+  },
+  {
+    "instruction": "Create a MOK request for a custom kernel module",
+    "output": "mokutil --import /path/to/module.der && reboot"
+  },
+  {
+    "instruction": "Check the pending MOK enrollment status",
+    "output": "mokutil --list-new"
+  },
+  {
+    "instruction": "Enroll a MOK from the next boot (user must do it in shim)",
+    "output": "mokutil --import /path/to/MOK.der"
+  },
+  {
+    "instruction": "Export all enrolled MOK keys to files",
+    "output": "mokutil --list-enrolled | awk '{print \\$NF}' | while read key; do mokutil --export \\$key; done"
+  },
+  {
+    "instruction": "Check Shim bootloader version",
+    "output": "shim -v 2>/dev/null || dpkg -l shim-signed | tail -1 | awk '{print \\$3}'"
+  },
+  {
+    "instruction": "Sign a GRUB binary with sbctl in one command",
+    "output": "sbctl sign -s /boot/efi/EFI/GRUB/grubx64.efi"
+  },
+  {
+    "instruction": "Verify systemd-boot binary signature",
+    "output": "sbverify --cert /path/to/MOK.crt /boot/efi/EFI/systemd/systemd-bootx64.efi"
+  },
+  {
+    "instruction": "Use mokutil to export the MOK list as DER",
+    "output": "mokutil --export /tmp/mok.der"
+  },
+  {
+    "instruction": "Sign a kernel with sbsign using a custom key",
+    "output": "sbsign --key /etc/secureboot/db.key --cert /etc/secureboot/db.crt --output /boot/vmlinuz.signed /boot/vmlinuz"
+  },
+  {
+    "instruction": "Attach a detached signature to an unsigned binary",
+    "output": "sbattach --attach /boot/vmlinuz.sig /boot/vmlinuz"
+  },
+  {
+    "instruction": "Check if shim has booted with Secure Boot enabled",
+    "output": "cat /sys/kernel/security/lockdown || dmesg | grep -i 'Lockdown'"
+  },
+  {
+    "instruction": "View the current kernel lockdown level",
+    "output": "cat /sys/kernel/security/lockdown"
+  },
+  {
+    "instruction": "List all EFI signature databases (db, dbx, KEK, PK)",
+    "output": "efi-readvar 2>/dev/null || mokutil --list-enrolled"
+  },
+  {
+    "instruction": "Reset Secure Boot to setup mode from OS",
+    "output": "mokutil --reset && reboot"
+  },
+  {
+    "instruction": "Show which EFI variables are related to Secure Boot",
+    "output": "ls -la /sys/firmware/efi/efivars | grep -E 'SecureBoot|SetupMode|db_'"
+  }
+]

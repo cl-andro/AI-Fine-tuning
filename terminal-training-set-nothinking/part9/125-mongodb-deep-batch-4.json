@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Export collection to CSV",
+    "output": "mongoexport --uri mongodb://localhost:27017/mydb --collection users --type=csv --fields=name,email,status --out users.csv"
+  },
+  {
+    "instruction": "Import JSON file into collection",
+    "output": "mongoimport --uri mongodb://localhost:27017/mydb --collection orders --file orders.json"
+  },
+  {
+    "instruction": "Import CSV with headerline",
+    "output": "mongoimport --uri mongodb://localhost:27017/mydb --collection users --type=csv --headerline --file users.csv"
+  },
+  {
+    "instruction": "Monitor server stats with mongostat",
+    "output": "mongostat --uri mongodb://localhost:27017 --rowcount=10"
+  },
+  {
+    "instruction": "Monitor operation times with mongotop",
+    "output": "mongotop --uri mongodb://localhost:27017 --rowcount=10"
+  },
+  {
+    "instruction": "Explain query execution stats",
+    "output": "mongosh --eval \"db.orders.find({userId: ObjectId('...')}).explain('executionStats')\""
+  },
+  {
+    "instruction": "Set database profiler level",
+    "output": "mongosh --eval \"db.setProfilingLevel(1, {slowms: 100})\""
+  },
+  {
+    "instruction": "Show profiler data for slow queries",
+    "output": "mongosh --eval \"db.system.profile.find({millis: {\\$gt: 100}}).pretty()\""
+  },
+  {
+    "instruction": "Use multi-document transactions",
+    "output": "mongosh --eval \"const session = db.getMongo().startSession(); session.startTransaction(); const orders = session.getDatabase('mydb').orders; orders.insertOne({item: 'test', qty: 1}); session.commitTransaction(); session.endSession()\""
+  },
+  {
+    "instruction": "Watch for changes with changeStream",
+    "output": "mongosh --eval \"const changeStream = db.orders.watch(); changeStream.next()\""
+  },
+  {
+    "instruction": "Use mapReduce for data aggregation",
+    "output": "mongosh --quiet --eval \"db.orders.mapReduce(function() { emit(this.userId, this.amount); }, function(key, values) { return Array.sum(values); }, {out: 'order_totals'})\""
+  },
+  {
+    "instruction": "Show server status",
+    "output": "mongosh --eval \"db.serverStatus()\""
+  },
+  {
+    "instruction": "Get build information",
+    "output": "mongosh --eval \"db.adminCommand('buildInfo')\""
+  },
+  {
+    "instruction": "Validate collection for corruption",
+    "output": "mongosh --eval \"db.orders.validate({full: true})\""
+  },
+  {
+    "instruction": "Compact a collection to reclaim space",
+    "output": "mongosh --eval \"db.runCommand({compact: 'orders'})\""
+  },
+  {
+    "instruction": "Create a view from existing collection",
+    "output": "mongosh --eval \"db.createView('activeUsers', 'users', [{\\$match: {status: 'active'}}, {\\$project: {name: 1, email: 1}}])\""
+  },
+  {
+    "instruction": "Run a geoNear aggregation query",
+    "output": "mongosh --quiet --eval \"db.places.aggregate([{\\$geoNear: {near: {type: 'Point', coordinates: [-73.97, 40.77]}, spherical: true, distanceField: 'dist'}}]).toArray()\""
+  },
+  {
+    "instruction": "Use bulkWrite for mixed batch operations",
+    "output": "mongosh --eval \"db.orders.bulkWrite([{insertOne: {document: {item: 'test', qty: 1}}}, {updateMany: {filter: {status: 'pending'}, update: {\\$set: {priority: 'low'}}}}])\""
+  },
+  {
+    "instruction": "Show oplog entries from local db",
+    "output": "mongosh --eval \"db.getSiblingDB('local').oplog.rs.find().limit(5).toArray()\""
+  },
+  {
+    "instruction": "Get the current oplog size",
+    "output": "mongosh --eval \"db.getSiblingDB('local').oplog.rs.stats().maxSize\""
+  },
+  {
+    "instruction": "Use collation in a query",
+    "output": "mongosh --eval \"db.users.find().collation({locale: 'en', strength: 2})\""
+  },
+  {
+    "instruction": "Create a background index",
+    "output": "mongosh --eval \"db.users.createIndex({name: 1}, {background: true})\""
+  }
+]

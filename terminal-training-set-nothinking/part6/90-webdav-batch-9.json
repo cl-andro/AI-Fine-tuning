@@ -1,0 +1,22 @@
+[
+  {"instruction": "Enable Apache mod_dav on Debian 12 and verify", "output": "sudo a2enmod dav dav_fs && apache2ctl -M | grep -i dav"},
+  {"instruction": "Configure Apache DAVLockDB directory", "output": "sudo mkdir -p /var/www/webdav/locks && sudo chown www-data:www-data /var/www/webdav/locks && echo 'DAVLockDB /var/www/webdav/locks/DAVLock' | sudo tee /etc/apache2/conf-available/dav-lockdb.conf && sudo a2enconf dav-lockdb && sudo systemctl reload apache2"},
+  {"instruction": "Set digest auth realm for Apache WebDAV", "output": "echo 'AuthName \"Secure WebDAV\"' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Create additional htdigest user for WebDAV", "output": "sudo htdigest /etc/apache2/webdav.passwd 'Secure WebDAV' bob"},
+  {"instruction": "Verify digest auth file contents", "output": "cat /etc/apache2/webdav.passwd"},
+  {"instruction": "Increase WebDAV upload limit in Apache", "output": "echo 'LimitRequestBody 2147483648' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Check WebDAV directory listing in Apache", "output": "echo 'Options +Indexes' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Disable directory listing for WebDAV in Apache", "output": "echo 'Options -Indexes' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Set WebDAV directory to require SSL in Apache", "output": "echo 'SSLRequireSSL' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Log WebDAV requests in Apache to separate file", "output": "echo 'SetEnvIf Request_URI \"^/webdav\" webdavlog\nCustomLog /var/log/apache2/webdav.log combined env=webdavlog' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Check WebDAV logs in Apache", "output": "sudo tail -f /var/log/apache2/webdav.log"},
+  {"instruction": "Block specific IP from accessing WebDAV", "output": "echo '<Location /webdav>\n    Require ip 192.168.1.0/24\n</Location>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Restrict WebDAV to authenticated users only", "output": "echo '<Location /webdav>\n    Require valid-user\n</Location>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Limit WebDAV access to specific HTTP methods", "output": "echo '<LimitExcept GET PROPFIND OPTIONS>\n    Require valid-user\n</LimitExcept>' | sudo tee -a /etc/apache2/sites-available/webdav.conf && sudo systemctl reload apache2"},
+  {"instruction": "Run git clone over WebDAV with git-http-backend", "output": "sudo apt install git && sudo a2enmod cgi && echo 'ScriptAlias /git /usr/lib/git-core/git-http-backend' | sudo tee /etc/apache2/conf-available/git-dav.conf && sudo a2enconf git-dav && sudo systemctl reload apache2"},
+  {"instruction": "Test WebDAV with PROPFIND and check response", "output": "curl -X PROPFIND http://localhost/webdav/ --user alice:secretpass -H 'Depth: 0' -w '\\nHTTP Status: %{http_code}\\n'"},
+  {"instruction": "Use httpie for WebDAV MKCOL", "output": "http MKCOL http://localhost/webdav/newdir --auth alice:secretpass"},
+  {"instruction": "Use httpie for WebDAV PUT", "output": "http PUT http://localhost/webdav/test.md @file.md --auth alice:secretpass"},
+  {"instruction": "Use httpie for WebDAV DELETE", "output": "http DELETE http://localhost/webdav/unwanted.md --auth alice:secretpass"},
+  {"instruction": "Use httpie for WebDAV PROPFIND", "output": "http PROPFIND http://localhost/webdav/ Depth:1 --auth alice:secretpass"}
+]

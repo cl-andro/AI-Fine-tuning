@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a vSphere content library item from a Packer build",
+    "output": "echo 'post-processor \"vsphere\" {}' > vsphere-post.pkr.hcl"
+  },
+  {
+    "instruction": "Export a vSphere VM template from Packer",
+    "output": "echo 'source \"vsphere-iso\" \"ubuntu\" { convert_to_template = true }' > vsphere-template.pkr.hcl"
+  },
+  {
+    "instruction": "Use the vSphere post-processor to mark VM as template",
+    "output": "echo 'build { sources = [\"source.vsphere-iso.ubuntu\"] post-processor \"vsphere-template\" { keep_input_artifact = false } }' > vsphere-template.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Proxmox builder in Packer",
+    "output": "echo 'source \"proxmox\" \"ubuntu\" { proxmox_url = \"https://proxmox.example.com:8006/api2/json\" username = var.pm_user token = var.pm_token node = \"pve1\" vm_name = \"ubuntu-22.04\" }' > proxmox.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Hyper-V builder in Packer",
+    "output": "echo 'source \"hyperv-iso\" \"ubuntu\" { iso_url = \"https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso\" iso_checksum = \"sha256:xxxxx\" ssh_username = \"ubuntu\" switch_name = \"Default Switch\" }' > hyperv.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Parallels builder in Packer",
+    "output": "echo 'source \"parallels-iso\" \"ubuntu\" { iso_url = \"file:///iso/ubuntu-22.04-server-amd64.iso\" ssh_username = \"ubuntu\" }' > parallels.pkr.hcl"
+  },
+  {
+    "instruction": "Create a LXC builder in Packer",
+    "output": "echo 'source \"lxc\" \"ubuntu\" { container_name = \"ubuntu-jammy\" }' > lxc.pkr.hcl"
+  },
+  {
+    "instruction": "Create a LXD builder in Packer",
+    "output": "echo 'source \"lxd\" \"ubuntu\" { image = \"ubuntu:22.04\" output_image = \"ubuntu-custom\" }' > lxd.pkr.hcl"
+  },
+  {
+    "instruction": "Create a CloudStack builder in Packer",
+    "output": "echo 'source \"cloudstack\" \"ubuntu\" { api_url = \"https://cloudstack.example.com/client/api\" api_key = var.cs_key secret_key = var.cs_secret network = \"guest\" service_offering = \"small\" template_name = \"ubuntu-22.04\" zone = \"zone1\" }' > cloudstack.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Yandex Cloud builder in Packer",
+    "output": "echo 'source \"yandex\" \"ubuntu\" { folder_id = var.yc_folder source_image_family = \"ubuntu-2204-lts\" ssh_username = \"ubuntu\" subnet_id = var.yc_subnet }' > yandex.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Hetzner Cloud builder",
+    "output": "echo 'source \"hcloud\" \"ubuntu\" { token = var.hcloud_token server_type = \"cx22\" image = \"ubuntu-22.04\" location = \"nbg1\" ssh_keys = [var.hcloud_ssh_key] }' > hetzner.pkr.hcl"
+  },
+  {
+    "instruction": "Create an Oracle Cloud builder",
+    "output": "echo 'source \"oci\" \"ubuntu\" { availability_domain = \"xxxx:AD-1\" compartment_ocid = var.oci_compartment image_source_uri = \"https://cloud-images.ubuntu.com/releases/22.04/release/\" ssh_username = \"ubuntu\" shape = \"VM.Standard.E2.1.Micro\" }' > oci.pkr.hcl"
+  },
+  {
+    "instruction": "Create an IBM Cloud builder",
+    "output": "echo 'source \"ibmcloud\" \"ubuntu\" { api_key = var.ibm_api_key region = \"us-south\" image_name = \"ubuntu-22.04\" }' > ibm.pkr.hcl"
+  },
+  {
+    "instruction": "Create a NCloud (Naver) builder",
+    "output": "echo 'source \"ncloud\" \"ubuntu\" {}' > ncloud.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Tencent Cloud builder",
+    "output": "echo 'source \"tencentcloud-cvm\" \"ubuntu\" { secret_id = var.tc_secret_id secret_key = var.tc_secret_key region = \"ap-guangzhou\" image_name = \"ubuntu-22.04\" }' > tencent.pkr.hcl"
+  },
+  {
+    "instruction": "Create a JD Cloud builder",
+    "output": "echo 'source \"jdcloud\" \"ubuntu\" {}' > jdcloud.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Ksyun (Kingsoft Cloud) builder",
+    "output": "echo 'source \"ksyun\" \"ubuntu\" {}' > ksyun.pkr.hcl"
+  },
+  {
+    "instruction": "Create a builder with custom endpoint",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { endpoint = \"https://storage.yandexcloud.net\" skip_metadata_api_check = true }' > custom-endpoint.pkr.hcl"
+  },
+  {
+    "instruction": "Use the hcloud builder with a snapshot target",
+    "output": "echo 'source \"hcloud\" \"ubuntu\" { snapshot_name = \"ubuntu-base-{{timestamp}}\" }' > hcloud-snapshot.pkr.hcl"
+  },
+  {
+    "instruction": "Create a builder that sets up Windows features",
+    "output": "echo 'provisioner \"powershell\" { inline = [\"Add-WindowsFeature Web-Server, Web-Mgmt-Tools\"] }' > win-features.pkr.hcl"
+  },
+  {
+    "instruction": "Create a builder with user-data file for cloud-init",
+    "output": "echo 'source \"amazon-ebs\" \"ubuntu\" { user_data_file = \"cloud-init.yaml\" }' > userdata.pkr.hcl"
+  },
+  {
+    "instruction": "Use a cloud-init configuration with Packer",
+    "output": "echo '#cloud-config\npackage_update: true\npackages: [\"nginx\", \"postgresql\"]' > cloud-init.yaml"
+  },
+  {
+    "instruction": "Set custom metadata on a GCP image from Packer",
+    "output": "echo 'source \"googlecompute\" \"ubuntu\" { metadata = { ssh-keys = \"ubuntu:ssh-rsa AAA...\" } }' > gcp-metadata.pkr.hcl"
+  },
+  {
+    "instruction": "Use a service account in GCP builder",
+    "output": "echo 'source \"googlecompute\" \"ubuntu\" { account_file = var.gcp_credentials }' > gcp-sa.pkr.hcl"
+  },
+  {
+    "instruction": "Set image storage location in GCP builder",
+    "output": "echo 'source \"googlecompute\" \"ubuntu\" { image_storage_locations = [\"us\", \"eu\"] }' > gcp-storage.pkr.hcl"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Extract all JPEG images from a disk image with bulk_extractor",
+    "output": "bulk_extractor -e jpeg -o /tmp/jpegs -S jpeg image.dd"
+  },
+  {
+    "instruction": "Compare two disk images for differences",
+    "output": "diff <(fls -o 2048 -r image1.dd) <(fls -o 2048 -r image2.dd)"
+  },
+  {
+    "instruction": "Find all world-writable files in Linux image",
+    "output": "fls -o 2048 -r image.dd | grep -E '^....w....|^.......w.'"
+  },
+  {
+    "instruction": "Extract WinRM logs from a Windows image",
+    "output": "fls -o 2048 -r image.dd | grep -i 'winrm' | grep -E '\\.evtx$'"
+  },
+  {
+    "instruction": "Run bulk_extractor and compress the output",
+    "output": "bulk_extractor -o /tmp/out image.dd && tar -czf /tmp/results.tar.gz /tmp/out"
+  },
+  {
+    "instruction": "Extract all files with the .encrypted extension",
+    "output": "fls -o 2048 -r image.dd | grep -i '\\.encrypted$|\\.crypt$|\\.locked$'"
+  },
+  {
+    "instruction": "Find deleted executable files in an image",
+    "output": "fls -o 2048 -r -d image.dd | grep -iE '\\.exe$|\\.dll$'"
+  },
+  {
+    "instruction": "Extract timestamp of Windows shutdown events",
+    "output": "fls -o 2048 -r image.dd | grep -i 'shutdown'"
+  },
+  {
+    "instruction": "Analyze an image with HFS+ filesystem",
+    "output": "fls -i raw -o 2048 -r -f hfs image.dd"
+  },
+  {
+    "instruction": "Extract office document metadata from an image",
+    "output": "fls -o 2048 -r image.dd | grep -iE '\\.doc$|\\.xls$|\\.ppt$'"
+  },
+  {
+    "instruction": "Find all files with length in name over 100 chars",
+    "output": "fls -o 2048 -r image.dd | awk '{if (length($NF) > 100) print}'"
+  },
+  {
+    "instruction": "Extract the Windows Registry from an image to local",
+    "output": "fls -o 2048 -r image.dd | grep 'config/' | grep -E 'SYSTEM|SOFTWARE|SAM|SECURITY' | awk '{print $2}' | tr -d ':' | xargs -I{} icat -o 2048 image.dd {} > {}.reg"
+  },
+  {
+    "instruction": "Run bulk_extractor with a specific entropy threshold",
+    "output": "bulk_extractor -o /tmp/high_entropy -E 7.5 image.dd"
+  },
+  {
+    "instruction": "Filter Plaso events for PowerShell command execution",
+    "output": "psort.py -o csv -w powershell.csv -q 'description CONTAINS \"powershell\"' /tmp/timeline.plaso"
+  },
+  {
+    "instruction": "Extect Slack workspace artifacts from an image",
+    "output": "fls -o 2048 -r image.dd | grep -i 'Slack'"
+  },
+  {
+    "instruction": "List all files that are NOT ASCII-only names",
+    "output": "fls -o 2048 -r image.dd | grep -P '[^\\x20-\\x7E]'"
+  },
+  {
+    "instruction": "Extract the SQLite databases from a Firefox profile",
+    "output": "fls -o 2048 -r image.dd | grep -i 'places.sqlite' | awk '{print $2}' | tr -d ':' | xargs -I{} icat -o 2048 image.dd {} > places.sqlite"
+  },
+  {
+    "instruction": "Analyze image for potential timestamp anomalies",
+    "output": "fls -o 2048 -r -p image.dd | awk -F'|' '{if ($3 > 2000000000) print}'"
+  },
+  {
+    "instruction": "Extract all files from the Recycle Bin in deep",
+    "output": "fls -o 2048 -r image.dd | grep -E '\\$Recycle\\.Bin|Recycler' | awk '{print $2}' | tr -d ':' | xargs -I{} icat -o 2048 image.dd {} > recycled_files/{}"
+  },
+  {
+    "instruction": "Find all files belonging to a specific user from /home",
+    "output": "fls -o 2048 -r image.dd | grep -E '^/home/[a-z]+/'"
+  },
+  {
+    "instruction": "Run bulk_extractor to identify file signatures",
+    "output": "bulk_extractor -o /tmp/sigs -S carve image.dd"
+  },
+  {
+    "instruction": "Extract all .conf and .config files from Linux image",
+    "output": "fls -o 2048 -r image.dd | grep -E '\\.conf$|\\.config$'"
+  },
+  {
+    "instruction": "Use mactime to parse body file into readable format",
+    "output": "mactime -b body.txt -z UTC > readable_timeline.txt"
+  },
+  {
+    "instruction": "Extract the NTFS $Bitmap file for cluster usage",
+    "output": "icat -o 2048 image.dd $(fls -o 2048 -r image.dd | grep '\\$Bitmap' | awk '{print $2}' | tr -d ':') > bitmap.bin"
+  },
+  {
+    "instruction": "List all files with access time after modification time",
+    "output": "fls -o 2048 -r -p image.dd | awk -F'|' '{if ($5 > $3) print}'"
+  }
+]

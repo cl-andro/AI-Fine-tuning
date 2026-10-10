@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a Makefile for common project tasks",
+    "output": "<think>\nThis is asking us to create a Makefile for common project tasks.\nI'll reach for cat here because cat operations.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > Makefile << 'EOF'\n.PHONY: build test clean\nbuild:\n\techo Building...\ntest:\n\techo Running tests...\nclean:\n\trm -rf dist/\nEOF"
+  },
+  {
+    "instruction": "Run a Makefile target",
+    "output": "<think>\nAlright, we need to run a Makefile target.\nLet me think about the best approach.\nI'll reach for make here because build automation and compilation control.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nmake build"
+  },
+  {
+    "instruction": "Run a Makefile target with variables",
+    "output": "<think>\nNeed to run a Makefile target with variables.\nFor this, make is the right tool — build automation and compilation control.\nCheck the output for errors before proceeding to the next step.\n</think>\nmake install PREFIX=/usr/local"
+  },
+  {
+    "instruction": "Create a Makefile with dependencies",
+    "output": "<think>\nThe goal is to create a Makefile with dependencies.\ncat is what we need — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > Makefile << 'EOF'\nall: build test\nbuild: deps\n\tgcc -o app main.c\ndeps:\n\t@echo Checking deps...\ntest:\n\t./app --test\nEOF"
+  },
+  {
+    "instruction": "Use autotools: create a configure.ac",
+    "output": "<think>\nWe should use autotools: create a configure.ac.\nThis calls for cat. Cat operations.\n</think>\ncat > configure.ac << 'EOF'\nAC_INIT([myapp], [1.0], [myemail@example.com])\nAM_INIT_AUTOMAKE\nAC_PROG_CC\nAC_CONFIG_FILES([Makefile])\nAC_OUTPUT\nEOF"
+  },
+  {
+    "instruction": "Generate configure script from configure.ac",
+    "output": "<think>\nThe goal is to generate configure script from configure.ac.\nBest tool here is autoreconf — autoreconf operations.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nautoreconf -i && ./configure"
+  },
+  {
+    "instruction": "Create a systemd service unit file",
+    "output": "<think>\nThe task requires us to create a systemd service unit file.\nThis calls for cat. Cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat > /etc/systemd/system/myapp.service << 'EOF'\n[Unit]\nDescription=My Custom App\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/myapp\nRestart=always\nUser=nobody\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl daemon-reload"
+  },
+  {
+    "instruction": "Create a systemd timer for a service",
+    "output": "<think>\nAlright, we need to create a systemd timer for a service.\nLet me think through this step by step.\nI'd use cat for this — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/systemd/system/myapp.timer << 'EOF'\n[Unit]\nDescription=Run myapp daily\n[Timer]\nOnCalendar=*-*-* 02:00:00\nPersistent=true\n[Install]\nWantedBy=timers.target\nEOF && systemctl enable --now myapp.timer"
+  },
+  {
+    "instruction": "Create a systemd path unit to watch a directory",
+    "output": "<think>\nNeed to create a systemd path unit to watch a directory.\nLet me break this down.\nI'd use cat for this — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/systemd/system/watch.path << 'EOF'\n[Path]\nPathChanged=/var/spool/upload\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl enable --now watch.path"
+  },
+  {
+    "instruction": "Install and configure uWSGI for Python apps",
+    "output": "<think>\nWe're being asked to install and configure uWSGI for Python apps.\nHere's how I'd approach this.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y uwsgi uwsgi-plugin-python3 && cat > /etc/uwsgi/apps-available/myapp.ini << 'EOF'\n[uwsgi]\nchdir = /var/www/myapp\nmodule = app\ncallable = app\nsocket = /run/uwsgi/myapp.sock\nprocesses = 4\nEOF && ln -s /etc/uwsgi/apps-available/myapp.ini /etc/uwsgi/apps-enabled/ && systemctl restart uwsgi"
+  },
+  {
+    "instruction": "Install gunicorn for Python web apps",
+    "output": "<think>\nSo the request is to install gunicorn for Python web apps.\nLet me reason through this.\npip is what we need — Python package management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\npip install gunicorn && gunicorn --bind 0.0.0.0:8000 app:app"
+  },
+  {
+    "instruction": "Create a gunicorn systemd service",
+    "output": "<think>\nThe goal is to create a gunicorn systemd service.\nBest tool here is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/systemd/system/gunicorn.service << 'EOF'\n[Unit]\nDescription=Gunicorn Python App\n[Service]\nExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:8000 app:app\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF && systemctl enable --now gunicorn"
+  },
+  {
+    "instruction": "Install PM2 for Node.js process management",
+    "output": "<think>\nThe task requires us to install PM2 for Node.js process management.\nLet me break this down.\nnpm is what we need — Node.js package management.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nnpm install -g pm2"
+  },
+  {
+    "instruction": "Start a Node.js app with PM2",
+    "output": "<think>\nAlright, we need to start a Node.js app with PM2.\nLet me consider what makes sense here.\nThe tool for this job is pm2 — pm2 operations.\n</think>\npm2 start app.js --name myapp"
+  },
+  {
+    "instruction": "List PM2 processes",
+    "output": "<think>\nAlright, we need to list PM2 processes.\nFor this, pm2 is the right tool — pm2 operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\npm2 list"
+  },
+  {
+    "instruction": "Restart a PM2 process",
+    "output": "<think>\nWe're being asked to restart a PM2 process.\nLet me think about the best approach.\nThis calls for pm2. Pm2 operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\npm2 restart myapp"
+  },
+  {
+    "instruction": "Stop a PM2 process",
+    "output": "<think>\nThe goal is to stop a PM2 process.\nLet me consider what makes sense here.\nI'll reach for pm2 here because pm2 operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\npm2 stop myapp"
+  },
+  {
+    "instruction": "Delete a PM2 process",
+    "output": "<think>\nThe task requires us to delete a PM2 process.\nHere's how I'd approach this.\npm2 is what we need — pm2 operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\npm2 delete myapp"
+  },
+  {
+    "instruction": "Save PM2 process list for auto-start on reboot",
+    "output": "<think>\nWe're being asked to save PM2 process list for auto-start on reboot.\nLet me reason through this.\nI'd use pm2 for this — pm2 operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\npm2 save && pm2 startup systemd"
+  },
+  {
+    "instruction": "Monitor PM2 processes with live metrics",
+    "output": "<think>\nThe task requires us to monitor PM2 processes with live metrics.\nLet me consider what makes sense here.\npm2 is what we need — pm2 operations.\nOne command does the job. Simple is better.\nQuick verification after execution to be safe.\n</think>\npm2 monit"
+  },
+  {
+    "instruction": "View PM2 logs",
+    "output": "<think>\nWe're being asked to view PM2 logs.\nBest tool here is pm2 — pm2 operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\npm2 logs myapp --lines 50"
+  },
+  {
+    "instruction": "Reload PM2 process (zero-downtime restart)",
+    "output": "<think>\nSo the request is to reload PM2 process (zero-downtime restart).\nLet me think through this step by step.\nThis calls for pm2. Pm2 operations.\nOne command does the job. Simple is better.\n</think>\npm2 reload myapp"
+  },
+  {
+    "instruction": "Scale a PM2 process to 4 instances (cluster mode)",
+    "output": "<think>\nThe task requires us to scale a PM2 process to 4 instances (cluster mode).\nLet me consider what makes sense here.\nBest tool here is pm2 — pm2 operations.\n</think>\npm2 scale myapp 4"
+  },
+  {
+    "instruction": "Set PM2 to watch file changes and restart",
+    "output": "<think>\nThe task requires us to set PM2 to watch file changes and restart.\nLet me reason through this.\nI'd use pm2 for this — pm2 operations.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\npm2 start app.js --watch --name myapp"
+  }
+]

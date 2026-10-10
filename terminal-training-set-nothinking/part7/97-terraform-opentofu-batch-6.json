@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Run TFLint for Terraform best practices",
+    "output": "tflint --recursive"
+  },
+  {
+    "instruction": "Run TFLint with a custom config file",
+    "output": "tflint -c .tflint.hcl"
+  },
+  {
+    "instruction": "Generate a Terragrunt infrastructure-live layout",
+    "output": "mkdir -p terragrunt/{prod/staging/dev}/{vpc,app,db}"
+  },
+  {
+    "instruction": "Create a remote state locking DynamoDB table with Terraform",
+    "output": "echo 'resource \"aws_dynamodb_table\" \"lock\" { name = \"tf-lock\" billing_mode = \"PAY_PER_REQUEST\" hash_key = \"LockID\" attribute { name = \"LockID\" type = \"S\" } }' > state.tf"
+  },
+  {
+    "instruction": "Create an S3 bucket for Terraform state",
+    "output": "echo 'resource \"aws_s3_bucket\" \"state\" { bucket = \"my-org-tf-state-${var.environment}\" }' > state.tf"
+  },
+  {
+    "instruction": "Enable versioning on the state bucket",
+    "output": "echo 'resource \"aws_s3_bucket_versioning\" \"v\" { bucket = aws_s3_bucket.state.id versioning_configuration { status = \"Enabled\" } }' > state.tf"
+  },
+  {
+    "instruction": "Encrypt state bucket with KMS",
+    "output": "echo 'resource \"aws_s3_bucket_server_side_encryption_configuration\" \"enc\" { bucket = aws_s3_bucket.state.id rule { apply_server_side_encryption_by_default { sse_algorithm = \"AES256\" } } }' > state.tf"
+  },
+  {
+    "instruction": "Block public access to state bucket",
+    "output": "echo 'resource \"aws_s3_bucket_public_access_block\" \"block\" { bucket = aws_s3_bucket.state.id block_public_acls = true block_public_policy = true }' > state.tf"
+  },
+  {
+    "instruction": "Create a Terraform module for VPC with variables",
+    "output": "mkdir -p modules/vpc && echo 'variable \"cidr\" { type = string }' > modules/vpc/variables.tf"
+  },
+  {
+    "instruction": "Output module values in a VPC module",
+    "output": "echo 'output \"vpc_id\" { value = aws_vpc.main.id }' > modules/vpc/outputs.tf"
+  },
+  {
+    "instruction": "Use module source from the Terraform Registry",
+    "output": "echo 'module \"vpc\" { source = \"terraform-aws-modules/vpc/aws\" version = \"5.0.0\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from a Git HTTPS source",
+    "output": "echo 'module \"app\" { source = \"git::https://github.com/org/modules.git//app\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from local path",
+    "output": "echo 'module \"networking\" { source = \"./modules/networking\" }' > main.tf"
+  },
+  {
+    "instruction": "Use module from a Git SSH source with ref",
+    "output": "echo 'module \"app\" { source = \"git::ssh://git@github.com/org/modules.git//app?ref=v1.2.0\" }' > main.tf"
+  },
+  {
+    "instruction": "Use multiple module sources with count",
+    "output": "echo 'module \"bucket\" { source = \"./modules/s3\" count = length(var.buckets) }' > main.tf"
+  },
+  {
+    "instruction": "Configure a Terraform provider alias",
+    "output": "echo 'provider \"aws\" { alias = \"west\" region = \"us-west-2\" }' > providers.tf"
+  },
+  {
+    "instruction": "Use provider alias in a resource",
+    "output": "echo 'resource \"aws_instance\" \"web\" { provider = aws.west }' > main.tf"
+  },
+  {
+    "instruction": "Use the archive provider to zip a directory",
+    "output": "echo 'data \"archive_file\" \"lambda\" { type = \"zip\" source_dir = \"${path.module}/src\" output_path = \"${path.module}/lambda.zip\" }' > lambda.tf"
+  },
+  {
+    "instruction": "Create a null_resource with triggers",
+    "output": "echo 'resource \"null_resource\" \"deploy\" { triggers = { hash = filesha1(\"${path.module}/app.zip\") } }' > null.tf"
+  },
+  {
+    "instruction": "Set an environment variable for Terraform in automation",
+    "output": "export TF_IN_AUTOMATION=true && terraform apply -auto-approve"
+  },
+  {
+    "instruction": "Use partial backend configuration for dynamic values",
+    "output": "echo 'terraform { backend \"s3\" {} }' > backend.tf && terraform init -backend-config='key=prod/terraform.tfstate'"
+  },
+  {
+    "instruction": "Read a JSON file with local data source",
+    "output": "echo 'locals { config = jsondecode(file(\"${path.module}/config.json\")) }' > locals.tf"
+  },
+  {
+    "instruction": "Read a YAML file with yamldecode",
+    "output": "echo 'locals { config = yamldecode(file(\"${path.module}/config.yml\")) }' > locals.tf"
+  },
+  {
+    "instruction": "Run terraform-bundle to build custom provider bundles",
+    "output": "terraform-bundle package bundle.hcl"
+  },
+  {
+    "instruction": "Use the cloud-init provider for instance config",
+    "output": "echo 'data \"cloudinit_config\" \"user_data\" { part { content_type = \"text/cloud-config\" content = \"#cloud-config\\npackage_update: true\" } }' > cloudinit.tf"
+  }
+]

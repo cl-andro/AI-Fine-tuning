@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "How to set target TPG enable",
+    "output": "<think>\nAlright, we need to set target TPG enable.\nI'll reach for targetcli here because targetcli operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1 enable"
+  },
+  {
+    "instruction": "How to set iSCSI login timeout",
+    "output": "<think>\nWe should set iSCSI login timeout.\nLet me think about the best approach.\nFor this, targetcli is the right tool — targetcli operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1 set attribute login_timeout=15"
+  },
+  {
+    "instruction": "How to view iSCSI statistics",
+    "output": "<think>\nThis is asking us to view iSCSI statistics.\nLet me consider what makes sense here.\niscsiadm is what we need — iscsiadm operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\niscsiadm -m session -s"
+  },
+  {
+    "instruction": "How to set iSCSI error recovery",
+    "output": "<think>\nSo the request is to set iSCSI error recovery.\nLet me think about the best approach.\nThe tool for this job is iscsiadm — iscsiadm operations.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nI'm using -T for print filesystem type in df — without it the command won't work as we need.\nI'm using -n for dry-run, no changes — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\niscsiadm -m node -o update -T iqn.2025-01.example:storage1 -n node.conn[0].iscsi.ErrorRecoveryLevel -v 2"
+  },
+  {
+    "instruction": "How to configure multiple LUNs per target",
+    "output": "<think>\nAlright, we need to configure multiple LUNs per target.\nLet me consider what makes sense here.\nFor this, targetcli is the right tool — targetcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1/luns create /backstores/block/disk2"
+  },
+  {
+    "instruction": "How to launch targetcli interactive shell",
+    "output": "<think>\nThe user wants to launch targetcli interactive shell.\nFirst, let me understand what's needed here.\nI'd use targetcli for this — targetcli operations.\n</think>\ntargetcli"
+  },
+  {
+    "instruction": "How to create an iSCSI target",
+    "output": "<think>\nWe're being asked to create an iSCSI target.\nBest tool here is targetcli — targetcli operations.\n</think>\ntargetcli /iscsi create iqn.2025-01.example:storage1"
+  },
+  {
+    "instruction": "How to create a LUN backed by a block device",
+    "output": "<think>\nThe task requires us to create a LUN backed by a block device.\nBest tool here is targetcli — targetcli operations.\n</think>\ntargetcli /backstores/block create disk1 /dev/sdb1\n/iscsi/iqn.2025-01.example:storage1/tpg1/luns create /backstores/block/disk1"
+  },
+  {
+    "instruction": "How to set CHAP authentication for target",
+    "output": "<think>\nAlright, we need to set CHAP authentication for target.\nThis calls for targetcli. Targetcli operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1 set attribute authentication=1\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1 set auth userid=username password=secret"
+  },
+  {
+    "instruction": "How to discover iSCSI targets on a portal",
+    "output": "<think>\nSo the request is to discover iSCSI targets on a portal.\nFirst, let me understand what's needed here.\nFor this, iscsiadm is the right tool — iscsiadm operations.\nA quick sanity check afterward saves debugging time later.\n</think>\niscsiadm -m discovery -t sendtargets -p 192.168.1.10"
+  },
+  {
+    "instruction": "How to login to an iSCSI target",
+    "output": "<think>\nSo we need to login to an iSCSI target.\nI'll reach for iscsiadm here because iscsiadm operations.\nI'll check the output to make sure it did what we expected.\n</think>\niscsiadm -m node -T iqn.2025-01.example:storage1 -p 192.168.1.10 --login"
+  },
+  {
+    "instruction": "How to logout from an iSCSI target",
+    "output": "<think>\nWe should logout from an iSCSI target.\nFirst, let me understand what's needed here.\niscsiadm is what we need — iscsiadm operations.\nLet me verify afterward that it worked correctly.\n</think>\niscsiadm -m node -T iqn.2025-01.example:storage1 -p 192.168.1.10 --logout"
+  },
+  {
+    "instruction": "How to view active iSCSI sessions",
+    "output": "<think>\nNeed to view active iSCSI sessions.\nLet me think through this step by step.\nThe tool for this job is iscsiadm — iscsiadm operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\niscsiadm -m session -P 3"
+  },
+  {
+    "instruction": "How to list all iSCSI targets",
+    "output": "<think>\nNeed to list all iSCSI targets.\nThe tool for this job is iscsiadm — iscsiadm operations.\nI've added -o to output to file, OR operator in find — this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\n</think>\niscsiadm -m node -o show"
+  },
+  {
+    "instruction": "How to delete an iSCSI target",
+    "output": "<think>\nNeed to delete an iSCSI target.\nLet me think about the best approach.\nThis calls for targetcli. Targetcli operations.\n</think>\ntargetcli /iscsi delete iqn.2025-01.example:storage1"
+  },
+  {
+    "instruction": "How to create an iSCSI portal",
+    "output": "<think>\nWe should create an iSCSI portal.\nLet me break this down.\ntargetcli is what we need — targetcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1/portals create 0.0.0.0 3260"
+  },
+  {
+    "instruction": "How to set target ACL",
+    "output": "<think>\nThis is asking us to set target ACL.\nHere's how I'd approach this.\nThis calls for targetcli. Targetcli operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1 set attribute generate_node_acls=1"
+  },
+  {
+    "instruction": "How to add initiator to ACL",
+    "output": "<think>\nWe're being asked to add initiator to ACL.\nFirst, let me understand what's needed here.\nThis calls for targetcli. Targetcli operations.\nI'll check the output to make sure it did what we expected.\n</think>\ntargetcli /iscsi/iqn.2025-01.example:storage1/tpg1/acls create iqn.2025-01.initiator:client1"
+  },
+  {
+    "instruction": "How to view iSCSI nodes",
+    "output": "<think>\nThe user wants to view iSCSI nodes.\nFirst, let me understand what's needed here.\niscsiadm is what we need — iscsiadm operations.\nLet me verify afterward that it worked correctly.\n</think>\niscsiadm -m node"
+  },
+  {
+    "instruction": "How to set LUN read-only",
+    "output": "<think>\nThe task requires us to set LUN read-only.\nThis calls for targetcli. Targetcli operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntargetcli /backstores/block/disk1 set attribute read_only=1"
+  },
+  {
+    "instruction": "How to configure iSCSI iface",
+    "output": "<think>\nSo the request is to configure iSCSI iface.\nLet me think about the best approach.\nI'd use iscsiadm for this — iscsiadm operations.\nWhy -I? Ignore case. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\n</think>\niscsiadm -m iface -I iscsi0 --op=new"
+  }
+]

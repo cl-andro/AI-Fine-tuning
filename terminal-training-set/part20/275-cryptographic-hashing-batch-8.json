@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to compute a SHA-256 hash of a base64 decoded input",
+    "output": "<think>\nNeed to compute a SHA-256 hash of a base64 decoded input.\nLet me consider what makes sense here.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'dGVzdA==' | base64 -d | sha256sum"
+  },
+  {
+    "instruction": "How to compute a hash of a hex decoded input",
+    "output": "<think>\nWe're being asked to compute a hash of a hex decoded input.\nLet me consider what makes sense here.\nThe -r flag handles recursive operation (descend into subdirectories). Important because this controls how the output is formatted.\nI've added -p to create parent directories as needed — this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\necho '68656c6c6f' | xxd -r -p | sha256sum"
+  },
+  {
+    "instruction": "How to compute a hash of the output of a command",
+    "output": "<think>\nThe goal is to compute a hash of the output of a command.\nLet me think through this step by step.\nls is what we need — ls operations.\nI'm using -la for detailed listing including hidden files — needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\n</think>\nls -la | sha256sum"
+  },
+  {
+    "instruction": "How to compute a hash of a file and sign it",
+    "output": "<think>\nSo we need to compute a hash of a file and sign it.\nLet me break this down.\nFor this, sha256sum is the right tool — sha256sum operations.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\n</think>\nsha256sum file.txt | gpg --clearsign > file.txt.sha256.asc"
+  },
+  {
+    "instruction": "How to verify a GPG-signed checksum file",
+    "output": "<think>\nWe're being asked to verify a GPG-signed checksum file.\nFirst, let me understand what's needed here.\nThe tool for this job is gpg — file encryption, decryption, and signing.\nI'm using -c for count or create — needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nGPG keys are sensitive — don't expose them in logs or share private keys.\n</think>\ngpg --decrypt file.txt.sha256.asc | sha256sum -c"
+  },
+  {
+    "instruction": "How to compute the hash of a file's first 1KB",
+    "output": "<think>\nWe're being asked to compute the hash of a file's first 1KB.\nLet me reason through this.\nhead is what we need — head operations.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nhead -c 1024 file.txt | sha256sum"
+  },
+  {
+    "instruction": "How to compute the hash of a file's last 1KB",
+    "output": "<think>\nThe task requires us to compute the hash of a file's last 1KB.\nHere's how I'd approach this.\nI'll reach for tail here because tail operations.\nThe -c flag handles count or create. Important because without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\n</think>\ntail -c 1024 file.txt | sha256sum"
+  },
+  {
+    "instruction": "How to compute a hash of a filesystem UUID",
+    "output": "<think>\nSo we need to compute a hash of a filesystem UUID.\nLet me reason through this.\nBest tool here is blkid — block device attribute lookup.\nWhy -s? Summarize or silent mode. standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nblkid -s UUID -o value /dev/sda1 | sha256sum"
+  },
+  {
+    "instruction": "How to compute the hash of a network interface MAC",
+    "output": "<think>\nThe goal is to compute the hash of a network interface MAC.\nThe tool for this job is ip — network interface configuration.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nip link show eth0 | awk '/ether/ {print $2}' | sha256sum"
+  },
+  {
+    "instruction": "How to compute the hash of hostname",
+    "output": "<think>\nWe're being asked to compute the hash of hostname.\nLet me break this down.\nBest tool here is hostname — hostname operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nhostname | sha256sum"
+  },
+  {
+    "instruction": "How to compute hashdeep with a delimiter",
+    "output": "<think>\nThe goal is to compute hashdeep with a delimiter.\nI'll reach for hashdeep here because hashdeep operations.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\nhashdeep -r -d '|' -c sha256 dir/"
+  },
+  {
+    "instruction": "How to compute hashdeep with a recursive search limited to depth",
+    "output": "<think>\nWe should compute hashdeep with a recursive search limited to depth.\nFor this, find is the right tool — file searching.\nThe -maxdepth flag handles limit directory descent depth. Important because without it the command won't work as we need.\nThe -type flag handles filter by file type. Important because needed for this specific use case.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind dir/ -maxdepth 2 -type f -exec sha256sum {} + > limited-hashes.txt"
+  },
+  {
+    "instruction": "How to compute hash of file with a custom name output",
+    "output": "<think>\nSo we need to compute hash of file with a custom name output.\nsha256sum is what we need — sha256sum operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nsha256sum file.txt | sed 's|file.txt|custom-name.txt|'"
+  },
+  {
+    "instruction": "How to find all files with a specific hash",
+    "output": "<think>\nThis is asking us to find all files with a specific hash.\nFirst, let me understand what's needed here.\nBest tool here is find — file searching.\nEach pipe stage handles one transformation, keeping the logic composable.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nLet me verify afterward that it worked correctly.\n</think>\nfind . -type f -exec sha256sum {} \\; | grep '^expected_hash'"
+  },
+  {
+    "instruction": "How to recompute hash for a file and compare",
+    "output": "<think>\nThis is asking us to recompute hash for a file and compare.\nLet me consider what makes sense here.\nI'd use test for this — test operations.\nThe -d flag handles directory listing, don't descend. Important because standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ntest \"$(sha256sum file.txt | cut -d' ' -f1)\" = \"$expected\" && echo 'Match'"
+  },
+  {
+    "instruction": "How to compute a combined hash of multiple inputs",
+    "output": "<think>\nSo the request is to compute a combined hash of multiple inputs.\nI'll reach for sha256sum here because sha256sum operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nsha256sum file1.txt file2.txt | sha256sum"
+  },
+  {
+    "instruction": "How to compute hash of a sorted list of files",
+    "output": "<think>\nThe user wants to compute hash of a sorted list of files.\nThis calls for sha256sum. Sha256sum operations.\nWhy -type? Filter by file type. without it the command won't work as we need.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nQuick verification after execution to be safe.\n</think>\nsha256sum $(find . -type f | sort) | sha256sum"
+  },
+  {
+    "instruction": "How to compute a rolling hash for log files",
+    "output": "<think>\nSo we need to compute a rolling hash for log files.\nLet me think about the best approach.\ntac is what we need — tac operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ntac file.log | sha256sum"
+  },
+  {
+    "instruction": "How to compute hash with a leading zero check",
+    "output": "<think>\nSo we need to compute hash with a leading zero check.\nLet me think through this step by step.\nThis calls for sha256sum. Sha256sum operations.\nI've added -q to quiet mode, minimal output — important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsha256sum file.txt | grep -q '^0000' && echo 'Hash with leading zeros'"
+  },
+  {
+    "instruction": "How to compute a hash of an encrypted file",
+    "output": "<think>\nAlright, we need to compute a hash of an encrypted file.\nThe tool for this job is gpg — file encryption, decryption, and signing.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nGPG keys are sensitive — don't expose them in logs or share private keys.\n</think>\ngpg --decrypt file.gpg | sha256sum"
+  },
+  {
+    "instruction": "How to verify that a file has not changed after processing",
+    "output": "<think>\nNeed to verify that a file has not changed after processing.\nLet me reason through this.\nI'd use before for this — before operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nbefore=$(sha256sum file.txt) && process file.txt && echo \"$before\" | sha256sum -c"
+  },
+  {
+    "instruction": "How to compute a hash of a file on a remote server",
+    "output": "<think>\nNeed to compute a hash of a file on a remote server.\nThe tool for this job is ssh — remote system access.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nssh user@host 'sha256sum /path/to/file.txt'"
+  },
+  {
+    "instruction": "How to compare hashes of a local and remote file",
+    "output": "<think>\nThe user wants to compare hashes of a local and remote file.\nLet me consider what makes sense here.\nBest tool here is test — test operations.\nThe -d flag means directory listing, don't descend, which matters here because without it the command won't work as we need.\nI'm using -d for directory listing, don't descend — important to get the expected behavior.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ntest \"$(sha256sum file.txt | cut -d' ' -f1)\" = \"$(ssh user@host 'sha256sum file.txt | cut -d\" \" -f1')\" && echo 'Identical'"
+  },
+  {
+    "instruction": "How to compute a hash of a backup file",
+    "output": "<think>\nThe user wants to compute a hash of a backup file.\nLet me consider what makes sense here.\nThe tool for this job is sha256sum — sha256sum operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nsha256sum backup.tar.gz > backup.tar.gz.sha256"
+  },
+  {
+    "instruction": "How to verify backup hash after transfer",
+    "output": "<think>\nThe user wants to verify backup hash after transfer.\nThis calls for scp. Secure file transfer.\nI'm using -c for count or create — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nscp user@host:backup.tar.gz . && sha256sum -c backup.tar.gz.sha256"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {"instruction": "Add promtail config for SNMP monitoring", "output": "cat > /etc/promtail/snmp-config.yml << 'EOF'\nscrape_configs:\n- job_name: snmp\n  snmp_sd_configs:\n  - targets:\n      - 192.168.1.100\n    labels:\n      job: snmp\nEOF"},
+  {"instruction": "Add promtail config for gelf input", "output": "cat > /etc/promtail/gelf-config.yml << 'EOF'\nscrape_configs:\n- job_name: gelf\n  gelf:\n    listen_address: 0.0.0.0:12201\n    labels:\n      job: gelf\nEOF"},
+  {"instruction": "Add consul discovery to promtail", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: consul\n  consul_sd_configs:\n  - server: localhost:8500\n    services:\n      - myapp\n  relabel_configs:\n  - source_labels: [__meta_consul_service]\n    target_label: service\n  - source_labels: [__meta_consul_node]\n    target_label: node\nEOF"},
+  {"instruction": "Add dns service discovery to promtail", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nscrape_configs:\n- job_name: dns\n  dns_sd_configs:\n  - names:\n      - myapp.service.consul\n    type: A\n    port: 8080\nEOF"},
+  {"instruction": "Configure promtail to use proxy", "output": "export HTTP_PROXY=http://proxy:3128; export HTTPS_PROXY=http://proxy:3128; promtail -config.file=/etc/promtail/config.yml"},
+  {"instruction": "Set promtail client timeout", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\n    timeout: 30s\nEOF"},
+  {"instruction": "Configure promtail batch size and wait", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\n    batchwait: 1s\n    batchsize: 1048576\nEOF"},
+  {"instruction": "Enable promtail backoff configuration", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\n    backoff_config:\n      min_period: 100ms\n      max_period: 10s\n      max_retries: 10\nEOF"},
+  {"instruction": "Set promtail external labels", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\n    external_labels:\n      cluster: production\n      datacenter: dc1\nEOF"},
+  {"instruction": "Add basic auth to promtail client", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://localhost:3100/loki/api/v1/push\n    basic_auth:\n      username: promtail\n      password_file: /etc/promtail/pass.txt\nEOF"},
+  {"instruction": "Add TLS to promtail client", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: https://loki.example.com/loki/api/v1/push\n    tls_config:\n      ca_file: /etc/promtail/ca.crt\n      cert_file: /etc/promtail/client.crt\n      key_file: /etc/promtail/client.key\n      server_name: loki.example.com\nEOF"},
+  {"instruction": "Configure promtail server with TLS", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nserver:\n  http_listen_port: 9080\n  grpc_listen_port: 0\n  http_tls_config:\n    cert_file: /etc/promtail/server.crt\n    key_file: /etc/promtail/server.key\nEOF"},
+  {"instruction": "Set promtail max stream limit", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nlimit_config:\n  max_streams: 1000\nEOF"},
+  {"instruction": "Enable promtail file watching", "output": "cat >> /etc/promtail/config.yml << 'EOF'\npositions:\n  filename: /var/lib/promtail/positions.yml\n  sync_period: 10s\n  ignore_invalid_yaml: true\nEOF"},
+  {"instruction": "Configure promtail to use a different loki address", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclients:\n  - url: http://loki-headless:3100/loki/api/v1/push\nEOF"},
+  {"instruction": "Set promtail log level to debug", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nserver:\n  log_level: debug\nEOF"},
+  {"instruction": "Enable promtail profiling", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nserver:\n  http_listen_port: 9080\n  grpc_listen_port: 0\n  profile: true\nEOF"},
+  {"instruction": "Set max batch size for promtail", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclient:\n  max_batch_size: 2097152\nEOF"},
+  {"instruction": "Configure promtail max retries", "output": "cat >> /etc/promtail/config.yml << 'EOF'\nclient:\n  max_retries: 5\nEOF"},
+  {"instruction": "Set promtail min backup interval", "output": "cat >> /etc/promtail/config.yml << 'EOF'\npositions:\n  filename: /var/lib/promtail/positions.yml\n  backup_interval: 5m\nEOF"},
+  {"instruction": "Enable promtail print of config at startup", "output": "promtail -config.file=/etc/promtail/config.yml -print-config-stages 2>&1 | head -100"}
+]

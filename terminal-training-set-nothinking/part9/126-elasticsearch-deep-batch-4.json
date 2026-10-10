@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Freeze an index (read-only)",
+    "output": "curl -X POST 'localhost:9200/myindex/_freeze'"
+  },
+  {
+    "instruction": "Unfreeze a frozen index",
+    "output": "curl -X POST 'localhost:9200/myindex/_unfreeze'"
+  },
+  {
+    "instruction": "Split an index to increase shards",
+    "output": "curl -X POST 'localhost:9200/myindex/_split/split-myindex' -H 'Content-Type: application/json' -d '{\"settings\": {\"index.number_of_shards\": 4}}'"
+  },
+  {
+    "instruction": "Shrink an index to reduce shards",
+    "output": "curl -X POST 'localhost:9200/myindex/_shrink/shrunk-myindex' -H 'Content-Type: application/json' -d '{\"settings\": {\"index.number_of_shards\": 1}}'"
+  },
+  {
+    "instruction": "Close an index",
+    "output": "curl -X POST 'localhost:9200/myindex/_close'"
+  },
+  {
+    "instruction": "Open a closed index",
+    "output": "curl -X POST 'localhost:9200/myindex/_open'"
+  },
+  {
+    "instruction": "Create a security role",
+    "output": "curl -X PUT 'localhost:9200/_security/role/my_role' -H 'Content-Type: application/json' -d '{\"cluster\": [\"all\"], \"indices\": [{\"names\": [\"myindex\"], \"privileges\": [\"read\", \"write\"]}]}'"
+  },
+  {
+    "instruction": "Create a user in the native realm",
+    "output": "curl -X POST 'localhost:9200/_security/user/myuser' -H 'Content-Type: application/json' -d '{\"password\": \"password123\", \"roles\": [\"my_role\"]}'"
+  },
+  {
+    "instruction": "Authenticate a user",
+    "output": "curl -X GET 'localhost:9200/_security/_authenticate' -u myuser:password123"
+  },
+  {
+    "instruction": "Run SQL query against Elasticsearch",
+    "output": "curl -X POST 'localhost:9200/_sql?format=txt' -H 'Content-Type: application/json' -d '{\"query\": \"SELECT * FROM myindex LIMIT 10\"}'"
+  },
+  {
+    "instruction": "Count documents in an index",
+    "output": "curl -X GET 'localhost:9200/myindex/_count?pretty'"
+  },
+  {
+    "instruction": "Validate a query with explain",
+    "output": "curl -X POST 'localhost:9200/myindex/_validate/query?explain&pretty' -H 'Content-Type: application/json' -d '{\"query\": {\"match\": {\"title\": \"test\"}}}'"
+  },
+  {
+    "instruction": "Get async search status",
+    "output": "curl -X GET 'localhost:9200/_async_search/status/<id>?pretty'"
+  },
+  {
+    "instruction": "Delete an async search",
+    "output": "curl -X DELETE 'localhost:9200/_async_search/<id>'"
+  },
+  {
+    "instruction": "Setup an enrichment policy",
+    "output": "curl -X PUT 'localhost:9200/_enrich/policy/my_policy' -H 'Content-Type: application/json' -d '{\"match\": {\"indices\": \"countries\", \"match_field\": \"country_code\", \"enrich_fields\": [\"country_name\"]}}'"
+  },
+  {
+    "instruction": "Execute an enrichment policy",
+    "output": "curl -X PUT 'localhost:9200/_enrich/policy/my_policy/_execute'"
+  },
+  {
+    "instruction": "List all pending tasks",
+    "output": "curl -X GET 'localhost:9200/_tasks?pretty'"
+  },
+  {
+    "instruction": "Cancel a task by ID",
+    "output": "curl -X POST 'localhost:9200/_tasks/<task_id>/_cancel?pretty'"
+  },
+  {
+    "instruction": "Create a search template",
+    "output": "curl -X PUT 'localhost:9200/_scripts/my_search_template' -H 'Content-Type: application/json' -d '{\"script\": {\"lang\": \"mustache\", \"source\": \"{\\\"query\\\": {\\\"match\\\": {\\\"{{field}}\\\": \\\"{{value}}\\\"}}}\"}}'"
+  },
+  {
+    "instruction": "Use a search template to query",
+    "output": "curl -X GET 'localhost:9200/myindex/_search/template?pretty' -H 'Content-Type: application/json' -d '{\"id\": \"my_search_template\", \"params\": {\"field\": \"title\", \"value\": \"test\"}}'"
+  },
+  {
+    "instruction": "Create a rollup job",
+    "output": "curl -X PUT 'localhost:9200/_rollup/job/my_rollup' -H 'Content-Type: application/json' -d '{\"index_pattern\": \"logs-*\", \"rollup_index\": \"logs-rollup\", \"cron\": \"*/30 * * * * ?\", \"page_size\": 1000, \"groups\": {\"date_histogram\": {\"field\": \"@timestamp\", \"fixed_interval\": \"60m\"}}}'"
+  },
+  {
+    "instruction": "Run the elasticsearch-setup-passwords utility",
+    "output": "elasticsearch-setup-passwords auto -u http://localhost:9200"
+  }
+]

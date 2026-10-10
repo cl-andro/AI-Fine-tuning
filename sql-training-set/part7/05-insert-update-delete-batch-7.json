@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert a single row with title='John'",
+    "output": "INSERT INTO products (title, price) VALUES ('John', 100);"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert multiple rows at once",
+    "output": "INSERT INTO products (title, price) VALUES ('John', 1), ('Jane', 2), ('Jim', 3);"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert into products from a select that filters stock",
+    "output": "INSERT INTO products (title, price) SELECT title, price FROM products_src WHERE stock = 'x';"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate the row with id=7",
+    "output": "UPDATE products SET title = 'NewName' WHERE id = 7;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate all rows setting price to 0",
+    "output": "UPDATE products SET price = 0;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate products increasing all price by 10%",
+    "output": "UPDATE products SET price = price * 1.1;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate rows where stock equals 'done'",
+    "output": "UPDATE products SET title = 'Finished' WHERE stock = 'done';"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete a row by id 12",
+    "output": "DELETE FROM products WHERE id = 12;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete rows where price is below 50",
+    "output": "DELETE FROM products WHERE price < 50;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete rows where stock is NULL",
+    "output": "DELETE FROM products WHERE stock IS NULL;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete all rows from products",
+    "output": "DELETE FROM products;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpsert: insert or update on conflict of the id",
+    "output": "INSERT INTO products (id, title) VALUES (1, 'X') ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nConditional update using CASE",
+    "output": "UPDATE products SET price = CASE WHEN price > 100 THEN price - 10 ELSE price + 10 END;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate a join-based target using a subquery value",
+    "output": "UPDATE products SET price = (SELECT MAX(price) FROM products) WHERE price IS NULL;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete with a subquery filter",
+    "output": "DELETE FROM products WHERE price IN (SELECT price FROM products WHERE stock = 'skip');"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert with explicit column list and defaults",
+    "output": "INSERT INTO products (title, price, stock) VALUES ('A', 5, 'active');"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate with a LIMIT to only change a few rows",
+    "output": "UPDATE products SET price = price + 1 WHERE id IN (SELECT id FROM products LIMIT 5);"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert ignoring duplicates",
+    "output": "INSERT OR IGNORE INTO products (title) VALUES ('Dup');"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nDelete a range where price between two values",
+    "output": "DELETE FROM products WHERE price BETWEEN 20 AND 30;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nUpdate setting multiple columns",
+    "output": "UPDATE products SET title = 'Z', price = 0, stock = NULL WHERE id = 9;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nInsert a row returning its id",
+    "output": "INSERT INTO products (title) VALUES ('Ret') RETURNING id;"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nReplace all occurrences in a string column",
+    "output": "UPDATE products SET stock = REPLACE(stock, 'a', 'b');"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nTrim whitespace then update title",
+    "output": "UPDATE products SET title = TRIM(title);"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nLowercase a text column in place",
+    "output": "UPDATE products SET title = LOWER(title);"
+  },
+  {
+    "instruction": "Schema: products(id, title, price, stock)\nBulk upsert with multiple rows",
+    "output": "INSERT INTO products (id, title) VALUES (1, 'A'), (2, 'B') ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title;"
+  }
+]

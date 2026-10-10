@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Add a common label to all resources",
+    "output": "kustomize edit add label app:myapp,env:production"
+  },
+  {
+    "instruction": "Add a common annotation to all resources",
+    "output": "kustomize edit add annotation managed-by:kustomize,team:platform"
+  },
+  {
+    "instruction": "Add a strategic merge patch",
+    "output": "kustomize edit add patch --path patches/replicas.yaml --group apps --version v1 --kind Deployment"
+  },
+  {
+    "instruction": "Add a JSON 6902 patch",
+    "output": "kustomize edit add patch --path patches/add-sidecar.yaml --group apps --version v1 --kind Deployment --name web-app"
+  },
+  {
+    "instruction": "Add an inline JSON 6902 patch",
+    "output": "kustomize edit add patch --patch '{\"op\": \"add\", \"path\": \"/spec/replicas\", \"value\": 5}' --group apps --version v1 --kind Deployment"
+  },
+  {
+    "instruction": "Patch a specific field in a deployment",
+    "output": "kustomize edit add patch --kind Deployment --name web-app --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"nginx\",\"resources\":{\"limits\":{\"cpu\":\"500m\"}}}]}}}}'"
+  },
+  {
+    "instruction": "Add a component to kustomization",
+    "output": "kustomize edit add component ../components/prometheus"
+  },
+  {
+    "instruction": "Remove a component",
+    "output": "kustomize edit remove component ../components/prometheus"
+  },
+  {
+    "instruction": "Add a transformer",
+    "output": "kustomize edit add transformer ../transformers/label-transformer.yaml"
+  },
+  {
+    "instruction": "Add a generator",
+    "output": "kustomize edit add generator ../generators/secret-generator.yaml"
+  },
+  {
+    "instruction": "Add a HelmChartInflationGenerator",
+    "output": "kustomize edit add generator --generator-file helm-generator.yaml"
+  },
+  {
+    "instruction": "Initialize a kustomization file",
+    "output": "kustomize init"
+  },
+  {
+    "instruction": "Add a base directory as a resource",
+    "output": "kustomize edit add resource ../base/"
+  },
+  {
+    "instruction": "Set container image for a deployment",
+    "output": "kustomize edit set image nginx=nginx:1.25"
+  },
+  {
+    "instruction": "Set multiple container images at once",
+    "output": "kustomize edit set image nginx=nginx:1.25,sidecar=envoy:1.28"
+  },
+  {
+    "instruction": "Set image tag for all images matching pattern",
+    "output": "kustomize edit set imagetag nginx:*=nginx:1.25"
+  },
+  {
+    "instruction": "Add a replacement configuration",
+    "output": "kustomize edit add replacement --path replacements/node-name.yaml"
+  },
+  {
+    "instruction": "Add a variable to kustomization",
+    "output": "kustomize edit add var --name MY_VAR --objref apiVersion=v1,Kind=Service,name=my-svc --fieldref metadata.name"
+  },
+  {
+    "instruction": "Build and diff against live cluster",
+    "output": "kustomize build . | kubectl diff -f -"
+  },
+  {
+    "instruction": "Apply kustomize and prune removed resources",
+    "output": "kustomize build . | kubectl apply -f - --prune -l app=myapp"
+  },
+  {
+    "instruction": "List all transformers in a directory",
+    "output": "kustomize cfg list-transformers ./"
+  },
+  {
+    "instruction": "List all generators in a directory",
+    "output": "kustomize cfg list-generators ./"
+  }
+]

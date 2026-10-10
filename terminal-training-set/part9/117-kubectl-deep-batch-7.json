@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Create a certificate signing request",
+    "output": "<think>\nThe task requires us to create a certificate signing request.\nLet me think through this step by step.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl create csr my-csr --cert=user.csr --key=user.key"
+  },
+  {
+    "instruction": "Get all container images used sorted unique",
+    "output": "<think>\nWe should get all container images used sorted unique.\nBest tool here is kubectl — Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nI'll check the output to make sure it did what we expected.\n</think>\nkubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{\"\\n\"}{end}' | sort -u"
+  },
+  {
+    "instruction": "Get nodes sorted by internal IP address",
+    "output": "<think>\nWe're being asked to get nodes sorted by internal IP address.\nI'll reach for kubectl here because Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get nodes -o wide --sort-by='.status.addresses[0].address'"
+  },
+  {
+    "instruction": "Get all nodes in YAML format",
+    "output": "<think>\nThe goal is to get all nodes in YAML format.\nLet me break this down.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get nodes -o yaml"
+  },
+  {
+    "instruction": "Check Istio injection label on a namespace",
+    "output": "<think>\nSo we need to check Istio injection label on a namespace.\nLet me reason through this.\nBest tool here is kubectl — Kubernetes cluster management.\nI'm using -o for output to file, OR operator in find — this controls how the output is formatted.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl get ns default -o yaml | grep istio-injection"
+  },
+  {
+    "instruction": "Create a namespace and run a pod inside it",
+    "output": "<think>\nAlright, we need to create a namespace and run a pod inside it.\nThis calls for kubectl. Kubernetes cluster management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl create ns testing && kubectl run test-pod --image=nginx --namespace=testing"
+  },
+  {
+    "instruction": "Delete a namespace and all its resources",
+    "output": "<think>\nSo the request is to delete a namespace and all its resources.\nLet me break this down.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl delete ns testing"
+  },
+  {
+    "instruction": "Get all pods with a specific annotation",
+    "output": "<think>\nWe should get all pods with a specific annotation.\nLet me consider what makes sense here.\nBest tool here is kubectl — Kubernetes cluster management.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods -A -o json | jq '.items[] | select(.metadata.annotations | has(\"sidecar.istio.io/inject\")) | .metadata.name'"
+  },
+  {
+    "instruction": "Run a command on all pods matching a label",
+    "output": "<think>\nThe goal is to run a command on all pods matching a label.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nI'm using -l for long format with details — without it the command won't work as we need.\nThe -o flag means output to file, OR operator in find, which matters here because standard practice for this kind of operation.\nThe -I flag means ignore case, which matters here because needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods -l app=web-app -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}{end}' | xargs -I {} kubectl exec {} -- hostname"
+  },
+  {
+    "instruction": "Add an existing deployment to a kustomization",
+    "output": "<think>\nAlright, we need to add an existing deployment to a kustomization.\nLet me think through this step by step.\nThe tool for this job is kustomize — kustomize operations.\n</think>\nkustomize edit add resource deployment.yaml"
+  },
+  {
+    "instruction": "Set an environment variable in a deployment",
+    "output": "<think>\nNeed to set an environment variable in a deployment.\nHere's how I'd approach this.\nI'd use kubectl for this — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl set env deployment/web-app NODE_ENV=production"
+  },
+  {
+    "instruction": "Set a service account on a deployment",
+    "output": "<think>\nNeed to set a service account on a deployment.\nThis calls for kubectl. Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl set serviceaccount deployment/web-app my-sa"
+  },
+  {
+    "instruction": "Update a service selector",
+    "output": "<think>\nThe goal is to update a service selector.\nLet me reason through this.\nFor this, kubectl is the right tool — Kubernetes cluster management.\nThe -p flag handles create parent directories as needed. Important because without it the command won't work as we need.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\nkubectl patch svc web-app -p '{\"spec\":{\"selector\":{\"app\":\"web-app\"}}}'"
+  },
+  {
+    "instruction": "Get the raw logs from a node's kubelet",
+    "output": "<think>\nWe're being asked to get the raw logs from a node's kubelet.\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nThe -n flag means dry-run, no changes, which matters here because needed for this specific use case.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nkubectl logs -n kube-system kubelet-$(hostname) || journalctl -u kubelet -n 100"
+  },
+  {
+    "instruction": "Check if a specific pod exists",
+    "output": "<think>\nWe're being asked to check if a specific pod exists.\nLet me consider what makes sense here.\nI'll reach for kubectl here because Kubernetes cluster management.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get pod web-app-5d8f9c -o name"
+  },
+  {
+    "instruction": "List all container images by count",
+    "output": "<think>\nSo we need to list all container images by count.\nThis calls for kubectl. Kubernetes cluster management.\nI've added -o to output to file, OR operator in find — needed for this specific use case.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.spec.containers[*].image}{\"\\n\"}{end}' | sort | uniq -c | sort -rn"
+  },
+  {
+    "instruction": "Get the age of all pods",
+    "output": "<think>\nThe task requires us to get the age of all pods.\nLet me consider what makes sense here.\nThe tool for this job is kubectl — Kubernetes cluster management.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods --sort-by='.metadata.creationTimestamp'"
+  },
+  {
+    "instruction": "List all container statuses with restart counts",
+    "output": "<think>\nSo the request is to list all container statuses with restart counts.\nI'd use kubectl for this — Kubernetes cluster management.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{\"\\t\"}{.status.containerStatuses[0].restartCount}{\"\\t\"}{.status.containerStatuses[0].ready}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Create a pod with a specific node selector",
+    "output": "<think>\nThis is asking us to create a pod with a specific node selector.\nLet me break this down.\nThe tool for this job is kubectl — Kubernetes cluster management.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\n</think>\nkubectl run nginx --image=nginx --overrides='{\"spec\":{\"nodeSelector\":{\"disktype\":\"ssd\"}}}'"
+  },
+  {
+    "instruction": "Add a node selector to an existing deployment",
+    "output": "<think>\nThe user wants to add a node selector to an existing deployment.\nLet me reason through this.\nI'd use kubectl for this — Kubernetes cluster management.\nI've added -p to create parent directories as needed — important to get the expected behavior.\nOne command does the job. Simple is better.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nQuick verification after execution to be safe.\n</think>\nkubectl patch deploy web-app -p '{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"disktype\":\"ssd\"}}}}}'"
+  },
+  {
+    "instruction": "Check the taints on all nodes",
+    "output": "<think>\nSo the request is to check the taints on all nodes.\nLet me think through this step by step.\nThis calls for kubectl. Kubernetes cluster management.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nCheck which namespace and context you're in before running destructive commands. Use --dry-run first.\nLet me verify afterward that it worked correctly.\n</think>\nkubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{\"\\t\"}{.spec.taints[*].key}{\":\"}{.spec.taints[*].value}{\":\"}{.spec.taints[*].effect}{\"\\n\"}{end}'"
+  },
+  {
+    "instruction": "Get the number of pods per node",
+    "output": "<think>\nWe're being asked to get the number of pods per node.\nFirst, let me understand what's needed here.\nI'd use kubectl for this — Kubernetes cluster management.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\nkubectl get pods --all-namespaces -o wide | awk '{print $8}' | sort | uniq -c"
+  }
+]

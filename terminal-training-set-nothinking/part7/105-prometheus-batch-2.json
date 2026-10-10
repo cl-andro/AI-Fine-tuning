@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set scrape interval to 15s in Prometheus",
+    "output": "echo 'global: scrape_interval: 15s evaluation_interval: 15s' > prometheus.yml"
+  },
+  {
+    "instruction": "Set scrape timeout in Prometheus config",
+    "output": "echo 'global: scrape_timeout: 10s' >> prometheus.yml"
+  },
+  {
+    "instruction": "Configure Prometheus with external labels",
+    "output": "echo 'global: external_labels: cluster: prod replica: 01' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add a scrape config with basic auth",
+    "output": "echo 'scrape_configs: - job_name: protected metrics_path: /metrics static_configs: - targets: - internal:9090 basic_auth: username: prom password_file: /etc/prometheus/pass' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add a scrape config with bearer token",
+    "output": "echo 'scrape_configs: - job_name: api authorization: type: Bearer credentials_file: /etc/prometheus/token static_configs: - targets: - api:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add a scrape config with TLS",
+    "output": "echo 'scrape_configs: - job_name: secure scheme: https tls_config: ca_file: ca.crt static_configs: - targets: - secure-host:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Scrape config with Kubernetes service discovery",
+    "output": "echo 'scrape_configs: - job_name: kubernetes kubernetes_sd_configs: - role: pod relabel_configs: - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape] action: keep regex: true' >> prometheus.yml"
+  },
+  {
+    "instruction": "Scrape config with EC2 service discovery",
+    "output": "echo 'scrape_configs: - job_name: ec2 ec2_sd_configs: - region: us-east-1 access_key: AKIA... secret_key: ... port: 9100' >> prometheus.yml"
+  },
+  {
+    "instruction": "Scrape config with Consul service discovery",
+    "output": "echo 'scrape_configs: - job_name: consul consul_sd_configs: - server: localhost:8500 services: []' >> prometheus.yml"
+  },
+  {
+    "instruction": "Scrape config with DNS service discovery",
+    "output": "echo 'scrape_configs: - job_name: dns dns_sd_configs: - names: - web.example.com type: A port: 8080' >> prometheus.yml"
+  },
+  {
+    "instruction": "Scrape config with file-based service discovery",
+    "output": "echo 'scrape_configs: - job_name: file_sd file_sd_configs: - files: - targets/*.json refresh_interval: 5m' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add a relabel config to drop a metric",
+    "output": "echo 'relabel_configs: - source_labels: [__name__] regex: \"container_.*\" action: drop' >> prometheus.yml"
+  },
+  {
+    "instruction": "Relabel to add a label",
+    "output": "echo 'relabel_configs: - target_label: datacenter replacement: us-east-1' >> prometheus.yml"
+  },
+  {
+    "instruction": "Relabel to replace a label value",
+    "output": "echo 'relabel_configs: - source_labels: [__meta_ec2_availability_zone] regex: \"us-east-1([a-z])\" replacement: \"us-east-1\" target_label: zone' >> prometheus.yml"
+  },
+  {
+    "instruction": "Relabel to map address to instance",
+    "output": "echo 'relabel_configs: - source_labels: [__address__] regex: \"(.*):.*\" replacement: \"$1\" target_label: instance' >> prometheus.yml"
+  },
+  {
+    "instruction": "Use metric_relabel_configs to drop labels",
+    "output": "echo 'metric_relabel_configs: - source_labels: [kubernetes_namespace] regex: \"kube-system\" action: drop' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add honor_labels to scrape config",
+    "output": "echo 'scrape_configs: - job_name: honored honor_labels: true static_configs: - targets: - localhost:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Set scrape_interval per job",
+    "output": "echo 'scrape_configs: - job_name: slow scrape_interval: 60s static_configs: - targets: - slow:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add sample_limit to scrape config",
+    "output": "echo 'scrape_configs: - job_name: limited sample_limit: 1000 static_configs: - targets: - busy:9090' >> prometheus.yml"
+  },
+  {
+    "instruction": "Add param in scrape request",
+    "output": "echo 'scrape_configs: - job_name: custom_prom params: name: [myapp] module: [default] static_configs: - targets: - blackbox:9115' >> prometheus.yml"
+  },
+  {
+    "instruction": "Create a recording rule",
+    "output": "echo 'groups: - name: recording rules: record: job:http_requests:rate5m expr: sum(rate(http_requests_total[5m])) by (job)' > rules.yml"
+  },
+  {
+    "instruction": "Create an alerting rule",
+    "output": "echo 'groups: - name: alerts rules: alert: HighCPU expr: node_cpu_seconds_total > 0.9 for: 5m labels: severity: critical annotations: summary: CPU usage is high' >> rules.yml"
+  },
+  {
+    "instruction": "Create an alert rule with template annotations",
+    "output": "echo 'groups: - name: alerts rules: alert: InstanceDown expr: up == 0 for: 1m labels: severity: critical annotations: summary: \"Instance {{ $labels.instance }} down\" description: \"{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute\"' >> rules.yml"
+  },
+  {
+    "instruction": "Include rule files in Prometheus config",
+    "output": "echo 'rule_files: - rules/*.yml' >> prometheus.yml"
+  },
+  {
+    "instruction": "Create an alert rule with for multiple conditions",
+    "output": "echo 'groups: - name: system rules: alert: DiskFull expr: node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.1 for: 10m labels: severity: warning' >> rules.yml"
+  }
+]

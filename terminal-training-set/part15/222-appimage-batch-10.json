@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to run an AppImage with a custom WebKit data path",
+    "output": "<think>\nThe user wants to run an AppImage with a custom WebKit data path.\nLet me consider what makes sense here.\nThe tool for this job is WEBKIT_DATA_DIR — WEBKIT_DATA_DIR operations.\nI'll check the output to make sure it did what we expected.\n</think>\nWEBKIT_DATA_DIR=/tmp/webkit ./application.AppImage"
+  },
+  {
+    "instruction": "How to see the last appimaged scan status",
+    "output": "<think>\nAlright, we need to see the last appimaged scan status.\nThe tool for this job is journalctl — checking systemd logs.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nI've added -i to interactive, prompt before action — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\n</think>\njournalctl --user -u appimaged --since '1 hour ago' | grep -i scan"
+  },
+  {
+    "instruction": "How to check the number of CPUs recommended by an AppImage",
+    "output": "<think>\nThe task requires us to check the number of CPUs recommended by an AppImage.\nFor this, strings is the right tool — strings operations.\nI've added -i to interactive, prompt before action — needed for this specific use case.\nWhy -d? Directory listing, don't descend. important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrings ./application.AppImage | grep -i '^MIN_CPU' | cut -d= -f2"
+  },
+  {
+    "instruction": "How to run an AppImage in a nodistro Docker container",
+    "output": "<think>\nThe user wants to run an AppImage in a nodistro Docker container.\nLet me think about the best approach.\nI'll reach for docker here because container management.\nThe -v flag means verbose output, which matters here because standard practice for this kind of operation.\nOne command does the job. Simple is better.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nLet me verify afterward that it worked correctly.\n</think>\ndocker run --rm -v $(pwd):/app alpine /app/application.AppImage"
+  },
+  {
+    "instruction": "How to patch an AppImage to use a different entry point",
+    "output": "<think>\nWe should patch an AppImage to use a different entry point.\nLet me think about the best approach.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\n./application.AppImage --appimage-extract && sed -i 's/old-entry/new-entry/' squashfs-root/AppRun && appimagetool squashfs-root patched.AppImage"
+  },
+  {
+    "instruction": "How to run an AppImage with a custom ALSA configuration",
+    "output": "<think>\nThe user wants to run an AppImage with a custom ALSA configuration.\nLet me consider what makes sense here.\nFor this, ALSA_CONFIG_PATH is the right tool — ALSA_CONFIG_PATH operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nALSA_CONFIG_PATH=/custom/asound.conf ./application.AppImage"
+  },
+  {
+    "instruction": "How to check the endianness of an AppImage",
+    "output": "<think>\nWe should check the endianness of an AppImage.\nreadelf is what we need — readelf operations.\nI've added -h to human-readable format — needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nreadelf -h ./application.AppImage | grep 'Data'"
+  },
+  {
+    "instruction": "How to run an AppImage in a systemd user service",
+    "output": "<think>\nThe task requires us to run an AppImage in a systemd user service.\nLet me reason through this.\nThe tool for this job is systemd-run — systemd-run operations.\nThe -p flag handles create parent directories as needed. Important because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsystemd-run --user --scope -p MemoryMax=1G ./application.AppImage"
+  },
+  {
+    "instruction": "How to see the number of inodes inside an AppImage",
+    "output": "<think>\nThe user wants to see the number of inodes inside an AppImage.\nLet me think through this step by step.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\n./application.AppImage --appimage-extract && df -i squashfs-root"
+  },
+  {
+    "instruction": "How to run an AppImage and capture its return code",
+    "output": "<think>\nWe're being asked to run an AppImage and capture its return code.\nLet me think about the best approach.\nQuick verification after execution to be safe.\n</think>\n./application.AppImage; echo 'Exit code: $?'"
+  },
+  {
+    "instruction": "How to create a sha256sum file for AppImage verification",
+    "output": "<think>\nSo we need to create a sha256sum file for AppImage verification.\nLet me think through this step by step.\nFor this, sha256sum is the right tool — sha256sum operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nsha256sum output.AppImage > output.AppImage.sha256"
+  },
+  {
+    "instruction": "How to run an AppImage with a custom GIO module path",
+    "output": "<think>\nAlright, we need to run an AppImage with a custom GIO module path.\nThis calls for GIO_EXTRA_MODULES. GIO_EXTRA_MODULES operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nGIO_EXTRA_MODULES=/custom/gio-modules ./application.AppImage"
+  },
+  {
+    "instruction": "How to check the AppImage's runtime capabilities",
+    "output": "<think>\nThe user wants to check the AppImage's runtime capabilities.\nHere's how I'd approach this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\n./application.AppImage --appimage-offset && echo 'FUSE supported: yes'"
+  },
+  {
+    "instruction": "How to run an AppImage in a minimal namespace (PID isolation)",
+    "output": "<think>\nThe goal is to run an AppImage in a minimal namespace (PID isolation).\nLet me think about the best approach.\nI'd use unshare for this — unshare operations.\nAfter running, I'll confirm the result looks right.\n</think>\nunshare --pid --fork ./application.AppImage"
+  },
+  {
+    "instruction": "How to see if an AppImage has a read-only filesystem",
+    "output": "<think>\nThe task requires us to see if an AppImage has a read-only filesystem.\nFor this, mount is the right tool — filesystem mounting.\nThe -v flag means verbose output, which matters here because this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nmount | grep /tmp/.mount | grep -v 'rw'"
+  },
+  {
+    "instruction": "How to run an AppImage on a headless server",
+    "output": "<think>\nNeed to run an AppImage on a headless server.\nxvfb-run is what we need — xvfb-run operations.\n</think>\nxvfb-run ./application.AppImage"
+  },
+  {
+    "instruction": "How to batch-create several AppImages using a script",
+    "output": "<think>\nThis is asking us to batch-create several AppImages using a script.\nLet me reason through this.\nThe tool for this job is for — for operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nfor dir in AppDir-*; do appimagetool \"$dir\" \"${dir#AppDir-}.AppImage\"; done"
+  },
+  {
+    "instruction": "How to run an AppImage and forward X11 over SSH",
+    "output": "<think>\nSo the request is to run an AppImage and forward X11 over SSH.\nssh is what we need — remote system access.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -X user@remote './application.AppImage'"
+  },
+  {
+    "instruction": "How to check the AppImage's RPM size limit",
+    "output": "<think>\nWe should check the AppImage's RPM size limit.\nLet me think through this step by step.\nFor this, stat is the right tool — stat operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nstat --format='%s' ./application.AppImage"
+  },
+  {
+    "instruction": "How to run an AppImage with a custom tmpfs mount for extraction",
+    "output": "<think>\nAlright, we need to run an AppImage with a custom tmpfs mount for extraction.\nHere's how I'd approach this.\nI'll reach for mount here because filesystem mounting.\nI'm using -t for sort by modification time — this controls how the output is formatted.\nThe -o flag handles output to file, OR operator in find. Important because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nmount -t tmpfs -o size=1G tmpfs /tmp-extract && TMPDIR=/tmp-extract ./application.AppImage"
+  }
+]

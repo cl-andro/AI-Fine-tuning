@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to set the sndbuf in OpenVPN",
+    "output": "<think>\nThis is asking us to set the sndbuf in OpenVPN.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'sndbuf 393216' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set the rcvbuf in OpenVPN",
+    "output": "<think>\nThis is asking us to set the rcvbuf in OpenVPN.\nHere's how I'd approach this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'rcvbuf 393216' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to enable fast-io in OpenVPN",
+    "output": "<think>\nAlright, we need to enable fast-io in OpenVPN.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'fast-io' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to enable txqueuelen in OpenVPN",
+    "output": "<think>\nThe goal is to enable txqueuelen in OpenVPN.\nLet me consider what makes sense here.\nQuick verification after execution to be safe.\n</think>\necho 'txqueuelen 1000' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set realtime scheduling for OpenVPN",
+    "output": "<think>\nThe user wants to set realtime scheduling for OpenVPN.\nLet me consider what makes sense here.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'sched 1' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set OpenVPN process priority",
+    "output": "<think>\nThe goal is to set OpenVPN process priority.\nLet me think through this step by step.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'nice 20' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set mlock for OpenVPN memory",
+    "output": "<think>\nWe're being asked to set mlock for OpenVPN memory.\nFirst, let me understand what's needed here.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'mlock' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to read OpenVPN config from environment variables",
+    "output": "<think>\nNeed to read OpenVPN config from environment variables.\nHere's how I'd approach this.\nThe tool for this job is export — export operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nexport OPENVPN_config=/etc/openvpn/server.conf && openvpn --config $OPENVPN_config"
+  },
+  {
+    "instruction": "How to start multiple OpenVPN instances",
+    "output": "<think>\nSo we need to start multiple OpenVPN instances.\nLet me reason through this.\nThis calls for systemctl. Managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl start openvpn@server && systemctl start openvpn@server2"
+  },
+  {
+    "instruction": "How to create an OpenVPN server for Site-to-Site",
+    "output": "<think>\nThe task requires us to create an OpenVPN server for Site-to-Site.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'dev tun\nproto udp\nremote 203.0.113.10 1194\nifconfig 10.8.0.1 10.8.0.2\nsecret /etc/openvpn/static.key' >> /etc/openvpn/site-to-site.conf"
+  },
+  {
+    "instruction": "How to set up a simple OpenVPN site-to-site with static key",
+    "output": "<think>\nThis is asking us to set up a simple OpenVPN site-to-site with static key.\nLet me break this down.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'dev tun\nproto udp\nremote 192.168.2.1 1194\nifconfig 10.8.0.2 10.8.0.1\nroute 192.168.2.0 255.255.255.0\nsecret static.key' >> /etc/openvpn/s2s-client.conf"
+  },
+  {
+    "instruction": "How to share Internet through OpenVPN",
+    "output": "<think>\nWe should share Internet through OpenVPN.\nFirst, let me understand what's needed here.\nFor this, iptables is the right tool — firewall management.\nThe -t flag handles sort by modification time. Important because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\nLet me verify afterward that it worked correctly.\n</think>\niptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && sysctl -w net.ipv4.ip_forward=1"
+  },
+  {
+    "instruction": "How to use OpenVPN with multiple subnets",
+    "output": "<think>\nThis is asking us to use OpenVPN with multiple subnets.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'push \"route 10.10.0.0 255.255.0.0\"\npush \"route 172.16.0.0 255.240.0.0\"' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to add a specific route to client config",
+    "output": "<think>\nThis is asking us to add a specific route to client config.\nLet me break this down.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'route 192.168.2.0 255.255.255.0' >> /etc/openvpn/client.ovpn"
+  },
+  {
+    "instruction": "How to exclude local LAN from VPN",
+    "output": "<think>\nThe task requires us to exclude local LAN from VPN.\nLet me consider what makes sense here.\n</think>\necho 'route 192.168.1.0 255.255.255.0 net_gateway' >> /etc/openvpn/client.ovpn"
+  },
+  {
+    "instruction": "How to ignore gateway redirect for specific IP",
+    "output": "<think>\nWe should ignore gateway redirect for specific IP.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'route 10.0.0.0 255.0.0.0 net_gateway' >> /etc/openvpn/client.ovpn"
+  },
+  {
+    "instruction": "How to use OpenVPN with kill switch",
+    "output": "<think>\nThe user wants to use OpenVPN with kill switch.\nHere's how I'd approach this.\nI'll reach for iptables here because firewall management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -A OUTPUT -o tun0 -j ACCEPT && iptables -A OUTPUT -o eth0 -d 192.168.1.10 -p udp --dport 1194 -j ACCEPT && iptables -A OUTPUT -o eth0 -j DROP"
+  },
+  {
+    "instruction": "How to set up OpenVPN with DNS leak protection",
+    "output": "<think>\nThe task requires us to set up OpenVPN with DNS leak protection.\nLet me break this down.\n</think>\necho 'push \"dhcp-option DNS 10.8.0.1\"\npush \"block-outside-dns\"' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to enable block-outside-dns on OpenVPN client",
+    "output": "<think>\nNeed to enable block-outside-dns on OpenVPN client.\nLet me break this down.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'block-outside-dns' >> /etc/openvpn/client.ovpn"
+  },
+  {
+    "instruction": "How to monitor OpenVPN bandwidth usage per client",
+    "output": "<think>\nNeed to monitor OpenVPN bandwidth usage per client.\nLet me think about the best approach.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'status /var/log/openvpn/status.log 5' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to log OpenVPN client bandwidth",
+    "output": "<think>\nWe should log OpenVPN client bandwidth.\nHere's how I'd approach this.\nFor this, awk is the right tool — text processing and reporting.\nAfter running, I'll confirm the result looks right.\n</think>\nawk '/^CLIENT_LIST/{print $2,$3,$4,$5}' /etc/openvpn/status.log"
+  },
+  {
+    "instruction": "How to set up OpenVPN logging to separate file",
+    "output": "<think>\nWe should set up OpenVPN logging to separate file.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'log-append /var/log/openvpn/openvpn.log' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to increase OpenVPN verbosity for debugging",
+    "output": "<think>\nThe task requires us to increase OpenVPN verbosity for debugging.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'verb 5' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to mute repetitive log messages in OpenVPN",
+    "output": "<think>\nAlright, we need to mute repetitive log messages in OpenVPN.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'mute 20' >> /etc/openvpn/server.conf"
+  },
+  {
+    "instruction": "How to set OpenVPN status-version",
+    "output": "<think>\nSo the request is to set OpenVPN status-version.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'status-version 3' >> /etc/openvpn/server.conf"
+  }
+]

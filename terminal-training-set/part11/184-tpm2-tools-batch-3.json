@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "How to seal with a PCR policy",
+    "output": "<think>\nSo the request is to seal with a PCR policy.\nLet me reason through this.\nThe tool for this job is tpm2_create — tpm2_create operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ntpm2_create -C primary.ctx -u seal.pub -r seal.priv -L pcr_policy.dat -i secret.bin"
+  },
+  {
+    "instruction": "How to unseal a secret from the TPM",
+    "output": "<think>\nAlright, we need to unseal a secret from the TPM.\nThis calls for tpm2_unseal. Tpm2_unseal operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntpm2_unseal -c seal.ctx"
+  },
+  {
+    "instruction": "How to unseal with authorization",
+    "output": "<think>\nAlright, we need to unseal with authorization.\nLet me think through this step by step.\nFor this, tpm2_unseal is the right tool — tpm2_unseal operations.\nWhy -c? Count or create. needed for this specific use case.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_unseal -c seal.ctx -p myauth"
+  },
+  {
+    "instruction": "How to unseal a key object",
+    "output": "<think>\nThe goal is to unseal a key object.\nLet me consider what makes sense here.\nFor this, tpm2_unseal is the right tool — tpm2_unseal operations.\n</think>\ntpm2_unseal -c key.ctx -o recovered_key.bin"
+  },
+  {
+    "instruction": "How to evict a persistent handle",
+    "output": "<think>\nNeed to evict a persistent handle.\nFirst, let me understand what's needed here.\nThis calls for tpm2_evictcontrol. Tpm2_evictcontrol operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_evictcontrol -C o -c key.ctx"
+  },
+  {
+    "instruction": "How to make a key persistent at a handle",
+    "output": "<think>\nSo the request is to make a key persistent at a handle.\nLet me think through this step by step.\nI'll reach for tpm2_evictcontrol here because tpm2_evictcontrol operations.\nThe -c flag means count or create, which matters here because needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_evictcontrol -C o -c key.ctx 0x81000001"
+  },
+  {
+    "instruction": "How to read all PCRs from the TPM",
+    "output": "<think>\nThe task requires us to read all PCRs from the TPM.\nLet me think about the best approach.\ntpm2_pcrread is what we need — tpm2_pcrread operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_pcrread"
+  },
+  {
+    "instruction": "How to read specific PCR banks",
+    "output": "<think>\nWe should read specific PCR banks.\nLet me break this down.\nBest tool here is tpm2_pcrread — tpm2_pcrread operations.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_pcrread sha256:0,1,2,3"
+  },
+  {
+    "instruction": "How to extend a PCR with a hash",
+    "output": "<think>\nWe should extend a PCR with a hash.\nLet me consider what makes sense here.\nBest tool here is tpm2_pcrextend — tpm2_pcrextend operations.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntpm2_pcrextend 4:sha256=000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+  },
+  {
+    "instruction": "How to create a PCR policy",
+    "output": "<think>\nThis is asking us to create a PCR policy.\nFor this, tpm2_startauthsession is the right tool — tpm2_startauthsession operations.\nThe -S flag means sort by size, which matters here because standard practice for this kind of operation.\nThe -S flag means sort by size, which matters here because without it the command won't work as we need.\nI've added -l to long format with details — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ntpm2_startauthsession -S session.dat && tpm2_policypcr -S session.dat -l sha256:0,1 -L pcr_policy.dat"
+  },
+  {
+    "instruction": "How to create a policy authorization",
+    "output": "<think>\nWe should create a policy authorization.\nLet me think about the best approach.\nFor this, tpm2_startauthsession is the right tool — tpm2_startauthsession operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_startauthsession -S session.dat && tpm2_policyauthvalue -S session.dat -L policy.dat"
+  },
+  {
+    "instruction": "How to create a command code policy",
+    "output": "<think>\nAlright, we need to create a command code policy.\nLet me think through this step by step.\nBest tool here is tpm2_startauthsession — tpm2_startauthsession operations.\nI've added -S to sort by size — important to get the expected behavior.\nI've added -S to sort by size — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ntpm2_startauthsession -S session.dat && tpm2_policycommandcode -S session.dat -L policy.dat TPM2_CC_Unseal"
+  },
+  {
+    "instruction": "How to get random bytes from the TPM",
+    "output": "<think>\nThe goal is to get random bytes from the TPM.\nI'll reach for tpm2_getrandom here because tpm2_getrandom operations.\n</think>\ntpm2_getrandom 32"
+  },
+  {
+    "instruction": "How to get TPM fixed properties",
+    "output": "<think>\nAlright, we need to get TPM fixed properties.\nLet me think through this step by step.\nThis calls for tpm2_getcap. Tpm2_getcap operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_getcap properties-fixed"
+  },
+  {
+    "instruction": "How to list persistent handles",
+    "output": "<think>\nWe should list persistent handles.\nFirst, let me understand what's needed here.\ntpm2_getcap is what we need — tpm2_getcap operations.\n</think>\ntpm2_getcap handles-persistent"
+  },
+  {
+    "instruction": "How to clear TPM ownership",
+    "output": "<think>\nThe user wants to clear TPM ownership.\nLet me think about the best approach.\nThe tool for this job is tpm2_clear — tpm2_clear operations.\nI'm using -L for follow symlinks when processing — this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_clear -L lockout"
+  },
+  {
+    "instruction": "How to take ownership of the TPM",
+    "output": "<think>\nNeed to take ownership of the TPM.\nLet me reason through this.\ntpm2_changeauth is what we need — tpm2_changeauth operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntpm2_changeauth -c owner ownerauth"
+  },
+  {
+    "instruction": "How to manage dictionary attack lockout",
+    "output": "<think>\nThe goal is to manage dictionary attack lockout.\nThis calls for tpm2_dictionarylockout. Tpm2_dictionarylockout operations.\nI'm using -c for count or create — this controls how the output is formatted.\nThe -l flag handles long format with details. Important because standard practice for this kind of operation.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_dictionarylockout -c -l 900000 -t 600000"
+  },
+  {
+    "instruction": "How to start a policy authorization session",
+    "output": "<think>\nSo we need to start a policy authorization session.\nLet me consider what makes sense here.\nThis calls for tpm2_startauthsession. Tpm2_startauthsession operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntpm2_startauthsession --policy-session -S session.dat"
+  },
+  {
+    "instruction": "How to flush all transient handles",
+    "output": "<think>\nWe should flush all transient handles.\nBest tool here is tpm2_flushcontext — tpm2_flushcontext operations.\n</think>\ntpm2_flushcontext -t"
+  },
+  {
+    "instruction": "How to flush all loaded sessions",
+    "output": "<think>\nThe user wants to flush all loaded sessions.\nLet me consider what makes sense here.\ntpm2_flushcontext is what we need — tpm2_flushcontext operations.\nI've added -s to summarize or silent mode — this controls how the output is formatted.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_flushcontext -s"
+  },
+  {
+    "instruction": "How to sign data with a TPM key",
+    "output": "<think>\nSo the request is to sign data with a TPM key.\nFor this, tpm2_sign is the right tool — tpm2_sign operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_sign -c key.ctx -g sha256 -m data.txt -s sig.bin"
+  },
+  {
+    "instruction": "How to verify a signature with a TPM key",
+    "output": "<think>\nNeed to verify a signature with a TPM key.\nHere's how I'd approach this.\ntpm2_verifysignature is what we need — tpm2_verifysignature operations.\nWhy -c? Count or create. important to get the expected behavior.\n</think>\ntpm2_verifysignature -c key.ctx -g sha256 -m data.txt -s sig.bin"
+  },
+  {
+    "instruction": "How to encrypt data with a TPM RSA key",
+    "output": "<think>\nThis is asking us to encrypt data with a TPM RSA key.\nLet me reason through this.\nI'd use tpm2_rsaencrypt for this — tpm2_rsaencrypt operations.\nWhy -c? Count or create. standard practice for this kind of operation.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_rsaencrypt -c key.ctx -o cipher.bin < plain.txt"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {"instruction": "Create Loki config for local storage", "output": "cat > /etc/loki/config.yml << 'EOF'\nauth_enabled: false\nserver:\n  http_listen_port: 3100\n  grpc_listen_port: 9095\ncommon:\n  path_prefix: /var/lib/loki\n  replication_factor: 1\n  ring:\n    kvstore:\n      store: inmemory\nschema_config:\n  configs:\n    - from: 2020-10-24\n      store: boltdb-shipper\n      object_store: filesystem\n      schema: v11\n      index:\n        prefix: index_\n        period: 24h\nstorage_config:\n  boltdb_shipper:\n    active_index_directory: /var/lib/loki/index\n    cache_location: /var/lib/loki/cache\n  filesystem:\n    directory: /var/lib/loki/chunks\nlimits_config:\n  reject_old_samples: true\n  reject_old_samples_max_age: 168h\nEOF"},
+  {"instruction": "Create Loki config for S3 storage", "output": "cat > /etc/loki/s3-config.yml << 'EOF'\nauth_enabled: false\nserver:\n  http_listen_port: 3100\ncommon:\n  storage:\n    s3:\n      endpoint: s3.amazonaws.com\n      region: us-east-1\n      bucketnames: my-loki-bucket\n      access_key_id: ${AWS_ACCESS_KEY_ID}\n      secret_access_key: ${AWS_SECRET_ACCESS_KEY}\n      s3forcepathstyle: true\n  path_prefix: /var/lib/loki\nschema_config:\n  configs:\n    - from: 2020-10-24\n      store: boltdb-shipper\n      object_store: s3\n      schema: v11\nEOF"},
+  {"instruction": "Create Loki config for memberlist clustering", "output": "cat > /etc/loki/cluster-config.yml << 'EOF'\nring:\n  kvstore:\n    store: memberlist\n  replication_factor: 3\nmemberlist:\n  join_members:\n    - loki-1:7946\n    - loki-2:7946\n    - loki-3:7946\nEOF"},
+  {"instruction": "Enable Loki authentication", "output": "cat >> /etc/loki/config.yml << 'EOF'\nauth_enabled: true\nmulti_tenant_mode: true\nEOF"},
+  {"instruction": "Configure Loki retention period", "output": "cat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  retention_period: 720h\n  max_query_length: 720h\nEOF"},
+  {"instruction": "Set ingestion rate limits in Loki", "output": "cat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  ingestion_rate_mb: 10\n  ingestion_burst_size_mb: 20\nEOF"},
+  {"instruction": "Enable compactor in Loki", "output": "cat >> /etc/loki/config.yml << 'EOF'\ncompactor:\n  working_directory: /var/lib/loki/compactor\n  shared_store: filesystem\n  retention_enabled: true\nEOF"},
+  {"instruction": "Configure Loki table manager", "output": "cat >> /etc/loki/config.yml << 'EOF'\ntable_manager:\n  retention_deletes_enabled: true\n  retention_period: 720h\nEOF"},
+  {"instruction": "Configure Loki ruler for alerting", "output": "cat >> /etc/loki/config.yml << 'EOF'\nruler:\n  storage:\n    type: local\n    local:\n      directory: /etc/loki/rules\n  rule_path: /tmp/loki/rules\n  alertmanager_url: http://alertmanager:9093\nEOF"},
+  {"instruction": "Enable Loki query splitting", "output": "cat >> /etc/loki/config.yml << 'EOF'\nquery_range:\n  split_queries_by_interval: 24h\n  results_cache:\n    cache:\n      embedded_cache:\n        enabled: true\n        max_size_mb: 100\nEOF"},
+  {"instruction": "Set max query series in Loki", "output": "cat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  max_query_series: 10000\nEOF"},
+  {"instruction": "Enable cardinality limit in Loki", "output": "cat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  max_label_names_per_series: 30\n  max_global_streams_per_user: 10000\nEOF"},
+  {"instruction": "Disable Loki rate limiting", "output": "cat >> /etc/loki/config.yml << 'EOF'\nlimits_config:\n  ingestion_rate_mb: 0\n  ingestion_burst_size_mb: 0\nEOF"},
+  {"instruction": "Query Loki for series cardinality", "output": "logcli series '{job=~\".+\"}' --analyze-labels"},
+  {"instruction": "Check Loki new log detection", "output": "logcli query '{job=\"nginx\"}' --limit=1 2>&1; echo 'No output means no new logs'"},
+  {"instruction": "Debug Loki query issues", "output": "logcli query '{job=\"nginx\"}' --stats 2>&1"},
+  {"instruction": "Check if Loki has any data for a label", "output": "curl -s http://localhost:3100/loki/api/v1/label/job/values | python3 -m json.tool"},
+  {"instruction": "Purge old index data from Loki", "output": "curl -X POST 'http://localhost:3100/compactor/delete_jobs' -H 'Content-Type: application/json' -d '{}'"},
+  {"instruction": "Query Loki log volume per label", "output": "logcli query 'sum by (job) (count_over_time({job=~\".+\"}[1h]))' --limit=20"},
+  {"instruction": "Check Loki ingester health", "output": "curl -s http://localhost:3100/ready"}
+]

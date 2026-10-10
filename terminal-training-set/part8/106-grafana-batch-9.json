@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Get Grafana dashboard permissions via API",
+    "output": "<think>\nThe user wants to get Grafana dashboard permissions via API.\nFor this, curl is the right tool — making HTTP requests.\nI've added -s to summarize or silent mode — without it the command won't work as we need.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions | jq '.'"
+  },
+  {
+    "instruction": "Add Grafana dashboard permission for a user via API",
+    "output": "<think>\nThe task requires us to add Grafana dashboard permission for a user via API.\nFirst, let me understand what's needed here.\ncurl is what we need — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions -H 'Content-Type: application/json' -d '{\"userId\":2,\"permission\":2}'"
+  },
+  {
+    "instruction": "Add Grafana dashboard permission for a team via API",
+    "output": "<think>\nWe're being asked to add Grafana dashboard permission for a team via API.\nLet me consider what makes sense here.\nI'll reach for curl here because making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nI've added -d to directory listing, don't descend — standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions -H 'Content-Type: application/json' -d '{\"teamId\":1,\"permission\":2}'"
+  },
+  {
+    "instruction": "Delete Grafana dashboard permissions via API",
+    "output": "<think>\nThis is asking us to delete Grafana dashboard permissions via API.\nI'd use curl for this — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -X DELETE http://admin:admin@localhost:3000/api/dashboards/uid/abc/permissions/1"
+  },
+  {
+    "instruction": "Get Grafana folder permissions via API",
+    "output": "<think>\nThe goal is to get Grafana folder permissions via API.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/folders/abc/permissions | jq '.'"
+  },
+  {
+    "instruction": "Update Grafana folder permissions via API",
+    "output": "<think>\nThis is asking us to update Grafana folder permissions via API.\ncurl is what we need — making HTTP requests.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/folders/abc/permissions -H 'Content-Type: application/json' -d '{\"items\":[{\"userId\":2,\"permission\":2}]}'"
+  },
+  {
+    "instruction": "Migrate Grafana dashboards from one datasource to another",
+    "output": "<think>\nThe user wants to migrate Grafana dashboards from one datasource to another.\nHere's how I'd approach this.\nI'd use curl for this — making HTTP requests.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/dashboards/uid/abc | jq '.dashboard | walk(if .datasource == \"old-prom\" then .datasource = \"new-prom\" else . end)' | curl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Create Grafana dashboard with template variables",
+    "output": "<think>\nAlright, we need to create Grafana dashboard with template variables.\nThis calls for curl. Making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because important to get the expected behavior.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"With Vars\",\"templating\":{\"list\":[{\"name\":\"instance\",\"type\":\"query\",\"query\":\"label_values(node_cpu_seconds_total, instance)\"}]}},\"overwrite\":false}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with graph panel",
+    "output": "<think>\nAlright, we need to create Grafana dashboard with graph panel.\nThe tool for this job is curl — making HTTP requests.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"CPU Dashboard\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"CPU Usage\",\"targets\":[{\"expr\":\"100 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]) * 100)\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with stat panel",
+    "output": "<think>\nThe goal is to create Grafana dashboard with stat panel.\nLet me consider what makes sense here.\nThis calls for curl. Making HTTP requests.\nI'm using -H for follow symlinks on command line only — without it the command won't work as we need.\nThe -d flag means directory listing, don't descend, which matters here because without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Stats\",\"panels\":[{\"type\":\"stat\",\"title\":\"Memory Free\",\"targets\":[{\"expr\":\"node_memory_MemFree_bytes\"}],\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with table panel",
+    "output": "<think>\nNeed to create Grafana dashboard with table panel.\nFirst, let me understand what's needed here.\nI'll reach for curl here because making HTTP requests.\nThe -H flag means follow symlinks on command line only, which matters here because important to get the expected behavior.\nThe -d flag means directory listing, don't descend, which matters here because without it the command won't work as we need.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Table View\",\"panels\":[{\"type\":\"table\",\"title\":\"Processes\",\"targets\":[{\"expr\":\"topk(10, node_processes_running)\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with bar gauge panel",
+    "output": "<think>\nSo the request is to create Grafana dashboard with bar gauge panel.\nI'd use curl for this — making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Gauge\",\"panels\":[{\"type\":\"bargauge\",\"title\":\"Disk Usage\",\"targets\":[{\"expr\":\"100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes * 100)\"}],\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with heatmap panel",
+    "output": "<think>\nThis is asking us to create Grafana dashboard with heatmap panel.\nThe tool for this job is curl — making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Heatmap\",\"panels\":[{\"type\":\"heatmap\",\"title\":\"Request Latency\",\"targets\":[{\"expr\":\"rate(http_request_duration_seconds_bucket[5m])\"}],\"gridPos\":{\"h\":8,\"w\":12,\"x\":0,\"y\":0}}]}}'"
+  },
+  {
+    "instruction": "Set Grafana dashboard time range",
+    "output": "<think>\nThe user wants to set Grafana dashboard time range.\nFor this, curl is the right tool — making HTTP requests.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Dashboard\",\"time\":{\"from\":\"now-6h\",\"to\":\"now\"},\"panels\":[]}}'"
+  },
+  {
+    "instruction": "Set Grafana dashboard auto-refresh interval",
+    "output": "<think>\nSo we need to set Grafana dashboard auto-refresh interval.\ncurl is what we need — making HTTP requests.\nWhy -H? Follow symlinks on command line only. standard practice for this kind of operation.\nI'm using -d for directory listing, don't descend — without it the command won't work as we need.\nOne command does the job. Simple is better.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Dashboard\",\"refresh\":\"10s\",\"panels\":[]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with row grouping",
+    "output": "<think>\nNeed to create Grafana dashboard with row grouping.\nLet me think about the best approach.\nThe tool for this job is curl — making HTTP requests.\nWhy -H? Follow symlinks on command line only. standard practice for this kind of operation.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Grouped\",\"panels\":[{\"type\":\"row\",\"title\":\"System\"},{\"type\":\"stat\",\"title\":\"CPU\",\"gridPos\":{\"h\":6,\"w\":6,\"x\":0,\"y\":1}}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with repeat panel",
+    "output": "<think>\nSo the request is to create Grafana dashboard with repeat panel.\nLet me break this down.\ncurl is what we need — making HTTP requests.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nThe -d flag means directory listing, don't descend, which matters here because standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Repeat\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"$instance\",\"repeat\":\"instance\",\"targets\":[{\"expr\":\"node_cpu_seconds_total{instance=~\\\"$instance\\\"}\"}]}]}}'"
+  },
+  {
+    "instruction": "Link Grafana dashboards via API",
+    "output": "<think>\nThe goal is to link Grafana dashboards via API.\ncurl is what we need — making HTTP requests.\nWhy -H? Follow symlinks on command line only. needed for this specific use case.\nWhy -d? Directory listing, don't descend. important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Linked\",\"panels\":[],\"links\":[{\"type\":\"dashboards\",\"title\":\"Other Dashboard\",\"dashboardUID\":\"abc123\"}]}}'"
+  },
+  {
+    "instruction": "Create Grafana annotation with tags via API",
+    "output": "<think>\nWe should create Grafana annotation with tags via API.\nLet me think through this step by step.\nThe tool for this job is curl — making HTTP requests.\nI've added -H to follow symlinks on command line only — standard practice for this kind of operation.\nWhy -d? Directory listing, don't descend. standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/annotations -H 'Content-Type: application/json' -d '{\"text\":\"Release v2.0\",\"tags\":[\"release\",\"production\"],\"time\":1721923200000,\"timeEnd\":1721923200000}'"
+  },
+  {
+    "instruction": "Create Grafana region annotation via API",
+    "output": "<think>\nThe task requires us to create Grafana region annotation via API.\nThis calls for curl. Making HTTP requests.\nI'm using -H for follow symlinks on command line only — standard practice for this kind of operation.\nI've added -d to directory listing, don't descend — needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/annotations -H 'Content-Type: application/json' -d '{\"text\":\"Incident window\",\"time\":1721923200000,\"timeEnd\":1721923500000}'"
+  },
+  {
+    "instruction": "Add Grafana panel with alert threshold via API",
+    "output": "<think>\nThis is asking us to add Grafana panel with alert threshold via API.\nHere's how I'd approach this.\nThis calls for curl. Making HTTP requests.\nI've added -H to follow symlinks on command line only — this controls how the output is formatted.\nI'm using -d for directory listing, don't descend — needed for this specific use case.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Alerting\",\"panels\":[{\"type\":\"timeseries\",\"title\":\"With Threshold\",\"targets\":[{\"expr\":\"node_cpu_seconds_total\"}],\"thresholds\":[{\"value\":80,\"color\":\"red\"}]}]}}'"
+  },
+  {
+    "instruction": "Create Grafana dashboard with text panel via API",
+    "output": "<think>\nThe task requires us to create Grafana dashboard with text panel via API.\nLet me reason through this.\nBest tool here is curl — making HTTP requests.\nI'm using -H for follow symlinks on command line only — this controls how the output is formatted.\nI've added -d to directory listing, don't descend — this controls how the output is formatted.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nI'll check the output to make sure it did what we expected.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d '{\"dashboard\":{\"title\":\"Text\",\"panels\":[{\"type\":\"text\",\"title\":\"Doc\",\"mode\":\"markdown\",\"content\":\"# Instructions\\nThis is a **test**\"}]}}'"
+  },
+  {
+    "instruction": "Backup Grafana database (sqlite)",
+    "output": "<think>\nThis is asking us to backup Grafana database (sqlite).\nHere's how I'd approach this.\nI'll reach for cp here because file copying.\nCheck the output for errors before proceeding to the next step.\n</think>\ncp /var/lib/grafana/grafana.db /backup/grafana-$(date +%Y%m%d).db"
+  },
+  {
+    "instruction": "Restore Grafana database (sqlite)",
+    "output": "<think>\nAlright, we need to restore Grafana database (sqlite).\nThis calls for systemctl. Managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl stop grafana-server && cp /backup/grafana-20260725.db /var/lib/grafana/grafana.db && chown grafana:grafana /var/lib/grafana/grafana.db && systemctl start grafana-server"
+  },
+  {
+    "instruction": "Install Grafana using apt",
+    "output": "<think>\nAlright, we need to install Grafana using apt.\nLet me think through this step by step.\nI'll reach for apt-get here because apt-get operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo apt-get install -y software-properties-common && sudo add-apt-repository 'deb https://packages.grafana.com/oss/deb stable main' && sudo apt-get update && sudo apt-get install -y grafana"
+  }
+]

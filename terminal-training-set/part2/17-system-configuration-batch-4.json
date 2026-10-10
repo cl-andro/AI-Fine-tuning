@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure system-wide proxy settings",
+    "output": "<think>\nWe should configure system-wide proxy settings.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\n</think>\necho -e 'http_proxy=\"http://proxy:8080/\"\\nhttps_proxy=\"http://proxy:8080/\"\\nno_proxy=\"localhost,127.0.0.1\"' >> /etc/environment"
+  },
+  {
+    "instruction": "Set proxy for apt",
+    "output": "<think>\nThis is asking us to set proxy for apt.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho 'Acquire::http::Proxy \"http://proxy:8080/\";' > /etc/apt/apt.conf.d/proxy.conf"
+  },
+  {
+    "instruction": "Configure system-wide DNS resolver",
+    "output": "<think>\nWe're being asked to configure system-wide DNS resolver.\nLet me consider what makes sense here.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho -e 'nameserver 1.1.1.1\\nnameserver 8.8.8.8' > /etc/resolv.conf"
+  },
+  {
+    "instruction": "Make DNS config persistent (prevent overwrite)",
+    "output": "<think>\nThis is asking us to make DNS config persistent (prevent overwrite).\nLet me think about the best approach.\nFor this, apt is the right tool — apt operations.\nI've added -e to edit or executable — standard practice for this kind of operation.\nI've added -u to show or sort by access time — needed for this specific use case.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y resolvconf && echo -e 'nameserver 1.1.1.1\\nnameserver 8.8.8.8' >> /etc/resolvconf/resolv.conf.d/head && resolvconf -u"
+  },
+  {
+    "instruction": "Configure systemd-resolved",
+    "output": "<think>\nAlright, we need to configure systemd-resolved.\nLet me break this down.\nI've added -e to edit or executable — standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho -e '[Resolve]\\nDNS=1.1.1.1 8.8.8.8\\nFallbackDNS=9.9.9.9' >> /etc/systemd/resolved.conf && systemctl restart systemd-resolved"
+  },
+  {
+    "instruction": "Disable systemd-resolved",
+    "output": "<think>\nThe user wants to disable systemd-resolved.\nBest tool here is systemctl — managing systemd services.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRestarting services has downtime. If possible, use reload instead of restart.\nQuick verification after execution to be safe.\n</think>\nsystemctl stop systemd-resolved && systemctl disable systemd-resolved && rm -f /etc/resolv.conf && echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+  },
+  {
+    "instruction": "Configure journald to use persistent storage",
+    "output": "<think>\nThe user wants to configure journald to use persistent storage.\nLet me break this down.\nThe -e flag means edit or executable, which matters here because without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho -e '[Journal]\\nStorage=persistent' >> /etc/systemd/journald.conf && systemctl restart systemd-journald"
+  },
+  {
+    "instruction": "Limit journald storage size",
+    "output": "<think>\nAlright, we need to limit journald storage size.\nLet me think through this step by step.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho -e '[Journal]\\nSystemMaxUse=500M' >> /etc/systemd/journald.conf && systemctl restart systemd-journald"
+  },
+  {
+    "instruction": "Configure syslog to send to a remote server",
+    "output": "<think>\nThe task requires us to configure syslog to send to a remote server.\nLet me consider what makes sense here.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '*.* @192.168.1.200:514' > /etc/rsyslog.d/remote.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Configure rsyslog to receive remote logs",
+    "output": "<think>\nThe goal is to configure rsyslog to receive remote logs.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -e '$ModLoad imudp\\n$UDPServerRun 514\\n$ModLoad imtcp\\n$InputTCPServerRun 514\\n*.* /var/log/remote.log' > /etc/rsyslog.d/receiver.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Configure syslog-ng as an alternative",
+    "output": "<think>\nThe task requires us to configure syslog-ng as an alternative.\nLet me reason through this.\nBest tool here is apt — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\napt install -y syslog-ng && systemctl enable --now syslog-ng"
+  },
+  {
+    "instruction": "Add a new syslog-ng source",
+    "output": "<think>\nThe goal is to add a new syslog-ng source.\nWhy -e? Edit or executable. needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho -e 'source s_net { udp(port(514)); };' >> /etc/syslog-ng/syslog-ng.conf && systemctl restart syslog-ng"
+  },
+  {
+    "instruction": "Configure logwatch for daily log summary",
+    "output": "<think>\nSo the request is to configure logwatch for daily log summary.\nI'll reach for apt here because apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y logwatch && logwatch --detail High --mailto admin@example.com --service All --range today"
+  },
+  {
+    "instruction": "Install and configure aide (file integrity)",
+    "output": "<think>\nThe goal is to install and configure aide (file integrity).\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y aide && aideinit && mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db"
+  },
+  {
+    "instruction": "Run aide check and report",
+    "output": "<think>\nNeed to run aide check and report.\nLet me reason through this.\nI'll reach for aide here because aide operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\naide --check 2>&1 | head -30"
+  },
+  {
+    "instruction": "Configure a cron job for daily aide check",
+    "output": "<think>\nSo the request is to configure a cron job for daily aide check.\nI've added -s to summarize or silent mode — without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\necho '0 4 * * * /usr/bin/aide --check | mail -s \"AIDE report\" admin@example.com' | crontab -"
+  },
+  {
+    "instruction": "Setup sysstat data collection (sar)",
+    "output": "<think>\nThis is asking us to setup sysstat data collection (sar).\nI'll reach for sed here because text stream editing.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nsed -i 's/ENABLED=\"false\"/ENABLED=\"true\"/' /etc/default/sysstat && systemctl restart sysstat && sar -u -f /var/log/sysstat/sa$(date +%d) | head -20"
+  },
+  {
+    "instruction": "Configure kernel parameters persistently",
+    "output": "<think>\nThis is asking us to configure kernel parameters persistently.\nLet me think about the best approach.\nI've added -e to edit or executable — needed for this specific use case.\nI've added -p to create parent directories as needed — without it the command won't work as we need.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'net.ipv4.tcp_syncookies=1\\nnet.ipv4.ip_forward=1' > /etc/sysctl.d/99-custom.conf && sysctl -p /etc/sysctl.d/99-custom.conf"
+  },
+  {
+    "instruction": "Configure kernel modules to load on boot",
+    "output": "<think>\nThis is asking us to configure kernel modules to load on boot.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho -e 'br_netfilter\\noverlay\\nvfio-pci' > /etc/modules-load.d/custom.conf"
+  },
+  {
+    "instruction": "Configure udev rules for a device",
+    "output": "<think>\nAlright, we need to configure udev rules for a device.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"1234\", ATTRS{idProduct}==\"5678\", SYMLINK+=\"mydevice\"' > /etc/udev/rules.d/99-mydevice.rules && udevadm control --reload-rules && udevadm trigger"
+  },
+  {
+    "instruction": "Reload udev rules",
+    "output": "<think>\nSo we need to reload udev rules.\nHere's how I'd approach this.\nudevadm is what we need — device manager control.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nudevadm control --reload-rules && udevadm trigger"
+  },
+  {
+    "instruction": "Check udev rules for a device",
+    "output": "<think>\nThe goal is to check udev rules for a device.\nLet me think through this step by step.\nudevadm is what we need — device manager control.\nThe -a flag means AND operator in find, which matters here because important to get the expected behavior.\nWhy -n? Dry-run, no changes. needed for this specific use case.\nThe command looks straightforward, but let me check the details.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\nudevadm info -a -n /dev/sdb | head -30"
+  },
+  {
+    "instruction": "Configure CPU governor to performance on boot",
+    "output": "<think>\nThe goal is to configure CPU governor to performance on boot.\nLet me break this down.\nI'd use apt for this — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y cpufrequtils && echo 'GOVERNOR=performance' > /etc/default/cpufrequtils && systemctl disable cpufrequtils"
+  },
+  {
+    "instruction": "Configure hugepages for database workloads",
+    "output": "<think>\nSo the request is to configure hugepages for database workloads.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e 'vm.nr_hugepages=1024\\nkernel.shmmax=17179869184' >> /etc/sysctl.conf && sysctl -p"
+  },
+  {
+    "instruction": "Configure Transparent Hugepage defrag for performance",
+    "output": "<think>\nWe're being asked to configure Transparent Hugepage defrag for performance.\nLet me think about the best approach.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\necho never > /sys/kernel/mm/transparent_hugepage/defrag && echo 'echo never > /sys/kernel/mm/transparent_hugepage/defrag' >> /etc/rc.local"
+  }
+]

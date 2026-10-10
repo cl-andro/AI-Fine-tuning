@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Create a multi-hop SSH tunnel through two jump hosts to an internal database",
+    "output": "<think>\nWe should create a multi-hop SSH tunnel through two jump hosts to an internal database.\nLet me think through this step by step.\nFor this, ssh is the right tool — remote system access.\nLet me verify afterward that it worked correctly.\n</think>\nssh -L 5432:db.internal:5432 -J bastion1.example.com,bastion2.example.com user@target.internal"
+  },
+  {
+    "instruction": "Set up a full WireGuard VPN with wg-quick and NAT for a home lab",
+    "output": "<think>\nThis is asking us to set up a full WireGuard VPN with wg-quick and NAT for a home lab.\nThis calls for apt. Apt operations.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo apt install wireguard && sudo wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey && sudo wg-quick up wg0"
+  },
+  {
+    "instruction": "Configure an OpenVPN server with TLS-auth and route push for all traffic",
+    "output": "<think>\nWe're being asked to configure an OpenVPN server with TLS-auth and route push for all traffic.\nLet me consider what makes sense here.\nFor this, openvpn is the right tool — OpenVPN client/server management.\nThe -a flag means AND operator in find, which matters here because standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVPN configs may contain credentials — protect the file permissions.\nLet me verify afterward that it worked correctly.\n</think>\nsudo openvpn --genkey --secret /etc/openvpn/tls.key && echo 'tls-auth /etc/openvpn/tls.key 0' | sudo tee -a /etc/openvpn/server.conf && sudo systemctl restart openvpn@server"
+  },
+  {
+    "instruction": "Set up a Libreswan IPsec VPN with leftcert and rightca for mutual certificate auth",
+    "output": "<think>\nWe're being asked to set up a Libreswan IPsec VPN with leftcert and rightca for mutual certificate auth.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'conn cert-vpn\n  left=192.168.1.1\n  leftcert=server.crt\n  right=%any\n  rightca=ca.crt\n  auto=add' | sudo tee -a /etc/ipsec.conf && sudo systemctl restart ipsec"
+  },
+  {
+    "instruction": "Deploy a Tailscale subnet router to advertise a local LAN subnet",
+    "output": "<think>\nThe goal is to deploy a Tailscale subnet router to advertise a local LAN subnet.\ntailscale is what we need — mesh VPN network management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tailscale up --advertise-routes=192.168.1.0/24 --accept-routes"
+  },
+  {
+    "instruction": "Create an SSH tunnel that stays alive and restarts via systemd",
+    "output": "<think>\nNeed to create an SSH tunnel that stays alive and restarts via systemd.\nThe tool for this job is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat > /etc/systemd/system/ssh-tunnel.service << 'EOF'\n[Unit]\nDescription=SSH Tunnel\nAfter=network.target\n[Service]\nExecStart=/usr/bin/ssh -o ExitOnForwardFailure=yes -L 8443:internal-web:443 -N -T user@bastion\nRestart=always\nRestartSec=10\n[Install]\nWantedBy=multi-user.target\nEOF && sudo systemctl enable --now ssh-tunnel"
+  },
+  {
+    "instruction": "Build a SoftEther VPN server with L2TP/IPsec enabled for mobile clients",
+    "output": "<think>\nWe're being asked to build a SoftEther VPN server with L2TP/IPsec enabled for mobile clients.\nLet me consider what makes sense here.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo /usr/local/vpnserver/vpncmd localhost:443 /SERVER /CMD IPsecEnable /L2TP:yes /L2TPRAW:yes /ETHERIP:no /PSK:mySecretKey"
+  },
+  {
+    "instruction": "Create a WireGuard multi-peer configuration for a hub-and-spoke topology",
+    "output": "<think>\nWe should create a WireGuard multi-peer configuration for a hub-and-spoke topology.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\n</think>\ncat > /etc/wireguard/wg0.conf << 'EOF'\n[Interface]\nAddress = 10.0.0.1/24\nPrivateKey = <server-privkey>\nListenPort = 51820\n[Peer]\nPublicKey = <peer1-pubkey>\nAllowedIPs = 10.0.0.2/32\n[Peer]\nPublicKey = <peer2-pubkey>\nAllowedIPs = 10.0.0.3/32\nEOF"
+  },
+  {
+    "instruction": "Start an ngrok tunnel that forwards to a local HTTPS server on port 443",
+    "output": "<think>\nSo the request is to start an ngrok tunnel that forwards to a local HTTPS server on port 443.\nI'll reach for ngrok here because ngrok operations.\n</think>\nngrok http https://localhost:443"
+  },
+  {
+    "instruction": "Set up a dual-stack (IPv4/IPv6) WireGuard interface",
+    "output": "<think>\nThe user wants to set up a dual-stack (IPv4/IPv6) WireGuard interface.\nFor this, wg is the right tool — WireGuard VPN interface management.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nWireGuard configs contain private keys — keep permissions at 600.\n</think>\nsudo wg set wg0 private-key /etc/wireguard/privatekey && sudo ip addr add 10.0.0.1/24 dev wg0 && sudo ip addr add fd00::1/64 dev wg0 && sudo ip link set wg0 up"
+  },
+  {
+    "instruction": "Configure a Cloudflare Tunnel with multiple ingress rules for different services",
+    "output": "<think>\nSo the request is to configure a Cloudflare Tunnel with multiple ingress rules for different services.\nLet me reason through this.\nBest tool here is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > /etc/cloudflared/config.yml << 'EOF'\ntunnel: my-tunnel\ncredentials-file: /etc/cloudflared/credentials.json\n\n\ningress:\n  - hostname: app.example.com\n    service: http://localhost:3000\n  - hostname: stats.example.com\n    service: http://localhost:9090\n  - service: http_status:404\nEOF && sudo systemctl restart cloudflared"
+  },
+  {
+    "instruction": "Create a VPN-less SSH tunnel for a MySQL database with keepalive",
+    "output": "<think>\nThe goal is to create a VPN-less SSH tunnel for a MySQL database with keepalive.\nFirst, let me understand what's needed here.\nBest tool here is autossh — autossh operations.\nWhy -M? Display mount targets in df. important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\n</think>\nautossh -M 0 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -L 3306:rds.internal:3306 -N -f user@bastion"
+  },
+  {
+    "instruction": "Start a FRP server with TLS encryption and custom subdomain hosting",
+    "output": "<think>\nSo the request is to start a FRP server with TLS encryption and custom subdomain hosting.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > /etc/frp/frps.toml << 'EOF'\nbindPort = 7000\nbindPortTLS = 7001\nwebServer.port = 7500\nauth.token = \"secure-token\"\ntls.force = true\nEOF && sudo frps -c /etc/frp/frps.toml"
+  },
+  {
+    "instruction": "Use socat to create an encrypted tunnel via OpenSSL",
+    "output": "<think>\nSo the request is to use socat to create an encrypted tunnel via OpenSSL.\nLet me break this down.\nFor this, socat is the right tool — bidirectional data forwarding.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\nsocat OPENSSL-LISTEN:443,cert=/etc/ssl/certs/server.pem,verify=0,fork TCP:localhost:80"
+  },
+  {
+    "instruction": "Set up a ZeroTier moon to reduce latency between peered nodes",
+    "output": "<think>\nThe goal is to set up a ZeroTier moon to reduce latency between peered nodes.\nThis calls for zerotier-cli. Zerotier-cli operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo zerotier-cli orbit 0123456789abcdef 203.0.113.5/9993 && echo 'Moon configured - nodes will now use the custom moon'"
+  },
+  {
+    "instruction": "Create a WireGuard peer with dynamic endpoint updates via persistent-keepalive",
+    "output": "<think>\nThe goal is to create a WireGuard peer with dynamic endpoint updates via persistent-keepalive.\nHere's how I'd approach this.\nI'd use wg for this — WireGuard VPN interface management.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo wg set wg0 peer <peer-pubkey> endpoint example.com:51820 persistent-keepalive 25"
+  },
+  {
+    "instruction": "Run a Chisel client in reverse-proxy mode to expose a local web server",
+    "output": "<think>\nNeed to run a Chisel client in reverse-proxy mode to expose a local web server.\nLet me break this down.\nThe tool for this job is chisel — chisel operations.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nchisel client --keepalive 30s https://vps.example.com:8080 R:80:localhost:8080"
+  },
+  {
+    "instruction": "Establish a P2P VPN link with Tinc between two Debian servers",
+    "output": "<think>\nNeed to establish a P2P VPN link with Tinc between two Debian servers.\nBest tool here is tincd — tincd operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo tincd -n vpn -K 4096 && sudo tincd -n vpn --config=/etc/tinc/vpn && sudo tincd -n vpn"
+  },
+  {
+    "instruction": "Test if UDP ports are open for WireGuard using hping3",
+    "output": "<think>\nThe user wants to test if UDP ports are open for WireGuard using hping3.\nHere's how I'd approach this.\nI'll reach for hping3 here because hping3 operations.\nThe -p flag means create parent directories as needed, which matters here because needed for this specific use case.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo hping3 -2 -p 51820 -c 3 203.0.113.5"
+  },
+  {
+    "instruction": "SOCKS5 SSH tunnel with port knocking to access a firewalled server",
+    "output": "<think>\nThis is asking us to sOCKS5 SSH tunnel with port knocking to access a firewalled server.\nI'll reach for knock here because knock operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nknock 203.0.113.5 7000 8000 9000 && ssh -D 1080 -N -f user@203.0.113.5"
+  },
+  {
+    "instruction": "Create a udp2raw service that auto-starts for WireGuard tunneling over TCP",
+    "output": "<think>\nThe task requires us to create a udp2raw service that auto-starts for WireGuard tunneling over TCP.\nLet me reason through this.\nBest tool here is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /etc/systemd/system/udp2raw.service << 'EOF'\n[Unit]\nDescription=udp2raw tunnel\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/udp2raw -c -l 0.0.0.0:3333 -r 203.0.113.5:4096 --raw-mode faketcp -k mypasswd\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF && sudo systemctl enable --now udp2raw"
+  },
+  {
+    "instruction": "Deploy a Nebula overlay network with lighthouse and multiple nodes",
+    "output": "<think>\nAlright, we need to deploy a Nebula overlay network with lighthouse and multiple nodes.\nLet me reason through this.\nThe tool for this job is nebula — nebula operations.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nLet me verify afterward that it worked correctly.\n</think>\nsudo nebula -config /etc/nebula/lighthouse.yml & sudo nebula -config /etc/nebula/node.yml"
+  },
+  {
+    "instruction": "Configure strongSwan to use VICI protocol for dynamic connection management",
+    "output": "<think>\nAlright, we need to configure strongSwan to use VICI protocol for dynamic connection management.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'VICI socket: /var/run/swanctl/swanctl.socket' && sudo swanctl --stats"
+  },
+  {
+    "instruction": "Set up an SSH tunnel to route all traffic through a remote server as a SOCKS proxy",
+    "output": "<think>\nThis is asking us to set up an SSH tunnel to route all traffic through a remote server as a SOCKS proxy.\nLet me break this down.\nI'll reach for ssh here because remote system access.\nThe -q flag handles quiet mode, minimal output. Important because this controls how the output is formatted.\nI've added -f to force, suppress errors — needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nssh -D 1080 -q -C -N -f user@proxy.example.com && echo 'Set your browser to SOCKS5 127.0.0.1:1080'"
+  }
+]

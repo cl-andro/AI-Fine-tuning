@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "contour help",
+    "output": "Contour is a Kubernetes ingress controller using Envoy.\n\nUsage:\n  contour [command]\n\nAvailable Commands:\n  serve         Start Contour\n  version       Print version\n  check-config  Check config file syntax\n  certgen       Generate certificate"
+  },
+  {
+    "instruction": "contour version",
+    "output": "contour v1.30.0\nbuildDate: 2024-09-15"
+  },
+  {
+    "instruction": "contour serve --config-path /etc/contour/config.yaml",
+    "output": "INFO[0000] serving Contour API at 0.0.0.0:8001\nINFO[0000] Envoy management server listening on 127.0.0.1:8001"
+  },
+  {
+    "instruction": "contour check-config -c /etc/contour/config.yaml",
+    "output": "config file /etc/contour/config.yaml is valid"
+  },
+  {
+    "instruction": "contour certgen --incluster --namespace projectcontour",
+    "output": "generated TLS secrets for Contour in namespace projectcontour"
+  },
+  {
+    "instruction": "istioctl apply -f gateway.yaml",
+    "output": "Applied 2 resources: 1 gateway, 1 virtualservice"
+  },
+  {
+    "instruction": "istioctl delete -f gateway.yaml",
+    "output": "Deleted 2 resources: 1 gateway, 1 virtualservice"
+  },
+  {
+    "instruction": "istioctl analyze --namespace default",
+    "output": "Info [IST0102] Namespace: default. The namespace is not enabled for Istio injection. Run 'kubectl label namespace default istio-injection=enabled' to enable it.\nError [IST0101] Service: my-service. Application health check is not configured.\n0 Error(s), 1 Info(s)"
+  },
+  {
+    "instruction": "istioctl proxy-status",
+    "output": "NAME      CDS        LDS        EDS        RDS        STATUS\nmy-pod    SYNCED     SYNCED     SYNCED     SYNCED     HEALTHY"
+  },
+  {
+    "instruction": "istioctl proxy-config routes my-pod.default",
+    "output": "gcloud compute forwarding-rules list"
+  },
+  {
+    "instruction": "istioctl proxy-config clusters my-pod.default",
+    "output": "SERVICE FQIN                      PORT     SUBSET\noutbound|8080||my-service.default  8080     v1\noutbound|8080||my-service.default  8080     v2"
+  },
+  {
+    "instruction": "istioctl proxy-config listeners my-pod.default",
+    "output": "ADDRESS PORT  MATCH\n0.0.0.0 8080  ALL\n0.0.0.0 15090 ALL"
+  },
+  {
+    "instruction": "istioctl version",
+    "output": "client version: 1.22.0\ncontrol plane version: 1.22.0\ndata plane version: 1.22.0 (2 proxies)"
+  },
+  {
+    "instruction": "istioctl install --set profile=default -y",
+    "output": "Installing Istio 1.22.0...\nIstio installation complete"
+  },
+  {
+    "instruction": "istioctl uninstall --purge -y",
+    "output": "Uninstalling Istio from cluster...\nIstio uninstalled successfully"
+  },
+  {
+    "instruction": "istioctl dashboard kiali",
+    "output": "http://localhost:20001/kiali"
+  },
+  {
+    "instruction": "istioctl validate -f gateway.yaml",
+    "output": "gateway.yaml is valid"
+  },
+  {
+    "instruction": "glooctl check",
+    "output": "Checking Gloo installation...\nGloo Gloo is healthy\nDiscovery: healthy\nGateway: healthy"
+  },
+  {
+    "instruction": "glooctl install gateway --values values.yaml",
+    "output": "Installing Gloo Gateway...\nGloo Gateway installed successfully"
+  },
+  {
+    "instruction": "glooctl uninstall",
+    "output": "Uninstalling Gloo...\nGloo uninstalled"
+  },
+  {
+    "instruction": "glooctl create secret apikey --name mykey --apikey secret123 --namespace gloo-system",
+    "output": "Secret created in namespace gloo-system"
+  },
+  {
+    "instruction": "glooctl get upstream",
+    "output": "+-----------------------------+------------+---------+------+\n|           UPSTREAM          |    TYPE    |  STAT   |      |\n+-----------------------------+------------+---------+------+\n| default-my-service-8080     | Kubernetes | Accepted|      |\n+-----------------------------+------------+---------+------+"
+  }
+]

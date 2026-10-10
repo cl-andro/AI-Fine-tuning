@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Grafana alert rule via provisioning API",
+    "output": "<think>\nWe're being asked to create a Grafana alert rule via provisioning API.\nFirst, let me understand what's needed here.\nI'll reach for curl here because making HTTP requests.\nThe -H flag handles follow symlinks on command line only. Important because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/v1/provisioning/alert-rules -H 'Content-Type: application/json' -d '{\"title\":\"HighCPU\",\"condition\":\"avg() OF query(A) IS ABOVE 0.9\",\"data\":[{\"refId\":\"A\",\"relativeTimeRange\":{\"from\":600,\"to\":0},\"datasourceUid\":\"prom\",\"model\":{\"expr\":\"node_cpu_seconds_total > 0.9\",\"intervalMs\":1000,\"maxDataPoints\":100}}],\"ruleGroup\":\"default\",\"noDataState\":\"NoData\",\"execErrState\":\"Alerting\",\"for\":\"5m\"}'"
+  },
+  {
+    "instruction": "Create a Grafana contact point via provisioning API",
+    "output": "<think>\nSo the request is to create a Grafana contact point via provisioning API.\nLet me reason through this.\nThis calls for curl. Making HTTP requests.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nQuick verification after execution to be safe.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/v1/provisioning/contact-points -H 'Content-Type: application/json' -d '{\"name\":\"Slack\",\"type\":\"slack\",\"settings\":{\"url\":\"https://hooks.slack.com/xxx\"},\"disableResolveMessage\":false}'"
+  },
+  {
+    "instruction": "Create Grafana notification policy via provisioning API",
+    "output": "<think>\nThe user wants to create Grafana notification policy via provisioning API.\nLet me think through this step by step.\nThe tool for this job is curl — making HTTP requests.\nI'm using -H for follow symlinks on command line only — standard practice for this kind of operation.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X PUT http://admin:admin@localhost:3000/api/v1/provisioning/policies -H 'Content-Type: application/json' -d '{\"receiver\":\"Slack\",\"group_by\":[\"alertname\"],\"group_wait\":\"30s\",\"group_interval\":\"5m\",\"repeat_interval\":\"4h\"}'"
+  },
+  {
+    "instruction": "Export a Grafana dashboard as JSON",
+    "output": "<think>\nAlright, we need to export a Grafana dashboard as JSON.\nHere's how I'd approach this.\nFor this, curl is the right tool — making HTTP requests.\nI've added -s to summarize or silent mode — standard practice for this kind of operation.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://admin:admin@localhost:3000/api/dashboards/uid/my-dashboard | jq '.dashboard' > dashboard.json"
+  },
+  {
+    "instruction": "Import a Grafana dashboard via API",
+    "output": "<think>\nNeed to import a Grafana dashboard via API.\nThe tool for this job is curl — making HTTP requests.\nThe -H flag means follow symlinks on command line only, which matters here because standard practice for this kind of operation.\nThe -d flag means directory listing, don't descend, which matters here because important to get the expected behavior.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\nAfter running, I'll confirm the result looks right.\n</think>\ncurl -X POST http://admin:admin@localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -d @dashboard.json"
+  },
+  {
+    "instruction": "Migrate Grafana between instances via API",
+    "output": "<think>\nThe user wants to migrate Grafana between instances via API.\nHere's how I'd approach this.\ncurl is what we need — making HTTP requests.\nThe -s flag means summarize or silent mode, which matters here because this controls how the output is formatted.\nI'm using -H for follow symlinks on command line only — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl -s http://source:3000/api/dashboards/uid/my-dashboard | jq '.dashboard' | curl -X POST http://dest:3000/api/dashboards/db -H 'Content-Type: application/json' -d @-"
+  },
+  {
+    "instruction": "Set Grafana admin password via CLI",
+    "output": "<think>\nThe task requires us to set Grafana admin password via CLI.\nThis calls for grafana-cli. Grafana management.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ngrafana-cli admin reset-admin-password newpass"
+  },
+  {
+    "instruction": "Reset Grafana admin password via env",
+    "output": "<think>\nWe should reset Grafana admin password via env.\ndocker is what we need — container management.\nWhy -e? Edit or executable. without it the command won't work as we need.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run -e GF_SECURITY_ADMIN_PASSWORD=newpass grafana/grafana"
+  },
+  {
+    "instruction": "Enable Grafana anonymous access",
+    "output": "<think>\nAlright, we need to enable Grafana anonymous access.\nLet me think through this step by step.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho '[auth.anonymous] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana OAuth with GitHub",
+    "output": "<think>\nAlright, we need to enable Grafana OAuth with GitHub.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho '[auth.github] enabled = true client_id = xxx client_secret = yyy allow_sign_up = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana LDAP authentication",
+    "output": "<think>\nThe task requires us to enable Grafana LDAP authentication.\nLet me think about the best approach.\nQuick verification after execution to be safe.\n</think>\necho '[auth.ldap] enabled = true config_file = /etc/grafana/ldap.toml' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana session timeout",
+    "output": "<think>\nAlright, we need to set Grafana session timeout.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '[auth] login_maximum_inactive_lifetime_days = 7' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana SMTP for email alerts",
+    "output": "<think>\nWe should configure Grafana SMTP for email alerts.\nAfter running, I'll confirm the result looks right.\n</think>\necho '[smtp] enabled = true host = smtp.example.com:587 user = admin password = pass from_address = grafana@example.com' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana unified alerting",
+    "output": "<think>\nWe should enable Grafana unified alerting.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '[unified_alerting] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana reporting",
+    "output": "<think>\nNeed to enable Grafana reporting.\nLet me break this down.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho '[reporting] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana log level",
+    "output": "<think>\nWe're being asked to set Grafana log level.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '[log] level = debug' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana database (MySQL)",
+    "output": "<think>\nNeed to configure Grafana database (MySQL).\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '[database] type = mysql host = mysql:3306 name = grafana user = grafana password = pass' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Configure Grafana database (PostgreSQL)",
+    "output": "<think>\nWe should configure Grafana database (PostgreSQL).\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho '[database] type = postgres host = postgres:5432 name = grafana user = grafana password = pass' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana server root URL",
+    "output": "<think>\nSo the request is to set Grafana server root URL.\nHere's how I'd approach this.\n</think>\necho '[server] domain = grafana.example.com root_url = https://grafana.example.com/' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana HTTPS",
+    "output": "<think>\nSo the request is to enable Grafana HTTPS.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho '[server] protocol = https cert_file = /etc/grafana/grafana.crt cert_key = /etc/grafana/grafana.key' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana plugin analytics",
+    "output": "<think>\nWe're being asked to enable Grafana plugin analytics.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho '[analytics] reporting_enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Set Grafana custom branding",
+    "output": "<think>\nThis is asking us to set Grafana custom branding.\nQuick verification after execution to be safe.\n</think>\necho '[branding] login_title = My Company' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Enable Grafana explore mode",
+    "output": "<think>\nThe goal is to enable Grafana explore mode.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\necho '[explore] enabled = true' >> /etc/grafana/grafana.ini"
+  },
+  {
+    "instruction": "Install Grafana with specific version in Docker",
+    "output": "<think>\nThe user wants to install Grafana with specific version in Docker.\nLet me break this down.\nThe tool for this job is docker — container management.\nA single command handles this cleanly — no need to overcomplicate it.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run -d --name grafana -p 3000:3000 grafana/grafana:10.4.0"
+  },
+  {
+    "instruction": "Install Grafana plugins in Docker via env",
+    "output": "<think>\nAlright, we need to install Grafana plugins in Docker via env.\nThe tool for this job is docker — container management.\nI've added -d to directory listing, don't descend — without it the command won't work as we need.\nWhy -p? Create parent directories as needed. important to get the expected behavior.\nI'm using -e for edit or executable — important to get the expected behavior.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run -d --name grafana -p 3000:3000 -e GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel grafana/grafana"
+  }
+]

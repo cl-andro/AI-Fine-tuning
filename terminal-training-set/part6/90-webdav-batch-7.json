@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Install lighttpd with WebDAV and SSL support",
+    "output": "<think>\nThe task requires us to install lighttpd with WebDAV and SSL support.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\nsudo apt install lighttpd lighttpd-mod-webdav lighttpd-mod-openssl && sudo lighty-enable-mod webdav ssl"
+  },
+  {
+    "instruction": "Configure lighttpd WebDAV SSL certificate",
+    "output": "<think>\nWe should configure lighttpd WebDAV SSL certificate.\nLet me reason through this.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, I'll confirm the result looks right.\n</think>\necho '$SERVER[\"socket\"] == \":443\" {\n    ssl.engine = \"enable\"\n    ssl.pemfile = \"/etc/lighttpd/server.pem\"\n    webdav.opts = ( \"require-user\" => \"alice\" )\n}' | sudo tee /etc/lighttpd/conf-available/90-webdav-ssl.conf"
+  },
+  {
+    "instruction": "Check lighttpd modules loaded",
+    "output": "<think>\nAlright, we need to check lighttpd modules loaded.\nLet me reason through this.\nThe tool for this job is lighttpd — lighttpd operations.\nOne command does the job. Simple is better.\n</think>\nlighttpd -f /etc/lighttpd/lighttpd.conf -tt"
+  },
+  {
+    "instruction": "Enable DAV locking in lighttpd WebDAV",
+    "output": "<think>\nThe user wants to enable DAV locking in lighttpd WebDAV.\nLet me reason through this.\nWhy -a? AND operator in find. important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'webdav.opts = ( \"locking\" => \"enable\" )' | sudo tee -a /etc/lighttpd/conf-available/90-webdav.conf"
+  },
+  {
+    "instruction": "Disable WebDAV XML logging in lighttpd",
+    "output": "<think>\nThe goal is to disable WebDAV XML logging in lighttpd.\nI've added -a to AND operator in find — without it the command won't work as we need.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\necho 'webdav.log-xml = \"disable\"' | sudo tee -a /etc/lighttpd/conf-available/90-webdav.conf"
+  },
+  {
+    "instruction": "Set lighttpd WebDAV max size for upload",
+    "output": "<think>\nThe goal is to set lighttpd WebDAV max size for upload.\nHere's how I'd approach this.\nThe -size flag handles filter by file size. Important because without it the command won't work as we need.\nThe -a flag handles AND operator in find. Important because this controls how the output is formatted.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'server.max-request-size = 102400' | sudo tee -a /etc/lighttpd/lighttpd.conf && sudo systemctl restart lighttpd"
+  },
+  {
+    "instruction": "Configure Apache WebDAV with digest auth and DAVLockDB",
+    "output": "<think>\nWe should configure Apache WebDAV with digest auth and DAVLockDB.\nI'd use htdigest for this — htdigest operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo htdigest -c /etc/apache2/webdav-digest.passwd 'WebDAV Realm' alice && echo 'DAVLockDB /var/www/webdav/DAVLock.dir' | sudo tee /etc/apache2/conf-available/davlock.conf && sudo a2enconf davlock && sudo systemctl reload apache2"
+  },
+  {
+    "instruction": "Create ownCloud external storage S3 bucket",
+    "output": "<think>\nSo the request is to create ownCloud external storage S3 bucket.\nHere's how I'd approach this.\nI'm using -u for show or sort by access time — without it the command won't work as we need.\nOne command does the job. Simple is better.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files_external:create --mount-point /s3backup --storage-type amazon-s3 --backend s3::bucket=mybackup --config access_key=AKID --config secret_key=secret"
+  },
+  {
+    "instruction": "List ownCloud external storages with occ",
+    "output": "<think>\nNeed to list ownCloud external storages with occ.\nLet me consider what makes sense here.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files_external:list"
+  },
+  {
+    "instruction": "Delete ownCloud external storage with occ",
+    "output": "<think>\nThe goal is to delete ownCloud external storage with occ.\nLet me reason through this.\nI've added -u to show or sort by access time — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files_external:delete 1"
+  },
+  {
+    "instruction": "Verify ownCloud data directory permissions",
+    "output": "<think>\nWe're being asked to verify ownCloud data directory permissions.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nThe --quiet flag handles suppress output. Important because without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files:scan --all --quiet"
+  },
+  {
+    "instruction": "Check ownCloud server info with occ",
+    "output": "<think>\nSo the request is to check ownCloud server info with occ.\nHere's how I'd approach this.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ check"
+  },
+  {
+    "instruction": "Send ownCloud system notification via occ",
+    "output": "<think>\nThe task requires us to send ownCloud system notification via occ.\nHere's how I'd approach this.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ notification:generate alice 'Scheduled maintenance in 1 hour'"
+  },
+  {
+    "instruction": "Repair ownCloud installation with occ",
+    "output": "<think>\nThe task requires us to repair ownCloud installation with occ.\nHere's how I'd approach this.\nThe -u flag means show or sort by access time, which matters here because without it the command won't work as we need.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data php /var/www/owncloud/occ maintenance:repair"
+  },
+  {
+    "instruction": "Clear ownCloud cache with occ",
+    "output": "<think>\nThe task requires us to clear ownCloud cache with occ.\nLet me consider what makes sense here.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nI'll check the output to make sure it did what we expected.\n</think>\nsudo -u www-data php /var/www/owncloud/occ files:cleanup"
+  },
+  {
+    "instruction": "Update ownCloud app via occ",
+    "output": "<think>\nWe should update ownCloud app via occ.\nLet me think about the best approach.\nI'm using -u for show or sort by access time — this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data php /var/www/owncloud/occ app:update --all"
+  },
+  {
+    "instruction": "Enable maintenance mode in Nextcloud via occ",
+    "output": "<think>\nWe're being asked to enable maintenance mode in Nextcloud via occ.\nLet me consider what makes sense here.\nThe -u flag handles show or sort by access time. Important because this controls how the output is formatted.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ maintenance:mode --on"
+  },
+  {
+    "instruction": "Disable maintenance mode in Nextcloud via occ",
+    "output": "<think>\nThis is asking us to disable maintenance mode in Nextcloud via occ.\nLet me reason through this.\nThe -u flag means show or sort by access time, which matters here because needed for this specific use case.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ maintenance:mode --off"
+  },
+  {
+    "instruction": "Run Nextcloud database migration with occ",
+    "output": "<think>\nAlright, we need to run Nextcloud database migration with occ.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nAfter running, I'll confirm the result looks right.\n</think>\nsudo -u www-data nextcloud.occ db:migrate --no-interaction"
+  },
+  {
+    "instruction": "Add missing indices in Nextcloud via occ",
+    "output": "<think>\nWe're being asked to add missing indices in Nextcloud via occ.\nLet me break this down.\nI've added -u to show or sort by access time — needed for this specific use case.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo -u www-data nextcloud.occ db:add-missing-indices"
+  },
+  {
+    "instruction": "Convert Nextcloud filecache charset via occ",
+    "output": "<think>\nSo the request is to convert Nextcloud filecache charset via occ.\nLet me consider what makes sense here.\nThe -u flag means show or sort by access time, which matters here because standard practice for this kind of operation.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo -u www-data nextcloud.occ db:convert-filecache-bigint"
+  },
+  {
+    "instruction": "Install rclone from official script",
+    "output": "<think>\nAlright, we need to install rclone from official script.\nLet me think about the best approach.\nFor this, curl is the right tool — making HTTP requests.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncurl https://rclone.org/install.sh | sudo bash"
+  }
+]

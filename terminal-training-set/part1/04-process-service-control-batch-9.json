@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show CPU frequency of all cores",
+    "output": "<think>\nThis is asking us to show CPU frequency of all cores.\nI'd use cat for this — cat operations.\nThe -E flag means extended regex, which matters here because important to get the expected behavior.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/cpuinfo | grep -E 'processor|MHz'"
+  },
+  {
+    "instruction": "Show CPU governor settings",
+    "output": "<think>\nThis is asking us to show CPU governor settings.\nBest tool here is cat — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+  },
+  {
+    "instruction": "Set CPU governor to performance for all cores",
+    "output": "<think>\nThe task requires us to set CPU governor to performance for all cores.\nI'd use for for this — for operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nfor i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > \"$i\"; done"
+  },
+  {
+    "instruction": "Show which processes are using swap",
+    "output": "<think>\nThe task requires us to show which processes are using swap.\nLet me consider what makes sense here.\nThis calls for for. For operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nfor file in /proc/*/status; do awk '/VmSwap|Name/{printf \"%s \", $2}END{print \"\"}' \"$file\" 2>/dev/null; done | sort -k2 -rh | head -10"
+  },
+  {
+    "instruction": "Show total swap usage per process",
+    "output": "<think>\nSo we need to show total swap usage per process.\nHere's how I'd approach this.\nsmem is what we need — smem operations.\nI've added -t to sort by modification time — important to get the expected behavior.\nThe -p flag handles create parent directories as needed. Important because important to get the expected behavior.\nThis is more involved than it first seems.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\n</think>\nsmem -t -p | head -20"
+  },
+  {
+    "instruction": "See which programs have the highest RSS memory",
+    "output": "<think>\nThe task requires us to see which programs have the highest RSS memory.\nLet me consider what makes sense here.\nThis calls for ps. Process listing.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\nps aux --sort=-%mem | awk 'NR>1{print $4 \"% \" $11}' | head -15"
+  },
+  {
+    "instruction": "Show memory map of all processes",
+    "output": "<think>\nThis is asking us to show memory map of all processes.\nI'll reach for pmap here because pmap operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\npmap -x $(pgrep nginx) | head -20"
+  },
+  {
+    "instruction": "Show cache usage statistics of the system",
+    "output": "<think>\nWe should show cache usage statistics of the system.\nLet me think through this step by step.\nI'd use cat for this — cat operations.\nThe -E flag handles extended regex. Important because needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/meminfo | grep -E '^(Cached|Buffers|Active|Inactive)'"
+  },
+  {
+    "instruction": "Drop clean caches to free memory",
+    "output": "<think>\nThe goal is to drop clean caches to free memory.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 3 > /proc/sys/vm/drop_caches"
+  },
+  {
+    "instruction": "Disable swapping temporarily",
+    "output": "<think>\nThe task requires us to disable swapping temporarily.\nFor this, swapoff is the right tool — swapoff operations.\nI'm using -a for AND operator in find — standard practice for this kind of operation.\nWhy -a? AND operator in find. needed for this specific use case.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nswapoff -a && swapon -a"
+  },
+  {
+    "instruction": "Show the swap file/partition being used",
+    "output": "<think>\nWe're being asked to show the swap file/partition being used.\nFor this, swapon is the right tool — swapon operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nswapon --show"
+  },
+  {
+    "instruction": "Create a 2GB swap file and enable it",
+    "output": "<think>\nThis is asking us to create a 2GB swap file and enable it.\nI'd use fallocate for this — fallocate operations.\nI've added -l to long format with details — important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nfallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile"
+  },
+  {
+    "instruction": "Make swap file permanent",
+    "output": "<think>\nSo the request is to make swap file permanent.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho '/swapfile none swap sw 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Show OOM killer score adjustment for a process",
+    "output": "<think>\nNeed to show OOM killer score adjustment for a process.\nHere's how I'd approach this.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/1234/oom_adj"
+  },
+  {
+    "instruction": "Exempt a process from OOM killer",
+    "output": "<think>\nThe user wants to exempt a process from OOM killer.\n</think>\necho -17 > /proc/1234/oom_adj"
+  },
+  {
+    "instruction": "Make a process the first to be killed by OOM",
+    "output": "<think>\nThe goal is to make a process the first to be killed by OOM.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\necho 15 > /proc/1234/oom_adj"
+  },
+  {
+    "instruction": "List processes excluded from OOM killer",
+    "output": "<think>\nThe goal is to list processes excluded from OOM killer.\nLet me reason through this.\ngrep is what we need — pattern searching.\nCheck the output for errors before proceeding to the next step.\n</think>\ngrep -l -- '-17' /proc/*/oom_adj 2>/dev/null"
+  },
+  {
+    "instruction": "Show the number of threads per process",
+    "output": "<think>\nThis is asking us to show the number of threads per process.\nLet me think through this step by step.\nThe tool for this job is ps — process listing.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nps -eo nlwp,pid,cmd | sort -rh | head -10"
+  },
+  {
+    "instruction": "Show the number of processes per user",
+    "output": "<think>\nSo we need to show the number of processes per user.\nLet me consider what makes sense here.\nI'll reach for ps here because process listing.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nps haux | awk '{print $1}' | sort | uniq -c | sort -rh"
+  },
+  {
+    "instruction": "Display process limits (ulimit -a equivalent for a PID)",
+    "output": "<think>\nWe should display process limits (ulimit -a equivalent for a PID).\nLet me think about the best approach.\nFor this, cat is the right tool — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat /proc/1234/limits"
+  },
+  {
+    "instruction": "Show pending signals for a process",
+    "output": "<think>\nWe should show pending signals for a process.\nLet me break this down.\nI'll reach for cat here because cat operations.\n</think>\ncat /proc/1234/pending"
+  },
+  {
+    "instruction": "Send a specific signal to all matching processes",
+    "output": "<think>\nWe should send a specific signal to all matching processes.\nThe tool for this job is killall — killall operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nkillall -USR1 nginx"
+  },
+  {
+    "instruction": "Verify a process is responding to signals",
+    "output": "<think>\nThe task requires us to verify a process is responding to signals.\nI'll reach for kill here because process termination.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nkill -9 should be a last resort — if the process ignores SIGTERM, then escalate to SIGKILL.\n</think>\nkill -0 1234 && echo process alive"
+  },
+  {
+    "instruction": "Run a command with a modified environment",
+    "output": "<think>\nThe task requires us to run a command with a modified environment.\nHere's how I'd approach this.\nBest tool here is env — env operations.\nThe -i flag means interactive, prompt before action, which matters here because standard practice for this kind of operation.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nenv -i PATH=/usr/bin HOME=/home/user ./script.sh"
+  },
+  {
+    "instruction": "Run a command with a single environment variable",
+    "output": "<think>\nWe should run a command with a single environment variable.\nDEBUG is what we need — DEBUG operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nDEBUG=true ./script.sh"
+  }
+]

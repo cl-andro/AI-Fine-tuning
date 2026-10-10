@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set the system timezone to UTC",
+    "output": "<think>\nAlright, we need to set the system timezone to UTC.\nI'll reach for timedatectl here because system time and date management.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\ntimedatectl set-timezone UTC"
+  },
+  {
+    "instruction": "Configure NTP time synchronization",
+    "output": "<think>\nWe should configure NTP time synchronization.\nLet me think about the best approach.\nThis calls for timedatectl. System time and date management.\n</think>\ntimedatectl set-ntp true"
+  },
+  {
+    "instruction": "Set system hostname to myserver",
+    "output": "<think>\nWe're being asked to set system hostname to myserver.\nLet me break this down.\nThis calls for hostnamectl. Hostname management.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nhostnamectl set-hostname myserver"
+  },
+  {
+    "instruction": "Change the default system locale",
+    "output": "<think>\nAlright, we need to change the default system locale.\nLet me think about the best approach.\nI'd use localectl for this — system locale and keyboard layout.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nlocalectl set-locale LANG=en_US.UTF-8"
+  },
+  {
+    "instruction": "List available keymaps",
+    "output": "<think>\nThe goal is to list available keymaps.\nLet me break this down.\nlocalectl is what we need — system locale and keyboard layout.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nlocalectl list-keymaps"
+  },
+  {
+    "instruction": "Set the keyboard layout to us",
+    "output": "<think>\nThe user wants to set the keyboard layout to us.\nFirst, let me understand what's needed here.\nI'll reach for localectl here because system locale and keyboard layout.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\nlocalectl set-keymap us"
+  },
+  {
+    "instruction": "Configure network interface with static IP",
+    "output": "<think>\nSo we need to configure network interface with static IP.\nI'd use cat for this — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/network/interfaces << 'EOF'\nauto eth0\niface eth0 inet static\n\taddress 192.168.1.100\n\tnetmask 255.255.255.0\n\tgateway 192.168.1.1\n\tdns-nameservers 8.8.8.8\nEOF && systemctl restart networking"
+  },
+  {
+    "instruction": "Set DNS servers in /etc/resolv.conf",
+    "output": "<think>\nSo we need to set DNS servers in /etc/resolv.conf.\nLet me reason through this.\nCheck the output for errors before proceeding to the next step.\n</think>\necho -e 'nameserver 8.8.8.8\\nnameserver 1.1.1.1' > /etc/resolv.conf"
+  },
+  {
+    "instruction": "Configure hostname resolution in /etc/hosts",
+    "output": "<think>\nThe task requires us to configure hostname resolution in /etc/hosts.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho '192.168.1.100 myserver.local myserver' >> /etc/hosts"
+  },
+  {
+    "instruction": "Add a swap file of 2GB",
+    "output": "<think>\nThis is asking us to add a swap file of 2GB.\nBest tool here is fallocate — fallocate operations.\nWhy -l? Long format with details. important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nfallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile && echo '/swapfile none swap sw 0 0' >> /etc/fstab"
+  },
+  {
+    "instruction": "Configure sysctl for network security",
+    "output": "<think>\nWe should configure sysctl for network security.\nHere's how I'd approach this.\nWhy -e? Edit or executable. this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'net.ipv4.tcp_syncookies=1\\nnet.ipv4.ip_forward=0\\nnet.ipv4.conf.all.rp_filter=1' > /etc/sysctl.d/99-security.conf && sysctl --system"
+  },
+  {
+    "instruction": "Set kernel swappiness to 10",
+    "output": "<think>\nSo the request is to set kernel swappiness to 10.\nLet me break this down.\nsysctl is what we need — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nsysctl -w vm.swappiness=10 && echo 'vm.swappiness=10' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Configure file descriptor limits system-wide",
+    "output": "<think>\nThe goal is to configure file descriptor limits system-wide.\nThe -e flag means edit or executable, which matters here because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho -e '* soft nofile 65536\\n* hard nofile 65536' > /etc/security/limits.d/custom.conf"
+  },
+  {
+    "instruction": "Set ulimit for a specific user",
+    "output": "<think>\nWe're being asked to set ulimit for a specific user.\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\necho -e 'john soft nofile 4096\\njohn hard nofile 8192' > /etc/security/limits.d/john.conf"
+  },
+  {
+    "instruction": "Configure PAM to enforce password complexity",
+    "output": "<think>\nSo the request is to configure PAM to enforce password complexity.\nFor this, apt is the right tool — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y libpam-pwquality && echo 'password requisite pam_pwquality.so retry=3 minlen=12 difok=3' >> /etc/pam.d/common-password"
+  },
+  {
+    "instruction": "Set password aging policy",
+    "output": "<think>\nSo the request is to set password aging policy.\nFor this, chage is the right tool — chage operations.\nThe -M flag means display mount targets in df, which matters here because needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nchage -M 90 -m 7 -W 14 john"
+  },
+  {
+    "instruction": "Configure automatic security updates",
+    "output": "<think>\nNeed to configure automatic security updates.\nHere's how I'd approach this.\napt is what we need — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\napt install -y unattended-upgrades && dpkg-reconfigure --priority=low unattended-upgrades"
+  },
+  {
+    "instruction": "Configure rsyslog to send logs to remote server",
+    "output": "<think>\nAlright, we need to configure rsyslog to send logs to remote server.\nLet me think about the best approach.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nQuick verification after execution to be safe.\n</think>\necho '*.* @192.168.1.200:514' > /etc/rsyslog.d/remote.conf && systemctl restart rsyslog"
+  },
+  {
+    "instruction": "Configure logrotate for custom logs",
+    "output": "<think>\nWe should configure logrotate for custom logs.\nLet me think through this step by step.\nI'd use cat for this — cat operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ncat > /etc/logrotate.d/myapp << 'EOF'\n/var/log/myapp/*.log {\n\tdaily\n\trotate 7\n\tcompress\n\tdelaycompress\n\tmissingok\n\tnotifempty\n\tcreate 640 root root\n}\nEOF"
+  },
+  {
+    "instruction": "Set default umask for all users",
+    "output": "<think>\nThe user wants to set default umask for all users.\nLet me think about the best approach.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'umask 027' >> /etc/profile"
+  },
+  {
+    "instruction": "Configure SSH to use key auth only",
+    "output": "<think>\nSo we need to configure SSH to use key auth only.\nLet me think about the best approach.\nI'd use sed for this — text stream editing.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nI'll check the output to make sure it did what we expected.\n</think>\nsed -i 's/^"
+  },
+  {
+    "instruction": "Disable SSH root login",
+    "output": "<think>\nWe should disable SSH root login.\nFirst, let me understand what's needed here.\nBest tool here is sed — text stream editing.\nWhy -i? Interactive, prompt before action. standard practice for this kind of operation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nsed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Configure fail2ban for SSH protection",
+    "output": "<think>\nSo the request is to configure fail2ban for SSH protection.\nLet me think through this step by step.\nThe tool for this job is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\ncat > /etc/fail2ban/jail.local << 'EOF'\n[sshd]\nenabled = true\nmaxretry = 3\nbantime = 3600\nfindtime = 600\nEOF && systemctl restart fail2ban"
+  },
+  {
+    "instruction": "Configure auditd for system call monitoring",
+    "output": "<think>\nWe should configure auditd for system call monitoring.\nFor this, auditctl is the right tool — auditctl operations.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nauditctl -w /etc/passwd -p wa -k passwd_changes && auditctl -w /etc/shadow -p wa -k shadow_changes"
+  },
+  {
+    "instruction": "Set a system-wide message of the day (MOTD)",
+    "output": "<think>\nThe user wants to set a system-wide message of the day (MOTD).\n</think>\necho 'Welcome to $(hostname). Authorized access only.' > /etc/motd"
+  }
+]

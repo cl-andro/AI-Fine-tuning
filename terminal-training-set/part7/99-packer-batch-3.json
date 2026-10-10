@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Docker builder in Packer",
+    "output": "<think>\nWe should create a Docker builder in Packer.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'source \"docker\" \"ubuntu\" { image = \"ubuntu:22.04\" commit = true }' > docker-source.pkr.hcl"
+  },
+  {
+    "instruction": "Export a Docker image from Packer build",
+    "output": "<think>\nSo we need to export a Docker image from Packer build.\n</think>\necho 'post-processor \"docker-tag\" { repository = \"myapp\" tags = [\"latest\"] } post-processor \"docker-push\" {}' > docker-push.pkr.hcl"
+  },
+  {
+    "instruction": "Build a Docker image and export to tar",
+    "output": "<think>\nThe goal is to build a Docker image and export to tar.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'post-processor \"docker-export\" { output = \"builds/myapp.tar\" }' > docker-export.pkr.hcl"
+  },
+  {
+    "instruction": "Save a Docker image after commit (save post-processor)",
+    "output": "<think>\nNeed to save a Docker image after commit (save post-processor).\nLet me think through this step by step.\nQuick verification after execution to be safe.\n</think>\necho 'post-processor \"docker-save\" { output = \"builds/ubuntu-{{timestamp}}.tar\" }' > docker-save.pkr.hcl"
+  },
+  {
+    "instruction": "Tag Docker image with custom version",
+    "output": "<think>\nSo we need to tag Docker image with custom version.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'post-processor \"docker-tag\" { repository = \"registry.example.com/myapp\" tags = [var.version] }' > docker-tag.pkr.hcl"
+  },
+  {
+    "instruction": "Create a vSphere/VMware builder in Packer",
+    "output": "<think>\nSo we need to create a vSphere/VMware builder in Packer.\n</think>\necho 'source \"vsphere-iso\" \"ubuntu\" { vcenter_server = var.vcenter_server username = var.vcenter_user password = var.vcenter_password datacenter = \"DC1\" cluster = \"Cluster1\" vm_name = \"ubuntu-22.04-{{timestamp}}\" guest_os_type = \"ubuntu64Guest\" }' > vsphere.pkr.hcl"
+  },
+  {
+    "instruction": "Create a QEMU builder for local VM images",
+    "output": "<think>\nThe goal is to create a QEMU builder for local VM images.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'source \"qemu\" \"ubuntu\" { iso_url = \"https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso\" iso_checksum = \"sha256:xxxxx\" output_directory = \"output/qemu\" ssh_username = \"ubuntu\" memory = 2048 }' > qemu.pkr.hcl"
+  },
+  {
+    "instruction": "Create a VirtualBox builder",
+    "output": "<think>\nThe task requires us to create a VirtualBox builder.\nHere's how I'd approach this.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'source \"virtualbox-iso\" \"ubuntu\" { iso_url = \"https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso\" iso_checksum = \"sha256:xxxxx\" ssh_username = \"ubuntu\" guest_additions_mode = \"disable\" }' > vbox.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Google Cloud builder in Packer",
+    "output": "<think>\nSo the request is to create a Google Cloud builder in Packer.\nFirst, let me understand what's needed here.\nI've added -a to AND operator in find — needed for this specific use case.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'source \"googlecompute\" \"ubuntu\" { project_id = var.gcp_project zone = \"us-central1-a\" machine_type = \"e2-micro\" source_image_family = \"ubuntu-2204-lts\" ssh_username = \"ubuntu\" }' > gcp.pkr.hcl"
+  },
+  {
+    "instruction": "Create an Azure builder in Packer",
+    "output": "<think>\nThis is asking us to create an Azure builder in Packer.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'source \"azure-arm\" \"ubuntu\" { client_id = var.arm_client_id client_secret = var.arm_client_secret subscription_id = var.arm_subscription_id managed_image_resource_group_name = \"packer-images\" managed_image_name = \"ubuntu-22.04-{{timestamp}}\" os_type = \"Linux\" image_publisher = \"Canonical\" image_offer = \"UbuntuServer\" image_sku = \"22.04-LTS\" }' > azure.pkr.hcl"
+  },
+  {
+    "instruction": "Create a DigitalOcean builder in Packer",
+    "output": "<think>\nThis is asking us to create a DigitalOcean builder in Packer.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'source \"digitalocean\" \"ubuntu\" { api_token = var.do_token image = \"ubuntu-22-04-x64\" region = \"nyc3\" size = \"s-1vcpu-1gb\" ssh_username = \"root\" }' > do.pkr.hcl"
+  },
+  {
+    "instruction": "Create an OpenStack builder in Packer",
+    "output": "<think>\nWe're being asked to create an OpenStack builder in Packer.\nLet me consider what makes sense here.\nLet me verify afterward that it worked correctly.\n</think>\necho 'source \"openstack\" \"ubuntu\" { identity_endpoint = var.os_auth_url tenant_name = var.os_tenant_name username = var.os_username password = var.os_password region = \"RegionOne\" image_name = \"Ubuntu 22.04\" flavor = \"m1.small\" ssh_username = \"ubuntu\" }' > openstack.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Null builder for testing",
+    "output": "<think>\nWe're being asked to create a Null builder for testing.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'source \"null\" \"basic\" { communicator = \"none\" }' > null-source.pkr.hcl"
+  },
+  {
+    "instruction": "Build a multi-source template (same image to multiple clouds)",
+    "output": "<think>\nWe're being asked to build a multi-source template (same image to multiple clouds).\nLet me think about the best approach.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'build { sources = [\"source.amazon-ebs.ubuntu\", \"source.googlecompute.ubuntu\"] provisioner \"shell\" { inline = [\"echo built\"] } }' > multi-cloud.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Packer data source for secrets",
+    "output": "<think>\nThe task requires us to use a Packer data source for secrets.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'data \"amazon-secretsmanager\" \"db_pass\" { name = \"prod/db/password\" }' > data.pkr.hcl"
+  },
+  {
+    "instruction": "Use a Packer data source for HTTP content",
+    "output": "<think>\nSo the request is to use a Packer data source for HTTP content.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\necho 'data \"http\" \"keys\" { url = \"https://example.com/authorized_keys\" }' > data-http.pkr.hcl"
+  },
+  {
+    "instruction": "Use a file data source to read local content",
+    "output": "<think>\nThis is asking us to use a file data source to read local content.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'data \"file\" \"config\" { source = \"./config.yml\" }' > data-file.pkr.hcl"
+  },
+  {
+    "instruction": "Reference a data source in a provisioner",
+    "output": "<think>\nAlright, we need to reference a data source in a provisioner.\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'provisioner \"file\" { content = data.file.config.content destination = \"/tmp/config.yml\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the templatefile function in Packer",
+    "output": "<think>\nNeed to use the templatefile function in Packer.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'provisioner \"file\" { content = templatefile(\"${path.root}/templates/nginx.conf.tpl\", { server_name = \"example.com\" }) destination = \"/etc/nginx/nginx.conf\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use path.root in Packer for relative paths",
+    "output": "<think>\nThe task requires us to use path.root in Packer for relative paths.\nLet me reason through this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'provisioner \"shell\" { script = \"${path.root}/scripts/install.sh\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the uuidv4 function in Packer",
+    "output": "<think>\nNeed to use the uuidv4 function in Packer.\nLet me think through this step by step.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'locals { id = uuidv4() }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the timestamp function for unique naming",
+    "output": "<think>\nNeed to use the timestamp function for unique naming.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'locals { build_id = formatdate(\"YYYYMMDDhhmmss\", timestamp()) }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the timeadd function for scheduled builds",
+    "output": "<think>\nWe should use the timeadd function for scheduled builds.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'locals { expiry = timeadd(timestamp(), \"24h\") }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use the base64encode and base64decode functions",
+    "output": "<think>\nNeed to use the base64encode and base64decode functions.\nLet me think about the best approach.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'provisioner \"shell\" { inline = [\"echo {{ base64encode(\\\"hello\\\") }}\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the length function to validate lists",
+    "output": "<think>\nThis is asking us to use the length function to validate lists.\nLet me break this down.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'locals { count = length(var.additional_packages) }' > locals.pkr.hcl"
+  }
+]

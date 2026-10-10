@@ -1,0 +1,94 @@
+[
+  {
+    "instruction": "Configure a static IP with systemd-networkd",
+    "output": "<think>\nWe should configure a static IP with systemd-networkd.\nLet me reason through this.\nI'll reach for cat here because cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat > /etc/systemd/network/10-eth0.network << 'EOF'\n[Match]\nName=eth0\n[Network]\nAddress=192.168.1.100/24\nGateway=192.168.1.1\nDNS=8.8.8.8\nEOF && systemctl restart systemd-networkd"
+  },
+  {
+    "instruction": "Configure DHCP on an interface with systemd-networkd",
+    "output": "<think>\nThe user wants to configure DHCP on an interface with systemd-networkd.\nThe tool for this job is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /etc/systemd/network/20-wlan0.network << 'EOF'\n[Match]\nName=wlan0\n[Network]\nDHCP=yes\nEOF && systemctl restart systemd-networkd"
+  },
+  {
+    "instruction": "Create a bond interface with systemd-networkd",
+    "output": "<think>\nThis is asking us to create a bond interface with systemd-networkd.\nFirst, let me understand what's needed here.\ncat is what we need — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat > /etc/systemd/network/30-bond0.netdev << 'EOF'\n[NetDev]\nName=bond0\nKind=bond\n[Bond]\nMode=802.3ad\nMIIMonitorSec=1\nEOF && systemctl restart systemd-networkd"
+  },
+  {
+    "instruction": "Create a bridge interface with systemd-networkd",
+    "output": "<think>\nSo the request is to create a bridge interface with systemd-networkd.\nHere's how I'd approach this.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat > /etc/systemd/network/50-br0.netdev << 'EOF'\n[NetDev]\nName=br0\nKind=bridge\nEOF && systemctl restart systemd-networkd"
+  },
+  {
+    "instruction": "Show network interface status with networkctl",
+    "output": "<think>\nThis is asking us to show network interface status with networkctl.\nBest tool here is networkctl — network link status.\nNo need for complex pipelines here — one command is sufficient.\nQuick verification after execution to be safe.\n</think>\nnetworkctl status"
+  },
+  {
+    "instruction": "Reload systemd-networkd configuration",
+    "output": "<think>\nThis is asking us to reload systemd-networkd configuration.\nLet me reason through this.\nBest tool here is networkctl — network link status.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nnetworkctl reload"
+  },
+  {
+    "instruction": "Configure netplan with static IP",
+    "output": "<think>\nThe goal is to configure netplan with static IP.\nLet me reason through this.\nThis calls for cat. Cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat > /etc/netplan/01-netcfg.yaml << 'EOF'\nnetwork:\n  version: 2\n  ethernets:\n    eth0:\n      addresses: [192.168.1.100/24]\n      gateway4: 192.168.1.1\n      nameservers:\n        addresses: [8.8.8.8, 1.1.1.1]\nEOF && netplan apply"
+  },
+  {
+    "instruction": "Test netplan configuration without applying",
+    "output": "<think>\nAlright, we need to test netplan configuration without applying.\nLet me think through this step by step.\nI'd use netplan for this — netplan operations.\n</think>\nnetplan try"
+  },
+  {
+    "instruction": "Create a network namespace",
+    "output": "<think>\nThis is asking us to create a network namespace.\nFirst, let me understand what's needed here.\nI'd use ip for this — network interface configuration.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nip netns add red"
+  },
+  {
+    "instruction": "Run a command inside a network namespace",
+    "output": "<think>\nSo we need to run a command inside a network namespace.\nFirst, let me understand what's needed here.\nip is what we need — network interface configuration.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\nip netns exec red ip addr"
+  },
+  {
+    "instruction": "Configure a static interface in /etc/network/interfaces.d/",
+    "output": "<think>\nWe should configure a static interface in /etc/network/interfaces.d/.\nHere's how I'd approach this.\nBest tool here is cat — cat operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\ncat > /etc/network/interfaces.d/eth0 << 'EOF'\nauto eth0\niface eth0 inet static\n  address 192.168.1.100/24\n  gateway 192.168.1.1\nEOF && systemctl restart networking"
+  },
+  {
+    "instruction": "Configure /etc/apt/sources.list for Debian 12 bookworm",
+    "output": "<think>\nWe should configure /etc/apt/sources.list for Debian 12 bookworm.\nLet me think through this step by step.\nFor this, cat is the right tool — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\ncat > /etc/apt/sources.list << 'EOF'\ndeb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware\nEOF && apt update"
+  },
+  {
+    "instruction": "Pin a package to a specific version with apt preferences",
+    "output": "<think>\nWe should pin a package to a specific version with apt preferences.\nLet me break this down.\nFor this, cat is the right tool — cat operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ncat > /etc/apt/preferences.d/pin-docker << 'EOF'\nPackage: docker-ce\nPin: version 24.0.*\nPin-Priority: 1001\nEOF"
+  },
+  {
+    "instruction": "Hold a package to prevent upgrades",
+    "output": "<think>\nThe user wants to hold a package to prevent upgrades.\nFirst, let me understand what's needed here.\nThe tool for this job is apt-mark — apt-mark operations.\nLet me verify afterward that it worked correctly.\n</think>\napt-mark hold docker-ce"
+  },
+  {
+    "instruction": "Query installed package files with dpkg",
+    "output": "<think>\nThe user wants to query installed package files with dpkg.\nHere's how I'd approach this.\nThe tool for this job is dpkg — dpkg operations.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nQuick verification after execution to be safe.\n</think>\ndpkg -L openssh-server"
+  },
+  {
+    "instruction": "Find which package owns a file",
+    "output": "<think>\nThis is asking us to find which package owns a file.\nThe tool for this job is dpkg — dpkg operations.\nThe -S flag handles sort by size. Important because standard practice for this kind of operation.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nQuick verification after execution to be safe.\n</think>\ndpkg -S /etc/ssh/sshd_config"
+  },
+  {
+    "instruction": "Reconfigure a package interactively",
+    "output": "<think>\nSo the request is to reconfigure a package interactively.\nLet me reason through this.\ndpkg-reconfigure is what we need — dpkg-reconfigure operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\ndpkg-reconfigure tzdata"
+  },
+  {
+    "instruction": "Set the default Java version with update-alternatives",
+    "output": "<think>\nThis is asking us to set the default Java version with update-alternatives.\nLet me think through this step by step.\nThe tool for this job is update-alternatives — update-alternatives operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nupdate-alternatives --config java"
+  },
+  {
+    "instruction": "Add a custom alternative symlink",
+    "output": "<think>\nNeed to add a custom alternative symlink.\nHere's how I'd approach this.\nThis calls for update-alternatives. Update-alternatives operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nupdate-alternatives --install /usr/bin/myapp myapp /opt/myapp-1.0/bin/myapp 10"
+  },
+  {
+    "instruction": "Remove an alternative from the system",
+    "output": "<think>\nThe task requires us to remove an alternative from the system.\nI'll reach for update-alternatives here because update-alternatives operations.\n</think>\nupdate-alternatives --remove myapp /opt/myapp-1.0/bin/myapp"
+  },
+  {
+    "instruction": "Display auto-mode status for an alternative",
+    "output": "<think>\nThis is asking us to display auto-mode status for an alternative.\nThe tool for this job is update-alternatives — update-alternatives operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nupdate-alternatives --display myapp"
+  },
+  {
+    "instruction": "Add a static host entry in /etc/hosts",
+    "output": "<think>\nThe task requires us to add a static host entry in /etc/hosts.\nFirst, let me understand what's needed here.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\necho '192.168.1.50 db-server.internal db-server' >> /etc/hosts"
+  },
+  {
+    "instruction": "Set the system hostname permanently",
+    "output": "<think>\nThe goal is to set the system hostname permanently.\nLet me break this down.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'myserver' > /etc/hostname && hostnamectl set-hostname myserver"
+  }
+]

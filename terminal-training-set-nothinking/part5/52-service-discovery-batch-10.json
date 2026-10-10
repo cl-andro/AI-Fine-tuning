@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Take a Consul snapshot and inspect its contents",
+    "output": "consul snapshot inspect consul-snapshot.snap\nID:           abc123\nIndex:        12500\nTerm:         5\nVersion:      1\nSuccess:      true\nMeta:         map[]"
+  },
+  {
+    "instruction": "List Consul ACL policies",
+    "output": "consul acl policy list\nID: 00000000-0000-0000-0000-000000000001  global-management\nID: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeef  node-read\nID: bbbbbbbb-cccc-dddd-eeee-ffffffffffff  service-write"
+  },
+  {
+    "instruction": "Create a Consul ACL policy",
+    "output": "consul acl policy create -name \"service-read\" -rules 'service \"\" { policy = \"read\" }'\nID:  cccccccc-dddd-eeee-ffff-000000000000\nName: service-read\nDatacenters: []\nRules:\nservice \"\" { policy = \"read\" }\n\nCreated successfully"
+  },
+  {
+    "instruction": "Set Consul autopilot upgrade migration tag",
+    "output": "consul operator autopilot set-config -upgrade-migration-tag=2.0\nAutopilot configuration updated successfully"
+  },
+  {
+    "instruction": "Deregister a Consul service by ID",
+    "output": "consul services deregister -id=web-1\nSuccessfully deregistered service: web-1"
+  },
+  {
+    "instruction": "Register a Consul service with a health check",
+    "output": "consul services register '{\"ID\":\"web-2\",\"Name\":\"web\",\"Address\":\"10.0.0.5\",\"Port\":80,\"Check\":{\"HTTP\":\"http://10.0.0.5:80/health\",\"Interval\":\"10s\"}}'\nSuccessfully registered service: web-2"
+  },
+  {
+    "instruction": "List all Consul intentions",
+    "output": "consul intention list\nID                                    SourceName    DestinationName  Action\nf1a2b3c4-d5e6-7890-abcd-ef1234567890  web           db               deny\na2b3c4d5-e6f7-8901-bcde-f12345678901  api           redis            allow"
+  },
+  {
+    "instruction": "Match Consul intentions for a source service",
+    "output": "consul intention match web\n{\n  \"intentions\": [\n    {\n      \"SourceName\": \"web\",\n      \"DestinationName\": \"db\",\n      \"Action\": \"deny\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "Create a Consul ACL token with service identity",
+    "output": "consul acl token create -service-identity \"web:dc1\"\nAccessorID:   dddddddd-eeee-ffff-0000-111111111111\nSecretID:     eeeeeeee-ffff-0000-1111-222222222222\nDescription:  Service Identity for web (dc1)\nServiceIdentities:\n   web (Datacenters: [dc1])"
+  },
+  {
+    "instruction": "Export Consul KV data filtered by prefix",
+    "output": "consul kv export -prefix config/app\n[\n  {\n    \"key\": \"config/app/database\",\n    \"value\": \"eyJob3N0IjoiZGIxIn0=\"\n  },\n  {\n    \"key\": \"config/app/version\",\n    \"value\": \"Mw==\"\n  }\n]"
+  },
+  {
+    "instruction": "Use etcdctl to watch a key with revision history",
+    "output": "etcdctl watch --rev 500 /config/app/version\nPUT\n/config/app/version\n3\n"
+  },
+  {
+    "instruction": "Compare and swap a value in etcd",
+    "output": "etcdctl txn <<EOF\ncompare:\n  value(\"/config/app/version\") = \"2\"\nsuccess:\n  put /config/app/version \"3\"\nfailure:\n  put /config/app/version-error \"mismatch\"\nEOF\nSUCCESS\n\n/config/app/version\n3"
+  },
+  {
+    "instruction": "Check the etcd alarm list for NOSPACE",
+    "output": "etcdctl alarm list\nmemberID:8214f0d9b4675f94 alarm:NOSPACE"
+  },
+  {
+    "instruction": "Disarm a specific etcd alarm",
+    "output": "etcdctl alarm disarm --alarm NOSPACE\n"
+  },
+  {
+    "instruction": "Create a user and grant role in etcd",
+    "output": "etcdctl user add bob --new-user-password=secret123\nUser bob created\n\netcdctl user grant-role bob admin\nRole admin is granted to user bob"
+  },
+  {
+    "instruction": "Check status of a specific etcd endpoint",
+    "output": "etcdctl endpoint status --endpoints=https://10.0.1.1:2379 -w table\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|        ENDPOINT        |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|  https://10.0.1.1:2379 | 8214f0d9b4675f94 |  3.5.9  |   25 MB |      true |      false |         4 |      12458 |              12458 |        |\n+------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+"
+  },
+  {
+    "instruction": "Perform a maintenance operation on a Serf node via tags",
+    "output": "serf tags -set maintenance=true\nTags set: maintenance=true"
+  },
+  {
+    "instruction": "Query Serf for nodes with a specific tag",
+    "output": "serf members -tag role=web\nnode1    127.0.0.1:7946    alive  role=web\nnode4    10.0.0.4:7946     alive  role=web"
+  },
+  {
+    "instruction": "Send a directed Serf query to a specific node",
+    "output": "serf query -node node2 disk-usage\nQuery 'disk-usage' sent to 1 member\n  node2: /dev/sda1  40G  12G  26G  32% /"
+  },
+  {
+    "instruction": "Watch ZooKeeper znodes for changes via CLI watch",
+    "output": "[zk: localhost:2181(CONNECTED) 23] get /myapp watch\nmydata\n\nWATCHER::\nWatchedEvent state:SyncConnected type:NodeDataChanged path:/myapp"
+  },
+  {
+    "instruction": "Set a ZooKeeper znode with expected version for optimistic locking",
+    "output": "[zk: localhost:2181(CONNECTED) 25] set /myapp/config v3 1\ncZxid = 0x104\nctime = Sat Jul 25 10:25:00 UTC 2026\nmZxid = 0x105\nmtime = Sat Jul 25 10:26:00 UTC 2026\npZxid = 0x104\ncversion = 0\ndataVersion = 2\naclVersion = 0\nephemeralOwner = 0x0\ndataLength = 2\nnumChildren = 0"
+  },
+  {
+    "instruction": "List all active ZooKeeper sessions via four-letter word",
+    "output": "echo cons | nc localhost 2181\n0x1234567890abcdef 127.0.0.1:54231\n0x2345678901bcdef1 127.0.0.1:54232\n0x3456789012cdef12 10.0.0.2:54233"
+  }
+]

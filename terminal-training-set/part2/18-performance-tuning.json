@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Check current kernel parameters for performance",
+    "output": "<think>\nWe're being asked to check current kernel parameters for performance.\nFor this, sysctl is the right tool — kernel parameter tuning.\nThe -a flag handles AND operator in find. Important because important to get the expected behavior.\nI've added -E to extended regex — this controls how the output is formatted.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\nsysctl -a | grep -E 'kernel.sched|vm.swappiness|net.core' | head -20"
+  },
+  {
+    "instruction": "Tune swappiness for better desktop responsiveness",
+    "output": "<think>\nSo the request is to tune swappiness for better desktop responsiveness.\nI'd use sysctl for this — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsysctl -w vm.swappiness=10 && echo 'vm.swappiness=10' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Increase file descriptor limits for a high-load server",
+    "output": "<think>\nThe user wants to increase file descriptor limits for a high-load server.\nLet me think through this step by step.\nBest tool here is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsysctl -w fs.file-max=2097152 && echo 'fs.file-max=2097152' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Tune TCP for high-throughput networking",
+    "output": "<think>\nThe user wants to tune TCP for high-throughput networking.\nLet me consider what makes sense here.\nThis calls for sysctl. Kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsysctl -w net.core.rmem_max=134217728 && sysctl -w net.core.wmem_max=134217728 && sysctl -w net.ipv4.tcp_rmem='4096 87380 134217728' && sysctl -w net.ipv4.tcp_wmem='4096 65536 134217728'"
+  },
+  {
+    "instruction": "Enable TCP BBR congestion control for better throughput",
+    "output": "<think>\nNeed to enable TCP BBR congestion control for better throughput.\nBest tool here is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nsysctl -w net.core.default_qdisc=fq && sysctl -w net.ipv4.tcp_congestion_control=bbr"
+  },
+  {
+    "instruction": "Enable fast TCP connection reuse",
+    "output": "<think>\nThe user wants to enable fast TCP connection reuse.\nLet me break this down.\nBest tool here is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nsysctl -w net.ipv4.tcp_tw_reuse=1 && sysctl -w net.ipv4.tcp_fin_timeout=15"
+  },
+  {
+    "instruction": "Increase the maximum number of connections",
+    "output": "<think>\nNeed to increase the maximum number of connections.\nBest tool here is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsysctl -w net.core.somaxconn=65535 && sysctl -w net.ipv4.tcp_max_syn_backlog=65535"
+  },
+  {
+    "instruction": "Tune virtual memory for database workloads",
+    "output": "<think>\nNeed to tune virtual memory for database workloads.\nLet me break this down.\nThe tool for this job is sysctl — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\nsysctl -w vm.dirty_ratio=30 && sysctl -w vm.dirty_background_ratio=5 && sysctl -w vm.vfs_cache_pressure=50"
+  },
+  {
+    "instruction": "Disable NUMA balancing for latency-sensitive apps",
+    "output": "<think>\nNeed to disable NUMA balancing for latency-sensitive apps.\nLet me break this down.\nI'll reach for sysctl here because kernel parameter tuning.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -w kernel.numa_balancing=0"
+  },
+  {
+    "instruction": "Tune the kernel scheduler for throughput",
+    "output": "<think>\nSo we need to tune the kernel scheduler for throughput.\nLet me think about the best approach.\nThis calls for sysctl. Kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsysctl -w kernel.sched_migration_cost_ns=5000000 && sysctl -w kernel.sched_autogroup_enabled=0"
+  },
+  {
+    "instruction": "Set the CPU governor to performance",
+    "output": "<think>\nThe user wants to set the CPU governor to performance.\nI'll reach for for here because for operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nfor i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $i; done"
+  },
+  {
+    "instruction": "Disable CPU frequency scaling for consistent performance",
+    "output": "<think>\nSo we need to disable CPU frequency scaling for consistent performance.\nLet me think through this step by step.\nI'll reach for apt here because apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nI'll check the output to make sure it did what we expected.\n</think>\napt install -y cpufrequtils && echo 'GOVERNOR=performance' > /etc/default/cpufrequtils && systemctl disable cpufrequtils"
+  },
+  {
+    "instruction": "Check which processes are using the most CPU",
+    "output": "<think>\nAlright, we need to check which processes are using the most CPU.\nI'll reach for ps here because process listing.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nps aux --sort=-%cpu | head -10"
+  },
+  {
+    "instruction": "Check which processes are using the most memory",
+    "output": "<think>\nThe user wants to check which processes are using the most memory.\nBest tool here is ps — process listing.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nps aux --sort=-%mem | head -10"
+  },
+  {
+    "instruction": "Find memory hogs using top in batch mode",
+    "output": "<think>\nThe goal is to find memory hogs using top in batch mode.\nLet me break this down.\ntop is what we need — real-time process monitoring.\nI'm using -o for output to file, OR operator in find — important to get the expected behavior.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ntop -bn1 -o %MEM | head -17 | tail -10"
+  },
+  {
+    "instruction": "Profile disk read performance",
+    "output": "<think>\nThe user wants to profile disk read performance.\nLet me consider what makes sense here.\nI'll reach for hdparm here because hdparm operations.\n</think>\nhdparm -Tt /dev/sda"
+  },
+  {
+    "instruction": "Measure sequential write speed of disk",
+    "output": "<think>\nWe're being asked to measure sequential write speed of disk.\nThe tool for this job is dd — dd operations.\nI'm piping because each stage transforms the data before passing it to the next.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\n</think>\ndd if=/dev/zero of=/tmp/test bs=1M count=1024 conv=fdatasync oflag=direct 2>&1 | tail -1"
+  },
+  {
+    "instruction": "Measure random IO performance with fio",
+    "output": "<think>\nThe user wants to measure random IO performance with fio.\nLet me consider what makes sense here.\nfio is what we need — fio operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nfio --name=randwrite --ioengine=libaio --iodepth=64 --rw=randwrite --bs=4k --direct=1 --size=1G --numjobs=1 --runtime=30 --group_reporting"
+  },
+  {
+    "instruction": "Check disk latency",
+    "output": "<think>\nWe should check disk latency.\nLet me think through this step by step.\nI'd use iostat for this — disk I/O performance monitoring.\nI'm using -E for extended regex — important to get the expected behavior.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, confirm it worked as expected before moving on.\n</think>\niostat -xz 1 3 | grep -E 'Device|sda'"
+  },
+  {
+    "instruction": "Monitor real-time IO per process",
+    "output": "<think>\nNeed to monitor real-time IO per process.\nThe tool for this job is iotop — iotop operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\niotop -o"
+  },
+  {
+    "instruction": "Show system load average interpretation",
+    "output": "<think>\nAlright, we need to show system load average interpretation.\nThe tool for this job is cat — cat operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /proc/loadavg && echo 'Load: 1min 5min 15min' && uptime"
+  },
+  {
+    "instruction": "Check the number of context switches",
+    "output": "<think>\nThis is asking us to check the number of context switches.\nLet me consider what makes sense here.\nFor this, vmstat is the right tool — system performance monitoring.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nvmstat 1 3 | tail -1 | awk '{print \"Context switches: \" $12}'"
+  },
+  {
+    "instruction": "Show memory topology and NUMA details",
+    "output": "<think>\nThe goal is to show memory topology and NUMA details.\nHere's how I'd approach this.\nThis calls for numactl. Numactl operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nnumactl --hardware"
+  },
+  {
+    "instruction": "Check interleave memory access for a NUMA workload",
+    "output": "<think>\nWe should check interleave memory access for a NUMA workload.\nI'll reach for numactl here because numactl operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nnumactl --interleave=all ./myapp"
+  },
+  {
+    "instruction": "Benchmark the CPU with sysbench multi-threaded",
+    "output": "<think>\nSo the request is to benchmark the CPU with sysbench multi-threaded.\nThis calls for sysbench. Sysbench operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nsysbench cpu --threads=$(nproc) --time=30 run"
+  }
+]

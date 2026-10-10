@@ -1,0 +1,22 @@
+[
+  {"instruction": "Configure ID mapping domain in idmapd.conf", "output": "sed -i 's/.*Domain =.*/Domain = example.com/' /etc/idmapd.conf"},
+  {"instruction": "Set ID mapping method to nsswitch", "output": "sed -i 's/.*Method =.*/Method = nsswitch/' /etc/idmapd.conf"},
+  {"instruction": "Restart idmapd service", "output": "systemctl restart nfs-idmapd"},
+  {"instruction": "Test idmapd resolution for a user", "output": "nfsidmap -u 1000 -d example.com"},
+  {"instruction": "Set ID mapping verbosity", "output": "sed -i 's/.*Verbosity =.*/Verbosity = 2/' /etc/idmapd.conf && systemctl restart nfs-idmapd"},
+  {"instruction": "Check NFS server version", "output": "nfsstat -4 -s | grep -i 'nfs v4'"},
+  {"instruction": "Show nfs-utils version", "output": "dpkg -l | grep nfs-utils || echo 'use statd --version' && statd --version"},
+  {"instruction": "List all NFS-related packages installed", "output": "dpkg -l | grep -E '(nfs|rpcbind|nfs-common)'"},
+  {"instruction": "Check NFS server status", "output": "systemctl status nfs-server"},
+  {"instruction": "Enable NFS server on boot", "output": "systemctl enable nfs-server"},
+  {"instruction": "Start rpcbind manually", "output": "systemctl start rpcbind && systemctl status rpcbind"},
+  {"instruction": "Check NFS service dependencies", "output": "systemctl list-dependencies nfs-server"},
+  {"instruction": "Show NFS kernel module info", "output": "modinfo nfs | grep -E '(version|description|author)'"},
+  {"instruction": "List NFS kernel parameters", "output": "ls /sys/module/nfs/parameters/"},
+  {"instruction": "Check NFSD kernel module parameters", "output": "ls /sys/module/nfsd/parameters/"},
+  {"instruction": "Show NFS client cache stats", "output": "cat /proc/net/rpc/nfsd/rc"},
+  {"instruction": "Clean NFS client directory cache", "output": "echo 0 > /proc/sys/vm/drop_caches"},
+  {"instruction": "Check NFS TCP connections", "output": "ss -t sport = :2049 or dport = :2049"},
+  {"instruction": "Trace NFS operations with rpcdebug", "output": "rpcdebug -m nfsd -s all"},
+  {"instruction": "Clear NFS debug flags", "output": "rpcdebug -m nfsd -c all"}
+]

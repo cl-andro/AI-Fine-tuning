@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Generate a DNSSEC key using ldns-keygen",
+    "output": "Kexample.com.+008+12345\n\nKey generated and written to Kexample.com.+008+12345.key and .private.\nAlgorithm: RSASHA256 (8)\nKey size: 1024 bits\n\nUse ldns-keygen -a RSASHA1_NSEC3 for NSEC3-capable keys."
+  },
+  {
+    "instruction": "Generate an ECDSA key using ldns-keygen",
+    "output": "Kexample.com.+013+54321\n\nKey generated.\nAlgorithm: ECDSAP256SHA256 (13)\nKey size: 256 bits\n\nldns-keygen supports multiple DNSSEC algorithms."
+  },
+  {
+    "instruction": "Sign a zone file with ldns-signzone",
+    "output": "Signing zone example.com\nLoaded 2 keys: 1 ZSK, 1 KSK\nSignatures created: 12\nSignatures verified: 12\nProcessing time: 0.15 seconds\n\nSigned zone written to example.com.signed\n\nUse ldns-signzone -n for NSEC3 signing."
+  },
+  {
+    "instruction": "Sign a zone with NSEC3 using ldns-signzone",
+    "output": "Signing zone example.com (NSEC3)\nSalt: AABBCCDD (hex)\nLoaded 2 keys: 1 ZSK, 1 KSK\nSignatures created: 12\nSignatures verified: 12\nProcessing time: 0.18 seconds\n\nSigned zone written to example.com.signed\n\nNSEC3 provides opt-out for delegations."
+  },
+  {
+    "instruction": "Verify a signed zone file with ldns-verify-zone",
+    "output": "Verifying zone: /etc/bind/db.example.com.signed\n\nCryptographic verification: PASS\nAll RRSIG records validated successfully.\nZone is properly signed with 1 ZSK and 1 KSK."
+  },
+  {
+    "instruction": "Verify a signed zone with verbose output",
+    "output": "Verifying zone: example.com.signed\n\nReading zone: 12 RRsets\nChecking RRSIG validity:\n  example.com SOA RRSIG: valid\n  example.com A RRSIG: valid\n  example.com NS RRSIG: valid\n  example.com MX RRSIG: valid\n  example.com TXT RRSIG: valid\n  ...\n\nAll 12 RRSIG records are valid and within their time window."
+  },
+  {
+    "instruction": "Perform a DNS trace with drill",
+    "output": ";; ->>HEADER<<- opcode: QUERY, rcode: NOERROR, id: 12345\n;; flags: qr rd ra ; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0\n;; QUESTION SECTION:\n;; example.com.  IN      A\n\n;; ANSWER SECTION:\nexample.com.     3600    IN      A       93.184.216.34\n\n;; AUTHORITY SECTION:\n\n;; ADDITIONAL SECTION:\n\n;; Query time: 10 msec\n;; SERVER: 192.168.1.1\n;; When: Thu Jul 25 11:45:00 2024\n;; MSG SIZE  rcvd: 56\n\ndrill is a DNS query tool similar to dig."
+  },
+  {
+    "instruction": "Perform a DNSSEC trace with drill",
+    "output": ";; ->>HEADER<<- opcode: QUERY, rcode: NOERROR, id: 23456\n;; flags: qr rd ra ad ; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2\n;; QUESTION SECTION:\n;; example.com.  IN      A\n\n;; ANSWER SECTION:\nexample.com.     3600    IN      A       93.184.216.34\n\n;; AUTHORITY SECTION:\nexample.com.     3600    IN      RRSIG   ...\nexample.com.     3600    IN      NSEC    ...\n\n;; Query time: 15 msec\n;; SERVER: 192.168.1.1\n;; When: Thu Jul 25 11:46:00 2024\n;; MSG SIZE  rcvd: 234\n\n;; DNSSEC signatures present and valid."
+  },
+  {
+    "instruction": "Look up MX records with drill",
+    "output": ";; ->>HEADER<<- opcode: QUERY, rcode: NOERROR, id: 34567\n;; flags: qr rd ra ; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 0\n;; QUESTION SECTION:\n;; example.com.  IN      MX\n\n;; ANSWER SECTION:\nexample.com.     3600    IN      MX      10 mail.example.com.\nexample.com.     3600    IN      MX      20 backup-mail.example.com.\n\nUse drill -t MX example.com @8.8.8.8 to query a specific server."
+  },
+  {
+    "instruction": "Verify DNSSEC with delv",
+    "output": "; fully validated\n; example.com.               3600    IN      A       93.184.216.34\n; example.com.               3600    IN      RRSIG   A 13 2 3600 ...\n\n;; DNSSEC validation: SUCCESS\n\nThe response has been fully validated through the chain of trust."
+  },
+  {
+    "instruction": "Look up AAAA records with delv",
+    "output": "; example.com.               3600    IN      AAAA    2606:2800:220:1:248:1893:25c8:1946\n; example.com.               3600    IN      RRSIG   AAAA 13 2 3600 ...\n\ndelv performs DNSSEC validation by default and reports the trust status."
+  },
+  {
+    "instruction": "Trace the DNSSEC chain of trust with delv",
+    "output": "; fully validated\n; example.com.               3600    IN      DS      12345 8 2 ...\n; example.com.               3600    IN      RRSIG   DS 8 1 3600 ...\n; com.                       86400   IN      DS      67890 8 2 ...\n; com.                       86400   IN      RRSIG   DS 8 0 86400 ...\n\nThe chain of trust is intact from root to example.com."
+  },
+  {
+    "instruction": "Look up a type-specific record with ldns",
+    "output": ";example.com.\nexample.com.\t3600\tIN\tA\t93.184.216.34\n\nldns-read-zone can parse and display zone file contents."
+  },
+  {
+    "instruction": "Perform a trace query with drill",
+    "output": ";; Starting to trace example.com\n.                       518488  IN      NS      a.root-servers.net.\ncom.                   172800  IN      NS      a.gtld-servers.net.\nexample.com.           172800  IN      NS      a.iana-servers.net.\nexample.com.           3600    IN      A       93.184.216.34\n\n;; Trace completed in 3 steps.\n;; Servers queried:\n;; - 198.41.0.4 (a.root-servers.net)\n;; - 192.5.6.30 (a.gtld-servers.net)\n;; - 199.43.0.53 (a.iana-servers.net)"
+  },
+  {
+    "instruction": "Query a specific nameserver with drill",
+    "output": ";; ->>HEADER<<- opcode: QUERY, rcode: NOERROR, id: 45678\n;; flags: qr rd ra ; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0\n;; QUESTION SECTION:\n;; example.com.  IN      A\n\n;; ANSWER SECTION:\nexample.com.     3600    IN      A       93.184.216.34\n\n;; SERVER: 8.8.8.8\n\nUse drill @server domain type for targeted queries."
+  },
+  {
+    "instruction": "Check DNSSEC key using ldns-key2ds",
+    "output": "The DS record for key Kexample.com.+008+12345:\nexample.com. IN DS 12345 8 2 A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0\n\nProvide this DS record to the parent zone administrator for the chain of trust."
+  },
+  {
+    "instruction": "Generate a DS record from a DNSKEY file using ldns-key2ds",
+    "output": "DS record for Kexample.com.+008+12345:\nexample.com. IN DS 12345 8 2 A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0\n\nSubmit this DS record to the parent zone for DNSSEC chain of trust."
+  },
+  {
+    "instruction": "Verify a zone using ldns-verify-zone with specified keys",
+    "output": "Verifying zone /etc/bind/db.example.com.signed with keys from /etc/bind/keys...\n\nCryptographic verification: PASS\nAll RRSIG signatures are valid and within their validity period."
+  },
+  {
+    "instruction": "Query SOA record with drill showing DNSSEC chain",
+    "output": ";; ->>HEADER<<- opcode: QUERY, rcode: NOERROR, id: 56789\n;; flags: qr rd ra ad ; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2\n;; QUESTION SECTION:\n;; example.com.  IN      SOA\n\n;; ANSWER SECTION:\nexample.com.     3600    IN      SOA     sns.dns.icann.org. noc.dns.icann.org. 2024072500 7200 3600 1209600 3600\n\n;; DNSSEC: validated (ad flag set)"
+  },
+  {
+    "instruction": "Use ldns-nsec3-hash to compute NSEC3 hash for a domain",
+    "output": "ldns-nsec3-hash -s AABBCCDD example.com"
+  }
+]

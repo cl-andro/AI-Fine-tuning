@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Show CUDA toolchain path",
+    "output": "which nvcc"
+  },
+  {
+    "instruction": "Show CUDA installation details",
+    "output": "ls -la /usr/local/cuda/"
+  },
+  {
+    "instruction": "Check CUDA library version",
+    "output": "cat /usr/local/cuda/version.json"
+  },
+  {
+    "instruction": "List GPU compute capabilities",
+    "output": "python -c 'import torch; [print(torch.cuda.get_device_capability(i)) for i in range(torch.cuda.device_count())]'"
+  },
+  {
+    "instruction": "Run a Python script with torchrun",
+    "output": "torchrun --nproc_per_node=1 train.py --batch-size 32 --lr 0.001"
+  },
+  {
+    "instruction": "Profile DDP training with nsys",
+    "output": "nsys profile -o trace_ddp -t cuda,nvtx torchrun --nproc_per_node=2 train_ddp.py"
+  },
+  {
+    "instruction": "Run NVIDIA Nsight Systems GUI",
+    "output": "nsys-ui"
+  },
+  {
+    "instruction": "Run NVIDIA Nsight Compute GUI",
+    "output": "ncu-ui"
+  },
+  {
+    "instruction": "Convert safetensors to PyTorch bin",
+    "output": "python -c 'from safetensors.torch import load_file, save_file; t=load_file(\"model.safetensors\"); torch.save(t, \"pytorch_model.bin\")'"
+  },
+  {
+    "instruction": "Merge LoRA weights into base model",
+    "output": "python -m merge_lora.py --base_model /base --lora_weights /lora --output /merged"
+  },
+  {
+    "instruction": "Quantize a model to 4-bit",
+    "output": "python -c 'from transformers import AutoModelForCausalLM; m=AutoModelForCausalLM.from_pretrained(\"/model\", load_in_4bit=True); m.save_pretrained(\"/model_4bit\")'"
+  },
+  {
+    "instruction": "Load and run a GGUF model with llama.cpp",
+    "output": "llama-cli -m /models/llama-7b.gguf -n 128 -p Hello --temp 0.7"
+  },
+  {
+    "instruction": "Check GPU memory with Python",
+    "output": "python -c 'import torch; print(torch.cuda.memory_summary())'"
+  },
+  {
+    "instruction": "Clear PyTorch GPU cache",
+    "output": "python -c 'import torch; torch.cuda.empty_cache()'"
+  },
+  {
+    "instruction": "Set CUDA visible devices",
+    "output": "export CUDA_VISIBLE_DEVICES=0,2 && python train.py"
+  },
+  {
+    "instruction": "Disable TF memory growth for GPU",
+    "output": "python -c 'import tensorflow as tf; gpus=tf.config.list_physical_devices(\"GPU\"); [tf.config.experimental.set_memory_growth(g,False) for g in gpus]'"
+  },
+  {
+    "instruction": "Use MLflow to get best run",
+    "output": "mlflow runs search --experiment-id 1 --order-by 'metrics.accuracy DESC' --max-results 1"
+  },
+  {
+    "instruction": "Reproduce DVC experiment with a hash",
+    "output": "dvc reproduce --experiment abc123def"
+  },
+  {
+    "instruction": "List all DVC experiments",
+    "output": "dvc experiments list"
+  },
+  {
+    "instruction": "Apply a DVC experiment to workspace",
+    "output": "dvc experiments apply exp-abc123"
+  },
+  {
+    "instruction": "Diff DVC experiment metrics",
+    "output": "dvc experiments diff exp-abc123 exp-def456"
+  },
+  {
+    "instruction": "Push all DVC experiments to remote",
+    "output": "dvc push --all-experiments"
+  }
+]

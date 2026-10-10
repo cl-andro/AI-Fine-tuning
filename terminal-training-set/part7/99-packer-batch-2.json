@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up an AWS builder in a Packer template",
+    "output": "<think>\nSo the request is to set up an AWS builder in a Packer template.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'source \"amazon-ebs\" \"ubuntu\" { ami_name = \"ubuntu-22.04-{{timestamp}}\" instance_type = \"t3.micro\" region = \"us-east-1\" source_ami_filter { filters = { name = \"ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*\" } owners = [\"099720109477\"] most_recent = true } ssh_username = \"ubuntu\" }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Add a shell provisioner that updates packages",
+    "output": "<think>\nThe user wants to add a shell provisioner that updates packages.\nHere's how I'd approach this.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'build { sources = [\"source.amazon-ebs.ubuntu\"] provisioner \"shell\" { inline = [\"sudo apt update\", \"sudo apt upgrade -y\"] } }' > build.pkr.hcl"
+  },
+  {
+    "instruction": "Add a file provisioner to upload a config",
+    "output": "<think>\nWe're being asked to add a file provisioner to upload a config.\nLet me break this down.\n</think>\necho 'provisioner \"file\" { source = \"app.conf\" destination = \"/tmp/app.conf\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Add a shell provisioner with a local script",
+    "output": "<think>\nThe task requires us to add a shell provisioner with a local script.\nLet me break this down.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\necho 'provisioner \"shell\" { script = \"scripts/setup.sh\" }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Run multiple inline shell commands in a provisioner",
+    "output": "<think>\nSo we need to run multiple inline shell commands in a provisioner.\nLet me reason through this.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'provisioner \"shell\" { inline = [\"sudo apt install -y nginx\", \"sudo systemctl enable nginx\", \"sudo systemctl start nginx\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use the ansible provisioner in Packer",
+    "output": "<think>\nThe user wants to use the ansible provisioner in Packer.\nOne command does the job. Simple is better.\n</think>\necho 'provisioner \"ansible\" { playbook_file = \"playbooks/site.yml\" extra_arguments = [\"--extra-vars\", \"env=packer\"] }' > ansible.pkr.hcl"
+  },
+  {
+    "instruction": "Add a Chef provisioner in Packer",
+    "output": "<think>\nWe're being asked to add a Chef provisioner in Packer.\nLet me think through this step by step.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 'provisioner \"chef-solo\" { cookbook_paths = [\"cookbooks\"] run_list = [\"recipe[nginx]\"] }' > chef.pkr.hcl"
+  },
+  {
+    "instruction": "Run a PowerShell provisioner for Windows images",
+    "output": "<think>\nThis is asking us to run a PowerShell provisioner for Windows images.\nLet me reason through this.\nLet me verify afterward that it worked correctly.\n</think>\necho 'provisioner \"powershell\" { script = \"scripts/configure-iis.ps1\" }' > win-provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use a breakpoint provisioner for debugging",
+    "output": "<think>\nNeed to use a breakpoint provisioner for debugging.\nLet me consider what makes sense here.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'provisioner \"breakpoint\" { note = \"Check SSH is working before continuing\" }' > debug.pkr.hcl"
+  },
+  {
+    "instruction": "Add a post-processor in Packer",
+    "output": "<think>\nThis is asking us to add a post-processor in Packer.\nLet me break this down.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'post-processor \"vagrant\" { output = \"builds/{{.BuildName}}-{{.Provider}}.box\" }' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Add the manifest post-processor for build metadata",
+    "output": "<think>\nThis is asking us to add the manifest post-processor for build metadata.\nLet me think about the best approach.\n</think>\necho 'post-processor \"manifest\" { output = \"manifest.json\" strip_path = true }' > manifest.pkr.hcl"
+  },
+  {
+    "instruction": "Use the compress post-processor for artifact compression",
+    "output": "<think>\nAlright, we need to use the compress post-processor for artifact compression.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'post-processor \"compress\" { output = \"builds/{{.BuildName}}.tar.gz\" }' > compress.pkr.hcl"
+  },
+  {
+    "instruction": "Tag the AMI with a post-processor",
+    "output": "<think>\nThis is asking us to tag the AMI with a post-processor.\nLet me think through this step by step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'post-processor \"amazon-import\" {}' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Add variables to a Packer template",
+    "output": "<think>\nThis is asking us to add variables to a Packer template.\nOne command does the job. Simple is better.\n</think>\necho 'variable \"region\" { type = string default = \"us-east-1\" } variable \"instance_type\" { type = string default = \"t3.micro\" }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a variable in a source block",
+    "output": "<think>\nWe should use a variable in a source block.\nLet me reason through this.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'source \"amazon-ebs\" \"ubuntu\" { region = var.region instance_type = var.instance_type }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Define local variables in Packer",
+    "output": "<think>\nNeed to define local variables in Packer.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'locals { timestamp = regex_replace(timestamp(), \"[-: ]\", \"\") image_name = \"app-${local.timestamp}\" }' > locals.pkr.hcl"
+  },
+  {
+    "instruction": "Use a local variable for AMI name",
+    "output": "<think>\nThe user wants to use a local variable for AMI name.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'source \"amazon-ebs\" \"ubuntu\" { ami_name = local.image_name }' > sources.pkr.hcl"
+  },
+  {
+    "instruction": "Create a Packer variable file for prod",
+    "output": "<think>\nThe task requires us to create a Packer variable file for prod.\nHere's how I'd approach this.\nQuick verification after execution to be safe.\n</think>\necho 'region = \"us-west-2\" instance_type = \"t3.large\"' > prod.pkrvars.hcl"
+  },
+  {
+    "instruction": "Create a Packer variable file for dev",
+    "output": "<think>\nSo we need to create a Packer variable file for dev.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'region = \"us-east-1\" instance_type = \"t3.micro\"' > dev.pkrvars.hcl"
+  },
+  {
+    "instruction": "Set a Packer variable from environment variable",
+    "output": "<think>\nSo we need to set a Packer variable from environment variable.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'variable \"ssh_key\" { type = string default = env(\"SSH_PRIVATE_KEY\") }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a sensitive variable in Packer",
+    "output": "<think>\nSo we need to use a sensitive variable in Packer.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\necho 'variable \"db_password\" { type = string sensitive = true }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Validate a variable with custom condition",
+    "output": "<think>\nThis is asking us to validate a variable with custom condition.\nLet me break this down.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'variable \"region\" { type = string validation { condition = contains([\"us-east-1\", \"us-west-2\"], var.region) error_message = \"Region must be us-east-1 or us-west-2\" } }' > variables.pkr.hcl"
+  },
+  {
+    "instruction": "Use a template variable in shell commands",
+    "output": "<think>\nWe're being asked to use a template variable in shell commands.\nLet me think through this step by step.\n</think>\necho 'provisioner \"shell\" { environment_vars = [\"ENV={{env `ENVIRONMENT`}}\"] inline = [\"echo $ENV\"] }' > provisioners.pkr.hcl"
+  },
+  {
+    "instruction": "Use keep_input_artifact for post-processors",
+    "output": "<think>\nThe user wants to use keep_input_artifact for post-processors.\nHere's how I'd approach this.\n</think>\necho 'post-processor \"vagrant\" { keep_input_artifact = true }' > post-processors.pkr.hcl"
+  },
+  {
+    "instruction": "Create a source with custom tags",
+    "output": "<think>\nSo we need to create a source with custom tags.\nLet me think about the best approach.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'source \"amazon-ebs\" \"ubuntu\" { tags = { Name = \"packer-ubuntu\" Environment = \"production\" } }' > sources.pkr.hcl"
+  }
+]

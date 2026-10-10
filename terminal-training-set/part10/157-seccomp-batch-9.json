@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "View the default Docker seccomp profile with less",
+    "output": "<think>\nThis is asking us to view the default Docker seccomp profile with less.\nBest tool here is less — less operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nless /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Check kernel seccomp support",
+    "output": "<think>\nAlright, we need to check kernel seccomp support.\nLet me consider what makes sense here.\nBest tool here is zgrep — zgrep operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nzgrep SECCOMP /proc/config.gz"
+  },
+  {
+    "instruction": "Install golang-seccomp library",
+    "output": "<think>\nWe're being asked to install golang-seccomp library.\nI'd use go for this — Go programming toolchain.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngo get github.com/seccomp/libseccomp-golang"
+  },
+  {
+    "instruction": "Build libseccomp from source",
+    "output": "<think>\nSo we need to build libseccomp from source.\nLet me think through this step by step.\nI'll reach for git here because version control operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\ngit clone https://github.com/seccomp/libseccomp.git && cd libseccomp && ./autogen.sh && ./configure && make && sudo make install"
+  },
+  {
+    "instruction": "Show seccomp actions_avail",
+    "output": "<think>\nWe're being asked to show seccomp actions_avail.\nThe tool for this job is cat — cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "List all Docker seccomp profiles available",
+    "output": "<think>\nNeed to list all Docker seccomp profiles available.\nLet me think about the best approach.\nls is what we need — ls operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nls /usr/share/docker/ | grep seccomp"
+  },
+  {
+    "instruction": "Filter Docker seccomp for allowed syscalls",
+    "output": "<think>\nThis is asking us to filter Docker seccomp for allowed syscalls.\nI'll reach for jq here because jq operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Run strace with IPC syscalls",
+    "output": "<think>\nAlright, we need to run strace with IPC syscalls.\nLet me break this down.\nstrace is what we need — system call tracing.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -e trace=ipc ./myapp"
+  },
+  {
+    "instruction": "Run strace with time syscalls only",
+    "output": "<think>\nThis is asking us to run strace with time syscalls only.\nI'll reach for strace here because system call tracing.\nI'm using -e for edit or executable — this controls how the output is formatted.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nstrace -e trace=time ./myapp"
+  },
+  {
+    "instruction": "Generate seccomp profile from strace log",
+    "output": "<think>\nNeed to generate seccomp profile from strace log.\nLet me break this down.\nstrace is what we need — system call tracing.\nThe -f flag means force, suppress errors, which matters here because without it the command won't work as we need.\nThe -e flag means edit or executable, which matters here because important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nstrace -f -e trace=all -o /tmp/trace.log ./myapp && cat /tmp/trace.log | awk '{print $2}' | sed 's/(.*//' | sort -u"
+  },
+  {
+    "instruction": "Use scmp_bpf_dispatcher to inspect BPF",
+    "output": "<think>\nThe user wants to use scmp_bpf_dispatcher to inspect BPF.\nscmp_bpf_dispatcher is what we need — scmp_bpf_dispatcher operations.\nOne command does the job. Simple is better.\n</think>\nscmp_bpf_dispatcher -p $(pgrep -f myapp)"
+  },
+  {
+    "instruction": "Trace process creation with strace",
+    "output": "<think>\nWe're being asked to trace process creation with strace.\nLet me consider what makes sense here.\nThe tool for this job is strace — system call tracing.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\n</think>\nstrace -f -e trace=clone,execve ./myapp"
+  },
+  {
+    "instruction": "Trace syscalls with summary grouped by name",
+    "output": "<think>\nSo we need to trace syscalls with summary grouped by name.\nLet me consider what makes sense here.\nstrace is what we need — system call tracing.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -c -f -S name ./myapp 2>&1"
+  },
+  {
+    "instruction": "List all syscalls in Docker default profile",
+    "output": "<think>\nThe goal is to list all syscalls in Docker default profile.\nLet me reason through this.\nThe tool for this job is jq — jq operations.\nThe -u flag means show or sort by access time, which matters here because without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\njq '.syscalls[].names[]' /usr/share/docker/default-seccomp.json | sort -u"
+  },
+  {
+    "instruction": "Check if seccomp is enabled in the kernel",
+    "output": "<think>\nSo we need to check if seccomp is enabled in the kernel.\nLet me break this down.\nThe tool for this job is cat — cat operations.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run strace with only network syscalls",
+    "output": "<think>\nThe user wants to run strace with only network syscalls.\nBest tool here is strace — system call tracing.\nThe -e flag handles edit or executable. Important because standard practice for this kind of operation.\nThe -f flag means force, suppress errors, which matters here because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nstrace -e trace=network -f ./myapp"
+  },
+  {
+    "instruction": "List available Docker profiles",
+    "output": "<think>\nAlright, we need to list available Docker profiles.\nls is what we need — ls operations.\nWhy -la? Detailed listing including hidden files. important to get the expected behavior.\n</think>\nls -la /usr/share/docker/"
+  },
+  {
+    "instruction": "Trace all syscalls of a program",
+    "output": "<think>\nThe task requires us to trace all syscalls of a program.\nLet me reason through this.\nI'll reach for strace here because system call tracing.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nWhy -o? Output to file, OR operator in find. this controls how the output is formatted.\nQuick verification after execution to be safe.\n</think>\nstrace -f -o /tmp/all.log ./myapp"
+  },
+  {
+    "instruction": "Build strace from source",
+    "output": "<think>\nThe user wants to build strace from source.\nI'll reach for git here because version control operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngit clone https://github.com/strace/strace.git && cd strace && ./bootstrap && ./configure && make -j$(nproc)"
+  },
+  {
+    "instruction": "Dump seccomp for nginx",
+    "output": "<think>\nSo the request is to dump seccomp for nginx.\nThis calls for seccomp-tools. Seccomp-tools operations.\nA single command handles this cleanly — no need to overcomplicate it.\nLet me verify afterward that it worked correctly.\n</think>\nseccomp-tools dump $(pgrep -f nginx)"
+  },
+  {
+    "instruction": "Find seccomp profile path",
+    "output": "<think>\nThe goal is to find seccomp profile path.\nHere's how I'd approach this.\nThe tool for this job is find — file searching.\nThe -name flag handles filter by filename pattern. Important because without it the command won't work as we need.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind / -name 'default-seccomp.json' 2>/dev/null"
+  }
+]

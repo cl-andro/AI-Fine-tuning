@@ -1,0 +1,23 @@
+[
+  {"instruction": "Install Loki and promtail on Debian", "output": "apt-get install -y loki promtail"},
+  {"instruction": "Check Loki service status", "output": "systemctl status loki"},
+  {"instruction": "Start Loki server", "output": "systemctl start loki"},
+  {"instruction": "Enable Loki on boot", "output": "systemctl enable loki"},
+  {"instruction": "Check Loki configuration", "output": "cat /etc/loki/config.yml"},
+  {"instruction": "Test Loki API health endpoint", "output": "curl http://localhost:3100/ready"},
+  {"instruction": "Query Loki via HTTP API", "output": "curl -G -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode 'query={job=\"nginx\"}' --data-urlencode 'start='$(date -d '1 hour ago' +%s)000000000 --data-urlencode 'end='$(date +%s)000000000"},
+  {"instruction": "Query Loki instant query via API", "output": "curl -G -s 'http://localhost:3100/loki/api/v1/query' --data-urlencode 'query=rate({job=\"nginx\"}[5m])' --data-urlencode 'time='$(date +%s)000000000"},
+  {"instruction": "Push log entry to Loki via API", "output": "curl -X POST 'http://localhost:3100/loki/api/v1/push' -H 'Content-Type: application/json' -d '{\"streams\":[{\"stream\":{\"job\":\"test\"},\"values\":[[\"'$(date +%s)000000000'\",\"test log message\"]]}]}'"},
+  {"instruction": "List Loki label names via API", "output": "curl http://localhost:3100/loki/api/v1/labels"},
+  {"instruction": "Get label values for specific label via API", "output": "curl http://localhost:3100/loki/api/v1/label/job/values"},
+  {"instruction": "Get Loki series matching label", "output": "curl -G 'http://localhost:3100/loki/api/v1/series' --data-urlencode 'match[]={job=\"nginx\"}'"},
+  {"instruction": "Check Loki configuration via API", "output": "curl http://localhost:3100/config"},
+  {"instruction": "Check metric export from Loki", "output": "curl http://localhost:3100/metrics"},
+  {"instruction": "View Loki logs", "output": "journalctl -u loki --no-pager -n 50"},
+  {"instruction": "View promtail logs", "output": "journalctl -u promtail --no-pager -n 50"},
+  {"instruction": "Follow promtail log output", "output": "journalctl -u promtail -f"},
+  {"instruction": "Check promtail positions file", "output": "cat /var/lib/promtail/positions.yml"},
+  {"instruction": "Reset promtail positions file", "output": "echo '{}' > /var/lib/promtail/positions.yml"},
+  {"instruction": "Test Loki log shipping end to end", "output": "logcli query '{job=\"promtail\"}' --limit=5 2>&1"},
+  {"instruction": "Query Loki stats for a log stream", "output": "logcli query 'count_over_time({job=\"nginx\"}[1h])'"}
+]

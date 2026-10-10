@@ -1,0 +1,23 @@
+[
+  {"instruction": "Install GRUB on a UEFI system with secure boot support", "output": "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --modules='shim_lock verifier' --sbat /usr/share/grub/sbat.csv"},
+  {"instruction": "Create a GRUB gfxterm background image", "output": "grub-mkfont -s 24 -o /boot/grub/fonts/DejaVuSansMono24.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"},
+  {"instruction": "Set GRUB video backend to gfxterm", "output": "echo 'GRUB_TERMINAL_OUTPUT=gfxterm' >> /etc/default/grub && update-grub"},
+  {"instruction": "Make GRUB boot in text mode only", "output": "echo 'GRUB_TERMINAL=console' >> /etc/default/grub && update-grub"},
+  {"instruction": "Write GRUB to multiple disks for redundancy", "output": "grub-install /dev/sda && grub-install /dev/sdb"},
+  {"instruction": "Reinstall GRUB on a system that lost its bootloader", "output": "mount /dev/sda1 /mnt && mount --bind /dev /mnt/dev && mount --bind /proc /mnt/proc && mount --bind /sys /mnt/sys && chroot /mnt grub-install /dev/sda && chroot /mnt update-grub"},
+  {"instruction": "Create a GRUB entry with a custom root filesystem", "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Custom Root FS' {\n  linux /vmlinuz root=/dev/sda2 ro\n  initrd /initrd.img\n}\nEOF\nupdate-grub"},
+  {"instruction": "List valid GRUB installation targets supported by system", "output": "grub-install --target=help"},
+  {"instruction": "Set GRUB to save the last selected entry", "output": "echo 'GRUB_SAVEDEFAULT=true' >> /etc/default/grub && update-grub"},
+  {"instruction": "Add a GRUB password for editing menu entries", "output": "echo 'GRUB_DISABLE_RECOVERY=true' >> /etc/default/grub && update-grub && grub-mkpasswd-pbkdf2"},
+  {"instruction": "Display GRUB device hints for all disks", "output": "grub-probe -t drive /"},
+  {"instruction": "Convert a disk by UUID to GRUB device syntax", "output": "grub-probe -t device --device-map=/boot/grub/device.map /"},
+  {"instruction": "Show GRUB abstraction layers for a path", "output": "grub-probe -t abstraction /boot"},
+  {"instruction": "Split a large GRUB config into includes", "output": "sed -n '/Begin /,/End /p' /boot/grub/grub.cfg > /boot/grub/custom.cfg"},
+  {"instruction": "Edit GRUB default file to disable submenu", "output": "echo 'GRUB_DISABLE_SUBMENU=y' >> /etc/default/grub && update-grub"},
+  {"instruction": "Set GRUB theme from a tarball", "output": "mkdir -p /boot/grub/themes/mytheme && tar xzf theme.tar.gz -C /boot/grub/themes/mytheme && echo 'GRUB_THEME=/boot/grub/themes/mytheme/theme.txt' >> /etc/default/grub && update-grub"},
+  {"instruction": "Enable GRUB to remember the last boot entry", "output": "echo 'GRUB_DEFAULT=saved' >> /etc/default/grub && echo 'GRUB_SAVEDEFAULT=true' >> /etc/default/grub && update-grub"},
+  {"instruction": "Add a GRUB entry to boot into UEFI firmware", "output": "echo 'GRUB_EFI_FIRMWARE_ENTRY=true' >> /etc/default/grub && update-grub"},
+  {"instruction": "GRUB: boot a Xen hypervisor", "output": "cat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Xen Hypervisor' {\n  multiboot2 /boot/xen.gz dom0_mem=1024M\n  module2 /boot/vmlinuz-6.1.0 root=/dev/sda1 ro quiet\n  module2 /boot/initrd.img-6.1.0\n}\nEOF\nupdate-grub"},
+  {"instruction": "Set GRUB to use the netboot directory via TFTP", "output": "grub-mknetdir --net-directory=/srv/tftp --subdir=/grub"},
+  {"instruction": "Create a minimal GRUB config file manually (no update-grub)", "output": "echo -e 'set default=0\\nset timeout=5\\nmenuentry \"Debian\" { set root=(hd0,1); linux /vmlinuz root=/dev/sda1; initrd /initrd.img }' > /boot/grub/grub.cfg"}
+]

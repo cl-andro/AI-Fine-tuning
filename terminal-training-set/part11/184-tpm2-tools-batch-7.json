@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to decrypt data with a TPM RSA key",
+    "output": "<think>\nThe goal is to decrypt data with a TPM RSA key.\nI'll reach for tpm2_rsadecrypt here because tpm2_rsadecrypt operations.\n</think>\ntpm2_rsadecrypt -c key.ctx -p passwd -o plain.txt < cipher.bin"
+  },
+  {
+    "instruction": "How to quote TPM attestation data",
+    "output": "<think>\nThe goal is to quote TPM attestation data.\nLet me consider what makes sense here.\nI'll reach for tpm2_quote here because tpm2_quote operations.\n</think>\ntpm2_quote -c ak.ctx -l sha256:0,1,2,3 -q quote.dat -s sig.bin"
+  },
+  {
+    "instruction": "How to read the TPM clock",
+    "output": "<think>\nSo the request is to read the TPM clock.\ntpm2_readclock is what we need — tpm2_readclock operations.\nCheck the output for errors before proceeding to the next step.\n</think>\ntpm2_readclock"
+  },
+  {
+    "instruction": "How to create an HMAC key",
+    "output": "<think>\nWe should create an HMAC key.\nLet me reason through this.\nI'll reach for tpm2_create here because tpm2_create operations.\nI'm using -u for show or sort by access time — this controls how the output is formatted.\n</think>\ntpm2_create -C primary.ctx -G hmac -u key.pub -r key.priv"
+  },
+  {
+    "instruction": "How to generate an HMAC with the TPM",
+    "output": "<think>\nThe user wants to generate an HMAC with the TPM.\nI'd use tpm2_hmac for this — tpm2_hmac operations.\nWhy -c? Count or create. needed for this specific use case.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_hmac -c key.ctx -m data.txt -o hmac.bin"
+  },
+  {
+    "instruction": "How to set the TPM primary policy",
+    "output": "<think>\nWe should set the TPM primary policy.\nFor this, tpm2_setprimarypolicy is the right tool — tpm2_setprimarypolicy operations.\nI'm using -L for follow symlinks when processing — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_setprimarypolicy -C e -L policy.dat"
+  },
+  {
+    "instruction": "How to activate a credential",
+    "output": "<think>\nThe user wants to activate a credential.\nI'll reach for tpm2_activatecredential here because tpm2_activatecredential operations.\nI've added -c to count or create — this controls how the output is formatted.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_activatecredential -c ak.ctx -C ek.ctx -i cred.bin -o plain.txt"
+  },
+  {
+    "instruction": "How to create an Endorsement Key",
+    "output": "<think>\nAlright, we need to create an Endorsement Key.\nThis calls for tpm2_createek. Tpm2_createek operations.\nI'm using -c for count or create — this controls how the output is formatted.\nCheck the output for errors before proceeding to the next step.\n</think>\ntpm2_createek -c ek.ctx -G rsa2048 -u ek.pub"
+  },
+  {
+    "instruction": "How to create an Attestation Key",
+    "output": "<think>\nAlright, we need to create an Attestation Key.\nLet me think through this step by step.\nI'd use tpm2_createak for this — tpm2_createak operations.\nI've added -c to count or create — standard practice for this kind of operation.\nI've added -u to show or sort by access time — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ntpm2_createak -C ek.ctx -c ak.ctx -G rsa2048 -u ak.pub"
+  },
+  {
+    "instruction": "How to certify a key with the TPM",
+    "output": "<think>\nSo we need to certify a key with the TPM.\nI'll reach for tpm2_certify here because tpm2_certify operations.\nI've added -c to count or create — without it the command won't work as we need.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ntpm2_certify -C ak.ctx -c key.ctx -g sha256 -o attest.bin -s sig.bin"
+  },
+  {
+    "instruction": "How to read an NVRAM index",
+    "output": "<think>\nAlright, we need to read an NVRAM index.\nLet me break this down.\nI'd use tpm2_nvread for this — tpm2_nvread operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_nvread 0x1500015"
+  },
+  {
+    "instruction": "How to write to an NVRAM index",
+    "output": "<think>\nThis is asking us to write to an NVRAM index.\nThis calls for tpm2_nvwrite. Tpm2_nvwrite operations.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ntpm2_nvwrite 0x1500015 -i data.bin"
+  },
+  {
+    "instruction": "How to define an NVRAM index",
+    "output": "<think>\nNeed to define an NVRAM index.\nFor this, tpm2_nvdefine is the right tool — tpm2_nvdefine operations.\nThe -s flag handles summarize or silent mode. Important because standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_nvdefine 0x1500015 -C o -s 64 -a 'ownerread|ownerwrite'"
+  },
+  {
+    "instruction": "How to define a write-locked NVRAM index",
+    "output": "<think>\nAlright, we need to define a write-locked NVRAM index.\nThis calls for tpm2_nvdefine. Tpm2_nvdefine operations.\nI've added -s to summarize or silent mode — this controls how the output is formatted.\nWhy -a? AND operator in find. important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_nvdefine 0x1500015 -C o -s 64 -a 'ownerread|ownerwrite|writedefine'"
+  },
+  {
+    "instruction": "How to start up the TPM",
+    "output": "<think>\nSo the request is to start up the TPM.\nLet me reason through this.\nFor this, tpm2_startup is the right tool — tpm2_startup operations.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_startup --clear"
+  },
+  {
+    "instruction": "How to shutdown the TPM",
+    "output": "<think>\nWe should shutdown the TPM.\nThis calls for tpm2_shutdown. Tpm2_shutdown operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ntpm2_shutdown"
+  },
+  {
+    "instruction": "How to get TPM PCR bank allocation",
+    "output": "<think>\nAlright, we need to get TPM PCR bank allocation.\nLet me think about the best approach.\nI'd use tpm2_getcap for this — tpm2_getcap operations.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_getcap pcrs"
+  },
+  {
+    "instruction": "How to read TPM capabilities for algorithms",
+    "output": "<think>\nSo the request is to read TPM capabilities for algorithms.\nLet me consider what makes sense here.\nThe tool for this job is tpm2_getcap — tpm2_getcap operations.\nOne command does the job. Simple is better.\nLet me verify afterward that it worked correctly.\n</think>\ntpm2_getcap algorithms"
+  },
+  {
+    "instruction": "How to lock an NVRAM index for writing",
+    "output": "<think>\nSo we need to lock an NVRAM index for writing.\nLet me think through this step by step.\nBest tool here is tpm2_nvlock — tpm2_nvlock operations.\n</think>\ntpm2_nvlock 0x1500015"
+  },
+  {
+    "instruction": "How to create a primary key in the TPM",
+    "output": "<think>\nThe goal is to create a primary key in the TPM.\nLet me break this down.\nI'd use tpm2_createprimary for this — tpm2_createprimary operations.\nI'm using -c for count or create — needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_createprimary -c primary.ctx"
+  },
+  {
+    "instruction": "How to create a primary key with a specific scheme",
+    "output": "<think>\nNeed to create a primary key with a specific scheme.\nHere's how I'd approach this.\nBest tool here is tpm2_createprimary — tpm2_createprimary operations.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nI'll check the output to make sure it did what we expected.\n</think>\ntpm2_createprimary -c primary.ctx -a 'fixedtpm|fixedparent|sensitivedataorigin|userwithauth'"
+  },
+  {
+    "instruction": "How to create an RSA key in the TPM",
+    "output": "<think>\nThis is asking us to create an RSA key in the TPM.\nThis calls for tpm2_create. Tpm2_create operations.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nI've added -r to recursive operation (descend into subdirectories) — important to get the expected behavior.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv"
+  },
+  {
+    "instruction": "How to create an ECC key in the TPM",
+    "output": "<think>\nThis is asking us to create an ECC key in the TPM.\nLet me consider what makes sense here.\nThe tool for this job is tpm2_create — tpm2_create operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_create -C primary.ctx -G ecc256 -u ecc.pub -r ecc.priv"
+  },
+  {
+    "instruction": "How to create a key with a policy",
+    "output": "<think>\nThe task requires us to create a key with a policy.\nFirst, let me understand what's needed here.\ntpm2_create is what we need — tpm2_create operations.\nWhy -u? Show or sort by access time. important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv -L policy.dat"
+  },
+  {
+    "instruction": "How to create a key with an authorization value",
+    "output": "<think>\nThe user wants to create a key with an authorization value.\nHere's how I'd approach this.\ntpm2_create is what we need — tpm2_create operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\ntpm2_create -C primary.ctx -G rsa2048 -u key.pub -r key.priv -p secret123"
+  }
+]

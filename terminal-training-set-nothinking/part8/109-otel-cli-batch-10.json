@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Start otelcol-contrib with config",
+    "output": "otelcol-contrib --config /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Validate otelcol config",
+    "output": "otelcol-contrib --config /etc/otel/config.yaml --validate"
+  },
+  {
+    "instruction": "Set OTLP gRPC receiver",
+    "output": "echo \"receivers:\\n  otlp:\\n    protocols:\\n      grpc:\\n        endpoint: 0.0.0.0:4317\" > /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Set OTLP HTTP receiver",
+    "output": "echo \"receivers:\\n  otlp:\\n    protocols:\\n      http:\\n        endpoint: 0.0.0.0:4318\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add batch processor with timeout",
+    "output": "echo \"processors:\\n  batch:\\n    timeout: 5s\\n    send_batch_size: 1000\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add memory limiter processor",
+    "output": "echo \"processors:\\n  memory_limiter:\\n    check_interval: 1s\\n    limit_mib: 512\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add attributes processor",
+    "output": "echo \"processors:\\n  attributes:\\n    actions:\\n      - key: environment\\n        value: production\\n        action: insert\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add filter processor for spans",
+    "output": "echo \"processors:\\n  filter:\\n    spans:\\n      include:\\n        match_type: regexp\\n        services:\\n          - .*\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export traces to Jaeger",
+    "output": "echo \"exporters:\\n  jaeger:\\n    endpoint: localhost:14250\\n    tls:\\n      insecure: true\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export metrics to Prometheus",
+    "output": "echo \"exporters:\\n  prometheus:\\n    endpoint: 0.0.0.0:8889\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Export traces to Zipkin",
+    "output": "echo \"exporters:\\n  zipkin:\\n    endpoint: http://zipkin:9411/api/v2/spans\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Set service pipelines",
+    "output": "echo -e \"service:\\n  pipelines:\\n    traces:\\n      receivers: [otlp]\\n      processors: [batch]\\n      exporters: [jaeger]\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Run otel-cli with custom headers",
+    "output": "otel-cli exec --service myapp --otlp-header \"api-key=secret123\" --otlp-endpoint http://collector:4317 ./myapp"
+  },
+  {
+    "instruction": "Run otel-cli as daemon",
+    "output": "otel-cli daemon --service myapp --otlp-endpoint http://collector:4317"
+  },
+  {
+    "instruction": "Set resource attributes with env",
+    "output": "export OTEL_RESOURCE_ATTRIBUTES=\"service.name=myapp,service.version=1.0\" && otel-cli exec --service myapp ./myapp"
+  },
+  {
+    "instruction": "Use OTLP exporter with TLS",
+    "output": "otel-cli exec --service myapp --otlp-endpoint https://collector:4317 --otlp-headers 'x-api-key=secret' ./myapp"
+  },
+  {
+    "instruction": "Export spans to file",
+    "output": "echo \"exporters:\\n  file:\\n    path: /tmp/spans.json\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Add span processor",
+    "output": "echo \"service:\\n  pipelines:\\n    traces:\\n      processors: [batch, memory_limiter]\\n      exporters: [otlp]\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Configure sampling rate",
+    "output": "echo \"processors:\\n  sampling:\\n    decision:\\n      type: probabilistic\\n      sample_rate: 0.1\" >> /etc/otel/config.yaml"
+  },
+  {
+    "instruction": "Check otel-cli version",
+    "output": "otel-cli version"
+  },
+  {
+    "instruction": "Run otel-cli with span export timeout",
+    "output": "otel-cli exec --service myapp --timeout 30s ./myapp"
+  },
+  {
+    "instruction": "Use environment for OTLP endpoint",
+    "output": "OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4317 otel-cli exec --service myapp ./myapp"
+  }
+]

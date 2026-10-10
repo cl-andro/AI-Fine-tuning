@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Convert raw image to EWF (E01)",
+    "output": "<think>\nSo the request is to convert raw image to EWF (E01).\nLet me reason through this.\nThis calls for ewfacquire. Ewfacquire operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\newfacquire /dev/sdb -t evidence -u"
+  },
+  {
+    "instruction": "Acquire with compression level",
+    "output": "<think>\nNeed to acquire with compression level.\nI'd use ewfacquire for this — ewfacquire operations.\nI'm using -t for sort by modification time — needed for this specific use case.\nI'm using -c for count or create — without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\newfacquire /dev/sdb -t evidence -c fast -u"
+  },
+  {
+    "instruction": "Acquire with case number",
+    "output": "<think>\nSo the request is to acquire with case number.\nLet me think through this step by step.\nBest tool here is ewfacquire — ewfacquire operations.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nThe -e flag means edit or executable, which matters here because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\newfacquire /dev/sdb -t evidence -C 'CASE-001' -e 'Examiner' -u"
+  },
+  {
+    "instruction": "Acquire with segment size",
+    "output": "<think>\nThis is asking us to acquire with segment size.\nLet me reason through this.\nI'd use ewfacquire for this — ewfacquire operations.\nI've added -t to sort by modification time — this controls how the output is formatted.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\newfacquire /dev/sdb -t evidence -S 2GiB -u"
+  },
+  {
+    "instruction": "Verify EWF image integrity",
+    "output": "<think>\nSo we need to verify EWF image integrity.\nThe tool for this job is ewfverify — ewfverify operations.\n</think>\newfverify evidence.E01"
+  },
+  {
+    "instruction": "Verify with full integrity check",
+    "output": "<think>\nThis is asking us to verify with full integrity check.\nLet me reason through this.\nI'll reach for ewfverify here because ewfverify operations.\nWhy -f? Force, suppress errors. without it the command won't work as we need.\nThe -d flag handles directory listing, don't descend. Important because standard practice for this kind of operation.\n</think>\newfverify -f encase6 -d sha256 evidence.E01"
+  },
+  {
+    "instruction": "Mount EWF image as raw device",
+    "output": "<think>\nWe should mount EWF image as raw device.\nThe tool for this job is ewfmount — ewfmount operations.\n</think>\newfmount evidence.E01 /mnt/ewf"
+  },
+  {
+    "instruction": "Export EWF to raw format",
+    "output": "<think>\nAlright, we need to export EWF to raw format.\nLet me think about the best approach.\nFor this, ewfexport is the right tool — ewfexport operations.\nThe -t flag handles sort by modification time. Important because without it the command won't work as we need.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\newfexport evidence.E01 -t image.dd"
+  },
+  {
+    "instruction": "Export first segment only",
+    "output": "<think>\nWe should export first segment only.\nThe tool for this job is ewfexport — ewfexport operations.\n</think>\newfexport evidence.E01 -t part1 -S 2GiB -b 64"
+  },
+  {
+    "instruction": "Info about EWF file",
+    "output": "<think>\nNeed to info about EWF file.\nFirst, let me understand what's needed here.\nThe tool for this job is ewfinfo — ewfinfo operations.\nA quick sanity check afterward saves debugging time later.\n</think>\newfinfo evidence.E01"
+  },
+  {
+    "instruction": "Info with hash values",
+    "output": "<think>\nThis is asking us to info with hash values.\nThe tool for this job is ewfinfo — ewfinfo operations.\nThe -H flag means follow symlinks on command line only, which matters here because needed for this specific use case.\nQuick verification after execution to be safe.\n</think>\newfinfo -H evidence.E01"
+  },
+  {
+    "instruction": "Extract specific partition from EWF",
+    "output": "<think>\nWe should extract specific partition from EWF.\nFirst, let me understand what's needed here.\nBest tool here is ewfexport — ewfexport operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\newfexport -X split evidence.E01 -t partition -u"
+  },
+  {
+    "instruction": "Reopen and fix EWF metadata",
+    "output": "<think>\nNeed to reopen and fix EWF metadata.\newfacquirestream is what we need — ewfacquirestream operations.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nCheck the output for errors before proceeding to the next step.\n</think>\newfacquirestream -t evidence -C 'CASE-001' -N 'Revised Notes'"
+  },
+  {
+    "instruction": "Process a directory with fiwalk",
+    "output": "<think>\nAlright, we need to process a directory with fiwalk.\nLet me think through this step by step.\nBest tool here is fiwalk — fiwalk operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nfiwalk /evidence/images/ -X /output/report.xml"
+  },
+  {
+    "instruction": "Run fiwalk with JSON output",
+    "output": "<think>\nSo we need to run fiwalk with JSON output.\nThe tool for this job is fiwalk — fiwalk operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nfiwalk -x /evidence/disk.dd -O /output/report.json"
+  },
+  {
+    "instruction": "Recover deleted files from image",
+    "output": "<think>\nSo we need to recover deleted files from image.\nLet me think about the best approach.\nI'd use fiwalk for this — fiwalk operations.\nI've added -d to directory listing, don't descend — this controls how the output is formatted.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\n</think>\nfiwalk -d /evidence/disk.dd -o /recovered/"
+  },
+  {
+    "instruction": "Generate DFXML report from image",
+    "output": "<think>\nAlright, we need to generate DFXML report from image.\nThe tool for this job is fiwalk — fiwalk operations.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nfiwalk -f /evidence/disk.dd -X /output/meta.xml"
+  },
+  {
+    "instruction": "Mount EWF and list files",
+    "output": "<think>\nWe're being asked to mount EWF and list files.\nI'd use ewfmount for this — ewfmount operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\newfmount evidence.E01 /mnt/e01 && ls /mnt/e01/"
+  },
+  {
+    "instruction": "Compute hash of EWF segments",
+    "output": "<think>\nThe goal is to compute hash of EWF segments.\nFirst, let me understand what's needed here.\nI'll reach for for here because for operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nfor f in evidence.E01 evidence.E02; do sha256sum $f; done"
+  },
+  {
+    "instruction": "Convert multiple raw to EWF",
+    "output": "<think>\nAlright, we need to convert multiple raw to EWF.\nfor is what we need — for operations.\nI'm using -t for sort by modification time — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nfor f in *.raw; do ewfacquire $f -t ${f%.raw}; done"
+  },
+  {
+    "instruction": "List all forensic tools available",
+    "output": "<think>\nWe should list all forensic tools available.\nThis calls for dpkg. Dpkg operations.\nWhy -l? Long format with details. without it the command won't work as we need.\nI've added -E to extended regex — needed for this specific use case.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nForce flags with dpkg can mess up your package database. Use apt instead if possible.\nQuick verification after execution to be safe.\n</think>\ndpkg -l | grep -E '(sleuthkit|bulk-extractor|volatility|afflib|ewftools)'"
+  }
+]

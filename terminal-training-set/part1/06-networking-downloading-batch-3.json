@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Check the local IP address on eth0",
+    "output": "<think>\nNeed to check the local IP address on eth0.\nLet me consider what makes sense here.\nI'd use ip for this — network interface configuration.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\n</think>\nip addr show eth0 | grep 'inet ' | awk '{print $2}'"
+  },
+  {
+    "instruction": "Check the external/public IP address",
+    "output": "<think>\nAlright, we need to check the external/public IP address.\nFor this, dig is the right tool — DNS querying.\nQuick verification after execution to be safe.\n</think>\ndig +short myip.opendns.com @resolver1.opendns.com"
+  },
+  {
+    "instruction": "Check the external IP using icanhazip",
+    "output": "<think>\nThis is asking us to check the external IP using icanhazip.\nI'd use curl for this — making HTTP requests.\nI've added -s to summarize or silent mode — without it the command won't work as we need.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\ncurl -s https://icanhazip.com"
+  },
+  {
+    "instruction": "List all DNS servers used by the system",
+    "output": "<think>\nSo the request is to list all DNS servers used by the system.\nHere's how I'd approach this.\nThe tool for this job is resolvectl — DNS resolver management.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nresolvectl status | grep 'DNS Servers'"
+  },
+  {
+    "instruction": "Check if a port on a remote host is open",
+    "output": "<think>\nThe task requires us to check if a port on a remote host is open.\nLet me think through this step by step.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho >/dev/tcp/example.com/80 && echo open || echo closed"
+  },
+  {
+    "instruction": "Check if a port is open with bash built-in",
+    "output": "<think>\nThe goal is to check if a port is open with bash built-in.\nLet me reason through this.\nI'll reach for timeout here because timeout operations.\nThe -c flag means count or create, which matters here because without it the command won't work as we need.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ntimeout 1 bash -c 'echo >/dev/tcp/192.168.1.1/80' 2>/dev/null && echo open || echo closed"
+  },
+  {
+    "instruction": "Perform a TCP port scan on a remote host",
+    "output": "<think>\nThe task requires us to perform a TCP port scan on a remote host.\nLet me consider what makes sense here.\nBest tool here is nc — TCP/UDP networking and port scanning.\nWhy -E? Extended regex. without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nCheck the output for errors before proceeding to the next step.\n</think>\nnc -zv 192.168.1.1 22 80 443 2>&1 | grep -E 'succeeded|open'"
+  },
+  {
+    "instruction": "Perform a quick port scan with nmap",
+    "output": "<think>\nSo the request is to perform a quick port scan with nmap.\nLet me consider what makes sense here.\nI'd use nmap for this — network discovery and scanning.\nA single command handles this cleanly — no need to overcomplicate it.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\n</think>\nnmap -F 192.168.1.1"
+  },
+  {
+    "instruction": "Scan all TCP ports on a host",
+    "output": "<think>\nThis is asking us to scan all TCP ports on a host.\nThis calls for nmap. Network discovery and scanning.\nI'm using -p for create parent directories as needed — important to get the expected behavior.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\nAfter running, I'll confirm the result looks right.\n</think>\nnmap -p- 192.168.1.1"
+  },
+  {
+    "instruction": "Detect OS and services with nmap",
+    "output": "<think>\nThe goal is to detect OS and services with nmap.\nLet me think through this step by step.\nBest tool here is nmap — network discovery and scanning.\nOne command does the job. Simple is better.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\nI'll check the output to make sure it did what we expected.\n</think>\nnmap -sV -O 192.168.1.1"
+  },
+  {
+    "instruction": "Ping sweep to find live hosts on a subnet",
+    "output": "<think>\nThe goal is to ping sweep to find live hosts on a subnet.\nFor this, nmap is the right tool — network discovery and scanning.\nNo need for complex pipelines here — one command is sufficient.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\n</think>\nnmap -sn 192.168.1.0/24"
+  },
+  {
+    "instruction": "Check if a specific service version is vulnerable",
+    "output": "<think>\nThe task requires us to check if a specific service version is vulnerable.\nThe tool for this job is nmap — network discovery and scanning.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\nQuick verification after execution to be safe.\n</think>\nnmap -sV --script vuln 192.168.1.1"
+  },
+  {
+    "instruction": "Test SSL/TLS certificate info",
+    "output": "<think>\nNeed to test SSL/TLS certificate info.\nFirst, let me understand what's needed here.\nFor this, openssl is the right tool — cryptographic operations and certificate management.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nQuick verification after execution to be safe.\n</think>\nopenssl s_client -connect example.com:443 -servername example.com < /dev/null 2>/dev/null | openssl x509 -noout -text | head -30"
+  },
+  {
+    "instruction": "Check SSL certificate expiry date",
+    "output": "<think>\nWe're being asked to check SSL certificate expiry date.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\necho | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -dates"
+  },
+  {
+    "instruction": "Check SSL/TLS protocol versions supported",
+    "output": "<think>\nSo we need to check SSL/TLS protocol versions supported.\nThis calls for nmap. Network discovery and scanning.\nWhy -p? Create parent directories as needed. without it the command won't work as we need.\nScanning networks without permission is illegal. Only scan systems you own or have authorization for.\nQuick verification after execution to be safe.\n</think>\nnmap --script ssl-enum-ciphers -p 443 example.com"
+  },
+  {
+    "instruction": "Test TLS 1.2 only connection",
+    "output": "<think>\nThe user wants to test TLS 1.2 only connection.\nLet me consider what makes sense here.\nBest tool here is curl — making HTTP requests.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nNever pipe curl output to bash without reviewing the script first. Use HTTPS always.\n</think>\ncurl --tlsv1.2 -sI https://example.com > /dev/null && echo TLS 1.2 OK"
+  },
+  {
+    "instruction": "Fetch a certificate chain",
+    "output": "<think>\nSo we need to fetch a certificate chain.\nLet me think through this step by step.\nI'll reach for openssl here because cryptographic operations and certificate management.\nThere are a few moving parts here, so let me be careful.\nI'm piping because each stage transforms the data before passing it to the next.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nopenssl s_client -connect example.com:443 -showcerts < /dev/null 2>/dev/null | openssl x509 -noout -text | head -40"
+  },
+  {
+    "instruction": "Check the SSH host key fingerprint",
+    "output": "<think>\nAlright, we need to check the SSH host key fingerprint.\nssh-keyscan is what we need — ssh-keyscan operations.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nssh-keyscan example.com 2>/dev/null | ssh-keygen -lf -"
+  },
+  {
+    "instruction": "Test DNS propagation with dig",
+    "output": "<think>\nThe user wants to test DNS propagation with dig.\nI'd use dig for this — DNS querying.\n</think>\ndig example.com +short @8.8.8.8"
+  },
+  {
+    "instruction": "Trace DNS path from root servers",
+    "output": "<think>\nSo we need to trace DNS path from root servers.\nFor this, dig is the right tool — DNS querying.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\ndig example.com +trace"
+  },
+  {
+    "instruction": "Find the authoritative name servers for a domain",
+    "output": "<think>\nSo the request is to find the authoritative name servers for a domain.\nLet me consider what makes sense here.\ndig is what we need — DNS querying.\nQuick verification after execution to be safe.\n</think>\ndig example.com NS +short"
+  },
+  {
+    "instruction": "Find the mail servers for a domain",
+    "output": "<think>\nThe task requires us to find the mail servers for a domain.\nLet me consider what makes sense here.\nI'd use dig for this — DNS querying.\nA quick sanity check afterward saves debugging time later.\n</think>\ndig example.com MX +short"
+  },
+  {
+    "instruction": "Check TXT records (SPF, DKIM, etc.)",
+    "output": "<think>\nThe goal is to check TXT records (SPF, DKIM, etc.).\nFirst, let me understand what's needed here.\ndig is what we need — DNS querying.\nLet me verify afterward that it worked correctly.\n</think>\ndig example.com TXT +short"
+  },
+  {
+    "instruction": "Check reverse DNS for an IP",
+    "output": "<think>\nSo the request is to check reverse DNS for an IP.\nLet me think about the best approach.\nI'll reach for dig here because DNS querying.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\ndig -x 93.184.216.34 +short"
+  },
+  {
+    "instruction": "Check if DNSSEC is enabled for a domain",
+    "output": "<think>\nAlright, we need to check if DNSSEC is enabled for a domain.\nLet me break this down.\nFor this, dig is the right tool — DNS querying.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\ndig example.com DNSKEY +short | head -5"
+  }
+]

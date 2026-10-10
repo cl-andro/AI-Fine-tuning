@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to create an image from a Containerfile using a different working directory",
+    "output": "<think>\nSo we need to create an image from a Containerfile using a different working directory.\nLet me break this down.\nFor this, buildah is the right tool — buildah operations.\nThe -t flag handles sort by modification time. Important because important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\n</think>\nbuildah bud -t myimage:latest -C /path/to/context"
+  },
+  {
+    "instruction": "How to build an image with all tags from git describe",
+    "output": "<think>\nWe're being asked to build an image with all tags from git describe.\nFirst, let me understand what's needed here.\nI'll reach for buildah here because buildah operations.\nThe -t flag handles sort by modification time. Important because important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbuildah bud -t myapp:$(git describe --tags) ."
+  },
+  {
+    "instruction": "How to build an image with a label containing build info",
+    "output": "<think>\nSo the request is to build an image with a label containing build info.\nI'll reach for buildah here because buildah operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\nbuildah bud --label commit=$(git rev-parse HEAD) --label build-time=$(date -u +%Y-%m-%dT%H:%M:%SZ) -t myimage:latest ."
+  },
+  {
+    "instruction": "How to create a distroless-like image with buildah",
+    "output": "<think>\nAlright, we need to create a distroless-like image with buildah.\nLet me break this down.\nI'd use buildah for this — buildah operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\nbuildah from scratch && buildah copy scratch-container ./mybinary /mybinary && buildah config --entrypoint '[\"/mybinary\"]' scratch-container && buildah commit scratch-container mybinary:latest"
+  },
+  {
+    "instruction": "How to copy a binary from another image",
+    "output": "<think>\nWe're being asked to copy a binary from another image.\nFor this, buildah is the right tool — buildah operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nbuildah from docker.io/library/golang:1.20 as builder && buildah copy builder . /src && buildah run builder -- go build -o /app && buildah from scratch && buildah copy scratch-container --from builder /app /app"
+  },
+  {
+    "instruction": "How to use buildah with podman storage",
+    "output": "<think>\nThe task requires us to use buildah with podman storage.\nI'll reach for buildah here because buildah operations.\nI'm using -t for sort by modification time — without it the command won't work as we need.\nQuick verification after execution to be safe.\n</think>\nbuildah --storage-driver vfs bud -t myimage:latest ."
+  },
+  {
+    "instruction": "How to inspect the OS and architecture of an image",
+    "output": "<think>\nThe user wants to inspect the OS and architecture of an image.\nI'd use buildah for this — buildah operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nbuildah inspect myimage:latest | jq '.Os, .Architecture'"
+  },
+  {
+    "instruction": "How to check if an image exists locally",
+    "output": "<think>\nSo the request is to check if an image exists locally.\nThe tool for this job is buildah — buildah operations.\nI've added -q to quiet mode, minimal output — this controls how the output is formatted.\nThe -q flag handles quiet mode, minimal output. Important because this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nLet me verify afterward that it worked correctly.\n</think>\nbuildah images -q myimage:latest | grep -q ."
+  },
+  {
+    "instruction": "How to pull an image quietly",
+    "output": "<think>\nThis is asking us to pull an image quietly.\nHere's how I'd approach this.\nbuildah is what we need — buildah operations.\nI'm using -q for quiet mode, minimal output — needed for this specific use case.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nbuildah pull -q docker.io/library/alpine:latest"
+  },
+  {
+    "instruction": "How to push an image quietly",
+    "output": "<think>\nThe user wants to push an image quietly.\nBest tool here is buildah — buildah operations.\nI've added -q to quiet mode, minimal output — needed for this specific use case.\nLet me verify afterward that it worked correctly.\n</think>\nbuildah push -q myimage:latest docker://registry.example.com/myimage:latest"
+  },
+  {
+    "instruction": "How to pull an image with specific architecture",
+    "output": "<think>\nWe should pull an image with specific architecture.\nLet me consider what makes sense here.\nI'd use buildah for this — buildah operations.\n</think>\nbuildah pull --arch arm64 docker.io/library/ubuntu:22.04"
+  },
+  {
+    "instruction": "How to pull an image with specific OS",
+    "output": "<think>\nNeed to pull an image with specific OS.\nLet me reason through this.\nbuildah is what we need — buildah operations.\n</think>\nbuildah pull --os linux docker.io/library/ubuntu:22.04"
+  },
+  {
+    "instruction": "How to pull an image with specific variant",
+    "output": "<think>\nThe task requires us to pull an image with specific variant.\nLet me break this down.\nbuildah is what we need — buildah operations.\nQuick verification after execution to be safe.\n</think>\nbuildah pull --variant v8 docker.io/library/arm64v8/alpine:latest"
+  },
+  {
+    "instruction": "How to create a new container from image ID",
+    "output": "<think>\nThe goal is to create a new container from image ID.\nLet me think about the best approach.\nbuildah is what we need — buildah operations.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nbuildah from abc123def456"
+  },
+  {
+    "instruction": "How to set the container entrypoint to a script",
+    "output": "<think>\nThe task requires us to set the container entrypoint to a script.\nLet me break this down.\nbuildah is what we need — buildah operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nbuildah config --entrypoint '[\"/entrypoint.sh\"]' mycontainer"
+  },
+  {
+    "instruction": "How to copy a file from a container to the host",
+    "output": "<think>\nAlright, we need to copy a file from a container to the host.\nLet me think through this step by step.\nI'd use buildah for this — buildah operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nbuildah mount mycontainer && cp $(buildah mount mycontainer)/app/config.json ./config.json && buildah unmount mycontainer"
+  },
+  {
+    "instruction": "How to add a volume mount during build time",
+    "output": "<think>\nThe user wants to add a volume mount during build time.\nFirst, let me understand what's needed here.\nFor this, buildah is the right tool — buildah operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nbuildah bud -v /host/cache:/cache:z -t myimage:latest ."
+  },
+  {
+    "instruction": "How to build a container image using rootless podman",
+    "output": "<think>\nSo the request is to build a container image using rootless podman.\nBest tool here is buildah — buildah operations.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nbuildah bud --userns=keep-id -t myimage:latest ."
+  },
+  {
+    "instruction": "How to set the user namespace mode",
+    "output": "<think>\nThe task requires us to set the user namespace mode.\nbuildah is what we need — buildah operations.\n</think>\nbuildah from --userns=auto docker.io/library/ubuntu:latest"
+  },
+  {
+    "instruction": "How to create a container with a read-only rootfs",
+    "output": "<think>\nSo the request is to create a container with a read-only rootfs.\nFirst, let me understand what's needed here.\nThis calls for buildah. Buildah operations.\nI'll check the output to make sure it did what we expected.\n</think>\nbuildah from --read-only-rootfs docker.io/library/ubuntu:latest"
+  },
+  {
+    "instruction": "How to create a container with an overlay mount",
+    "output": "<think>\nSo the request is to create a container with an overlay mount.\nLet me reason through this.\nThe tool for this job is buildah — buildah operations.\nOne command does the job. Simple is better.\n</think>\nbuildah from --overlay /host/path:/container/path:z docker.io/library/ubuntu:latest"
+  },
+  {
+    "instruction": "How to explicitly set the container image format to OCI",
+    "output": "<think>\nNeed to explicitly set the container image format to OCI.\nLet me think about the best approach.\nI'll reach for buildah here because buildah operations.\nWhy -t? Sort by modification time. without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\nbuildah bud --format oci -t myimage:latest ."
+  },
+  {
+    "instruction": "How to explicitly set the container image format to Docker",
+    "output": "<think>\nSo the request is to explicitly set the container image format to Docker.\nLet me break this down.\nbuildah is what we need — buildah operations.\nI've added -t to sort by modification time — important to get the expected behavior.\n</think>\nbuildah bud --format docker -t myimage:latest ."
+  },
+  {
+    "instruction": "How to build with a compressed context from stdin",
+    "output": "<think>\nWe should build with a compressed context from stdin.\nLet me think about the best approach.\nFor this, tar is the right tool — file archiving.\nI've added -t to sort by modification time — standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nCheck that the target device has enough space before extracting large archives.\n</think>\ntar czf - . | buildah bud -t myimage:latest -"
+  },
+  {
+    "instruction": "How to run a buildah command with debug output",
+    "output": "<think>\nThis is asking us to run a buildah command with debug output.\nThe tool for this job is buildah — buildah operations.\nI've added -t to sort by modification time — standard practice for this kind of operation.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nbuildah --log-level debug bud -t myimage:latest ."
+  }
+]

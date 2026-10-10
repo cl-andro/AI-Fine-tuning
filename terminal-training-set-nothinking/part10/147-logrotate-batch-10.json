@@ -1,0 +1,22 @@
+[
+  {"instruction": "Debug logrotate config showing what would happen to each log", "output": "logrotate -d /etc/logrotate.conf 2>&1 | grep -E '^(rotating|considering|not truncating)'"},
+  {"instruction": "Check if a specific log file needs rotation", "output": "logrotate -d /etc/logrotate.d/myapp 2>&1 | grep -i 'needs rotating'"},
+  {"instruction": "Show logrotate version and compile options", "output": "logrotate --version"},
+  {"instruction": "Trace logrotate system calls during dry run", "output": "strace -e openat,read logrotate -d /etc/logrotate.conf 2>&1 | head -50"},
+  {"instruction": "Profile logrotate execution time", "output": "time logrotate -d /etc/logrotate.conf"},
+  {"instruction": "Run logrotate for all configs and log results", "output": "logrotate -v -f /etc/logrotate.conf 2>&1 | tee /var/log/logrotate-run.log"},
+  {"instruction": "Create logrotate config with errors to test validation", "output": "cat > /etc/logrotate.d/test-bad-config << 'EOF'\n/var/log/test/*.log {\n    daily\n    rotate abc\n    compress\n}\nEOF"},
+  {"instruction": "Validate config file catches errors", "output": "logrotate -d /etc/logrotate.d/test-bad-config 2>&1"},
+  {"instruction": "Remove test config file after validation", "output": "rm /etc/logrotate.d/test-bad-config"},
+  {"instruction": "Debug specific logrotate config line by line", "output": "logrotate -d /etc/logrotate.d/nginx 2>&1 | while read line; do echo \"$line\"; sleep 0.1; done"},
+  {"instruction": "Run logrotate with maximum verbosity", "output": "logrotate -v -v -d /etc/logrotate.conf 2>&1"},
+  {"instruction": "Check if state file is readable", "output": "cat /var/lib/logrotate/status 2>/dev/null || echo 'No state file found'"},
+  {"instruction": "Reset logrotate state for a specific file", "output": "sed -i '/\\/var\\/log\\/app\\/app.log/d' /var/lib/logrotate/status"},
+  {"instruction": "Force re-rotation of already rotated log", "output": "rm -f /var/lib/logrotate/status && logrotate -f /etc/logrotate.conf"},
+  {"instruction": "Run logrotate with custom config from stdin", "output": "echo -e '/var/log/test/*.log { daily; rotate 3; compress; }' | logrotate -f -"},
+  {"instruction": "Check logrotate config syntax for all files", "output": "for f in /etc/logrotate.d/*; do logrotate -d \"$f\" > /dev/null 2>&1 && echo \"OK: $f\" || echo \"FAIL: $f\"; done"},
+  {"instruction": "Monitor log file growth rate for rotation tuning", "output": "du -sb /var/log/app/app.log; sleep 3600; du -sb /var/log/app/app.log"},
+  {"instruction": "Compare logrotate behavior with different configs", "output": "diff <(logrotate -d /etc/logrotate.d/config-a 2>&1) <(logrotate -d /etc/logrotate.d/config-b 2>&1)"},
+  {"instruction": "Export logrotate status as JSON", "output": "cat /var/lib/logrotate/status | awk '{print \"{\\\"file\\\":\\\"\"$1\"\\\",\\\"date\\\":\\\"\"$2\"\\\"}\"}'"},
+  {"instruction": "Verify logrotate state file integrity", "output": "wc -l /var/lib/logrotate/status && sort /var/lib/logrotate/status | head -5"}
+]

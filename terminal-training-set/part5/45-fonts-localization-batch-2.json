@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Convert filename encoding",
+    "output": "<think>\nWe're being asked to convert filename encoding.\nBest tool here is convmv — convmv operations.\nThe -f flag handles force, suppress errors. Important because needed for this specific use case.\nI'm using -t for sort by modification time — important to get the expected behavior.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nconvmv -f cp1251 -t utf8 --notest file.txt"
+  },
+  {
+    "instruction": "Subset a font with pyftsubset",
+    "output": "<think>\nThe goal is to subset a font with pyftsubset.\nHere's how I'd approach this.\npyftsubset is what we need — pyftsubset operations.\nI'll check the output to make sure it did what we expected.\n</think>\npyftsubset DejaVuSans.ttf --text='Hello World' --output-file=subset.ttf"
+  },
+  {
+    "instruction": "Compress woff2 font",
+    "output": "<think>\nNeed to compress woff2 font.\nLet me think about the best approach.\nThe tool for this job is woff2_compress — woff2_compress operations.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nwoff2_compress DejaVuSans.ttf"
+  },
+  {
+    "instruction": "Check language pack availability",
+    "output": "<think>\nAlright, we need to check language pack availability.\nLet me consider what makes sense here.\nFor this, check-language-support is the right tool — check-language-support operations.\nWhy -l? Long format with details. standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncheck-language-support -l de"
+  },
+  {
+    "instruction": "Install German language pack",
+    "output": "<think>\nWe should install German language pack.\nLet me break this down.\napt is what we need — apt operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y $(check-language-support -l de)"
+  },
+  {
+    "instruction": "Show font catalog",
+    "output": "<think>\nSo we need to show font catalog.\nLet me consider what makes sense here.\nFor this, fc-cat is the right tool — fc-cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\nfc-cat /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+  },
+  {
+    "instruction": "Show fontconfig configuration",
+    "output": "<think>\nThe task requires us to show fontconfig configuration.\nBest tool here is fc-conflist — fc-conflist operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nfc-conflist"
+  },
+  {
+    "instruction": "Set font anti-aliasing",
+    "output": "<think>\nThe goal is to set font anti-aliasing.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho '<?xml version=\"1.0\"?><!DOCTYPE fontconfig SYSTEM \"fonts.dtd\"><fontconfig><match target=\"font\"><edit name=\"antialias\" mode=\"assign\"><bool>true</bool></edit></match></fontconfig>' > ~/.config/fontconfig/conf.d/10-antialias.conf"
+  },
+  {
+    "instruction": "Set font hinting style",
+    "output": "<think>\nWe should set font hinting style.\nLet me think through this step by step.\n</think>\necho '<?xml version=\"1.0\"?><!DOCTYPE fontconfig SYSTEM \"fonts.dtd\"><fontconfig><match target=\"font\"><edit name=\"hinting\" mode=\"assign\"><bool>true</bool></edit></match></fontconfig>' > ~/.config/fontconfig/conf.d/10-hinting.conf"
+  },
+  {
+    "instruction": "Clear fontconfig cache and rebuild",
+    "output": "<think>\nThe user wants to clear fontconfig cache and rebuild.\nLet me think through this step by step.\nI'll reach for rm here because file deletion.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\nLet me verify afterward that it worked correctly.\n</think>\nrm -rf ~/.cache/fontconfig && fc-cache -fv"
+  },
+  {
+    "instruction": "Show font format info",
+    "output": "<think>\nWe're being asked to show font format info.\nLet me reason through this.\nI'll reach for fc-scan here because fc-scan operations.\nThe -E flag means extended regex, which matters here because this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nI'll check the output to make sure it did what we expected.\n</think>\nfc-scan /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf | grep -E 'format|style' | head -10"
+  },
+  {
+    "instruction": "Find all bold fonts",
+    "output": "<think>\nThe task requires us to find all bold fonts.\nHere's how I'd approach this.\nFor this, fc-list is the right tool — fc-list operations.\nThe -i flag handles interactive, prompt before action. Important because needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\nfc-list | grep -i bold | head -20"
+  },
+  {
+    "instruction": "Find monospace fonts",
+    "output": "<think>\nThe user wants to find monospace fonts.\nLet me think about the best approach.\nI'd use fc-list for this — fc-list operations.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\n</think>\nfc-list | grep -i mono | head -20"
+  },
+  {
+    "instruction": "List font dirs",
+    "output": "<think>\nSo the request is to list font dirs.\nLet me reason through this.\nThe tool for this job is fc-list — fc-list operations.\nWhy -u? Show or sort by access time. needed for this specific use case.\nPipes let me chain these operations efficiently without writing temp files.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nfc-list --format='%{file}\\n' | sort -u | head -20"
+  },
+  {
+    "instruction": "Create a font directory",
+    "output": "<think>\nWe should create a font directory.\nThis calls for mkdir. Directory creation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\n</think>\nmkdir -p ~/.local/share/fonts && fc-cache -fv"
+  },
+  {
+    "instruction": "Install a font file system-wide",
+    "output": "<think>\nNeed to install a font file system-wide.\nFor this, cp is the right tool — file copying.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp MyFont.ttf /usr/local/share/fonts/ && fc-cache -fv"
+  },
+  {
+    "instruction": "Install all German locales",
+    "output": "<think>\nWe should install all German locales.\nlocale-gen is what we need — locale-gen operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, confirm it worked as expected before moving on.\n</think>\nlocale-gen de_DE de_DE.UTF-8 && dpkg-reconfigure locales"
+  },
+  {
+    "instruction": "Show locale environment vars",
+    "output": "<think>\nThe user wants to show locale environment vars.\nLet me reason through this.\nI'd use locale for this — locale operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\nlocale -k LC_TIME"
+  },
+  {
+    "instruction": "Install French language support",
+    "output": "<think>\nThe goal is to install French language support.\nHere's how I'd approach this.\nI'll reach for apt here because apt operations.\nOne command does the job. Simple is better.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y language-pack-fr"
+  },
+  {
+    "instruction": "Convert entire directory encoding",
+    "output": "<think>\nSo the request is to convert entire directory encoding.\nLet me break this down.\nI'd use convmv for this — convmv operations.\nI'm using -f for force, suppress errors — important to get the expected behavior.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\n</think>\nconvmv -f utf8 -t latin1 --notest *.txt"
+  },
+  {
+    "instruction": "Decompress woff2 font",
+    "output": "<think>\nThis is asking us to decompress woff2 font.\nBest tool here is woff2_decompress — woff2_decompress operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nwoff2_decompress font.woff2"
+  },
+  {
+    "instruction": "Show X font server fonts",
+    "output": "<think>\nSo the request is to show X font server fonts.\nLet me consider what makes sense here.\nThe tool for this job is xlsfonts — xlsfonts operations.\nWhy -i? Interactive, prompt before action. this controls how the output is formatted.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nxlsfonts | grep -i courier"
+  },
+  {
+    "instruction": "Convert BDF to PCF font",
+    "output": "<think>\nThis is asking us to convert BDF to PCF font.\nHere's how I'd approach this.\nI'll reach for bdftopcf here because bdftopcf operations.\nQuick verification after execution to be safe.\n</think>\nbdftopcf font.bdf > font.pcf"
+  },
+  {
+    "instruction": "Truncate a BDF font",
+    "output": "<think>\nAlright, we need to truncate a BDF font.\nHere's how I'd approach this.\nbdftruncate is what we need — bdftruncate operations.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nbdftruncate 32 127 font.bdf > reduced.bdf"
+  },
+  {
+    "instruction": "Show fontforge version",
+    "output": "<think>\nWe should show fontforge version.\nLet me think about the best approach.\nThis calls for fontforge. Fontforge operations.\nI'm using --version for show version info — standard practice for this kind of operation.\n</think>\nfontforge --version"
+  }
+]

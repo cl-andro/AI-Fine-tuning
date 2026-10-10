@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRank rows by page_view within each user_id",
+    "output": "SELECT *, RANK() OVER (PARTITION BY user_id ORDER BY page_view DESC) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nDense rank of rows by page_view",
+    "output": "SELECT *, DENSE_RANK() OVER (ORDER BY page_view DESC) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRow number per user_id ordered by visit_at",
+    "output": "SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRunning total of page_view ordered by visit_at",
+    "output": "SELECT *, SUM(page_view) OVER (ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRunning total of page_view per user_id",
+    "output": "SELECT *, SUM(page_view) OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nAverage of page_view over all rows",
+    "output": "SELECT *, AVG(page_view) OVER () FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nPrevious page_view value (lag) per user_id",
+    "output": "SELECT *, LAG(page_view, 1) OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nNext page_view value (lead) per user_id",
+    "output": "SELECT *, LEAD(page_view, 1) OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nMaximum page_view per user_id across all rows",
+    "output": "SELECT *, MAX(page_view) OVER (PARTITION BY user_id) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nMinimum page_view per user_id",
+    "output": "SELECT *, MIN(page_view) OVER (PARTITION BY user_id) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nMoving average window of 3 rows per user_id",
+    "output": "SELECT *, AVG(page_view) OVER (PARTITION BY user_id ORDER BY visit_at ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nWindow frame from first row to current per user_id",
+    "output": "SELECT *, SUM(page_view) OVER (PARTITION BY user_id ORDER BY visit_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nFirst value of page_view per user_id",
+    "output": "SELECT *, FIRST_VALUE(page_view) OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nLast value of page_view per user_id across full partition",
+    "output": "SELECT *, LAST_VALUE(page_view) OVER (PARTITION BY user_id ORDER BY visit_at ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nPercent rank of page_view",
+    "output": "SELECT *, PERCENT_RANK() OVER (ORDER BY page_view) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nCumulative distribution of page_view",
+    "output": "SELECT *, CUME_DIST() OVER (ORDER BY page_view) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nQuartile bucket using NTILE",
+    "output": "SELECT *, NTILE(4) OVER (ORDER BY page_view) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nDifference of page_view from its group max",
+    "output": "SELECT user_id, page_view, page_view - MAX(page_view) OVER (PARTITION BY user_id) AS diff FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRank of page_view with ties allowed to skip",
+    "output": "SELECT user_id, page_view, RANK() OVER (ORDER BY page_view DESC) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nSliding window of total over preceding 5 rows",
+    "output": "SELECT *, SUM(page_view) OVER (ORDER BY visit_at ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nRunning count per user_id",
+    "output": "SELECT *, COUNT(*) OVER (PARTITION BY user_id ORDER BY visit_at) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nTop 2 by page_view within each user_id using ROW_NUMBER",
+    "output": "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY page_view DESC) rn FROM visits) x WHERE rn <= 2;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nNth value of page_view within partition",
+    "output": "SELECT *, NTH_VALUE(page_view, 2) OVER (PARTITION BY user_id ORDER BY visit_at ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nExpressed ratio of page_view to group total",
+    "output": "SELECT user_id, page_view, page_view / SUM(page_view) OVER (PARTITION BY user_id) AS ratio FROM visits;"
+  },
+  {
+    "instruction": "Schema: visits(user_id, page_view, visit_at)\nWindow with custom unbounded following frame",
+    "output": "SELECT *, SUM(page_view) OVER (PARTITION BY user_id ORDER BY visit_at ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM visits;"
+  }
+]

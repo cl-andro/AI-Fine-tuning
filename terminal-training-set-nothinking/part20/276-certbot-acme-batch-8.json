@@ -1,0 +1,22 @@
+[
+  {"instruction": "How to run certbot in manual mode with a specific auth script", "output": "certbot certonly --manual --preferred-challenges dns -d example.com --manual-auth-hook /usr/local/bin/certbot-auth.sh"},
+  {"instruction": "How to write a simple certbot manual DNS auth script", "output": "echo '#!/bin/bash' > /usr/local/bin/certbot-auth.sh && echo '/usr/bin/curl -X POST https://dns-api.example.com/set-txt -d \"name=_acme-challenge.$CERTBOT_DOMAIN&value=$CERTBOT_VALIDATION\"' >> /usr/local/bin/certbot-auth.sh && chmod +x /usr/local/bin/certbot-auth.sh"},
+  {"instruction": "How to write a clean up script for manual DNS", "output": "echo '#!/bin/bash' > /usr/local/bin/certbot-cleanup.sh && echo '/usr/bin/curl -X DELETE https://dns-api.example.com/remove-txt -d \"name=_acme-challenge.$CERTBOT_DOMAIN&value=$CERTBOT_VALIDATION\"' >> /usr/local/bin/certbot-cleanup.sh && chmod +x /usr/local/bin/certbot-cleanup.sh"},
+  {"instruction": "How to test the manual DNS hook without real issuance", "output": "certbot certonly --dry-run --manual --preferred-challenges dns -d example.com --manual-auth-hook /usr/local/bin/certbot-auth.sh --manual-cleanup-hook /usr/local/bin/certbot-cleanup.sh"},
+  {"instruction": "How to obtain a cert with a custom DNS hook and a waiting period", "output": "certbot certonly --manual --preferred-challenges dns -d example.com --manual-auth-hook /usr/local/bin/auth.sh --manual-cleanup-hook /usr/local/bin/cleanup.sh --no-bootstrap"},
+  {"instruction": "How to use the DNS-01 challenge with a 60 second wait", "output": "certbot certonly --manual --preferred-challenges dns -d example.com --manual-auth-hook 'sleep 60'"},
+  {"instruction": "How to set up certbot for HAProxy with a deploy hook", "output": "certbot certonly --standalone -d example.com --deploy-hook 'cat /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem > /etc/haproxy/certs/example.com.pem && systemctl reload haproxy'"},
+  {"instruction": "How to set up certbot for Postfix with a deploy hook", "output": "certbot renew --deploy-hook 'cp /etc/letsencrypt/live/example.com/fullchain.pem /etc/postfix/cert.pem && cp /etc/letsencrypt/live/example.com/privkey.pem /etc/postfix/key.pem && systemctl reload postfix'"},
+  {"instruction": "How to set up certbot for Dovecot with a deploy hook", "output": "certbot renew --deploy-hook 'cp /etc/letsencrypt/live/example.com/fullchain.pem /etc/dovecot/cert.pem && cp /etc/letsencrypt/live/example.com/privkey.pem /etc/dovecot/key.pem && systemctl reload dovecot'"},
+  {"instruction": "How to set up certbot for a custom service", "output": "certbot renew --deploy-hook '/usr/local/bin/reload-custom-service.sh'"},
+  {"instruction": "How to check the next renewal time for a cert", "output": "certbot certificates -d example.com | grep 'VALID'"},
+  {"instruction": "How to check the renewal eligibility of a cert", "output": "certbot certificates -d example.com | grep 'RENEWAL'"},
+  {"instruction": "How to check the certificate serial number", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -serial -noout"},
+  {"instruction": "How to get the certificate fingerprint", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -fingerprint -sha256 -noout"},
+  {"instruction": "How to get the certificate subject", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -subject -noout"},
+  {"instruction": "How to get the certificate issuer", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -issuer -noout"},
+  {"instruction": "How to get the certificate's notBefore date", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -startdate -noout"},
+  {"instruction": "How to get the certificate's notAfter date", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -enddate -noout"},
+  {"instruction": "How to get the certificate's subject alternative names", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -text -noout | grep 'DNS'"},
+  {"instruction": "How to check the certificate's SAN entries", "output": "openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -ext subjectAltName -noout"}
+]

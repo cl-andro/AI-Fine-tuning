@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Benchmark CPU with 7-zip (high memory CPU test)",
+    "output": "<think>\nSo we need to benchmark CPU with 7-zip (high memory CPU test).\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\n7z b -mmt$(nproc)"
+  },
+  {
+    "instruction": "Benchmark RAM speed with mbw",
+    "output": "<think>\nThe task requires us to benchmark RAM speed with mbw.\napt is what we need — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\napt install -y mbw && mbw 1024"
+  },
+  {
+    "instruction": "Test memory latency with lmbench",
+    "output": "<think>\nAlright, we need to test memory latency with lmbench.\nLet me think through this step by step.\nFor this, apt is the right tool — apt operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\napt install -y lmbench && lat_mem_rd 128 512"
+  },
+  {
+    "instruction": "Test memory bandwidth with stream",
+    "output": "<think>\nSo we need to test memory bandwidth with stream.\nLet me think about the best approach.\nBest tool here is apt — apt operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install -y stream && stream"
+  },
+  {
+    "instruction": "Run openssl speed benchmark",
+    "output": "<think>\nThe goal is to run openssl speed benchmark.\nHere's how I'd approach this.\nBest tool here is openssl — cryptographic operations and certificate management.\nPrivate keys should have 600 permissions and never be logged or transmitted insecurely.\nAfter running, I'll confirm the result looks right.\n</think>\nopenssl speed -multi $(nproc) sha256 aes-256-cbc"
+  },
+  {
+    "instruction": "Benchmark disk random access with ioping",
+    "output": "<think>\nThe user wants to benchmark disk random access with ioping.\nFirst, let me understand what's needed here.\nI'll reach for apt here because apt operations.\nThe -c flag means count or create, which matters here because standard practice for this kind of operation.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nLet me verify afterward that it worked correctly.\n</think>\napt install -y ioping && ioping -c 10 /tmp"
+  },
+  {
+    "instruction": "Measure mountpoint latency with ioping",
+    "output": "<think>\nAlright, we need to measure mountpoint latency with ioping.\nHere's how I'd approach this.\nI'll reach for ioping here because ioping operations.\nWhy -c? Count or create. important to get the expected behavior.\nWhy -S? Sort by size. standard practice for this kind of operation.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nioping -c 100 -S 1M /var/lib/mysql"
+  },
+  {
+    "instruction": "Check disk rotational delay",
+    "output": "<think>\nWe're being asked to check disk rotational delay.\nFirst, let me understand what's needed here.\nBest tool here is hdparm — hdparm operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\n</think>\nhdparm -I /dev/sda | grep -i 'rotational'"
+  },
+  {
+    "instruction": "Check if disk is SSD or HDD",
+    "output": "<think>\nThe task requires us to check if disk is SSD or HDD.\nLet me reason through this.\nI'll reach for cat here because cat operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/block/sda/queue/rotational"
+  },
+  {
+    "instruction": "Enable TRIM for SSD",
+    "output": "<think>\nWe should enable TRIM for SSD.\nThis calls for systemctl. Managing systemd services.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nRestarting services has downtime. If possible, use reload instead of restart.\nAfter running, I'll confirm the result looks right.\n</think>\nsystemctl enable --now fstrim.timer && fstrim -av"
+  },
+  {
+    "instruction": "Check kernel I/O scheduler",
+    "output": "<think>\nThis is asking us to check kernel I/O scheduler.\nI'd use cat for this — cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncat /sys/block/sda/queue/scheduler"
+  },
+  {
+    "instruction": "Set I/O scheduler to none (NVMe optimal)",
+    "output": "<think>\nSo the request is to set I/O scheduler to none (NVMe optimal).\nFirst, let me understand what's needed here.\n</think>\necho none > /sys/block/nvme0n1/queue/scheduler"
+  },
+  {
+    "instruction": "Set I/O scheduler to deadline for HDDs",
+    "output": "<think>\nSo the request is to set I/O scheduler to deadline for HDDs.\nLet me think about the best approach.\n</think>\necho deadline > /sys/block/sda/queue/scheduler"
+  },
+  {
+    "instruction": "Set I/O scheduler persistently (GRUB)",
+    "output": "<think>\nThe user wants to set I/O scheduler persistently (GRUB).\nBest tool here is sed — text stream editing.\nI'm using -i for interactive, prompt before action — this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsed -i 's/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"elevator=none\"/' /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Check block device queue depth",
+    "output": "<think>\nWe're being asked to check block device queue depth.\nLet me break this down.\ncat is what we need — cat operations.\n</think>\ncat /sys/block/sda/device/queue_depth"
+  },
+  {
+    "instruction": "Set block device queue depth",
+    "output": "<think>\nThe task requires us to set block device queue depth.\nLet me reason through this.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\necho 256 > /sys/block/nvme0n1/device/queue_depth"
+  },
+  {
+    "instruction": "Check CPU scaling governor per core",
+    "output": "<think>\nThe task requires us to check CPU scaling governor per core.\ncat is what we need — cat operations.\nNo need for complex pipelines here — one command is sufficient.\n</think>\ncat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+  },
+  {
+    "instruction": "Set CPU governor to powersave",
+    "output": "<think>\nWe're being asked to set CPU governor to powersave.\nThis calls for for. For operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nfor i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo powersave > $i; done"
+  },
+  {
+    "instruction": "Disable C-states for lower latency",
+    "output": "<think>\nSo we need to disable C-states for lower latency.\nLet me think about the best approach.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 1 > /sys/module/intel_idle/parameters/max_cstate"
+  },
+  {
+    "instruction": "Disable turbo boost",
+    "output": "<think>\nThis is asking us to disable turbo boost.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 1 > /sys/devices/system/cpu/intel_pstate/no_turbo"
+  },
+  {
+    "instruction": "Check current CPU frequency",
+    "output": "<think>\nThe user wants to check current CPU frequency.\nFirst, let me understand what's needed here.\nFor this, cat is the right tool — cat operations.\nThe -E flag means extended regex, which matters here because without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /proc/cpuinfo | grep -E 'processor|MHz'"
+  },
+  {
+    "instruction": "Check CPU topology (cores, threads, sockets)",
+    "output": "<think>\nNeed to check CPU topology (cores, threads, sockets).\nLet me think through this step by step.\nlscpu is what we need — lscpu operations.\nThe -E flag handles extended regex. Important because standard practice for this kind of operation.\nPipes let me chain these operations efficiently without writing temp files.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nlscpu | grep -E 'Thread|Core|Socket|NUMA'"
+  },
+  {
+    "instruction": "Pin a process to a specific CPU core",
+    "output": "<think>\nThis is asking us to pin a process to a specific CPU core.\nFirst, let me understand what's needed here.\nFor this, taskset is the right tool — taskset operations.\nWhy -c? Count or create. without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\ntaskset -c 0-3 ./myapp"
+  },
+  {
+    "instruction": "Check which CPUs a process is allowed to run on",
+    "output": "<think>\nWe should check which CPUs a process is allowed to run on.\nI'll reach for taskset here because taskset operations.\nThe -p flag means create parent directories as needed, which matters here because this controls how the output is formatted.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\ntaskset -p 1234"
+  },
+  {
+    "instruction": "Move a running process to a specific CPU",
+    "output": "<think>\nWe're being asked to move a running process to a specific CPU.\nLet me think about the best approach.\nI'll reach for taskset here because taskset operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\ntaskset -pc 0-3 1234"
+  }
+]

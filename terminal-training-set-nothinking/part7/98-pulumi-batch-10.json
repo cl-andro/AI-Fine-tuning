@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Pulumi component for an S3 bucket with logging",
+    "output": "echo 'class LoggedBucket(pulumi.ComponentResource): def __init__(self, name, opts=None): super().__init__(\"my:logging:Bucket\", name, None, opts); self.bucket = aws.s3.Bucket(name, loggings=[aws.s3.BucketLoggingArgs(target_bucket=logs_bucket.bucket, target_prefix=f\"{name}/\")], opts=pulumi.ResourceOptions(parent=self)); self.register_outputs({\"bucket_id\": self.bucket.id})' > component.py"
+  },
+  {
+    "instruction": "Create a Pulumi dynamic resource for a random ID",
+    "output": "echo 'import pulumi.dynamic as dyn; import random; class RandomProvider(dyn.ResourceProvider): def create(self, props): return dyn.CreateResult(id=random.randint(1, 99999), outs={\"result\": random.randint(1, 100)}); class RandomInt(dyn.Resource): def __init__(self, name, opts=None): super().__init__(RandomProvider(), name, {\"result\": None}, opts); r = RandomInt(\"num\")' > dynamic-random.py"
+  },
+  {
+    "instruction": "Use pulumi.Config.require_object for structured config",
+    "output": "echo 'config = pulumi.Config(); instances = config.require_object(\"instances\")' > config-object.py"
+  },
+  {
+    "instruction": "Use pulumi.Output.all to combine multiple outputs",
+    "output": "echo 'combined = pulumi.Output.all(instance.public_ip, bucket.arn).apply(lambda args: f\"IP: {args[0]}, Bucket: {args[1]}\")' > outputs.py"
+  },
+  {
+    "instruction": "Use pulumi.Output.secret to mark an output as sensitive",
+    "output": "echo 'pulumi.export(\"connection_string\", pulumi.Output.secret(f\"postgresql://{db_username}:{db_password}@{db_host}:5432/{db_name}\"))' > secret-output.py"
+  },
+  {
+    "instruction": "Create a Pulumi program that uses invoke to get an AMI",
+    "output": "echo 'ami = pulumi.Output.from_input(aws.ec2.get_ami(most_recent=True, owners=[\"099720109477\"], filters=[{\"name\":\"name\",\"values\":[\"ubuntu/images/hvm-ssd/ubuntu-jammy-*amd64*\"]}])); pulumi.export(\"ami_id\", ami.id)' > __main__.py"
+  },
+  {
+    "instruction": "Use the Pulumi command provider to run a script locally",
+    "output": "echo 'from pulumi_command import local; cmd = local.Command(\"health\", create=\"curl -sf http://localhost:8080/health\", update=\"curl -sf http://localhost:8080/health\")' > command.py"
+  },
+  {
+    "instruction": "Use the Pulumi command provider to run a remote command",
+    "output": "echo 'from pulumi_command import remote; cmd = remote.Command(\"provision\", connection=remote.ConnectionArgs(host=instance.public_ip, user=\"admin\", private_key=private_key), create=\"sudo apt update && sudo apt install -y nginx\")' > remote-command.py"
+  },
+  {
+    "instruction": "Use the Pulumi random provider for a pet name",
+    "output": "echo 'from pulumi_random import RandomPet; pet = RandomPet(\"name\", length=2); pulumi.export(\"bucket_name\", pet.id.apply(lambda n: f\"app-{n}\"))' > random.py"
+  },
+  {
+    "instruction": "Set a Pulumi concurrency limit in the yaml config",
+    "output": "echo 'options:\n  parallelism: 5' >> Pulumi.yaml"
+  },
+  {
+    "instruction": "Run pulumi with a custom root directory",
+    "output": "pulumi up --cwd ./infra"
+  },
+  {
+    "instruction": "Generate a pulumi stack graph in SVG format",
+    "output": "pulumi stack graph | dot -Tsvg > stack-graph.svg"
+  },
+  {
+    "instruction": "Convert the pulumi stack graph to a PNG for documentation",
+    "output": "pulumi stack graph | dot -Tpng -Grankdir=LR > stack-graph.png"
+  },
+  {
+    "instruction": "Show the stack resource count and type breakdown",
+    "output": "pulumi stack export | jq '.checkpoint.latest.resources | group_by(.type) | map({type: .[0].type, count: length}) | sort_by(-.count)'"
+  },
+  {
+    "instruction": "Run pulumi about to see SDK versions for debugging",
+    "output": "pulumi about -o markdown > pulumi-report.md"
+  },
+  {
+    "instruction": "Check for pulumi SDK updates in a project",
+    "output": "pip list --outdated | grep pulumi"
+  },
+  {
+    "instruction": "Delete a Pulumi stack without deleting resources",
+    "output": "pulumi stack rm dev --preserve-config"
+  },
+  {
+    "instruction": "Delete a stack and all its resources forcefully",
+    "output": "pulumi stack rm staging --force"
+  },
+  {
+    "instruction": "Convert a stack to be managed by Pulumi Cloud",
+    "output": "pulumi login && pulumi stack init prod --secrets-provider awskms://alias/pulumi-secrets"
+  },
+  {
+    "instruction": "Run pulumi state delete to remove a resource from state",
+    "output": "pulumi state delete 'urn:pulumi:prod::infra::aws:s3/bucket:Bucket::old-bucket'"
+  },
+  {
+    "instruction": "Use pulumi state rename to rename a resource",
+    "output": "pulumi state rename 'urn:pulumi:prod::infra::aws:ec2/instance:Instance::old-name' new-name"
+  },
+  {
+    "instruction": "Pulumi bulk state operations with state edit",
+    "output": "pulumi stack export > state.json && jq '.checkpoint.latest.resources |= map(if .type == \"aws:s3/bucket:Bucket\" then .outputs |= . + {\"new_tag\":\"value\"} else . end)' state.json > edited.json && pulumi stack import --file edited.json"
+  },
+  {
+    "instruction": "Use pulumi with a specific AWS profile from config",
+    "output": "AWS_PROFILE=prod pulumi up -y"
+  },
+  {
+    "instruction": "List all pulumi errors from a failed deployment log",
+    "output": "pulumi up --logtostderr -v=3 2>&1 | grep -i error"
+  },
+  {
+    "instruction": "Get the URN of a specific resource by name",
+    "output": "pulumi stack --show-urns | grep 'my-bucket'"
+  }
+]

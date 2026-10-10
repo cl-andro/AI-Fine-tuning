@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "How to view the rpm-ostree client configuration options",
+    "output": "<think>\nAlright, we need to view the rpm-ostree client configuration options.\nLet me break this down.\nrpm-ostree is what we need — rpm-ostree operations.\nWhy --help? Show usage information. standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nrpm-ostree --help | grep -E '--[a-z]'"
+  },
+  {
+    "instruction": "How to force rpm-ostree to check for updates immediately",
+    "output": "<think>\nWe're being asked to force rpm-ostree to check for updates immediately.\nThis calls for rpm-ostree. Rpm-ostree operations.\nOne command does the job. Simple is better.\n</think>\nrpm-ostree upgrade --check --force"
+  },
+  {
+    "instruction": "How to check the rpm-ostree deployment booted status",
+    "output": "<think>\nSo the request is to check the rpm-ostree deployment booted status.\nHere's how I'd approach this.\nThe tool for this job is rpm-ostree — rpm-ostree operations.\n</think>\nrpm-ostree status --booted"
+  },
+  {
+    "instruction": "How to add a kernel argument to enable EFI framebuffer",
+    "output": "<think>\nThe task requires us to add a kernel argument to enable EFI framebuffer.\nThis calls for rpm-ostree. Rpm-ostree operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrpm-ostree kargs --append='efi_framebuffer'"
+  },
+  {
+    "instruction": "How to view the rpm-ostree deployment's package list",
+    "output": "<think>\nThe goal is to view the rpm-ostree deployment's package list.\nLet me think through this step by step.\nThis calls for rpm. Rpm operations.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nrpm -qa --root=/sysroot/ostree/deploy/$(rpm-ostree status --booted | grep Deployment | awk '{print $2}')/root"
+  },
+  {
+    "instruction": "How to see the rpm-ostree total number of boot entries",
+    "output": "<think>\nThe goal is to see the rpm-ostree total number of boot entries.\nLet me consider what makes sense here.\nThe tool for this job is ls — ls operations.\nI'm using -l for long format with details — standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nLet me verify afterward that it worked correctly.\n</think>\nls /boot/loader/entries/ | wc -l"
+  },
+  {
+    "instruction": "How to replace a layered package with a different version in rpm-ostree",
+    "output": "<think>\nSo we need to replace a layered package with a different version in rpm-ostree.\nLet me break this down.\nFor this, rpm-ostree is the right tool — rpm-ostree operations.\n</think>\nrpm-ostree override replace --experimental /path/to/package.rpm"
+  },
+  {
+    "instruction": "How to check the rpm-ostree update delay configuration",
+    "output": "<think>\nWe're being asked to check the rpm-ostree update delay configuration.\nFirst, let me understand what's needed here.\nFor this, rpm-ostree is the right tool — rpm-ostree operations.\nI'm using -c for count or create — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nQuick verification after execution to be safe.\n</think>\nrpm-ostree status --json | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get(\"automatic-update-policy\", \"none\"))'"
+  },
+  {
+    "instruction": "How to verify the rpm-ostree base image metadata",
+    "output": "<think>\nThis is asking us to verify the rpm-ostree base image metadata.\nostree is what we need — ostree operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nostree show --repo=/sysroot/ostree/repo $(rpm-ostree status --booted | grep Commit | awk '{print $2}')"
+  },
+  {
+    "instruction": "How to clean the rpm-ostree local repo cache",
+    "output": "<think>\nSo we need to clean the rpm-ostree local repo cache.\nBest tool here is ostree — ostree operations.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nostree prune --repo=/sysroot/ostree/repo --depth=0"
+  },
+  {
+    "instruction": "How to see the rpm-ostree daemon environment",
+    "output": "<think>\nThe user wants to see the rpm-ostree daemon environment.\nLet me reason through this.\nThe tool for this job is systemctl — managing systemd services.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl show rpm-ostreed -p Environment"
+  },
+  {
+    "instruction": "How to use rpm-ostree with a specific number of download threads",
+    "output": "<think>\nNeed to use rpm-ostree with a specific number of download threads.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'DownLoadThreads=8' >> /etc/rpm-ostreed.conf && systemctl restart rpm-ostreed"
+  },
+  {
+    "instruction": "How to see the total size of all rpm-ostree deployments",
+    "output": "<think>\nThe task requires us to see the total size of all rpm-ostree deployments.\nFor this, du is the right tool — disk usage analysis.\nOne command does the job. Simple is better.\ndu on a large directory can take a while and cause disk I/O. Use --max-depth to limit it.\nAfter running, I'll confirm the result looks right.\n</think>\ndu -sh /sysroot/ostree/repo/objects/ 2>/dev/null"
+  },
+  {
+    "instruction": "How to override a package with a custom build using rpm-ostree",
+    "output": "<think>\nSo we need to override a package with a custom build using rpm-ostree.\nI'd use rpm-ostree for this — rpm-ostree operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\nrpm-ostree override remove package && rpm-ostree override add /path/to/custom-package.rpm"
+  },
+  {
+    "instruction": "How to check the rpm-ostree remote's GPG key",
+    "output": "<think>\nThis is asking us to check the rpm-ostree remote's GPG key.\nI'd use ostree for this — ostree operations.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\nostree remote show-gpg-keys --repo=/sysroot/ostree/repo fedora"
+  },
+  {
+    "instruction": "How to change the rpm-ostree bootloader update policy",
+    "output": "<think>\nThe user wants to change the rpm-ostree bootloader update policy.\nFirst, let me understand what's needed here.\nThis calls for rpm-ostree. Rpm-ostree operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\nrpm-ostree initramfs --enable"
+  },
+  {
+    "instruction": "How to check the rpm-ostree version of the initramfs",
+    "output": "<think>\nAlright, we need to check the rpm-ostree version of the initramfs.\nLet me consider what makes sense here.\nlsinitrd is what we need — lsinitrd operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, I'll confirm the result looks right.\n</think>\nlsinitrd /boot/ostree/*/initramfs* | grep 'Version'"
+  },
+  {
+    "instruction": "How to use rpm-ostree to deploy a raw commit by hash",
+    "output": "<think>\nThis is asking us to use rpm-ostree to deploy a raw commit by hash.\nLet me think about the best approach.\nI'd use rpm-ostree for this — rpm-ostree operations.\nLet me verify afterward that it worked correctly.\n</think>\nrpm-ostree deploy COMMIT_HASH"
+  },
+  {
+    "instruction": "How to list all packages provided by rpm-ostree layer",
+    "output": "<think>\nThis is asking us to list all packages provided by rpm-ostree layer.\nI'd use rpm-ostree for this — rpm-ostree operations.\nI've added -c to count or create — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nrpm-ostree status --json | python3 -c 'import sys,json;d=json.load(sys.stdin);[print(x[\"layered-packages\"]) for x in d[\"deployments\"] if \"layered-packages\" in x]'"
+  },
+  {
+    "instruction": "How to verify the rpm-ostree deployment's signature validity",
+    "output": "<think>\nSo we need to verify the rpm-ostree deployment's signature validity.\nI'd use ostree for this — ostree operations.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nostree gpg-verify --repo=/sysroot/ostree/repo $(rpm-ostree status --booted | grep Commit | awk '{print $2}')"
+  }
+]

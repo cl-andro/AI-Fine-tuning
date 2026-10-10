@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "View capabilities for all suid binaries",
+    "output": "<think>\nThe user wants to view capabilities for all suid binaries.\nI'd use find for this — file searching.\nThe -perm flag handles filter by permissions. Important because this controls how the output is formatted.\nThe -type flag means filter by file type, which matters here because important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind / -perm -4000 -type f 2>/dev/null | xargs getcap 2>/dev/null"
+  },
+  {
+    "instruction": "Audit all files with file capabilities",
+    "output": "<think>\nAlright, we need to audit all files with file capabilities.\nHere's how I'd approach this.\nFor this, getcap is the right tool — getcap operations.\nI'm using -r for recursive operation (descend into subdirectories) — needed for this specific use case.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngetcap -r /usr /bin /sbin /opt 2>/dev/null"
+  },
+  {
+    "instruction": "Find files with CAP_SYS_ADMIN",
+    "output": "<think>\nWe should find files with CAP_SYS_ADMIN.\nThe tool for this job is getcap — getcap operations.\nWhy -r? Recursive operation (descend into subdirectories). this controls how the output is formatted.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\ngetcap -r / 2>/dev/null | grep cap_sys_admin"
+  },
+  {
+    "instruction": "Audit files with CAP_NET_RAW capability",
+    "output": "<think>\nThis is asking us to audit files with CAP_NET_RAW capability.\nLet me break this down.\nThis calls for getcap. Getcap operations.\nI've added -r to recursive operation (descend into subdirectories) — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\ngetcap -r / 2>/dev/null | grep cap_net_raw"
+  },
+  {
+    "instruction": "Check for CAP_DAC_OVERRIDE files (dangerous)",
+    "output": "<think>\nSo we need to check for CAP_DAC_OVERRIDE files (dangerous).\nI'd use getcap for this — getcap operations.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ngetcap -r / 2>/dev/null | grep cap_dac_override"
+  },
+  {
+    "instruction": "Find any file with any capability",
+    "output": "<think>\nThis is asking us to find any file with any capability.\nLet me reason through this.\nI'd use find for this — file searching.\nI've added -type to filter by file type — important to get the expected behavior.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nfind / -type f -exec getcap {} \\; 2>/dev/null"
+  },
+  {
+    "instruction": "Report capability security audit",
+    "output": "<think>\nNeed to report capability security audit.\nLet me reason through this.\nThis calls for cat. Cat operations.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ncat > /tmp/cap-audit.sh << 'EOF'\n#!/bin/bash\necho \"=== Capability Audit ===\"\necho \"Files with capabilities:\"\ngetcap -r / 2>/dev/null\necho \"\"\necho \"Running processes with special caps:\"\nfor pid in /proc/[0-9]*; do\n    pid=${pid#/proc/}\n    caps=$(cat /proc/$pid/status 2>/dev/null | grep CapEff | awk '{print $2}')\n    if [ \"$caps\" ] && [ \"$caps\" != \"0000000000000000\" ]; then\n        echo \"PID $pid: $(cat /proc/$pid/comm 2>/dev/null) -> $(capsh --decode=$caps 2>/dev/null)\"\n    fi\ndone\nEOF\nbash /tmp/cap-audit.sh"
+  },
+  {
+    "instruction": "Find SUID binaries without file caps",
+    "output": "<think>\nThe user wants to find SUID binaries without file caps.\nHere's how I'd approach this.\nI'll reach for find here because file searching.\nI've added -perm to filter by permissions — without it the command won't work as we need.\nI've added -type to filter by file type — standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nEach pipe stage handles one transformation, keeping the logic composable.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nAfter running, I'll confirm the result looks right.\n</think>\nfind / -perm -4000 -type f 2>/dev/null | while read f; do getcap \"$f\" 2>/dev/null | grep -q . || echo \"$f (no cap)\"; done"
+  },
+  {
+    "instruction": "Check if capabilities are enabled on system",
+    "output": "<think>\nWe should check if capabilities are enabled on system.\nBest tool here is grep — pattern searching.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\ngrep CAP /boot/config-$(uname -r) 2>/dev/null | head -10 || grep 'CONFIG_SECURITY' /boot/config-$(uname -r) 2>/dev/null | head -5"
+  },
+  {
+    "instruction": "Check kernel config for file capabilities",
+    "output": "<think>\nWe should check kernel config for file capabilities.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nThis is more involved than it first seems.\nEach pipe stage handles one transformation, keeping the logic composable.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/config.gz 2>/dev/null | gunzip | grep -i 'SECURITY_FILE_CAPABILITIES' || echo 'Not available'"
+  },
+  {
+    "instruction": "Verify capabilities in kernel boot params",
+    "output": "<think>\nSo we need to verify capabilities in kernel boot params.\nBest tool here is cat — cat operations.\nWhy -i? Interactive, prompt before action. standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\ncat /proc/cmdline | tr ' ' '\\n' | grep -i 'cap'"
+  },
+  {
+    "instruction": "Check if user namespaces are enabled",
+    "output": "<think>\nThe goal is to check if user namespaces are enabled.\nLet me think through this step by step.\nI'll reach for cat here because cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /proc/sys/user/max_user_namespaces"
+  },
+  {
+    "instruction": "View capability-related kernel parameters",
+    "output": "<think>\nThe goal is to view capability-related kernel parameters.\nI'll reach for sysctl here because kernel parameter tuning.\nThe -a flag handles AND operator in find. Important because this controls how the output is formatted.\nThe -i flag handles interactive, prompt before action. Important because without it the command won't work as we need.\nThere are a few moving parts here, so let me be careful.\nEach pipe stage handles one transformation, keeping the logic composable.\nA quick sanity check afterward saves debugging time later.\nLet me verify afterward that it worked correctly.\n</think>\nsysctl -a 2>/dev/null | grep -i cap"
+  },
+  {
+    "instruction": "Disable file capabilities temporarily",
+    "output": "<think>\nSo the request is to disable file capabilities temporarily.\nFirst, let me understand what's needed here.\nBest tool here is mount — filesystem mounting.\nNo need for complex pipelines here — one command is sufficient.\nLet me verify afterward that it worked correctly.\n</think>\nmount -o remount,nosuid,noexec /"
+  },
+  {
+    "instruction": "Restrict setcap to root only",
+    "output": "<think>\nWe're being asked to restrict setcap to root only.\nLet me think about the best approach.\nI'll reach for chmod here because file permission changes.\nA single command handles this cleanly — no need to overcomplicate it.\nNever chmod 777. Use the most restrictive permissions that still work.\nQuick verification after execution to be safe.\n</think>\nchmod 700 /sbin/setcap"
+  },
+  {
+    "instruction": "Create capability blacklist script",
+    "output": "<think>\nThe task requires us to create capability blacklist script.\nLet me think through this step by step.\nThis calls for cat. Cat operations.\nThe command looks straightforward, but let me check the details.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ncat > /usr/local/bin/audit-caps.sh << 'EOF'\n#!/bin/bash\nREPORT=\"/tmp/cap-report-$(date +%Y%m%d).txt\"\necho \"Capability Audit Report - $(date)\" > \"$REPORT\"\ngetcap -r / 2>/dev/null >> \"$REPORT\"\necho \"\" >> \"$REPORT\"\necho \"=== Dangerous Capabilities Check ===\" >> \"$REPORT\"\ngetcap -r / 2>/dev/null | grep -Ei 'cap_sys_admin|cap_dac_override|cap_sys_ptrace' >> \"$REPORT\"\necho \"Report saved to $REPORT\"\nEOF\nchmod +x /usr/local/bin/audit-caps.sh"
+  },
+  {
+    "instruction": "Run capability audit report",
+    "output": "<think>\nThe user wants to run capability audit report.\nLet me reason through this.\nbash is what we need — bash operations.\nAfter running, I'll confirm the result looks right.\n</think>\nbash /usr/local/bin/audit-caps.sh"
+  },
+  {
+    "instruction": "Weekly cron for cap audit",
+    "output": "<think>\nWe should weekly cron for cap audit.\nFirst, let me understand what's needed here.\n</think>\necho '0 6 * * 1 root /usr/local/bin/audit-caps.sh' > /etc/cron.d/cap-audit"
+  },
+  {
+    "instruction": "Email capability audit results",
+    "output": "<think>\nSo the request is to email capability audit results.\nThis calls for cat. Cat operations.\nI've added -s to summarize or silent mode — standard practice for this kind of operation.\nThere are a few moving parts here, so let me be careful.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ncat /tmp/cap-report-$(date +%Y%m%d).txt | mail -s 'Capability Audit' admin@example.com"
+  },
+  {
+    "instruction": "Check for latent capabilities in system",
+    "output": "<think>\nAlright, we need to check for latent capabilities in system.\nLet me think about the best approach.\nBest tool here is getcap — getcap operations.\nI'm using -r for recursive operation (descend into subdirectories) — this controls how the output is formatted.\n</think>\ngetcap -r /var /opt /home /tmp 2>/dev/null"
+  },
+  {
+    "instruction": "Compare cap policies between container images",
+    "output": "<think>\nAlright, we need to compare cap policies between container images.\nFirst, let me understand what's needed here.\nI'll reach for docker here because container management.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nAfter running, I'll confirm the result looks right.\n</think>\ndocker run --rm debian getcap -r /usr 2>/dev/null; docker run --rm ubuntu getcap -r /usr 2>/dev/null"
+  }
+]

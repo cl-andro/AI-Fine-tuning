@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Install GRUB on a UEFI system with secure boot support",
+    "output": "<think>\nWe should install GRUB on a UEFI system with secure boot support.\nLet me think about the best approach.\nBest tool here is grub-install — grub-install operations.\n</think>\ngrub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --modules='shim_lock verifier' --sbat /usr/share/grub/sbat.csv"
+  },
+  {
+    "instruction": "Create a GRUB gfxterm background image",
+    "output": "<think>\nThe task requires us to create a GRUB gfxterm background image.\nI'd use grub-mkfont for this — grub-mkfont operations.\nI've added -s to summarize or silent mode — needed for this specific use case.\nThe -o flag handles output to file, OR operator in find. Important because without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrub-mkfont -s 24 -o /boot/grub/fonts/DejaVuSansMono24.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+  },
+  {
+    "instruction": "Set GRUB video backend to gfxterm",
+    "output": "<think>\nThis is asking us to set GRUB video backend to gfxterm.\nLet me think about the best approach.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'GRUB_TERMINAL_OUTPUT=gfxterm' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Make GRUB boot in text mode only",
+    "output": "<think>\nThis is asking us to make GRUB boot in text mode only.\nHere's how I'd approach this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'GRUB_TERMINAL=console' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Write GRUB to multiple disks for redundancy",
+    "output": "<think>\nThe goal is to write GRUB to multiple disks for redundancy.\nLet me reason through this.\nBest tool here is grub-install — grub-install operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\ngrub-install /dev/sda && grub-install /dev/sdb"
+  },
+  {
+    "instruction": "Reinstall GRUB on a system that lost its bootloader",
+    "output": "<think>\nThe goal is to reinstall GRUB on a system that lost its bootloader.\nLet me think through this step by step.\nI'd use mount for this — filesystem mounting.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, I'll confirm the result looks right.\n</think>\nmount /dev/sda1 /mnt && mount --bind /dev /mnt/dev && mount --bind /proc /mnt/proc && mount --bind /sys /mnt/sys && chroot /mnt grub-install /dev/sda && chroot /mnt update-grub"
+  },
+  {
+    "instruction": "Create a GRUB entry with a custom root filesystem",
+    "output": "<think>\nAlright, we need to create a GRUB entry with a custom root filesystem.\nHere's how I'd approach this.\nI'll reach for cat here because cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Custom Root FS' {\n  linux /vmlinuz root=/dev/sda2 ro\n  initrd /initrd.img\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "List valid GRUB installation targets supported by system",
+    "output": "<think>\nWe should list valid GRUB installation targets supported by system.\nFirst, let me understand what's needed here.\nI'll reach for grub-install here because grub-install operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngrub-install --target=help"
+  },
+  {
+    "instruction": "Set GRUB to save the last selected entry",
+    "output": "<think>\nWe're being asked to set GRUB to save the last selected entry.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'GRUB_SAVEDEFAULT=true' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Add a GRUB password for editing menu entries",
+    "output": "<think>\nAlright, we need to add a GRUB password for editing menu entries.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'GRUB_DISABLE_RECOVERY=true' >> /etc/default/grub && update-grub && grub-mkpasswd-pbkdf2"
+  },
+  {
+    "instruction": "Display GRUB device hints for all disks",
+    "output": "<think>\nThe task requires us to display GRUB device hints for all disks.\nI'd use grub-probe for this — grub-probe operations.\nI'm using -t for sort by modification time — this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngrub-probe -t drive /"
+  },
+  {
+    "instruction": "Convert a disk by UUID to GRUB device syntax",
+    "output": "<think>\nWe should convert a disk by UUID to GRUB device syntax.\nLet me think about the best approach.\nFor this, grub-probe is the right tool — grub-probe operations.\nI'm using -t for sort by modification time — this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\ngrub-probe -t device --device-map=/boot/grub/device.map /"
+  },
+  {
+    "instruction": "Show GRUB abstraction layers for a path",
+    "output": "<think>\nNeed to show GRUB abstraction layers for a path.\nLet me reason through this.\nI'll reach for grub-probe here because grub-probe operations.\nI've added -t to sort by modification time — without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\ngrub-probe -t abstraction /boot"
+  },
+  {
+    "instruction": "Split a large GRUB config into includes",
+    "output": "<think>\nThe user wants to split a large GRUB config into includes.\nThis calls for sed. Text stream editing.\nCheck the output for errors before proceeding to the next step.\n</think>\nsed -n '/Begin /,/End /p' /boot/grub/grub.cfg > /boot/grub/custom.cfg"
+  },
+  {
+    "instruction": "Edit GRUB default file to disable submenu",
+    "output": "<think>\nSo the request is to edit GRUB default file to disable submenu.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'GRUB_DISABLE_SUBMENU=y' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Set GRUB theme from a tarball",
+    "output": "<think>\nSo the request is to set GRUB theme from a tarball.\nLet me consider what makes sense here.\nI'll reach for mkdir here because directory creation.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\nmkdir -p /boot/grub/themes/mytheme && tar xzf theme.tar.gz -C /boot/grub/themes/mytheme && echo 'GRUB_THEME=/boot/grub/themes/mytheme/theme.txt' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Enable GRUB to remember the last boot entry",
+    "output": "<think>\nSo the request is to enable GRUB to remember the last boot entry.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'GRUB_DEFAULT=saved' >> /etc/default/grub && echo 'GRUB_SAVEDEFAULT=true' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "Add a GRUB entry to boot into UEFI firmware",
+    "output": "<think>\nSo the request is to add a GRUB entry to boot into UEFI firmware.\nLet me reason through this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'GRUB_EFI_FIRMWARE_ENTRY=true' >> /etc/default/grub && update-grub"
+  },
+  {
+    "instruction": "GRUB: boot a Xen hypervisor",
+    "output": "<think>\nThe goal is to gRUB: boot a Xen hypervisor.\ncat is what we need — cat operations.\n</think>\ncat >> /etc/grub.d/40_custom <<'EOF'\nmenuentry 'Xen Hypervisor' {\n  multiboot2 /boot/xen.gz dom0_mem=1024M\n  module2 /boot/vmlinuz-6.1.0 root=/dev/sda1 ro quiet\n  module2 /boot/initrd.img-6.1.0\n}\nEOF\nupdate-grub"
+  },
+  {
+    "instruction": "Set GRUB to use the netboot directory via TFTP",
+    "output": "<think>\nThis is asking us to set GRUB to use the netboot directory via TFTP.\nLet me consider what makes sense here.\nI'll reach for grub-mknetdir here because grub-mknetdir operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ngrub-mknetdir --net-directory=/srv/tftp --subdir=/grub"
+  },
+  {
+    "instruction": "Create a minimal GRUB config file manually (no update-grub)",
+    "output": "<think>\nThis is asking us to create a minimal GRUB config file manually (no update-grub).\nLet me consider what makes sense here.\nI'm using -e for edit or executable — important to get the expected behavior.\nA quick sanity check afterward saves debugging time later.\n</think>\necho -e 'set default=0\\nset timeout=5\\nmenuentry \"Debian\" { set root=(hd0,1); linux /vmlinuz root=/dev/sda1; initrd /initrd.img }' > /boot/grub/grub.cfg"
+  }
+]

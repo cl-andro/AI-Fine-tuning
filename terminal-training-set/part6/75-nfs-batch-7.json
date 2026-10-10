@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Show all NFS mount stats with version 4",
+    "output": "<think>\nNeed to show all NFS mount stats with version 4.\nFirst, let me understand what's needed here.\nFor this, mountstats is the right tool — mountstats operations.\nI'll check the output to make sure it did what we expected.\n</think>\nmountstats -4 /mnt/nfs"
+  },
+  {
+    "instruction": "Compare performance across NFS mounts",
+    "output": "<think>\nThe goal is to compare performance across NFS mounts.\nFirst, let me understand what's needed here.\nmountstats is what we need — mountstats operations.\nWhy -I? Ignore case. without it the command won't work as we need.\nWhy -c? Count or create. this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\nmountstats --list | awk '{print $1}' | xargs -I{} sh -c 'echo {}; mountstats {} | grep read:'"
+  },
+  {
+    "instruction": "Show NFS mount bytes read/written",
+    "output": "<think>\nNeed to show NFS mount bytes read/written.\nLet me think through this step by step.\nThe tool for this job is mountstats — mountstats operations.\nThis is more involved than it first seems.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\nmountstats --nfs /mnt/nfs | grep bytes:"
+  },
+  {
+    "instruction": "Check nfsd thread pool size",
+    "output": "<think>\nThe task requires us to check nfsd thread pool size.\nnfsconf is what we need — nfsconf operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\nnfsconf --get nfsd threads"
+  },
+  {
+    "instruction": "Set NFSD debug level",
+    "output": "<think>\nThe user wants to set NFSD debug level.\nLet me consider what makes sense here.\nnfsconf is what we need — nfsconf operations.\nAfter running, I'll confirm the result looks right.\n</think>\nnfsconf --set nfsd debug 1"
+  },
+  {
+    "instruction": "Get NFSD grace period",
+    "output": "<think>\nThis is asking us to get NFSD grace period.\nThis calls for nfsconf. Nfsconf operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\nnfsconf --get nfsd grace-time"
+  },
+  {
+    "instruction": "Enable NFSD lease",
+    "output": "<think>\nThe task requires us to enable NFSD lease.\nThe tool for this job is nfsconf — nfsconf operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnfsconf --set nfsd lease-time 90"
+  },
+  {
+    "instruction": "List NFS exports",
+    "output": "<think>\nThe goal is to list NFS exports.\nLet me reason through this.\nI'll reach for showmount here because showmount operations.\nWhy -e? Edit or executable. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\nshowmount -e localhost"
+  },
+  {
+    "instruction": "Kill stuck NFS mount",
+    "output": "<think>\nWe should kill stuck NFS mount.\nLet me consider what makes sense here.\numount is what we need — filesystem unmounting.\nI've added -f to force, suppress errors — important to get the expected behavior.\n</think>\numount -f /mnt/nfs"
+  },
+  {
+    "instruction": "Lazy unmount NFS share",
+    "output": "<think>\nThe goal is to lazy unmount NFS share.\nI'll reach for umount here because filesystem unmounting.\nThe -l flag means long format with details, which matters here because without it the command won't work as we need.\nA quick sanity check afterward saves debugging time later.\n</think>\numount -l /mnt/nfs"
+  },
+  {
+    "instruction": "Remount NFS share",
+    "output": "<think>\nThe user wants to remount NFS share.\nI'll reach for mount here because filesystem mounting.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\nAfter running, I'll confirm the result looks right.\n</think>\nmount -o remount /mnt/nfs"
+  },
+  {
+    "instruction": "Force NFS version 3 on mount",
+    "output": "<think>\nNeed to force NFS version 3 on mount.\nHere's how I'd approach this.\nI'd use mount for this — filesystem mounting.\nWhy -t? Sort by modification time. this controls how the output is formatted.\nWhy -o? Output to file, OR operator in find. important to get the expected behavior.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nmount -t nfs -o nfsvers=3 server:/export /mnt/nfs"
+  },
+  {
+    "instruction": "Mount NFS with Kerberos security",
+    "output": "<think>\nThe user wants to mount NFS with Kerberos security.\nBest tool here is mount — filesystem mounting.\nI'm using -t for sort by modification time — important to get the expected behavior.\nThe -o flag means output to file, OR operator in find, which matters here because important to get the expected behavior.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nmount -t nfs -o sec=krb5 server:/export /mnt/nfs"
+  },
+  {
+    "instruction": "Mount NFS with larger read/write buffers",
+    "output": "<think>\nWe're being asked to mount NFS with larger read/write buffers.\nLet me think through this step by step.\nThis calls for mount. Filesystem mounting.\nI'm using -t for sort by modification time — important to get the expected behavior.\nThe -o flag means output to file, OR operator in find, which matters here because needed for this specific use case.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nmount -t nfs -o rsize=1048576,wsize=1048576 server:/export /mnt/nfs"
+  },
+  {
+    "instruction": "Check NFS server status",
+    "output": "<think>\nNeed to check NFS server status.\nHere's how I'd approach this.\nThe tool for this job is systemctl — managing systemd services.\nNo need for complex pipelines here — one command is sufficient.\nRestarting services has downtime. If possible, use reload instead of restart.\n</think>\nsystemctl status nfs-server"
+  },
+  {
+    "instruction": "Restart NFS server",
+    "output": "<think>\nSo we need to restart NFS server.\nI'll reach for systemctl here because managing systemd services.\nI'll check the output to make sure it did what we expected.\n</think>\nsystemctl restart nfs-server"
+  },
+  {
+    "instruction": "Check NFS connectivity",
+    "output": "<think>\nSo we need to check NFS connectivity.\nLet me think through this step by step.\nFor this, rpcinfo is the right tool — rpcinfo operations.\nWhy -p? Create parent directories as needed. needed for this specific use case.\n</think>\nrpcinfo -p server"
+  },
+  {
+    "instruction": "Check if portmap is listening",
+    "output": "<think>\nSo the request is to check if portmap is listening.\nLet me break this down.\nI'll reach for rpcinfo here because rpcinfo operations.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nOne command does the job. Simple is better.\n</think>\nrpcinfo -p"
+  },
+  {
+    "instruction": "Query NFS v4 capabilities",
+    "output": "<think>\nSo the request is to query NFS v4 capabilities.\nI'd use rpcinfo for this — rpcinfo operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nrpcinfo -s server nfs"
+  },
+  {
+    "instruction": "Check NFS server mounts",
+    "output": "<think>\nThe goal is to check NFS server mounts.\nLet me break this down.\nI'll reach for cat here because cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ncat /proc/fs/nfsd/pool_stats"
+  },
+  {
+    "instruction": "Check kernel NFS client state",
+    "output": "<think>\nWe should check kernel NFS client state.\nFor this, cat is the right tool — cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\n</think>\ncat /proc/self/mountstats | grep nfs"
+  },
+  {
+    "instruction": "Watch NFS operations in real time",
+    "output": "<think>\nNeed to watch NFS operations in real time.\nThis calls for nfsiostat. Nfsiostat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nnfsiostat 1"
+  },
+  {
+    "instruction": "Repair NFS file permissions",
+    "output": "<think>\nWe should repair NFS file permissions.\nnfs4_setfacl is what we need — nfs4_setfacl operations.\nWhy -s? Summarize or silent mode. needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\nnfs4_setfacl -s owner@:rwx::allow,group@:rx::allow /mnt/nfs/file"
+  },
+  {
+    "instruction": "Get NFS ACL for a file",
+    "output": "<think>\nWe should get NFS ACL for a file.\nThe tool for this job is nfs4_getfacl — nfs4_getfacl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\nnfs4_getfacl /mnt/nfs/file"
+  },
+  {
+    "instruction": "Trace NFS calls with ftrace",
+    "output": "<think>\nThe goal is to trace NFS calls with ftrace.\nLet me reason through this.\ntrace-cmd is what we need — trace-cmd operations.\nA quick sanity check afterward saves debugging time later.\n</think>\ntrace-cmd record -e nfs -e nfs4 -p function_graph"
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Generate a self-signed SSL certificate with OpenSSL",
+    "output": "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt -subj '/CN=example.com'"
+  },
+  {
+    "instruction": "Generate a Certificate Signing Request",
+    "output": "openssl req -new -newkey rsa:2048 -nodes -keyout domain.key -out domain.csr -subj '/CN=example.com'"
+  },
+  {
+    "instruction": "Verify an SSL certificate matches a private key",
+    "output": "openssl x509 -noout -modulus -in cert.crt | openssl md5 && openssl rsa -noout -modulus -in key.key | openssl md5"
+  },
+  {
+    "instruction": "Convert PEM certificate to DER",
+    "output": "openssl x509 -in cert.pem -outform der -out cert.der"
+  },
+  {
+    "instruction": "Check SSL certificate expiration date",
+    "output": "openssl x509 -enddate -noout -in cert.pem"
+  },
+  {
+    "instruction": "Encrypt a file with a GPG passphrase",
+    "output": "gpg --symmetric --cipher-algo AES256 secret.txt"
+  },
+  {
+    "instruction": "Decrypt a GPG symmetric file",
+    "output": "gpg --decrypt secret.txt.gpg"
+  },
+  {
+    "instruction": "Sign a file with GPG detached signature",
+    "output": "gpg --detach-sign --armor document.pdf"
+  },
+  {
+    "instruction": "Verify a GPG detached signature",
+    "output": "gpg --verify document.pdf.asc document.pdf"
+  },
+  {
+    "instruction": "Export GPG public key to keyserver",
+    "output": "gpg --keyserver keyserver.ubuntu.com --send-key KEY_ID"
+  },
+  {
+    "instruction": "Import GPG key from keyserver",
+    "output": "gpg --keyserver keyserver.ubuntu.com --recv-key KEY_ID"
+  },
+  {
+    "instruction": "Generate a GPG key revocation certificate",
+    "output": "gpg --gen-revoke KEY_ID > revoke.asc"
+  },
+  {
+    "instruction": "Forward port 8080 to 80 with iptables DNAT",
+    "output": "iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 192.168.1.10:80"
+  },
+  {
+    "instruction": "Set up iptables MASQUERADE for NAT",
+    "output": "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+  },
+  {
+    "instruction": "Enable IP forwarding for NAT",
+    "output": "sysctl -w net.ipv4.ip_forward=1 && echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+  },
+  {
+    "instruction": "Add nftables rule to drop invalid packets",
+    "output": "nft add rule inet filter input ct state invalid drop"
+  },
+  {
+    "instruction": "List nftables table chains and rules",
+    "output": "nft list table inet filter"
+  },
+  {
+    "instruction": "Create nftables set for whitelist",
+    "output": "nft add set inet filter whitelist { type ipv4_addr; } && nft add element inet filter whitelist { 192.168.1.0/24 }"
+  },
+  {
+    "instruction": "Harden SSH configuration",
+    "output": "sed -i 's/^"
+  },
+  {
+    "instruction": "Disable SSH protocol 1 and weak ciphers",
+    "output": "echo -e 'Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com\\nKexAlgorithms curve25519-sha256,diffie-hellman-group-exchange-sha256\\nMACs hmac-sha2-512' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Kernel hardening: disable IP spoofing protection",
+    "output": "sysctl -w net.ipv4.conf.all.rp_filter=1 && echo 'net.ipv4.conf.all.rp_filter=1' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Disable ICMP redirect acceptance",
+    "output": "sysctl -w net.ipv4.conf.all.accept_redirects=0 && echo 'net.ipv4.conf.all.accept_redirects=0' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Enable ASLR via sysctl",
+    "output": "sysctl -w kernel.randomize_va_space=2 && echo 'kernel.randomize_va_space=2' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Restrict core dumps via sysctl",
+    "output": "sysctl -w fs.suid_dumpable=0 && echo 'fs.suid_dumpable=0' >> /etc/sysctl.d/99-security.conf"
+  },
+  {
+    "instruction": "Apply all sysctl hardening settings",
+    "output": "sysctl --system"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Look up A records with short output for example.com",
+    "output": "93.184.216.34\n\nUse +short to get a concise answer without dig header information."
+  },
+  {
+    "instruction": "Trace the DNS delegation chain for example.com",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> example.com +trace\n;; global options: +cmd\n.                       518088  IN      NS      a.root-servers.net.\n.                       518088  IN      NS      b.root-servers.net.\n.                       518088  IN      NS      c.root-servers.net.\n;; Received 525 bytes from 198.41.0.4"
+  },
+  {
+    "instruction": "Show only the answer section for example.com MX",
+    "output": "example.com.\t\t3600\tIN\tMX\t10 mail.example.com.\nexample.com.\t\t3600\tIN\tMX\t20 backup-mail.example.com.\n\nUse +noauthority +noadditional to further limit output."
+  },
+  {
+    "instruction": "Show only the additional section for an NS query",
+    "output": "a.iana-servers.net.\t86400\tIN\tA\t199.43.0.53\nb.iana-servers.net.\t86400\tIN\tA\t199.43.1.53\n\nAdditional section contains glue records and EDNS information."
+  },
+  {
+    "instruction": "Display query statistics for a DNS lookup",
+    "output": "; Query time: 12 msec\n; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Format output with multiline for readability",
+    "output": "example.com.\t\t3600\n\t\t\tIN\n\t\t\tA\n\t\t\t93.184.216.34\n\nMultiline format places each field on a separate line for easier parsing."
+  },
+  {
+    "instruction": "Suppress all output sections except the answer",
+    "output": "example.com.\t\t3600\tIN\tA\t93.184.216.34\n\nUsing +noall +answer is the most common way to get clean output."
+  },
+  {
+    "instruction": "Query a specific DNS server for a record",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> @8.8.8.8 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 88990\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 5 msec\n;; SERVER: 8.8.8.8"
+  },
+  {
+    "instruction": "Query over TCP instead of UDP",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +tcp example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 99001\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 25 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Disable DNSSEC validation for a query",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +nodnssec example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 00112\n;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 11 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Query with DNSSEC checking enabled (DO bit set)",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +dnssec example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 11223\n;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; AUTHORITY SECTION:\nexample.com.\t\t3600\tIN\tRRSIG\tA 13 2 3600 20240801000000 20240725000000 12345 example.com. ...\n\n;; Query time: 20 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Use domain= format for reverse lookups",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +domain=in-addr.arpa 34.216.184.93 PTR\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 22334\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\n34.216.184.93.in-addr.arpa. 3600 IN\tPTR\texample.com.\n\n;; Query time: 14 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Set the query timeout to 10 seconds",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +time=10 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 33445\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 9 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Retry a query up to 5 times on failure",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> +tries=5 example.com A\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 44556\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 10 msec\n;; SERVER: 192.168.1.1"
+  },
+  {
+    "instruction": "Perform an IXFR (incremental zone transfer) query",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> @ns1.example.com example.com IXFR=2024072500\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55667\n;; flags: qr rd; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tSOA\tsns.dns.icann.org. noc.dns.icann.org. 2024072501 7200 3600 1209600 3600\n\n;; Query time: 45 msec\n;; SERVER: 199.43.0.53"
+  },
+  {
+    "instruction": "Perform a full AXFR zone transfer",
+    "output": "; <<>> DiG 9.18.24-1-Debian <<>> @ns1.example.com example.com AXFR\n;; global options: +cmd\n; Transfer failed: zone transfer denied.\n\n;; Query time: 5 msec\n;; SERVER: 199.43.0.53"
+  },
+  {
+    "instruction": "Query with short output showing only TTL and value",
+    "output": "3600 93.184.216.34\n\nUse +short to get minimal output for scripting purposes."
+  },
+  {
+    "instruction": "Show the query time only",
+    "output": ";; Query time: 12 msec\n\nPipe output through grep to extract specific values from dig output."
+  },
+  {
+    "instruction": "Query with the +noidnout flag to suppress hostname output",
+    "output": "93.184.216.34\n\n+noidnout suppresses the hostname line when using +short."
+  },
+  {
+    "instruction": "Use dig +nocomment to suppress comment lines",
+    "output": "dig +nocomment example.com A"
+  }
+]

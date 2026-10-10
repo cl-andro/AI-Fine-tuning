@@ -1,0 +1,98 @@
+[
+  {
+    "instruction": "Set NUMA node 0 hugepages to 64",
+    "output": "<think>\nWe should set NUMA node 0 hugepages to 64.\nHere's how I'd approach this.\nEach pipe stage handles one transformation, keeping the logic composable.\nAfter running, I'll confirm the result looks right.\n</think>\necho 64 | sudo tee /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages"
+  },
+  {
+    "instruction": "Check kernel config for transparent hugepage support",
+    "output": "<think>\nThe task requires us to check kernel config for transparent hugepage support.\nFirst, let me understand what's needed here.\nThis calls for grep. Pattern searching.\nThe -r flag means recursive operation (descend into subdirectories), which matters here because this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\ngrep TRANSPARENT_HUGEPAGE /boot/config-$(uname -r)"
+  },
+  {
+    "instruction": "Check shared memory segments using hugepages",
+    "output": "<think>\nThe user wants to check shared memory segments using hugepages.\nHere's how I'd approach this.\nBest tool here is ipcs — ipcs operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nipcs -m"
+  },
+  {
+    "instruction": "Check 1GB hugepage count",
+    "output": "<think>\nSo the request is to check 1GB hugepage count.\nLet me reason through this.\nFor this, cat is the right tool — cat operations.\nQuick verification after execution to be safe.\n</think>\ncat /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+  },
+  {
+    "instruction": "Set khugepaged scan rate to 4096 pages",
+    "output": "<think>\nWe're being asked to set khugepaged scan rate to 4096 pages.\nLet me think about the best approach.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 4096 | sudo tee /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan"
+  },
+  {
+    "instruction": "Check kernel config for hugetlbfs support",
+    "output": "<think>\nThe user wants to check kernel config for hugetlbfs support.\nHere's how I'd approach this.\nBest tool here is grep — pattern searching.\n</think>\ngrep -i HUGETLBFS /boot/config-$(uname -r)"
+  },
+  {
+    "instruction": "Check nr_overcommit_hugepages current value",
+    "output": "<think>\nWe should check nr_overcommit_hugepages current value.\nThis calls for cat. Cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ncat /proc/sys/vm/nr_overcommit_hugepages"
+  },
+  {
+    "instruction": "Display NUMA hugepage distribution per node",
+    "output": "<think>\nThe task requires us to display NUMA hugepage distribution per node.\nLet me consider what makes sense here.\nThis calls for cat. Cat operations.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\ncat /sys/devices/system/node/node*/meminfo | grep Huge"
+  },
+  {
+    "instruction": "Check free hugepages count",
+    "output": "<think>\nSo the request is to check free hugepages count.\nLet me think through this step by step.\nThe tool for this job is grep — pattern searching.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ngrep HugePages_Free /proc/meminfo"
+  },
+  {
+    "instruction": "Check if THP supports shmem",
+    "output": "<think>\nNeed to check if THP supports shmem.\nBest tool here is cat — cat operations.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/shmem_enabled"
+  },
+  {
+    "instruction": "Check THP khugepaged pages_to_scan",
+    "output": "<think>\nAlright, we need to check THP khugepaged pages_to_scan.\nI'll reach for cat here because cat operations.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan"
+  },
+  {
+    "instruction": "View all hugepage nr_hugepages values per size",
+    "output": "<think>\nThe user wants to view all hugepage nr_hugepages values per size.\nFor this, find is the right tool — file searching.\nOne command does the job. Simple is better.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\nI'll check the output to make sure it did what we expected.\n</think>\nfind /sys/kernel/mm/hugepages -name nr_hugepages -exec sh -c 'echo \"$1: $(cat $1)\"' _ {} \\;"
+  },
+  {
+    "instruction": "Make hugepage setting persistent via sysctl.d",
+    "output": "<think>\nThis is asking us to make hugepage setting persistent via sysctl.d.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'vm.nr_hugepages=512' | sudo tee /etc/sysctl.d/hugepages.conf"
+  },
+  {
+    "instruction": "Check hugepage surplus count",
+    "output": "<think>\nWe're being asked to check hugepage surplus count.\nFor this, grep is the right tool — pattern searching.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ngrep HugePages_Surp /proc/meminfo"
+  },
+  {
+    "instruction": "Check hugetlb_shm_group sysctl value",
+    "output": "<think>\nAlright, we need to check hugetlb_shm_group sysctl value.\nFirst, let me understand what's needed here.\nThis calls for sysctl. Kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\nQuick verification after execution to be safe.\n</think>\nsudo sysctl vm.hugetlb_shm_group"
+  },
+  {
+    "instruction": "Set khugepaged sleep time to 5 seconds",
+    "output": "<think>\nNeed to set khugepaged sleep time to 5 seconds.\nLet me think about the best approach.\nI'm piping because each stage transforms the data before passing it to the next.\nI'll check the output to make sure it did what we expected.\n</think>\necho 5000 | sudo tee /sys/kernel/mm/transparent_hugepage/khugepaged/sleep_millisecs"
+  },
+  {
+    "instruction": "List all hugepage filesystem mounts",
+    "output": "<think>\nThis is asking us to list all hugepage filesystem mounts.\nFor this, mount is the right tool — filesystem mounting.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\nmount -t hugetlbfs"
+  },
+  {
+    "instruction": "Check HugePages_Total value",
+    "output": "<think>\nNeed to check HugePages_Total value.\nLet me reason through this.\nThe tool for this job is grep — pattern searching.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\ngrep HugePages_Total /proc/meminfo"
+  },
+  {
+    "instruction": "Check hugetlbfs mount details",
+    "output": "<think>\nSo the request is to check hugetlbfs mount details.\nBest tool here is mount — filesystem mounting.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\nmount | grep hugetlbfs"
+  },
+  {
+    "instruction": "Show hugepage pool information with hugeadm",
+    "output": "<think>\nSo we need to show hugepage pool information with hugeadm.\nI'd use hugeadm for this — hugeadm operations.\n</think>\nhugeadm --list-all"
+  },
+  {
+    "instruction": "Set hugetlb_shm_group via sysctl",
+    "output": "<think>\nNeed to set hugetlb_shm_group via sysctl.\nLet me think through this step by step.\nThe tool for this job is sysctl — kernel parameter tuning.\nRunning with sudo — double-check the command before hitting enter, a typo here could cause trouble.\n</think>\nsudo sysctl vm.hugetlb_shm_group=2000"
+  },
+  {
+    "instruction": "View hugetlb SHM group setting",
+    "output": "<think>\nAlright, we need to view hugetlb SHM group setting.\nLet me consider what makes sense here.\nFor this, cat is the right tool — cat operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /proc/sys/vm/hugetlb_shm_group"
+  },
+  {
+    "instruction": "Enable transparent hugepages always",
+    "output": "<think>\nThis is asking us to enable transparent hugepages always.\nLet me think about the best approach.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled"
+  },
+  {
+    "instruction": "View THP PMD size",
+    "output": "<think>\nSo the request is to view THP PMD size.\nI'll reach for cat here because cat operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncat /sys/kernel/mm/transparent_hugepage/hpage_pmd_size"
+  }
+]

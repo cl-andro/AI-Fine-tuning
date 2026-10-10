@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Trace kernel-level events with bpftrace",
+    "output": "<think>\nAlright, we need to trace kernel-level events with bpftrace.\nI'd use bpftrace for this — bpftrace operations.\nThe -e flag handles edit or executable. Important because without it the command won't work as we need.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_open { printf(\"%s %s\\n\", comm, str(args->filename)); }'"
+  },
+  {
+    "instruction": "Show new processes in real-time",
+    "output": "<think>\nThis is asking us to show new processes in real-time.\nLet me consider what makes sense here.\nFor this, bpftrace is the right tool — bpftrace operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'tracepoint:syscalls:sys_enter_execve { printf(\"%s -> %s\\n\", comm, str(args->filename)); }'"
+  },
+  {
+    "instruction": "Track file opens system-wide",
+    "output": "<think>\nWe're being asked to track file opens system-wide.\nI'd use opensnoop-bpfcc for this — opensnoop-bpfcc operations.\nA quick sanity check afterward saves debugging time later.\n</think>\nopensnoop-bpfcc"
+  },
+  {
+    "instruction": "Monitor TCP connections with bpftrace",
+    "output": "<think>\nThe task requires us to monitor TCP connections with bpftrace.\nLet me consider what makes sense here.\nI'd use bpftrace for this — bpftrace operations.\nWhy -e? Edit or executable. important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nbpftrace -e 'kprobe:tcp_connect { printf(\"%s -> %s:%d\\n\", comm, ntop2(args->sk->__sk_common.skc_daddr), args->sk->__sk_common.skc_dport); }' 2>/dev/null || tcpconnect-bpfcc"
+  },
+  {
+    "instruction": "Show disk I/O latency distribution",
+    "output": "<think>\nThe task requires us to show disk I/O latency distribution.\nbiolatency-bpfcc is what we need — biolatency-bpfcc operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\nbiolatency-bpfcc"
+  },
+  {
+    "instruction": "Monitor slow file operations (slower than 10ms)",
+    "output": "<think>\nThe task requires us to monitor slow file operations (slower than 10ms).\nLet me reason through this.\nI'd use biosnoop-bpfcc for this — biosnoop-bpfcc operations.\nAfter running, I'll confirm the result looks right.\n</think>\nbiosnoop-bpfcc"
+  },
+  {
+    "instruction": "Show CPU sampling flame graph data",
+    "output": "<think>\nSo the request is to show CPU sampling flame graph data.\nThis calls for perf. Performance profiling.\nI'm using -a for AND operator in find — important to get the expected behavior.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\nperf record -F 99 -a -g -- sleep 30 && perf script | stackcollapse-perf.pl | flamegraph.pl > flame.svg"
+  },
+  {
+    "instruction": "Trace memory allocations with ltrace",
+    "output": "<think>\nWe're being asked to trace memory allocations with ltrace.\nLet me break this down.\nBest tool here is ltrace — ltrace operations.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nltrace -e malloc+free ./myapp"
+  },
+  {
+    "instruction": "Trace library calls of a process",
+    "output": "<think>\nWe should trace library calls of a process.\nLet me think through this step by step.\nltrace is what we need — ltrace operations.\nWhy -p? Create parent directories as needed. needed for this specific use case.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, I'll confirm the result looks right.\n</think>\nltrace -p 1234"
+  },
+  {
+    "instruction": "Trace system calls and show timestamps",
+    "output": "<think>\nThis is asking us to trace system calls and show timestamps.\nFor this, strace is the right tool — system call tracing.\nWhy -t? Sort by modification time. standard practice for this kind of operation.\nI'm using -p for create parent directories as needed — needed for this specific use case.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nstrace -t -p 1234"
+  },
+  {
+    "instruction": "Profile CPU usage with gprof (needs -pg compiled)",
+    "output": "<think>\nSo we need to profile CPU usage with gprof (needs -pg compiled).\nLet me reason through this.\ngprof is what we need — gprof operations.\n</think>\ngprof ./myapp gmon.out"
+  },
+  {
+    "instruction": "Track process scheduling latency",
+    "output": "<think>\nSo the request is to track process scheduling latency.\ncyclictest is what we need — cyclictest operations.\nThe -n flag means dry-run, no changes, which matters here because without it the command won't work as we need.\nI've added -p to create parent directories as needed — standard practice for this kind of operation.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\ncyclictest -m -n -p 99 -h 100 -q -l 100000"
+  },
+  {
+    "instruction": "Dump process stack trace",
+    "output": "<think>\nSo we need to dump process stack trace.\nLet me think about the best approach.\nBest tool here is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\ncat /proc/1234/stack"
+  },
+  {
+    "instruction": "Show kernel message buffer for hardware errors",
+    "output": "<think>\nNeed to show kernel message buffer for hardware errors.\nFor this, dmesg is the right tool — kernel ring buffer inspection.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ndmesg | grep -iE 'error|fail|warn' | tail -20"
+  },
+  {
+    "instruction": "Follow kernel messages in real time",
+    "output": "<think>\nNeed to follow kernel messages in real time.\nFirst, let me understand what's needed here.\nFor this, dmesg is the right tool — kernel ring buffer inspection.\nQuick verification after execution to be safe.\n</think>\ndmesg -w"
+  },
+  {
+    "instruction": "Show kernel ring buffer with human-readable timestamps",
+    "output": "<think>\nThe user wants to show kernel ring buffer with human-readable timestamps.\nLet me consider what makes sense here.\ndmesg is what we need — kernel ring buffer inspection.\nI'm using -T for print filesystem type in df — needed for this specific use case.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\n</think>\ndmesg -T | tail -30"
+  },
+  {
+    "instruction": "Clear kernel ring buffer",
+    "output": "<think>\nWe should clear kernel ring buffer.\nLet me consider what makes sense here.\ndmesg is what we need — kernel ring buffer inspection.\nNo need for complex pipelines here — one command is sufficient.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ndmesg -c"
+  },
+  {
+    "instruction": "Show kernel message for USB events",
+    "output": "<think>\nSo the request is to show kernel message for USB events.\nLet me consider what makes sense here.\nThe tool for this job is dmesg — kernel ring buffer inspection.\nSimple on the surface, but there are some subtleties to consider.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, I'll confirm the result looks right.\n</think>\ndmesg | grep -i usb | tail -10"
+  },
+  {
+    "instruction": "Show kernel OOM killer messages",
+    "output": "<think>\nNeed to show kernel OOM killer messages.\nThe tool for this job is dmesg — kernel ring buffer inspection.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\n</think>\ndmesg | grep -i oom"
+  },
+  {
+    "instruction": "Check if kdump crash kernel is configured",
+    "output": "<think>\nThis is asking us to check if kdump crash kernel is configured.\nLet me think through this step by step.\nBest tool here is cat — cat operations.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/cmdline | grep crashkernel"
+  },
+  {
+    "instruction": "Show available kernel crash dumps",
+    "output": "<think>\nWe should show available kernel crash dumps.\nLet me break this down.\nFor this, ls is the right tool — ls operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nLet me verify afterward that it worked correctly.\n</think>\nls /var/crash/ 2>/dev/null || echo no crash dumps"
+  },
+  {
+    "instruction": "Show kernel module parameters",
+    "output": "<think>\nNeed to show kernel module parameters.\nLet me think through this step by step.\nI'd use systool for this — systool operations.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nsystool -vm nvidia | head -20"
+  },
+  {
+    "instruction": "List all loaded kernel modules",
+    "output": "<think>\nThis is asking us to list all loaded kernel modules.\nLet me consider what makes sense here.\nThis calls for lsmod. Kernel module listing.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nlsmod"
+  },
+  {
+    "instruction": "Show module information for a kernel module",
+    "output": "<think>\nThis is asking us to show module information for a kernel module.\nLet me consider what makes sense here.\nI'd use modinfo for this — modinfo operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\nmodinfo nvidia"
+  },
+  {
+    "instruction": "Unload a kernel module",
+    "output": "<think>\nThe goal is to unload a kernel module.\nLet me think about the best approach.\nI'd use modprobe for this — kernel module loading and removal.\nI'm using -r for recursive operation (descend into subdirectories) — needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\nmodprobe -r nvidia"
+  }
+]

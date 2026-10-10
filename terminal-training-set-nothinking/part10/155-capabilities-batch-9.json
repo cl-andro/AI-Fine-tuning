@@ -1,0 +1,23 @@
+[
+  {"instruction": "Use capsh to test specific capability", "output": "capsh --has-cap=cap_net_raw -- -c 'echo cap_net_raw is supported'"},
+  {"instruction": "List all available capability values", "output": "capsh --help 2>&1 | grep -oP 'cap_[a-z_]+' | sort -u"},
+  {"instruction": "Decode capability bitmask manually", "output": "python3 -c \"mask=0x0000000000000400; bits=[i for i in range(64) if mask>>i & 1]; print('Capabilities:', [f'cap_{i}' for i in bits])\""},
+  {"instruction": "Convert capability name to numeric", "output": "python3 -c \"import ctypes; print(ctypes.CDLL('libcap.so.2').cap_from_name(b'cap_net_raw'))\""},
+  {"instruction": "ASCII art showing capability sets", "output": "python3 -c \"\ndata = open('/proc/self/status').read().split('\\n')\ncaps = {}\nfor l in data:\n    if 'Cap' in l and ':' in l:\n        parts = l.split()\n        if len(parts) >= 2:\n            name = parts[0].rstrip(':')\n            mask = int(parts[1], 16)\n            caps[name] = mask\n            bits = [i for i in range(64) if mask>>i & 1]\n            print(f'{name:8} = {mask:016x}: {bits}')\n\""},
+  {"instruction": "Check if dotnet has capabilities", "output": "getcap /usr/share/dotnet/dotnet 2>/dev/null || echo 'no caps'"},
+  {"instruction": "View capabilities of installed browsers", "output": "getcap /usr/bin/firefox /usr/bin/chromium /usr/bin/brave 2>/dev/null"},
+  {"instruction": "Find packages that use capabilities", "output": "dpkg -L libcap2-bin | head -20"},
+  {"instruction": "Show all man pages for cap_* functions", "output": "man -k cap_ | grep -i 'capability'"},
+  {"instruction": "View capabilities related to mount", "output": "man 7 capabilities | grep -i 'mount' | head -10"},
+  {"instruction": "Check Vim capability CAP_NET_RAW", "output": "getcap /usr/bin/vim.basic 2>/dev/null || echo 'no vim caps'"},
+  {"instruction": "List capabilities for disk tools", "output": "getcap /sbin/fdisk /sbin/parted /sbin/mkfs.ext4 2>/dev/null"},
+  {"instruction": "Check if traceroute6 has raw capability", "output": "getcap /usr/bin/traceroute6 2>/dev/null || echo 'no separate cap'"},
+  {"instruction": "Find binaries with CAP_SYS_PTRACE", "output": "getcap -r / 2>/dev/null | grep cap_sys_ptrace"},
+  {"instruction": "Check all cap functionaly for nmap", "output": "getcap /usr/bin/nmap 2>/dev/null || echo 'nmap no caps'"},
+  {"instruction": "View CAP_FOWNER for chown tools", "output": "getcap /bin/chown /usr/bin/chown 2>/dev/null"},
+  {"instruction": "Check if journalctl has capabilities", "output": "getcap /usr/bin/journalctl 2>/dev/null"},
+  {"instruction": "See what capabilities logrotate runs with", "output": "getpcaps $(pgrep -x logrotate) 2>/dev/null || echo 'not running'"},
+  {"instruction": "Check cron daemon capabilities", "output": "getpcaps $(pgrep -x cron) 2>/dev/null"},
+  {"instruction": "View cups daemon capabilities", "output": "getpcaps $(pgrep -x cupsd) 2>/dev/null"},
+  {"instruction": "Check dhcp client capabilities", "output": "getpcaps $(pgrep -x dhclient) 2>/dev/null"}
+]

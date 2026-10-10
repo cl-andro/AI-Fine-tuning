@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Add a bond port with LACP",
+    "output": "<think>\nSo the request is to add a bond port with LACP.\nLet me reason through this.\novs-vsctl is what we need — ovs-vsctl operations.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl add-bond br0 bond0 eth0 eth1 lacp=active"
+  },
+  {
+    "instruction": "Set QoS on port eth0 to rate limit",
+    "output": "<think>\nThe user wants to set QoS on port eth0 to rate limit.\nLet me reason through this.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nLet me verify afterward that it worked correctly.\n</think>\novs-vsctl set port eth0 qos=@qos -- --id=@qos create qos type=linux-htb other-config:max-rate=100000000"
+  },
+  {
+    "instruction": "Display interface statistics for eth0",
+    "output": "<think>\nSo we need to display interface statistics for eth0.\nLet me think about the best approach.\nI'll reach for ovs-vsctl here because ovs-vsctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\novs-vsctl get interface eth0 statistics"
+  },
+  {
+    "instruction": "Assign a specific OpenFlow port number",
+    "output": "<think>\nWe're being asked to assign a specific OpenFlow port number.\nLet me think through this step by step.\nBest tool here is ovs-vsctl — ovs-vsctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-vsctl set interface eth0 ofport_request=10"
+  },
+  {
+    "instruction": "List all QoS policies",
+    "output": "<think>\nSo the request is to list all QoS policies.\nLet me think about the best approach.\nI'll reach for ovs-vsctl here because ovs-vsctl operations.\nA quick sanity check afterward saves debugging time later.\n</think>\novs-vsctl list qos"
+  },
+  {
+    "instruction": "List all queue configurations",
+    "output": "<think>\nNeed to list all queue configurations.\nHere's how I'd approach this.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\novs-vsctl list queue"
+  },
+  {
+    "instruction": "Create a QoS queue with min-rate",
+    "output": "<think>\nNeed to create a QoS queue with min-rate.\nLet me break this down.\novs-vsctl is what we need — ovs-vsctl operations.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\novs-vsctl create queue other-config:min-rate=50000000"
+  },
+  {
+    "instruction": "Clear the controller of br0 temporarily",
+    "output": "<think>\nThis is asking us to clear the controller of br0 temporarily.\nLet me think through this step by step.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\novs-vsctl set bridge br0 fail-mode=standalone"
+  },
+  {
+    "instruction": "Set the OF controller list",
+    "output": "<think>\nThe goal is to set the OF controller list.\nLet me break this down.\nBest tool here is ovs-vsctl — ovs-vsctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-vsctl set bridge br0 controller=tcp:10.0.0.1:6653,tcp:10.0.0.2:6653"
+  },
+  {
+    "instruction": "Check if br0 has the correct datapath type",
+    "output": "<think>\nSo we need to check if br0 has the correct datapath type.\novs-vsctl is what we need — ovs-vsctl operations.\n</think>\novs-vsctl get bridge br0 datapath_type"
+  },
+  {
+    "instruction": "Set the datapath type to netdev",
+    "output": "<think>\nThe task requires us to set the datapath type to netdev.\nLet me think through this step by step.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\novs-vsctl set bridge br0 datapath_type=netdev"
+  },
+  {
+    "instruction": "Add a VXLAN tunnel port",
+    "output": "<think>\nSo the request is to add a VXLAN tunnel port.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\novs-vsctl add-port br0 vxlan0 -- set interface vxlan0 type=vxlan options:remote_ip=10.0.0.3 options:key=100"
+  },
+  {
+    "instruction": "List external_ids on bridge br0",
+    "output": "<think>\nThe task requires us to list external_ids on bridge br0.\nLet me reason through this.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\novs-vsctl list external_ids br0"
+  },
+  {
+    "instruction": "Set external_ids for the bridge",
+    "output": "<think>\nWe're being asked to set external_ids for the bridge.\nLet me reason through this.\nBest tool here is ovs-vsctl — ovs-vsctl operations.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\novs-vsctl set bridge br0 external_ids:bridge-id=br0"
+  },
+  {
+    "instruction": "Destroy a QoS configuration",
+    "output": "<think>\nThe task requires us to destroy a QoS configuration.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\novs-vsctl destroy qos qos-123"
+  },
+  {
+    "instruction": "Remove all ports from bridge br0",
+    "output": "<think>\nThe user wants to remove all ports from bridge br0.\nLet me break this down.\nI'll reach for ovs-vsctl here because ovs-vsctl operations.\nI'm using -I for ignore case — standard practice for this kind of operation.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nAfter running, confirm it worked as expected before moving on.\n</think>\novs-vsctl list-ports br0 | xargs -I {} ovs-vsctl del-port br0 {}"
+  },
+  {
+    "instruction": "Add a patch port between two bridges",
+    "output": "<think>\nAlright, we need to add a patch port between two bridges.\nHere's how I'd approach this.\novs-vsctl is what we need — ovs-vsctl operations.\nQuick verification after execution to be safe.\n</think>\novs-vsctl add-port br0 patch0 -- set interface patch0 type=patch options:peer=patch1"
+  },
+  {
+    "instruction": "Add the peer patch port on br1",
+    "output": "<think>\nSo the request is to add the peer patch port on br1.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl add-port br1 patch1 -- set interface patch1 type=patch options:peer=patch0"
+  },
+  {
+    "instruction": "Set interface eth0 to up",
+    "output": "<think>\nSo the request is to set interface eth0 to up.\nFirst, let me understand what's needed here.\nThe tool for this job is ovs-vsctl — ovs-vsctl operations.\nQuick verification after execution to be safe.\n</think>\novs-vsctl set interface eth0 admin-state=up"
+  },
+  {
+    "instruction": "Get the MAC address of eth0",
+    "output": "<think>\nAlright, we need to get the MAC address of eth0.\nThis calls for ovs-vsctl. Ovs-vsctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nI'll check the output to make sure it did what we expected.\n</think>\novs-vsctl get interface eth0 mac_in_use"
+  },
+  {
+    "instruction": "Emulate an OVS bridge with netdev datapath",
+    "output": "<think>\nThe goal is to emulate an OVS bridge with netdev datapath.\nLet me break this down.\nI'd use ovs-vsctl for this — ovs-vsctl operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\novs-vsctl add-br br0 -- set bridge br0 datapath_type=netdev"
+  },
+  {
+    "instruction": "Create a bridge with a specific datapath ID",
+    "output": "<think>\nSo the request is to create a bridge with a specific datapath ID.\nLet me break this down.\nFor this, ovs-vsctl is the right tool — ovs-vsctl operations.\nAfter running, confirm it worked as expected before moving on.\n</think>\novs-vsctl add-br br0 -- set bridge br0 datapath_id=0000000000000001"
+  }
+]

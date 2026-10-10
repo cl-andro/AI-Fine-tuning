@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create an alias for common SSH command",
+    "output": "echo \"alias myssh='ssh -i ~/.ssh/deploy_key -p 2222 user@host'\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Create a function to extract any archive type",
+    "output": "echo -e \"extract() {\\n  case \\\"\\$1\\\" in\\n    *.tar.gz|*.tgz) tar xzf \\\"\\$1\\\";;\\n    *.tar.bz2|*.tbz2) tar xjf \\\"\\$1\\\";;\\n    *.zip) unzip \\\"\\$1\\\";;\\n    *.7z) 7z x \\\"\\$1\\\";;\\n    *) echo \\\"Unknown format\\\";;\\n  esac\\n}\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Create a function for mkdir + cd",
+    "output": "echo -e \"mkcd() {\\n  mkdir -p \\\"\\$1\\\" && cd \\\"\\$1\\\"\\n}\" >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Set $EDITOR environment variable",
+    "output": "echo 'export EDITOR=nvim' >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Add ~/bin to PATH",
+    "output": "echo 'export PATH=\"$HOME/bin:$PATH\"' >> ~/.bashrc && source ~/.bashrc"
+  },
+  {
+    "instruction": "Set shell history options",
+    "output": "echo -e 'HISTSIZE=10000\\nHISTFILESIZE=20000\\nHISTTIMEFORMAT=\"%F %T \"\\nHISTCONTROL=ignoreboth:erasedups\\nshopt -s histappend' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set up bash completion for aliases",
+    "output": "complete -F _known_hosts sshmux"
+  },
+  {
+    "instruction": "Enable bash programmable completion",
+    "output": "apt install -y bash-completion && echo 'source /usr/share/bash-completion/bash_completion' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Use PS1 to customize prompt",
+    "output": "echo 'export PS1=\"\\u@\\h:\\w \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set a colored bash prompt",
+    "output": "echo 'export PS1=\"\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\] \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Set up git-aware bash prompt",
+    "output": "echo -e 'parse_git_branch() {\\n  git branch 2>/dev/null | sed -n -e \"s/^* //p\"\\n}\\nexport PS1=\"\\u@\\h:\\w (\\$(parse_git_branch)) \\$ \"' >> ~/.bashrc"
+  },
+  {
+    "instruction": "Create a trap to prevent Ctrl+C during critical ops",
+    "output": "trap '' SIGINT; echo Critical operation; sleep 5; trap - SIGINT"
+  },
+  {
+    "instruction": "Use a lock file for exclusive script execution",
+    "output": "if [ -f /tmp/script.lock ]; then echo Already running; exit 1; else touch /tmp/script.lock; trap 'rm -f /tmp/script.lock' EXIT; fi"
+  },
+  {
+    "instruction": "Use flock for file locking",
+    "output": "exec 200>/tmp/lock; flock -n 200 || { echo busy; exit 1; }; echo Locked && sleep 5 && flock -u 200"
+  },
+  {
+    "instruction": "Create a script that retries a command up to 3 times",
+    "output": "for i in 1 2 3; do command && break || sleep 5; done"
+  },
+  {
+    "instruction": "Create a script with exponential backoff",
+    "output": "for i in 1 2 4 8 16; do command && s=0 && break || s=$i; sleep $s; done"
+  },
+  {
+    "instruction": "Use /dev/null to discard output",
+    "output": "command > /dev/null 2>&1"
+  },
+  {
+    "instruction": "Capture exit code of a pipe correctly",
+    "output": "set -o pipefail; command1 | command2; echo \"Exit: $?\""
+  },
+  {
+    "instruction": "Use shopt -s nullglob to avoid literal glob when no matches",
+    "output": "shopt -s nullglob; for f in *.nonexistent; do echo $f; done"
+  },
+  {
+    "instruction": "Use readarray to read lines into an array",
+    "output": "readarray -t lines < file.txt; for line in \"${lines[@]}\"; do echo $line; done"
+  },
+  {
+    "instruction": "Use IFS to split a string into an array",
+    "output": "IFS=',' read -ra arr <<< 'a,b,c'; for item in \"${arr[@]}\"; do echo $item; done"
+  },
+  {
+    "instruction": "Check if a variable is empty",
+    "output": "if [ -z \"$var\" ]; then echo empty; else echo not empty; fi"
+  },
+  {
+    "instruction": "Check if a variable is not empty",
+    "output": "if [ -n \"$var\" ]; then echo not empty; fi"
+  },
+  {
+    "instruction": "Use parameter substitution defaults",
+    "output": "echo \"${var:-default}\""
+  },
+  {
+    "instruction": "Use ${var#} and ${var%} for string manipulation",
+    "output": "file=archive.tar.gz; echo ${file%.*}"
+  }
+]

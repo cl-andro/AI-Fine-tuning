@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Set up a DRBD resource for synchronous replication",
+    "output": "<think>\nWe're being asked to set up a DRBD resource for synchronous replication.\nLet me break this down.\nresource is what we need — resource operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nresource r0 {\n  protocol C;\n  on node1 {\n    device /dev/drbd0;\n    disk /dev/sdb1;\n    address 192.168.1.10:7788;\n  }\n  on node2 {\n    device /dev/drbd0;\n    disk /dev/sdb1;\n    address 192.168.1.11:7788;\n  }\n}"
+  },
+  {
+    "instruction": "Set DRBD protocol to A for asynchronous replication",
+    "output": "<think>\nThe task requires us to set DRBD protocol to A for asynchronous replication.\nHere's how I'd approach this.\nThis calls for drbdadm. Drbdadm operations.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm adjust r0 && drbdadm --protocol A connect r0"
+  },
+  {
+    "instruction": "Set DRBD protocol to B for semi-sync replication",
+    "output": "<think>\nThe user wants to set DRBD protocol to B for semi-sync replication.\nHere's how I'd approach this.\nI'll reach for drbdadm here because drbdadm operations.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm --protocol B connect r0"
+  },
+  {
+    "instruction": "Show DRBD detailed status with volumes",
+    "output": "<think>\nThis is asking us to show DRBD detailed status with volumes.\nLet me consider what makes sense here.\nThe tool for this job is drbdadm — drbdadm operations.\nI've added --verbose to detailed execution output — important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\ndrbdadm status --verbose"
+  },
+  {
+    "instruction": "Show DRBD role of all resources",
+    "output": "<think>\nAlright, we need to show DRBD role of all resources.\nLet me break this down.\ndrbdadm is what we need — drbdadm operations.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm role all"
+  },
+  {
+    "instruction": "Pause DRBD sync",
+    "output": "<think>\nAlright, we need to pause DRBD sync.\nI'd use drbdadm for this — drbdadm operations.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm pause-sync r0"
+  },
+  {
+    "instruction": "Resume DRBD sync",
+    "output": "<think>\nWe should resume DRBD sync.\nThe tool for this job is drbdadm — drbdadm operations.\nQuick verification after execution to be safe.\n</think>\ndrbdadm resume-sync r0"
+  },
+  {
+    "instruction": "Verify DRBD data integrity",
+    "output": "<think>\nWe're being asked to verify DRBD data integrity.\nHere's how I'd approach this.\nBest tool here is drbdadm — drbdadm operations.\nQuick verification after execution to be safe.\n</think>\ndrbdadm verify r0"
+  },
+  {
+    "instruction": "Show DRBD verify progress",
+    "output": "<think>\nSo the request is to show DRBD verify progress.\nBest tool here is drbdadm — drbdadm operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\n</think>\ndrbdadm status r0 | grep verify"
+  },
+  {
+    "instruction": "Show DRBD sync rate setting",
+    "output": "<think>\nThe user wants to show DRBD sync rate setting.\nHere's how I'd approach this.\nBest tool here is drbdadm — drbdadm operations.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\ndrbdadm status | grep syncer"
+  },
+  {
+    "instruction": "Set DRBD sync rate limit in KB/s",
+    "output": "<think>\nNeed to set DRBD sync rate limit in KB/s.\nLet me reason through this.\nThis calls for drbdadm. Drbdadm operations.\nA single command handles this cleanly — no need to overcomplicate it.\nQuick verification after execution to be safe.\n</think>\ndrbdadm -- --c-max-rate 20000 connect r0"
+  },
+  {
+    "instruction": "Set DRBD minimum sync rate",
+    "output": "<think>\nThe user wants to set DRBD minimum sync rate.\nFor this, drbdadm is the right tool — drbdadm operations.\nAfter running, I'll confirm the result looks right.\n</think>\ndrbdadm -- --c-min-rate 1000 connect r0"
+  },
+  {
+    "instruction": "Create a Pacemaker IPaddr2 resource for a virtual IP",
+    "output": "<think>\nThe goal is to create a Pacemaker IPaddr2 resource for a virtual IP.\nThis calls for pcs. Pcs operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\npcs resource create VIP ocf:heartbeat:IPaddr2 ip=10.0.0.100 cidr_netmask=24 op monitor interval=5s"
+  },
+  {
+    "instruction": "Create a Pacemaker virtual IP with ARP filtering",
+    "output": "<think>\nWe should create a Pacemaker virtual IP with ARP filtering.\nI'll reach for pcs here because pcs operations.\nA single command handles this cleanly — no need to overcomplicate it.\nVerify with a follow-up status command to make sure everything looks right.\nLet me verify afterward that it worked correctly.\n</think>\npcs resource create VIP ocf:heartbeat:IPaddr2 ip=10.0.0.100 nic=eth0 cidr_netmask=24"
+  },
+  {
+    "instruction": "Configure Pacemaker to monitor a service URL",
+    "output": "<think>\nSo the request is to configure Pacemaker to monitor a service URL.\nLet me think about the best approach.\nThe tool for this job is pcs — pcs operations.\nOne command does the job. Simple is better.\n</think>\npcs resource create WebCheck ocf:heartbeat:http url=\"http://localhost/health\" op monitor interval=10s"
+  },
+  {
+    "instruction": "Configure Pacemaker to monitor a TCP port",
+    "output": "<think>\nThe task requires us to configure Pacemaker to monitor a TCP port.\nFor this, pcs is the right tool — pcs operations.\nAfter running, I'll confirm the result looks right.\n</think>\npcs resource create TCPCheck ocf:heartbeat:tcpconnect host=192.168.1.1 port=80 op monitor interval=10s"
+  },
+  {
+    "instruction": "Create a Pacemaker resource for PostgreSQL replication",
+    "output": "<think>\nWe should create a Pacemaker resource for PostgreSQL replication.\nLet me consider what makes sense here.\npcs is what we need — pcs operations.\n</think>\npcs resource create PGSQL ocf:heartbeat:pgsql pgctl=/usr/bin/pg_ctl pgdata=/var/lib/pgsql/data rep_mode=sync"
+  },
+  {
+    "instruction": "Create a Pacemaker fencing device based on IPMI",
+    "output": "<think>\nThe task requires us to create a Pacemaker fencing device based on IPMI.\nLet me think about the best approach.\nI'd use pcs for this — pcs operations.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\npcs stonith create ipmi-fence fence_ipmilan ipaddr=10.0.0.50 login=admin passwd=secret pcmk_host_list=node1,node2"
+  },
+  {
+    "instruction": "Create a Pacemaker fencing device based on SCSI",
+    "output": "<think>\nThe task requires us to create a Pacemaker fencing device based on SCSI.\nFor this, pcs is the right tool — pcs operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\npcs stonith create scsi-fence fence_scsi pcmk_host_list=node1"
+  },
+  {
+    "instruction": "Create a Pacemaker fencing device with a delay",
+    "output": "<think>\nWe should create a Pacemaker fencing device with a delay.\nLet me reason through this.\nI'll reach for pcs here because pcs operations.\nCheck the output for errors before proceeding to the next step.\n</think>\npcs stonith create myfence fence_ipmilan delay=10 ipaddr=10.0.0.50 login=admin passwd=secret"
+  },
+  {
+    "instruction": "Show Pacemaker fence device status",
+    "output": "<think>\nThe goal is to show Pacemaker fence device status.\nLet me think about the best approach.\nBest tool here is pcs — pcs operations.\nA quick sanity check afterward saves debugging time later.\n</think>\npcs stonith show myfence"
+  },
+  {
+    "instruction": "Display Pacemaker fenced topology",
+    "output": "<think>\nSo we need to display Pacemaker fenced topology.\nLet me reason through this.\nI'd use pcs for this — pcs operations.\nQuick verification after execution to be safe.\n</think>\npcs stonith level"
+  },
+  {
+    "instruction": "Configure Pacemaker to require fencing",
+    "output": "<think>\nThe task requires us to configure Pacemaker to require fencing.\nI'd use pcs for this — pcs operations.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\npcs property set stonith-enabled=true stonith-action-off=true"
+  },
+  {
+    "instruction": "Show Pacemaker cluster troubleshooting summary",
+    "output": "<think>\nThe user wants to show Pacemaker cluster troubleshooting summary.\nLet me think about the best approach.\npcs is what we need — pcs operations.\nLet me verify afterward that it worked correctly.\n</think>\npcs status --full"
+  },
+  {
+    "instruction": "Show Pacemaker cluster configuration in XML format",
+    "output": "<think>\nThe user wants to show Pacemaker cluster configuration in XML format.\nThis calls for cibadmin. Cibadmin operations.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\ncibadmin -Q"
+  }
+]

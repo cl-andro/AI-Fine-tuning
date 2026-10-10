@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "How to check conntrack system slab memory",
+    "output": "<think>\nThe goal is to check conntrack system slab memory.\nLet me reason through this.\nI'll reach for slabtop here because slabtop operations.\nThe -s flag means summarize or silent mode, which matters here because without it the command won't work as we need.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nLet me verify afterward that it worked correctly.\n</think>\nslabtop -s c | head -20 | grep conntrack"
+  },
+  {
+    "instruction": "How to set conntrack to avoid table overflow",
+    "output": "<think>\nNeed to set conntrack to avoid table overflow.\nsysctl is what we need — kernel parameter tuning.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\nsysctl -w net.netfilter.nf_conntrack_max=1048576 && sysctl -w net.netfilter.nf_conntrack_buckets=262144"
+  },
+  {
+    "instruction": "How to set up nf_conntrack for high throughput",
+    "output": "<think>\nWe should set up nf_conntrack for high throughput.\nLet me think about the best approach.\nThe tool for this job is sysctl — kernel parameter tuning.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nsysctl -w net.netfilter.nf_conntrack_max=2097152 && sysctl -w net.netfilter.nf_conntrack_buckets=524288"
+  },
+  {
+    "instruction": "How to check conntrack early drop events",
+    "output": "<think>\nAlright, we need to check conntrack early drop events.\nHere's how I'd approach this.\nI'll reach for cat here because cat operations.\nPipes let me chain these operations efficiently without writing temp files.\nAfter running, I'll confirm the result looks right.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_stat | grep early_drop"
+  },
+  {
+    "instruction": "How to tune conntrack GC (garbage collection)",
+    "output": "<think>\nThis is asking us to tune conntrack GC (garbage collection).\nLet me think about the best approach.\nThe tool for this job is sysctl — kernel parameter tuning.\nQuick verification after execution to be safe.\n</think>\nsysctl -w net.netfilter.nf_conntrack_gc_interval=10"
+  },
+  {
+    "instruction": "How to check conntrack chain count",
+    "output": "<think>\nNeed to check conntrack chain count.\nI'd use cat for this — cat operations.\nA quick sanity check afterward saves debugging time later.\nQuick verification after execution to be safe.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_max"
+  },
+  {
+    "instruction": "How to track conntrack memory usage",
+    "output": "<think>\nSo the request is to track conntrack memory usage.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'nf_conntrack entries: $(cat /proc/sys/net/netfilter/nf_conntrack_count)'"
+  },
+  {
+    "instruction": "How to find which process uses conntrack entries",
+    "output": "<think>\nThe user wants to find which process uses conntrack entries.\nHere's how I'd approach this.\nconntrack is what we need — conntrack operations.\nWhy -L? Follow symlinks when processing. this controls how the output is formatted.\nI'm using -o for output to file, OR operator in find — standard practice for this kind of operation.\nSimple on the surface, but there are some subtleties to consider.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nQuick verification after execution to be safe.\n</think>\nconntrack -L -o extended > /tmp/ct.log && awk '{print $6}' /tmp/ct.log | sort | uniq -c | sort -rn"
+  },
+  {
+    "instruction": "How to monitor conntrack per second rate",
+    "output": "<think>\nWe should monitor conntrack per second rate.\nFor this, watch is the right tool — watch operations.\nI'm piping because each stage transforms the data before passing it to the next.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\nwatch -n1 'conntrack -S | grep -E \"insert|created\"'"
+  },
+  {
+    "instruction": "How to check conntrack inserted vs failed",
+    "output": "<think>\nSo we need to check conntrack inserted vs failed.\ncat is what we need — cat operations.\nI'm using -E for extended regex — this controls how the output is formatted.\nPipes let me chain these operations efficiently without writing temp files.\nQuick verification after execution to be safe.\n</think>\ncat /proc/sys/net/netfilter/nf_conntrack_stat | grep -E 'found|insert|fail'"
+  },
+  {
+    "instruction": "How to create a conntrack event listener script",
+    "output": "<think>\nNeed to create a conntrack event listener script.\nLet me reason through this.\nThe tool for this job is conntrack — conntrack operations.\nI'm using -E for extended regex — without it the command won't work as we need.\nWhy -e? Edit or executable. standard practice for this kind of operation.\nI'm using -o for output to file, OR operator in find — important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nEach pipe stage handles one transformation, keeping the logic composable.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nconntrack -E -e NEW -o timestamp | while read line; do echo \"[$(date)] $line\" >> /var/log/conntrack-new.log; done"
+  },
+  {
+    "instruction": "How to enable conntrack for Hairpin NAT",
+    "output": "<think>\nThe user wants to enable conntrack for Hairpin NAT.\nLet me reason through this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 1 > /proc/sys/net/ipv4/conf/eth0/proxy_arp && iptables -t nat -A POSTROUTING -o br0 -s 10.0.0.0/24 -j MASQUERADE"
+  },
+  {
+    "instruction": "How to list conntrack filtered by zone",
+    "output": "<think>\nThe task requires us to list conntrack filtered by zone.\nLet me reason through this.\nI'd use conntrack for this — conntrack operations.\nI've added -L to follow symlinks when processing — needed for this specific use case.\n</think>\nconntrack -L --zone 1"
+  },
+  {
+    "instruction": "How to add conntrack with zone in iptables",
+    "output": "<think>\nAlright, we need to add conntrack with zone in iptables.\nFirst, let me understand what's needed here.\nI'd use iptables for this — firewall management.\nThe -t flag means sort by modification time, which matters here because standard practice for this kind of operation.\nI'm using -p for create parent directories as needed — this controls how the output is formatted.\nA single command handles this cleanly — no need to overcomplicate it.\nIf you're working over SSH, one wrong firewall rule and you're locked out. Keep a backup session open.\n</think>\niptables -t raw -A PREROUTING -p tcp --dport 80 -j CT --zone 1"
+  },
+  {
+    "instruction": "How to filter conntrack by status",
+    "output": "<think>\nWe're being asked to filter conntrack by status.\nLet me break this down.\nconntrack is what we need — conntrack operations.\nI'm using -L for follow symlinks when processing — needed for this specific use case.\nI've added -o to output to file, OR operator in find — without it the command won't work as we need.\nI'm piping because each stage transforms the data before passing it to the next.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\nconntrack -L -o extended | grep -E 'ASSURED|SEEN_REPLY'"
+  },
+  {
+    "instruction": "How to check conntrack for SCTP protocol",
+    "output": "<think>\nSo the request is to check conntrack for SCTP protocol.\nLet me think through this step by step.\nmodprobe is what we need — kernel module loading and removal.\nI'm using -L for follow symlinks when processing — standard practice for this kind of operation.\nI've added -p to create parent directories as needed — important to get the expected behavior.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\nmodprobe nf_conntrack_sctp && conntrack -L -p sctp"
+  },
+  {
+    "instruction": "How to set SCTP conntrack timeout",
+    "output": "<think>\nSo the request is to set SCTP conntrack timeout.\nLet me think through this step by step.\nFor this, sysctl is the right tool — kernel parameter tuning.\nOne command does the job. Simple is better.\nVerify with a follow-up status command to make sure everything looks right.\nI'll check the output to make sure it did what we expected.\n</think>\nsysctl net.netfilter.nf_conntrack_sctp_timeout_established"
+  },
+  {
+    "instruction": "How to load conntrack for DCCP protocol",
+    "output": "<think>\nNeed to load conntrack for DCCP protocol.\nFirst, let me understand what's needed here.\nI'd use modprobe for this — kernel module loading and removal.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nmodprobe nf_conntrack_dccp && conntrack -L -p dccp"
+  },
+  {
+    "instruction": "How to set conntrack DCCP timeout",
+    "output": "<think>\nThe task requires us to set conntrack DCCP timeout.\nHere's how I'd approach this.\nsysctl is what we need — kernel parameter tuning.\nA single command handles this cleanly — no need to overcomplicate it.\nA quick sanity check afterward saves debugging time later.\n</think>\nsysctl -w net.netfilter.nf_conntrack_dccp_timeout=300"
+  },
+  {
+    "instruction": "How to install conntrack tools on Debian",
+    "output": "<think>\nWe should install conntrack tools on Debian.\nLet me break this down.\nBest tool here is apt — apt operations.\nUse --dry-run or -s to simulate package operations before actually installing.\n</think>\napt install conntrack conntrackd"
+  },
+  {
+    "instruction": "How to get conntrack tool version",
+    "output": "<think>\nWe should get conntrack tool version.\nconntrack is what we need — conntrack operations.\nThe --version flag handles show version info. Important because important to get the expected behavior.\nAfter running, I'll confirm the result looks right.\n</think>\nconntrack --version"
+  },
+  {
+    "instruction": "How to check conntrackd version",
+    "output": "<think>\nThe task requires us to check conntrackd version.\nLet me consider what makes sense here.\nThis calls for conntrackd. Conntrackd operations.\nThe --version flag means show version info, which matters here because important to get the expected behavior.\n</think>\nconntrackd --version"
+  },
+  {
+    "instruction": "How to add conntrack static entry via /proc",
+    "output": "<think>\nThe user wants to add conntrack static entry via /proc.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'tcp 6 119 SYN_SENT src=10.0.0.1 dst=192.168.1.100 sport=12345 dport=80' > /proc/net/nf_conntrack"
+  },
+  {
+    "instruction": "How to monitor syslog for conntrack messages",
+    "output": "<think>\nAlright, we need to monitor syslog for conntrack messages.\nFor this, journalctl is the right tool — checking systemd logs.\nThe -f flag handles force, suppress errors. Important because important to get the expected behavior.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nQuick verification after execution to be safe.\n</think>\njournalctl -k -f | grep -i conntrack"
+  },
+  {
+    "instruction": "How to verify conntrack full feature set",
+    "output": "<think>\nWe're being asked to verify conntrack full feature set.\nFor this, conntrack is the right tool — conntrack operations.\nI'm using -L for follow symlinks when processing — without it the command won't work as we need.\nSimple on the surface, but there are some subtleties to consider.\nPipes let me chain these operations efficiently without writing temp files.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\nconntrack -L 2>&1 | head -1 && conntrack -E --help > /dev/null && echo 'conntrack OK'"
+  }
+]

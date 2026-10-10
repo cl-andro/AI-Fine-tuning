@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure rsyslog to compress rotated logs",
+    "output": "echo 'global(compress=\"on\")' > /etc/rsyslog.d/compress.conf"
+  },
+  {
+    "instruction": "Set syslog-ng to log from specific facility only",
+    "output": "echo 'filter f_authpriv { facility(authpriv); };' >> /etc/syslog-ng/conf.d/authpriv.conf && echo 'destination d_authpriv { file(\"/var/log/authpriv.log\"); };' >> /etc/syslog-ng/conf.d/authpriv_dest.conf"
+  },
+  {
+    "instruction": "Use rsyslog to log to a PostgreSQL database",
+    "output": "echo 'module(load=\"ompgsql\")' > /etc/rsyslog.d/pgsql.conf && echo 'action(type=\"ompgsql\" server=\"localhost\" db=\"syslog\" uid=\"rsyslog\" pwd=\"password\")' >> /etc/rsyslog.d/pgsql.conf"
+  },
+  {
+    "instruction": "Create syslog-ng configuration with TLS mutual auth",
+    "output": "echo 'source s_tls_mutual { tcp(ip(\"0.0.0.0\") port(6514) tls(key_file(\"/etc/ssl/private/syslog.key\") cert_file(\"/etc/ssl/certs/syslog.crt\") peer_verify(\"required-untrusted\") ca_dir(\"/etc/ssl/certs\"))); };' >> /etc/syslog-ng/conf.d/tls_mutual.conf"
+  },
+  {
+    "instruction": "Filter messages by message content in rsyslog",
+    "output": "echo ':msg, contains, \"error\" /var/log/error.log' >> /etc/rsyslog.d/error_match.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng daily log rotation",
+    "output": "echo 'destination d_rotated { file(\"/var/log/messages-\" iso-date-short); };' >> /etc/syslog-ng/conf.d/daily_rotate.conf"
+  },
+  {
+    "instruction": "Use rsyslog to anonymize IP addresses in logs",
+    "output": "echo 'module(load=\"mmanon\")' > /etc/rsyslog.d/anonymize.conf && echo 'set $.ip = re_extract($msg, \"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\", 0, \"\", $ip);' >> /etc/rsyslog.d/anonymize.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng with logrotate integration",
+    "output": "echo 'destination d_rotated { file(\"/var/log/messages\" perm(0640) owner(\"root\") group(\"adm\")); };' >> /etc/syslog-ng/conf.d/logrotate.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to monitor journald logs",
+    "output": "echo 'module(load=\"imjournal\")' > /etc/rsyslog.d/journal.conf && echo 'input(type=\"imjournal\")' >> /etc/rsyslog.d/journal.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter for multiple facilities",
+    "output": "echo 'filter f_multi { facility(local0,local1,local2); };' >> /etc/syslog-ng/conf.d/multi_facility.conf"
+  },
+  {
+    "instruction": "Use rsyslog deduplication module",
+    "output": "echo 'module(load=\"mmdedup\")' > /etc/rsyslog.d/dedup_module.conf && echo 'action(type=\"mmdedup\")' >> /etc/rsyslog.d/dedup_module.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to ignore debug messages",
+    "output": "echo 'filter f_no_debug { not level(debug); };' >> /etc/syslog-ng/conf.d/no_debug.conf"
+  },
+  {
+    "instruction": "Set up rsyslog for high-performance logging",
+    "output": "echo 'global(workDirectory=\"/var/spool/rsyslog\")' > /etc/rsyslog.d/performance.conf && echo 'action(type=\"omfwd\" target=\"192.168.1.100\" port=\"514\" protocol=\"tcp\" queue.type=\"linkedlist\" queue.size=\"1000000\" queue.dequeueBatchSize=\"1000\")' >> /etc/rsyslog.d/performance.conf"
+  },
+  {
+    "instruction": "Create syslog-ng template for systemd journal style",
+    "output": "echo 'template t_journal { template(\"%ISODATE %HOST %MSG\\n\"); };' >> /etc/syslog-ng/conf.d/journal_template.conf"
+  },
+  {
+    "instruction": "Filter rsyslog output by tag pattern",
+    "output": "echo ':syslogtag, contains, \"nginx\" /var/log/nginx_access.log' >> /etc/rsyslog.d/nginx_tag.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng to store logs in MongoDB",
+    "output": "echo '@version: 4.0' > /etc/syslog-ng/conf.d/mongodb.conf && echo 'destination d_mongodb { mongodb(uri(\"mongodb://localhost:27017\") collection(\"logs\")); };' >> /etc/syslog-ng/conf.d/mongodb.conf"
+  },
+  {
+    "instruction": "Use rsyslog user-based filtering",
+    "output": "echo ':msg, regex, \"user .* logged in\" /var/log/user_login.log' >> /etc/syslog-ng/conf.d/user_login.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng for elasticsearch output",
+    "output": "echo 'destination d_elasticsearch { elasticsearch(server(\"localhost\") port(9200) index(\"syslog-%Y.%m.%d\") type(\"syslog\")); };' >> /etc/syslog-ng/conf.d/elastic.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to discard duplicate syslog messages",
+    "output": "echo 'module(load=\"mmnormalize\")' > /etc/rsyslog.d/normalize.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to use a central configuration directory",
+    "output": "echo '@include \"/etc/syslog-ng/conf.d/*.conf\"' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Use rsyslog to separate logs by month",
+    "output": "echo 'template(name=\"MonthLog\" type=\"string\" string=\"/var/log/syslog-%$year%-%$month%.log\")' > /etc/rsyslog.d/monthly.conf && echo '*.* action(type=\"omfile\" dynaFile=\"MonthLog\")' >> /etc/rsyslog.d/monthly.conf"
+  },
+  {
+    "instruction": "Create syslog-ng parser for Cisco ASA logs",
+    "output": "echo 'parser p_cisco { csv-parser(columns(\"timestamp\",\"host\",\"msg\") delimiters(\" \") flags(escape-none)); };' >> /etc/syslog-ng/conf.d/cisco_parser.conf"
+  },
+  {
+    "instruction": "Filter rsyslog by priority range",
+    "output": "echo '*.info;mail.none;authpriv.none;cron.none /var/log/messages' >> /etc/rsyslog.d/priority_filter.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng to handle multi-line messages",
+    "output": "echo 'options { keep-padding(no); };' >> /etc/syslog-ng/conf.d/multiline.conf"
+  },
+  {
+    "instruction": "Configure rsyslog to send logs to syslog-ng via RELP",
+    "output": "echo 'module(load=\"omrelp\")' > /etc/rsyslog.d/relp_forward.conf && echo 'action(type=\"omrelp\" target=\"192.168.1.100\" port=\"20514\" tls=\"on\")' >> /etc/rsyslog.d/relp_forward.conf"
+  }
+]

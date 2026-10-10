@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Configure rsyslog to compress rotated logs",
+    "output": "<think>\nAlright, we need to configure rsyslog to compress rotated logs.\nOne command does the job. Simple is better.\n</think>\necho 'global(compress=\"on\")' > /etc/rsyslog.d/compress.conf"
+  },
+  {
+    "instruction": "Set syslog-ng to log from specific facility only",
+    "output": "<think>\nSo the request is to set syslog-ng to log from specific facility only.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\necho 'filter f_authpriv { facility(authpriv); };' >> /etc/syslog-ng/conf.d/authpriv.conf && echo 'destination d_authpriv { file(\"/var/log/authpriv.log\"); };' >> /etc/syslog-ng/conf.d/authpriv_dest.conf"
+  },
+  {
+    "instruction": "Use rsyslog to log to a PostgreSQL database",
+    "output": "<think>\nAlright, we need to use rsyslog to log to a PostgreSQL database.\nLet me think through this step by step.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'module(load=\"ompgsql\")' > /etc/rsyslog.d/pgsql.conf && echo 'action(type=\"ompgsql\" server=\"localhost\" db=\"syslog\" uid=\"rsyslog\" pwd=\"password\")' >> /etc/rsyslog.d/pgsql.conf"
+  },
+  {
+    "instruction": "Create syslog-ng configuration with TLS mutual auth",
+    "output": "<think>\nAlright, we need to create syslog-ng configuration with TLS mutual auth.\nFirst, let me understand what's needed here.\nOne command does the job. Simple is better.\n</think>\necho 'source s_tls_mutual { tcp(ip(\"0.0.0.0\") port(6514) tls(key_file(\"/etc/ssl/private/syslog.key\") cert_file(\"/etc/ssl/certs/syslog.crt\") peer_verify(\"required-untrusted\") ca_dir(\"/etc/ssl/certs\"))); };' >> /etc/syslog-ng/conf.d/tls_mutual.conf"
+  },
+  {
+    "instruction": "Filter messages by message content in rsyslog",
+    "output": "<think>\nNeed to filter messages by message content in rsyslog.\nNo need for complex pipelines here — one command is sufficient.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho ':msg, contains, \"error\" /var/log/error.log' >> /etc/rsyslog.d/error_match.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng daily log rotation",
+    "output": "<think>\nThe user wants to set up syslog-ng daily log rotation.\nHere's how I'd approach this.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\necho 'destination d_rotated { file(\"/var/log/messages-\" iso-date-short); };' >> /etc/syslog-ng/conf.d/daily_rotate.conf"
+  },
+  {
+    "instruction": "Use rsyslog to anonymize IP addresses in logs",
+    "output": "<think>\nThis is asking us to use rsyslog to anonymize IP addresses in logs.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\nLet me verify afterward that it worked correctly.\n</think>\necho 'module(load=\"mmanon\")' > /etc/rsyslog.d/anonymize.conf && echo 'set $.ip = re_extract($msg, \"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\", 0, \"\", $ip);' >> /etc/rsyslog.d/anonymize.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng with logrotate integration",
+    "output": "<think>\nSo we need to configure syslog-ng with logrotate integration.\nOne command does the job. Simple is better.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'destination d_rotated { file(\"/var/log/messages\" perm(0640) owner(\"root\") group(\"adm\")); };' >> /etc/syslog-ng/conf.d/logrotate.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to monitor journald logs",
+    "output": "<think>\nThe goal is to set up rsyslog to monitor journald logs.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'module(load=\"imjournal\")' > /etc/rsyslog.d/journal.conf && echo 'input(type=\"imjournal\")' >> /etc/rsyslog.d/journal.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter for multiple facilities",
+    "output": "<think>\nWe should create syslog-ng filter for multiple facilities.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\n</think>\necho 'filter f_multi { facility(local0,local1,local2); };' >> /etc/syslog-ng/conf.d/multi_facility.conf"
+  },
+  {
+    "instruction": "Use rsyslog deduplication module",
+    "output": "<think>\nAlright, we need to use rsyslog deduplication module.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\necho 'module(load=\"mmdedup\")' > /etc/rsyslog.d/dedup_module.conf && echo 'action(type=\"mmdedup\")' >> /etc/rsyslog.d/dedup_module.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to ignore debug messages",
+    "output": "<think>\nAlright, we need to configure syslog-ng to ignore debug messages.\nLet me reason through this.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'filter f_no_debug { not level(debug); };' >> /etc/syslog-ng/conf.d/no_debug.conf"
+  },
+  {
+    "instruction": "Set up rsyslog for high-performance logging",
+    "output": "<think>\nWe should set up rsyslog for high-performance logging.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'global(workDirectory=\"/var/spool/rsyslog\")' > /etc/rsyslog.d/performance.conf && echo 'action(type=\"omfwd\" target=\"192.168.1.100\" port=\"514\" protocol=\"tcp\" queue.type=\"linkedlist\" queue.size=\"1000000\" queue.dequeueBatchSize=\"1000\")' >> /etc/rsyslog.d/performance.conf"
+  },
+  {
+    "instruction": "Create syslog-ng template for systemd journal style",
+    "output": "<think>\nThis is asking us to create syslog-ng template for systemd journal style.\nLet me reason through this.\n</think>\necho 'template t_journal { template(\"%ISODATE %HOST %MSG\\n\"); };' >> /etc/syslog-ng/conf.d/journal_template.conf"
+  },
+  {
+    "instruction": "Filter rsyslog output by tag pattern",
+    "output": "<think>\nWe're being asked to filter rsyslog output by tag pattern.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\n</think>\necho ':syslogtag, contains, \"nginx\" /var/log/nginx_access.log' >> /etc/rsyslog.d/nginx_tag.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng to store logs in MongoDB",
+    "output": "<think>\nThis is asking us to set up syslog-ng to store logs in MongoDB.\nLet me break this down.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho '@version: 4.0' > /etc/syslog-ng/conf.d/mongodb.conf && echo 'destination d_mongodb { mongodb(uri(\"mongodb://localhost:27017\") collection(\"logs\")); };' >> /etc/syslog-ng/conf.d/mongodb.conf"
+  },
+  {
+    "instruction": "Use rsyslog user-based filtering",
+    "output": "<think>\nSo we need to use rsyslog user-based filtering.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho ':msg, regex, \"user .* logged in\" /var/log/user_login.log' >> /etc/syslog-ng/conf.d/user_login.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng for elasticsearch output",
+    "output": "<think>\nWe're being asked to configure syslog-ng for elasticsearch output.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'destination d_elasticsearch { elasticsearch(server(\"localhost\") port(9200) index(\"syslog-%Y.%m.%d\") type(\"syslog\")); };' >> /etc/syslog-ng/conf.d/elastic.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to discard duplicate syslog messages",
+    "output": "<think>\nNeed to set up rsyslog to discard duplicate syslog messages.\nLet me consider what makes sense here.\nOne command does the job. Simple is better.\n</think>\necho 'module(load=\"mmnormalize\")' > /etc/rsyslog.d/normalize.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to use a central configuration directory",
+    "output": "<think>\nThe goal is to configure syslog-ng to use a central configuration directory.\n</think>\necho '@include \"/etc/syslog-ng/conf.d/*.conf\"' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Use rsyslog to separate logs by month",
+    "output": "<think>\nNeed to use rsyslog to separate logs by month.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 'template(name=\"MonthLog\" type=\"string\" string=\"/var/log/syslog-%$year%-%$month%.log\")' > /etc/rsyslog.d/monthly.conf && echo '*.* action(type=\"omfile\" dynaFile=\"MonthLog\")' >> /etc/rsyslog.d/monthly.conf"
+  },
+  {
+    "instruction": "Create syslog-ng parser for Cisco ASA logs",
+    "output": "<think>\nThis is asking us to create syslog-ng parser for Cisco ASA logs.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'parser p_cisco { csv-parser(columns(\"timestamp\",\"host\",\"msg\") delimiters(\" \") flags(escape-none)); };' >> /etc/syslog-ng/conf.d/cisco_parser.conf"
+  },
+  {
+    "instruction": "Filter rsyslog by priority range",
+    "output": "<think>\nThe goal is to filter rsyslog by priority range.\nHere's how I'd approach this.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho '*.info;mail.none;authpriv.none;cron.none /var/log/messages' >> /etc/rsyslog.d/priority_filter.conf"
+  },
+  {
+    "instruction": "Set up syslog-ng to handle multi-line messages",
+    "output": "<think>\nThis is asking us to set up syslog-ng to handle multi-line messages.\nOne command does the job. Simple is better.\n</think>\necho 'options { keep-padding(no); };' >> /etc/syslog-ng/conf.d/multiline.conf"
+  },
+  {
+    "instruction": "Configure rsyslog to send logs to syslog-ng via RELP",
+    "output": "<think>\nNeed to configure rsyslog to send logs to syslog-ng via RELP.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'module(load=\"omrelp\")' > /etc/rsyslog.d/relp_forward.conf && echo 'action(type=\"omrelp\" target=\"192.168.1.100\" port=\"20514\" tls=\"on\")' >> /etc/rsyslog.d/relp_forward.conf"
+  }
+]

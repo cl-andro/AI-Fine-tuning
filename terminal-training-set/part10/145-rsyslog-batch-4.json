@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Use rsyslog to log only specific facility to file",
+    "output": "<think>\nThe task requires us to use rsyslog to log only specific facility to file.\nHere's how I'd approach this.\nOne command does the job. Simple is better.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'auth.* /var/log/auth.log' >> /etc/rsyslog.d/auth_facility.conf"
+  },
+  {
+    "instruction": "Create syslog-ng source for systemd journal",
+    "output": "<think>\nThe task requires us to create syslog-ng source for systemd journal.\nLet me think through this step by step.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'source s_journal { systemd-journal(); };' >> /etc/syslog-ng/conf.d/journal_source.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to buffer messages on network failure",
+    "output": "<think>\nWe should set up rsyslog to buffer messages on network failure.\nHere's how I'd approach this.\nNo need for complex pipelines here — one command is sufficient.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'action(type=\"omfwd\" target=\"192.168.1.100\" port=\"514\" protocol=\"tcp\" action.resumeRetryCount=\"100\" queue.type=\"disk\" queue.filename=\"buffer\")' > /etc/rsyslog.d/buffer.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng with embedded Python destination",
+    "output": "<think>\nThe goal is to configure syslog-ng with embedded Python destination.\nLet me break this down.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'destination d_python { python(class(\"MyDestination\")); };' >> /etc/syslog-ng/conf.d/python_dest.conf"
+  },
+  {
+    "instruction": "Use rsyslog to replace string values in messages",
+    "output": "<think>\nThis is asking us to use rsyslog to replace string values in messages.\nLet me consider what makes sense here.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\necho 'module(load=\"mmstring\")' > /etc/rsyslog.d/string_replace.conf && echo 'action(type=\"mmstring\" string=\"old\" replacement=\"new\")' >> /etc/rsyslog.d/string_replace.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter to exclude certain host",
+    "output": "<think>\nWe should create syslog-ng filter to exclude certain host.\nA single command handles this cleanly — no need to overcomplicate it.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'filter f_not_web { not host(\"web-01\"); };' >> /etc/syslog-ng/conf.d/exclude_host.conf"
+  },
+  {
+    "instruction": "Set up rsyslog action for email alerts on critical events",
+    "output": "<think>\nThe goal is to set up rsyslog action for email alerts on critical events.\nLet me think through this step by step.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho 'module(load=\"ommail\")' > /etc/syslog-ng/conf.d/email_alert.conf && echo 'action(type=\"ommail\" server=\"localhost\" port=\"25\" mailto=\"admin@example.com\" mailfrom=\"syslog@example.com\" subject=\"CRITICAL ALERT\")' >> /etc/syslog-ng/conf.d/email_alert.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to parse Apache logs",
+    "output": "<think>\nSo the request is to configure syslog-ng to parse Apache logs.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'parser p_apache { csv-parser(columns(\"host\",\"ident\",\"authuser\",\"date\",\"request\",\"status\",\"bytes\") flags(escape-double-char)); };' >> /etc/syslog-ng/conf.d/apache_parser.conf"
+  },
+  {
+    "instruction": "Use rsyslog to create dynamic file names by hostname",
+    "output": "<think>\nAlright, we need to use rsyslog to create dynamic file names by hostname.\nHere's how I'd approach this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho 'template(name=\"DynamicFile\" type=\"string\" string=\"/var/log/remote/%fromhost%/%programname%.log\")' > /etc/syslog-ng/conf.d/dynamic_file.conf && echo 'action(type=\"omfile\" dynaFile=\"DynamicFile\")' >> /etc/syslog-ng/conf.d/dynamic_file.conf"
+  },
+  {
+    "instruction": "Create syslog-ng rewrite to add custom tag to messages",
+    "output": "<think>\nSo the request is to create syslog-ng rewrite to add custom tag to messages.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'rewrite r_tag { set(\"TAG\", value(\"PROGRAM\")); };' >> /etc/syslog-ng/conf.d/add_tag.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to monitor file for changes",
+    "output": "<think>\nAlright, we need to set up rsyslog to monitor file for changes.\nLet me break this down.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\n</think>\necho 'module(load=\"imfile\" mode=\"polling\")' > /etc/rsyslog.d/poll_file.conf && echo 'input(type=\"imfile\" File=\"/var/log/app.log\" Tag=\"app\")' >> /etc/rsyslog.d/poll_file.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng with SQLite output",
+    "output": "<think>\nWe should configure syslog-ng with SQLite output.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nQuick verification after execution to be safe.\n</think>\necho 'destination d_sqlite { sql(type(\"sqlite\") host(\"/var/log/syslog.db\") username(\"\") password(\"\") database(\"syslog\") table(\"logs\") columns(\"datetime\", \"host\", \"message\") values(\"${ISODATE}\", \"${HOST}\", \"${MSG}\")); };' >> /etc/syslog-ng/conf.d/sqlite.conf"
+  },
+  {
+    "instruction": "Use rsyslog to forward to logstash via JSON",
+    "output": "<think>\nThis is asking us to use rsyslog to forward to logstash via JSON.\nFirst, let me understand what's needed here.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'template(name=\"LogstashJSON\" type=\"list\") { constant(value=\"{\\\"@timestamp\\\":\\\"\") property(name=\"timereported\" dateFormat=\"rfc3339\") constant(value=\"\\\",\\\"host\\\":\\\"\") property(name=\"hostname\") constant(value=\"\\\",\\\"message\\\":\\\"\") property(name=\"msg\") constant(value=\"\\\"}\\n\"); };' > /etc/rsyslog.d/logstash.conf && echo 'action(type=\"omfwd\" protocol=\"tcp\" target=\"192.168.1.100\" port=\"5000\" template=\"LogstashJSON\")' >> /etc/rsyslog.d/logstash.conf"
+  },
+  {
+    "instruction": "Create syslog-ng source for Unix domain socket",
+    "output": "<think>\nWe're being asked to create syslog-ng source for Unix domain socket.\nLet me think through this step by step.\nCheck the output for errors before proceeding to the next step.\nQuick verification after execution to be safe.\n</think>\necho 'source s_unix { unix-stream(\"/dev/log\" max-connections(256)); };' >> /etc/syslog-ng/syslog-ng.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to discard messages matching a pattern",
+    "output": "<think>\nWe're being asked to set up rsyslog to discard messages matching a pattern.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\necho ':msg, contains, \"healthcheck\" ~' >> /etc/rsyslog.d/discard_healthcheck.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to forward to multiple destinations with different templates",
+    "output": "<think>\nThe user wants to configure syslog-ng to forward to multiple destinations with different templates.\nLet me reason through this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'destination d_remote1 { udp(\"192.168.1.100\" port(514)); };' >> /etc/syslog-ng/conf.d/remote_multi.conf && echo 'destination d_remote2 { tcp(\"192.168.1.101\" port(514)); };' >> /etc/syslog-ng/conf.d/remote_multi.conf && echo 'log { source(s_sys); destination(d_remote1); destination(d_remote2); };' >> /etc/syslog-ng/conf.d/remote_multi.conf"
+  },
+  {
+    "instruction": "Use rsyslog to log to named pipe",
+    "output": "<think>\nThe goal is to use rsyslog to log to named pipe.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'action(type=\"ompipe\" Pipe=\"/var/log/myfifo\")' > /etc/rsyslog.d/pipe.conf"
+  },
+  {
+    "instruction": "Create syslog-ng filter for message priorities",
+    "output": "<think>\nWe should create syslog-ng filter for message priorities.\n</think>\necho 'filter f_warn { level(warn..emerg); };' >> /etc/syslog-ng/conf.d/warn_filter.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to limit message size",
+    "output": "<think>\nSo the request is to set up rsyslog to limit message size.\n</think>\necho 'global(maxMessageSize=\"64k\")' > /etc/rsyslog.d/msg_size.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng to rewrite messages with MAC address",
+    "output": "<think>\nThe task requires us to configure syslog-ng to rewrite messages with MAC address.\nOne command does the job. Simple is better.\n</think>\necho 'rewrite r_mac { set(\"MAC=${MACADDR}\", value(\"MSG\")); };' >> /etc/syslog-ng/conf.d/mac_rewrite.conf"
+  },
+  {
+    "instruction": "Use rsyslog array-based queuing for performance",
+    "output": "<think>\nThe task requires us to use rsyslog array-based queuing for performance.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'action(type=\"omfwd\" queue.type=\"array\" queue.size=\"100000\")' > /etc/rsyslog.d/array_queue.conf"
+  },
+  {
+    "instruction": "Create syslog-ng log path with conditional destinations",
+    "output": "<think>\nThe goal is to create syslog-ng log path with conditional destinations.\nLet me think about the best approach.\nOne command does the job. Simple is better.\n</think>\necho 'log { source(s_sys); if (level(\"crit\")) { destination(d_critical); }; else { destination(d_local); }; };' >> /etc/syslog-ng/conf.d/conditional.conf"
+  },
+  {
+    "instruction": "Set up rsyslog to forward kernel messages only",
+    "output": "<think>\nSo we need to set up rsyslog to forward kernel messages only.\nLet me break this down.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\necho 'kern.* @192.168.1.100:514' >> /etc/rsyslog.d/kern_forward.conf"
+  },
+  {
+    "instruction": "Configure syslog-ng with named pipe destination",
+    "output": "<think>\nWe're being asked to configure syslog-ng with named pipe destination.\nLet me break this down.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'destination d_pipe { pipe(\"/var/log/logpipe\" template(t_standard)); };' >> /etc/syslog-ng/conf.d/pipe_dest.conf"
+  },
+  {
+    "instruction": "Use rsyslog to log to stdout for Docker containers",
+    "output": "<think>\nThe user wants to use rsyslog to log to stdout for Docker containers.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'action(type=\"omstdout\")' > /etc/rsyslog.d/stdout.conf"
+  }
+]

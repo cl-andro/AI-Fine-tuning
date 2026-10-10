@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Copy SSH key to remote using ssh-copy-id with custom identity",
+    "output": "<think>\nSo we need to copy SSH key to remote using ssh-copy-id with custom identity.\nI'll reach for ssh-copy-id here because SSH public key deployment.\nI'm using -i for interactive, prompt before action — without it the command won't work as we need.\nThe -p flag handles create parent directories as needed. Important because needed for this specific use case.\nAfter running, confirm it worked as expected before moving on.\n</think>\nssh-copy-id -i ~/.ssh/custom.pub -p 2222 user@host"
+  },
+  {
+    "instruction": "Set up passwordless SSH for root (after key copy)",
+    "output": "<think>\nWe're being asked to set up passwordless SSH for root (after key copy).\nBest tool here is ssh-copy-id — SSH public key deployment.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\n</think>\nssh-copy-id root@host && ssh root@host 'echo OK'"
+  },
+  {
+    "instruction": "Check if passwordless SSH works",
+    "output": "<think>\nThe user wants to check if passwordless SSH works.\nI'll reach for ssh here because remote system access.\nThe -o flag handles output to file, OR operator in find. Important because standard practice for this kind of operation.\n</think>\nssh -o BatchMode=yes user@host 'hostname'"
+  },
+  {
+    "instruction": "Create an SSH key with no passphrase (automation)",
+    "output": "<think>\nThis is asking us to create an SSH key with no passphrase (automation).\nI'd use ssh-keygen for this — SSH key pair generation.\nI've added -t to sort by modification time — this controls how the output is formatted.\nWhy -f? Force, suppress errors. important to get the expected behavior.\nA single command handles this cleanly — no need to overcomplicate it.\n</think>\nssh-keygen -t ed25519 -f ~/.ssh/automation -N ''"
+  },
+  {
+    "instruction": "Generate a CA-signed SSH host certificate",
+    "output": "<think>\nAlright, we need to generate a CA-signed SSH host certificate.\nLet me consider what makes sense here.\nI'd use ssh-keygen for this — SSH key pair generation.\nThe -s flag handles summarize or silent mode. Important because important to get the expected behavior.\nThe -I flag means ignore case, which matters here because standard practice for this kind of operation.\nA quick sanity check afterward saves debugging time later.\n</think>\nssh-keygen -s ca_key -I host.example.com -h -n host.example.com /etc/ssh/ssh_host_ed25519_key.pub"
+  },
+  {
+    "instruction": "Install SSH certificate authority for user keys",
+    "output": "<think>\nNeed to install SSH certificate authority for user keys.\nLet me consider what makes sense here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'TrustedUserCAKeys /etc/ssh/ca.pub' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Sign a user SSH key with CA",
+    "output": "<think>\nSo we need to sign a user SSH key with CA.\nThis calls for ssh-keygen. SSH key pair generation.\nAfter running, I'll confirm the result looks right.\n</think>\nssh-keygen -s ca_key -I john -n john user_key.pub"
+  },
+  {
+    "instruction": "Use SSH certificates to authenticate",
+    "output": "<think>\nNeed to use SSH certificates to authenticate.\nHere's how I'd approach this.\nI'd use ssh for this — remote system access.\nCheck the output for errors before proceeding to the next step.\n</think>\nssh -o CertificateFile=~/.ssh/user_key-cert.pub user@host"
+  },
+  {
+    "instruction": "Force SSH to use key-based authentication only",
+    "output": "<think>\nNeed to force SSH to use key-based authentication only.\nLet me break this down.\nThe tool for this job is sed — text stream editing.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\nsed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable SSH root login with key only (even key is optional)",
+    "output": "<think>\nThe goal is to disable SSH root login with key only (even key is optional).\nLet me break this down.\nThe tool for this job is sed — text stream editing.\nThe -i flag handles interactive, prompt before action. Important because important to get the expected behavior.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nI'll check the output to make sure it did what we expected.\n</think>\nsed -i 's/^PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Allow only specific users to SSH",
+    "output": "<think>\nWe should allow only specific users to SSH.\nFirst, let me understand what's needed here.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\n</think>\necho 'AllowUsers john alice' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Allow only a specific group to SSH",
+    "output": "<think>\nThe user wants to allow only a specific group to SSH.\nLet me think about the best approach.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\necho 'AllowGroups ssh-users' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Deny a specific user from SSH",
+    "output": "<think>\nWe're being asked to deny a specific user from SSH.\nLet me reason through this.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nA quick sanity check afterward saves debugging time later.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'DenyUsers baduser' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Change SSH default port",
+    "output": "<think>\nThe user wants to change SSH default port.\nLet me reason through this.\nBest tool here is sed — text stream editing.\nLet me verify afterward that it worked correctly.\n</think>\nsed -i 's/^"
+  },
+  {
+    "instruction": "Limit SSH login attempts",
+    "output": "<think>\nThe goal is to limit SSH login attempts.\nBest tool here is sed — text stream editing.\nThe -i flag means interactive, prompt before action, which matters here because this controls how the output is formatted.\nOne command does the job. Simple is better.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nsed -i 's/^"
+  },
+  {
+    "instruction": "Limit concurrent SSH sessions per user",
+    "output": "<think>\nThis is asking us to limit concurrent SSH sessions per user.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\necho 'MaxSessions 2' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Set SSH idle timeout",
+    "output": "<think>\nSo we need to set SSH idle timeout.\nFirst, let me understand what's needed here.\nWhy -e? Edit or executable. this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\n</think>\necho -e 'ClientAliveInterval 300\\nClientAliveCountMax 2' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Disable SSH forwarding",
+    "output": "<think>\nSo we need to disable SSH forwarding.\nLet me think about the best approach.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nVerify with a follow-up status command to make sure everything looks right.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'AllowTcpForwarding no\\nX11Forwarding no\\nAllowAgentForwarding no' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Enable SSH sftp-only chroot for users",
+    "output": "<think>\nThe user wants to enable SSH sftp-only chroot for users.\nLet me reason through this.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAfter running, I'll confirm the result looks right.\n</think>\necho -e 'Subsystem sftp internal-sftp\\nMatch Group sftp-only\\n\\tChrootDirectory %h\\n\\tForceCommand internal-sftp\\n\\tX11Forwarding no\\n\\tAllowTcpForwarding no' >> /etc/ssh/sshd_config && systemctl restart sshd"
+  },
+  {
+    "instruction": "Create an SFTP user in a chroot jail",
+    "output": "<think>\nThis is asking us to create an SFTP user in a chroot jail.\nHere's how I'd approach this.\nThis calls for useradd. User account creation and management.\nThe -s flag handles summarize or silent mode. Important because this controls how the output is formatted.\nWhy -p? Create parent directories as needed. this controls how the output is formatted.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nVerify with a follow-up status command to make sure everything looks right.\nQuick verification after execution to be safe.\n</think>\nuseradd -m -s /sbin/nologin sftpuser && usermod -aG sftp-only sftpuser && mkdir -p /home/sftpuser/upload && chown root:root /home/sftpuser && chmod 755 /home/sftpuser && chown sftpuser:sftpuser /home/sftpuser/upload"
+  },
+  {
+    "instruction": "Check SSH key type and size",
+    "output": "<think>\nSo the request is to check SSH key type and size.\nThe tool for this job is ssh-keygen — SSH key pair generation.\nThe -l flag means long format with details, which matters here because this controls how the output is formatted.\nI'll check the output to make sure it did what we expected.\n</think>\nssh-keygen -l -f ~/.ssh/id_ed25519.pub"
+  },
+  {
+    "instruction": "Convert OpenSSH key to PuTTY format",
+    "output": "<think>\nWe're being asked to convert OpenSSH key to PuTTY format.\nBest tool here is apt — apt operations.\nThe -o flag means output to file, OR operator in find, which matters here because this controls how the output is formatted.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nUse --dry-run or -s to simulate package operations before actually installing.\nQuick verification after execution to be safe.\n</think>\napt install -y putty-tools && puttygen ~/.ssh/id_rsa -o key.ppk"
+  },
+  {
+    "instruction": "Export SSH private key to OpenSSH format",
+    "output": "<think>\nAlright, we need to export SSH private key to OpenSSH format.\nLet me break this down.\nThe tool for this job is ssh-keygen — SSH key pair generation.\nWhy -p? Create parent directories as needed. standard practice for this kind of operation.\nThe -f flag handles force, suppress errors. Important because this controls how the output is formatted.\nAfter running, confirm it worked as expected before moving on.\n</think>\nssh-keygen -p -m RFC4716 -f ~/.ssh/id_rsa"
+  },
+  {
+    "instruction": "Restrict SSH key to specific commands",
+    "output": "<think>\nWe should restrict SSH key to specific commands.\nFirst, let me understand what's needed here.\nWhy -user? Filter by owner. without it the command won't work as we need.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'command=\"/usr/bin/rsync-in-restricted-mode\",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding ssh-ed25519 AAA... key-comment' >> ~/.ssh/authorized_keys"
+  },
+  {
+    "instruction": "Add a trusted CA to authorized_keys for all users",
+    "output": "<think>\nSo we need to add a trusted CA to authorized_keys for all users.\nNo need for complex pipelines here — one command is sufficient.\n</think>\necho '@cert-authority * ssh-ed25519 AAAAC3...' >> ~/.ssh/known_hosts"
+  }
+]

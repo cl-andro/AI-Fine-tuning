@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "List all active database connections",
+    "output": "psql -c \"SELECT * FROM pg_stat_activity WHERE state = 'active'\""
+  },
+  {
+    "instruction": "Show all databases and their sizes",
+    "output": "psql -c \"SELECT datname, pg_size_pretty(pg_database_size(datname)) FROM pg_database ORDER BY pg_database_size(datname) DESC\""
+  },
+  {
+    "instruction": "Find running queries with duration",
+    "output": "psql -c \"SELECT pid, now() - pg_stat_activity.query_start AS duration, query, state FROM pg_stat_activity WHERE state != 'idle' ORDER BY duration DESC\""
+  },
+  {
+    "instruction": "Terminate a PostgreSQL connection by PID",
+    "output": "psql -c \"SELECT pg_terminate_backend(12345)\""
+  },
+  {
+    "instruction": "Show table sizes with live/dead tuple counts",
+    "output": "psql -c \"SELECT relname, n_live_tup, n_dead_tup, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY n_dead_tup DESC\""
+  },
+  {
+    "instruction": "Show index usage statistics sorted by scan count",
+    "output": "psql -c \"SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read, idx_tup_fetch FROM pg_stat_user_indexes ORDER BY idx_scan\""
+  },
+  {
+    "instruction": "Find unused indexes (never scanned)",
+    "output": "psql -c \"SELECT schemaname, tablename, indexname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0\""
+  },
+  {
+    "instruction": "Run VACUUM ANALYZE on a specific table",
+    "output": "psql -c \"VACUUM ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run VACUUM FULL on a database",
+    "output": "psql -d mydb -c \"VACUUM FULL\""
+  },
+  {
+    "instruction": "Run VACUUM VERBOSE on a table",
+    "output": "psql -c \"VACUUM VERBOSE ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run REINDEX on the entire database",
+    "output": "psql -c \"REINDEX DATABASE mydb\""
+  },
+  {
+    "instruction": "Run REINDEX CONCURRENTLY on a specific index",
+    "output": "psql -c \"REINDEX INDEX CONCURRENTLY myindex\""
+  },
+  {
+    "instruction": "Cluster a table on an index",
+    "output": "psql -c \"CLUSTER mytable USING myindex\""
+  },
+  {
+    "instruction": "Analyze a table for the query planner",
+    "output": "psql -c \"ANALYZE mytable\""
+  },
+  {
+    "instruction": "Run EXPLAIN ANALYZE on a query",
+    "output": "psql -c \"EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > '2024-01-01'\""
+  },
+  {
+    "instruction": "Run EXPLAIN with buffers and timing options",
+    "output": "psql -c \"EXPLAIN (ANALYZE, BUFFERS, TIMING) SELECT * FROM users JOIN orders ON users.id = orders.user_id WHERE users.active = true\""
+  },
+  {
+    "instruction": "Dump database to custom format",
+    "output": "pg_dump -Fc mydb > mydb.dump"
+  },
+  {
+    "instruction": "Dump database with maximum compression",
+    "output": "pg_dump -Z 9 mydb > mydb.sql.gz"
+  },
+  {
+    "instruction": "Dump only the schema (no data)",
+    "output": "pg_dump --schema-only mydb > schema.sql"
+  },
+  {
+    "instruction": "Dump only data from a specific table",
+    "output": "pg_dump --data-only --table=orders mydb > orders_data.sql"
+  },
+  {
+    "instruction": "Dump excluding a specific table",
+    "output": "pg_dump --exclude-table=logs mydb > mydb.sql"
+  },
+  {
+    "instruction": "Dump all databases with globals",
+    "output": "pg_dumpall > full_backup.sql"
+  }
+]

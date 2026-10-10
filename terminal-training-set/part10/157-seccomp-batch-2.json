@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Get seccomp mode of a process",
+    "output": "<think>\nSo the request is to get seccomp mode of a process.\nLet me reason through this.\nThis calls for cat. Cat operations.\nThere are a few moving parts here, so let me be careful.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\ncat /proc/$(pgrep -f myapp)/status | grep Seccomp"
+  },
+  {
+    "instruction": "View Docker seccomp in JSON format",
+    "output": "<think>\nThe user wants to view Docker seccomp in JSON format.\nBest tool here is python3 — Python interpreter for scripting and automation.\n</think>\npython3 -m json.tool /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Find seccomp profile path",
+    "output": "<think>\nNeed to find seccomp profile path.\nLet me break this down.\nThe tool for this job is find — file searching.\nThe -name flag means filter by filename pattern, which matters here because this controls how the output is formatted.\nfind can walk a huge directory tree and cause disk thrashing — limit with -maxdepth if possible.\n</think>\nfind / -name 'default-seccomp.json' 2>/dev/null"
+  },
+  {
+    "instruction": "Inspect a process for seccomp mode",
+    "output": "<think>\nThe user wants to inspect a process for seccomp mode.\ncat is what we need — cat operations.\nThe command looks straightforward, but let me check the details.\nI'm piping because each stage transforms the data before passing it to the next.\nCheck the output for errors before proceeding to the next step.\nLet me verify afterward that it worked correctly.\n</think>\ncat /proc/$(pgrep -f myapp)/status | grep -i seccomp"
+  },
+  {
+    "instruction": "Run strace on PID",
+    "output": "<think>\nNeed to run strace on PID.\nFirst, let me understand what's needed here.\nFor this, strace is the right tool — system call tracing.\nThe -p flag means create parent directories as needed, which matters here because standard practice for this kind of operation.\nNo need for complex pipelines here — one command is sufficient.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -p $(pgrep -f myapp) -o /tmp/trace.out"
+  },
+  {
+    "instruction": "Filter Docker seccomp for allowed syscalls",
+    "output": "<think>\nThe goal is to filter Docker seccomp for allowed syscalls.\nThe tool for this job is jq — jq operations.\nPipes let me chain these operations efficiently without writing temp files.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\njq '.syscalls[] | select(.action == \"SCMP_ACT_ALLOW\") | .names[]' /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Generate seccomp profile from strace log",
+    "output": "<think>\nThis is asking us to generate seccomp profile from strace log.\nHere's how I'd approach this.\nThe tool for this job is strace — system call tracing.\nWhy -f? Force, suppress errors. this controls how the output is formatted.\nI've added -e to edit or executable — important to get the expected behavior.\nThis is more involved than it first seems.\nUsing pipes keeps everything in memory without intermediate files — cleaner and faster.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -f -e trace=all -o /tmp/trace.log ./myapp && cat /tmp/trace.log | awk '{print $2}' | sed 's/(.*//' | sort -u"
+  },
+  {
+    "instruction": "Trace process creation with strace",
+    "output": "<think>\nThe user wants to trace process creation with strace.\nLet me reason through this.\nThe tool for this job is strace — system call tracing.\nWhy -f? Force, suppress errors. needed for this specific use case.\n</think>\nstrace -f -e trace=clone,execve ./myapp"
+  },
+  {
+    "instruction": "Install golang-seccomp library",
+    "output": "<think>\nSo the request is to install golang-seccomp library.\nBest tool here is go — Go programming toolchain.\nOne command does the job. Simple is better.\nCheck the output for errors before proceeding to the next step.\n</think>\ngo get github.com/seccomp/libseccomp-golang"
+  },
+  {
+    "instruction": "List seccomp actions available on system",
+    "output": "<think>\nAlright, we need to list seccomp actions available on system.\nHere's how I'd approach this.\nThe tool for this job is cat — cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  },
+  {
+    "instruction": "Run container with no seccomp filter",
+    "output": "<think>\nWe should run container with no seccomp filter.\nI'll reach for docker here because container management.\nNo need for complex pipelines here — one command is sufficient.\nBe specific with image tags — :latest can give you surprises. Avoid --privileged if possible.\nI'll check the output to make sure it did what we expected.\n</think>\ndocker run --security-opt seccomp=unconfined alpine"
+  },
+  {
+    "instruction": "Run strace with IPC syscalls",
+    "output": "<think>\nAlright, we need to run strace with IPC syscalls.\nLet me think about the best approach.\nBest tool here is strace — system call tracing.\nCheck the output for errors before proceeding to the next step.\n</think>\nstrace -e trace=ipc ./myapp"
+  },
+  {
+    "instruction": "Build strace from source",
+    "output": "<think>\nAlright, we need to build strace from source.\nI'd use git for this — version control operations.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\nCheck the output for errors before proceeding to the next step.\n</think>\ngit clone https://github.com/strace/strace.git && cd strace && ./bootstrap && ./configure && make -j$(nproc)"
+  },
+  {
+    "instruction": "List available Docker profiles",
+    "output": "<think>\nNeed to list available Docker profiles.\nThe tool for this job is ls — ls operations.\nI'm using -la for detailed listing including hidden files — needed for this specific use case.\n</think>\nls -la /usr/share/docker/"
+  },
+  {
+    "instruction": "Dump nginx seccomp filter",
+    "output": "<think>\nNeed to dump nginx seccomp filter.\nLet me consider what makes sense here.\nFor this, seccomp-tools is the right tool — seccomp-tools operations.\nOne command does the job. Simple is better.\nI'll check the output to make sure it did what we expected.\n</think>\nseccomp-tools dump $(pidof nginx)"
+  },
+  {
+    "instruction": "Show the default Docker seccomp profile",
+    "output": "<think>\nNeed to show the default Docker seccomp profile.\nLet me break this down.\nThis calls for cat. Cat operations.\nNo need for complex pipelines here — one command is sufficient.\nCheck the output for errors before proceeding to the next step.\nI'll check the output to make sure it did what we expected.\n</think>\ncat /usr/share/docker/default-seccomp.json"
+  },
+  {
+    "instruction": "Trace all syscalls of a program",
+    "output": "<think>\nSo we need to trace all syscalls of a program.\nFirst, let me understand what's needed here.\nI'd use strace for this — system call tracing.\nI've added -f to force, suppress errors — this controls how the output is formatted.\nWhy -o? Output to file, OR operator in find. needed for this specific use case.\nLet me verify afterward that it worked correctly.\n</think>\nstrace -f -o /tmp/all.log ./myapp"
+  },
+  {
+    "instruction": "Use BPF compiler for seccomp",
+    "output": "<think>\nAlright, we need to use BPF compiler for seccomp.\nLet me think through this step by step.\nThe tool for this job is scmp_bpf_dispatcher — scmp_bpf_dispatcher operations.\nI've added -p to create parent directories as needed — important to get the expected behavior.\nLet me verify afterward that it worked correctly.\n</think>\nscmp_bpf_dispatcher -p $(pgrep myapp)"
+  },
+  {
+    "instruction": "Trace syscalls with summary grouped by name",
+    "output": "<think>\nWe're being asked to trace syscalls with summary grouped by name.\nLet me consider what makes sense here.\nI'd use strace for this — system call tracing.\nAlways verify the result — check the exit code with echo $? or inspect the output.\n</think>\nstrace -c -f -S name ./myapp 2>&1"
+  },
+  {
+    "instruction": "Show seccomp actions_avail",
+    "output": "<think>\nNeed to show seccomp actions_avail.\nThis calls for cat. Cat operations.\n</think>\ncat /proc/sys/kernel/seccomp/actions_avail"
+  }
+]

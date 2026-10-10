@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "List all DNS zones in a Cloudflare account",
+    "output": "gcloud dns managed-zones list"
+  },
+  {
+    "instruction": "Add a DNS A record in Cloudflare",
+    "output": "ID: dns_record_abc123\nType: A\nName: www.example.com\nContent: 93.184.216.34\nTTL: 1 (Auto)\nProxied: true\n\nRecord created. Proxied traffic will be protected by Cloudflare."
+  },
+  {
+    "instruction": "List DNS records for a Cloudflare zone",
+    "output": "ID                                Type  Name                    Content              TTL  Proxied\n---------------------------------  ----  ----------------------  -------------------  ---  -------\ndns_record_abc123                A     www.example.com         93.184.216.34        Auto true\ndns_record_def456                MX    example.com             10 mail.example.com  Auto false\ndns_record_ghi789                TXT   example.com             v=spf1 mx ~all       1200 false\ndns_record_jkl012                CNAME api.example.com         api-backend.example.com Auto true\n\n4 records found for zone example.com."
+  },
+  {
+    "instruction": "Delete a DNS record from Cloudflare",
+    "output": "Record dns_record_abc123 deleted from zone example.com.\n\nUse flarectl dns delete --zone example.com --id <record_id> to remove a record."
+  },
+  {
+    "instruction": "Update a DNS record in Cloudflare",
+    "output": "Record dns_record_def456 updated.\nOld content: 10 mail.old-server.com\nNew content: 10 mail.new-server.com\n\nThe MX record has been updated to point to the new mail server."
+  },
+  {
+    "instruction": "Create a DNS challenge record for certbot with Cloudflare",
+    "output": "certbot certonly --dns-cloudflare --dns-cloudflare-credentials ~/.cloudflare/credentials.ini -d example.com"
+  },
+  {
+    "instruction": "Run certbot with the DNS-01 challenge using a manual hook",
+    "output": "certbot certonly --dns-cloudflare --dns-cloudflare-credentials ~/.cloudflare/credentials.ini -d example.com --preferred-challenges dns-01"
+  },
+  {
+    "instruction": "Renew a certificate using certbot DNS challenge",
+    "output": "certbot renew --dns-cloudflare --dns-cloudflare-credentials ~/.cloudflare/credentials.ini"
+  },
+  {
+    "instruction": "Request a wildcard certificate with DNS challenge",
+    "output": "Saving debug log to /var/log/letsencrypt/letsencrypt.log\nRequesting a certificate for *.example.com\n\n- Validating for *.example.com\n- Cloudflare DNS: adding TXT record for _acme-challenge.example.com\n- Challenge passed\n- Certificate issued for: *.example.com\n- Certificate path: /etc/letsencrypt/live/example.com-0001/fullchain.pem\n\nWildcard certificates require DNS-01 challenge method."
+  },
+  {
+    "instruction": "Send a DNS query using Scapy",
+    "output": "scapy_dns_query example.com"
+  },
+  {
+    "instruction": "Perform a DNS MX query using Scapy",
+    "output": ">>> ans = sr1(IP(dst=\"8.8.8.8\")/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname=\"example.com\",qtype=\"MX\")),timeout=2)\n>>> ans[DNS].an.rdata\n'10 mail.example.com'\n\nMX preference value: 10, Mail server: mail.example.com."
+  },
+  {
+    "instruction": "Perform a DNS reverse lookup using Scapy",
+    "output": ">>> from scapy.all import *\n>>> ans = sr1(IP(dst=\"8.8.8.8\")/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname=\"34.216.184.93.in-addr.arpa\",qtype=\"PTR\")),timeout=2)\n>>> ans[DNS].an.rdata\n'example.com.'\n\nReverse DNS lookup resolved the IP to example.com."
+  },
+  {
+    "instruction": "Perform a DNSSEC query using Scapy",
+    "output": ">>> ans = sr1(IP(dst=\"8.8.8.8\")/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname=\"example.com\",qtype=\"DNSKEY\")),timeout=2)\n>>> ans[DNS].an.rdata\n'257 3 13 0123456789abcdef...'\n\nDNSKEY record with flags=257, protocol=3, algorithm=13 (ECDSAP256SHA256)."
+  },
+  {
+    "instruction": "Run certbot with the DNS-01 challenge using Route53",
+    "output": "certbot certonly --dns-route53 -d example.com"
+  },
+  {
+    "instruction": "Run certbot with DNS challenge using DigitalOcean",
+    "output": "certbot certonly --dns-digitalocean --dns-digitalocean-credentials ~/.digitalocean/credentials.ini -d example.com"
+  },
+  {
+    "instruction": "Use flarectl to export all DNS records",
+    "output": "Records exported to example.com-export.json\n\nThe export contains all DNS records for the zone in JSON format."
+  },
+  {
+    "instruction": "Send a DNS TXT query using Scapy",
+    "output": ">>> ans = sr1(IP(dst=\"8.8.8.8\")/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname=\"example.com\",qtype=\"TXT\")),timeout=2)\n>>> ans[DNS].an.rdata\n[b'v=spf1 mx ~all']\n\nTXT record retrieved successfully using a raw Scapy DNS query."
+  },
+  {
+    "instruction": "Perform a DNS zone walk simulation using Scapy",
+    "output": ">>> ans = sr1(IP(dst=\"8.8.8.8\")/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname=\"example.com\",qtype=\"NSEC\")),timeout=2)\n>>> ans.show()"
+  },
+  {
+    "instruction": "Set up certbot DNS challenge via manual mode with a hook script",
+    "output": "certbot certonly --manual --preferred-challenges dns -d example.com --manual-auth-hook /usr/local/bin/auth-hook.sh"
+  },
+  {
+    "instruction": "Query the Cloudflare API for zone settings via flarectl",
+    "output": "Zone: example.com (abc123def456ghi789jkl012mno345p)\n  Plan: Free\n  Status: Active\n  Name Servers: jim.ns.cloudflare.com, lara.ns.cloudflare.com\n  SSL: Flexible\n  Security Level: Medium\n  IP Geolocation: Off\n  IPv6: On\n  WebSockets: Off\n\nUse `flarectl zone settings --zone example.com` to update settings."
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Install syslinux (extlinux) on an ext4 partition",
+    "output": "<think>\nWe're being asked to install syslinux (extlinux) on an ext4 partition.\nI'd use extlinux for this — extlinux operations.\nQuick verification after execution to be safe.\n</think>\nextlinux --install /boot/syslinux"
+  },
+  {
+    "instruction": "Update syslinux master boot record on /dev/sda",
+    "output": "<think>\nThe user wants to update syslinux master boot record on /dev/sda.\nLet me reason through this.\nFor this, dd is the right tool — dd operations.\nNo need for complex pipelines here — one command is sufficient.\ndd is dangerous if you get the device wrong — you could wipe the wrong disk. Triple-check the target device.\nAfter running, I'll confirm the result looks right.\n</think>\ndd bs=440 count=1 if=/usr/lib/syslinux/mbr/mbr.bin of=/dev/sda"
+  },
+  {
+    "instruction": "Install isolinux for a bootable ISO",
+    "output": "<think>\nThe task requires us to install isolinux for a bootable ISO.\nLet me reason through this.\nThe tool for this job is isolinux — isolinux operations.\nI'm using -d for directory listing, don't descend — standard practice for this kind of operation.\nLet me verify afterward that it worked correctly.\n</think>\nisolinux /tmp/iso/boot/isolinux -d /boot/isolinux"
+  },
+  {
+    "instruction": "Set up PXELINUX for network booting",
+    "output": "<think>\nThe goal is to set up PXELINUX for network booting.\nLet me think through this step by step.\nThe tool for this job is cp — file copying.\nUsing && for chaining ensures if any step fails, the whole thing stops — safer than running separately.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\nAfter running, I'll confirm the result looks right.\n</think>\ncp /usr/lib/syslinux/modules/bios/pxelinux.0 /srv/tftp/ && mkdir /srv/tftp/pxelinux.cfg"
+  },
+  {
+    "instruction": "Set syslinux default timeout to 50 deciseconds",
+    "output": "<think>\nSo we need to set syslinux default timeout to 50 deciseconds.\nLet me consider what makes sense here.\nA single command handles this cleanly — no need to overcomplicate it.\nCheck the output for errors before proceeding to the next step.\n</think>\necho 'TIMEOUT 50' >> /boot/syslinux/syslinux.cfg"
+  },
+  {
+    "instruction": "Configure syslinux serial console",
+    "output": "<think>\nThe goal is to configure syslinux serial console.\nLet me consider what makes sense here.\nAfter running, confirm it worked as expected before moving on.\n</think>\necho 'SERIAL 0 115200' >> /boot/syslinux/syslinux.cfg"
+  },
+  {
+    "instruction": "Create a syslinux menu entry for Debian",
+    "output": "<think>\nThe task requires us to create a syslinux menu entry for Debian.\nFirst, let me understand what's needed here.\nBest tool here is cat — cat operations.\nAfter running, confirm it worked as expected before moving on.\nAfter running, I'll confirm the result looks right.\n</think>\ncat >> /boot/syslinux/syslinux.cfg <<'EOF'\nLABEL linux\n  LINUX /vmlinuz\n  INITRD /initrd.img\n  APPEND root=/dev/sda1 ro quiet\nEOF"
+  },
+  {
+    "instruction": "Install rEFInd boot manager",
+    "output": "<think>\nNeed to install rEFInd boot manager.\nBest tool here is refind-install — refind-install operations.\nCheck the output for errors before proceeding to the next step.\n</think>\nrefind-install"
+  },
+  {
+    "instruction": "Install rEFInd to a non-standard ESP",
+    "output": "<think>\nThe user wants to install rEFInd to a non-standard ESP.\nBest tool here is refind-install — refind-install operations.\nI'll check the output to make sure it did what we expected.\n</think>\nrefind-install --esp /boot/efi"
+  },
+  {
+    "instruction": "Set rEFInd default boot entry to Linux",
+    "output": "<think>\nThis is asking us to set rEFInd default boot entry to Linux.\nHere's how I'd approach this.\nBest tool here is refind-mkdefault — refind-mkdefault operations.\nLet me verify afterward that it worked correctly.\n</think>\nrefind-mkdefault"
+  },
+  {
+    "instruction": "Convert rEFInd entry to GRUB style",
+    "output": "<think>\nWe should convert rEFInd entry to GRUB style.\nrefind-to-grub is what we need — refind-to-grub operations.\n</think>\nrefind-to-grub"
+  },
+  {
+    "instruction": "Configure rEFInd to show only Linux kernels",
+    "output": "<think>\nNeed to configure rEFInd to show only Linux kernels.\nI'll check the output to make sure it did what we expected.\n</think>\necho 'dont_scan_volumes ESP' >> /boot/efi/EFI/refind/refind.conf"
+  },
+  {
+    "instruction": "Set rEFInd to boot in text mode only",
+    "output": "<think>\nAlright, we need to set rEFInd to boot in text mode only.\nLet me break this down.\n</think>\necho 'use_graphics_for osx,linux' >> /boot/efi/EFI/refind/refind.conf"
+  },
+  {
+    "instruction": "Add a custom rEFInd icon for Linux",
+    "output": "<think>\nThe task requires us to add a custom rEFInd icon for Linux.\nLet me think through this step by step.\nThe tool for this job is cp — file copying.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp linux-icon.png /boot/efi/EFI/refind/icons/os_linux.png"
+  },
+  {
+    "instruction": "Configure rEFInd timeout to 10 seconds",
+    "output": "<think>\nThe goal is to configure rEFInd timeout to 10 seconds.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nAfter running, I'll confirm the result looks right.\n</think>\necho 'timeout 10' >> /boot/efi/EFI/refind/refind.conf"
+  },
+  {
+    "instruction": "Install syslinux on an ext2 partition",
+    "output": "<think>\nThe user wants to install syslinux on an ext2 partition.\nFirst, let me understand what's needed here.\nextlinux is what we need — extlinux operations.\nA single command handles this cleanly — no need to overcomplicate it.\nAlways verify the result — check the exit code with echo $? or inspect the output.\nLet me verify afterward that it worked correctly.\n</think>\nextlinux --install /boot"
+  },
+  {
+    "instruction": "Create a SYSLINUX floppy image",
+    "output": "<think>\nThis is asking us to create a SYSLINUX floppy image.\nThis calls for syslinux. Syslinux operations.\nAfter running, confirm it worked as expected before moving on.\nI'll check the output to make sure it did what we expected.\n</think>\nsyslinux /dev/fd0"
+  },
+  {
+    "instruction": "Install PXELINUX with BIOS modules",
+    "output": "<think>\nThe task requires us to install PXELINUX with BIOS modules.\nThis calls for cp. File copying.\nNo need for complex pipelines here — one command is sufficient.\ncp without -i or --no-clobber can silently overwrite files. Be sure the destination is right.\n</think>\ncp /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp/"
+  },
+  {
+    "instruction": "Set up isolinux for a custom Debian live ISO",
+    "output": "<think>\nThe goal is to set up isolinux for a custom Debian live ISO.\nThe tool for this job is cp — file copying.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nQuick verification after execution to be safe.\n</think>\ncp /usr/lib/ISOLINUX/isolinux.bin /tmp/iso/boot/isolinux/ && cp /usr/lib/syslinux/modules/bios/ldlinux.c32 /tmp/iso/boot/isolinux/"
+  },
+  {
+    "instruction": "rEFInd: show Apple boot option if present",
+    "output": "<think>\nThe user wants to rEFInd: show Apple boot option if present.\nThe && chaining means each command only runs if the previous one succeeded. That's important for correctness.\nLet me verify afterward that it worked correctly.\n</think>\necho 'include /EFI/refind/refind.conf' && echo 'enable_touch false' >> /boot/efi/EFI/refind/refind.conf"
+  },
+  {
+    "instruction": "Remove rEFInd from ESP",
+    "output": "<think>\nNeed to remove rEFInd from ESP.\nI'll reach for rm here because file deletion.\nBe careful with rm — once deleted it's gone. Double-check the path before running.\n</think>\nrm -rf /boot/efi/EFI/refind"
+  },
+  {
+    "instruction": "Install rEFInd with driver for ext4 filesystem",
+    "output": "<think>\nWe're being asked to install rEFInd with driver for ext4 filesystem.\nLet me think through this step by step.\nThis calls for refind-install. Refind-install operations.\nI'll check the output to make sure it did what we expected.\n</think>\nrefind-install --alldrivers"
+  }
+]

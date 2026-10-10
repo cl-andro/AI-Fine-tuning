@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "Create a Pulumi project with an Azure resource",
+    "output": "pulumi new azure-python"
+  },
+  {
+    "instruction": "Create an Azure resource group with Pulumi",
+    "output": "echo 'import pulumi_azure as azure; rg = azure.core.ResourceGroup(\"main\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an Azure storage account",
+    "output": "echo 'account = azure.storage.Account(\"storage\", resource_group_name=rg.name, location=rg.location, account_tier=\"Standard\", account_replication_type=\"LRS\")' > __main__.py"
+  },
+  {
+    "instruction": "Create an Azure VM with Pulumi",
+    "output": "echo 'vm = azure.compute.VirtualMachine(\"web\", resource_group_name=rg.name, location=rg.location, vm_size=\"Standard_B1s\", network_interface_ids=[nic.id], storage_image_reference=azure.compute.VirtualMachineStorageImageReferenceArgs(publisher=\"Canonical\", offer=\"UbuntuServer\", sku=\"22.04-LTS\", version=\"latest\"), storage_os_disk=azure.compute.VirtualMachineStorageOsDiskArgs(create_option=\"FromImage\", managed_disk_type=\"Standard_LRS\"), os_profile=azure.compute.VirtualMachineOsProfileArgs(computer_name=\"web\", admin_username=\"admin\", admin_password=\"Password123!\"), os_profile_linux_config=azure.compute.VirtualMachineOsProfileLinuxConfigArgs(disable_password_authentication=False))' > vm.py"
+  },
+  {
+    "instruction": "Create an AKS cluster with Pulumi",
+    "output": "echo 'cluster = azure.containerservice.KubernetesCluster(\"aks\", resource_group_name=rg.name, location=rg.location, default_node_pool=azure.containerservice.KubernetesClusterDefaultNodePoolArgs(name=\"default\", node_count=3, vm_size=\"Standard_DS2_v2\"), dns_prefix=\"myaks\", identity=azure.containerservice.KubernetesClusterIdentityArgs(type=\"SystemAssigned\"))' > aks.py"
+  },
+  {
+    "instruction": "Create a GCP bucket with Pulumi",
+    "output": "echo 'import pulumi_gcp as gcp; bucket = gcp.storage.Bucket(\"data\", location=\"US\", uniform_bucket_level_access=True)' > __main__.py"
+  },
+  {
+    "instruction": "Create a GCP compute instance",
+    "output": "echo 'instance = gcp.compute.Instance(\"web\", machine_type=\"e2-micro\", zone=\"us-central1-a\", boot_disk=gcp.compute.InstanceBootDiskArgs(initialize_params=gcp.compute.InstanceBootDiskInitializeParamsArgs(image=\"ubuntu-os-cloud/ubuntu-2204-lts\")))' > gcp-vm.py"
+  },
+  {
+    "instruction": "Create a GKE cluster with Pulumi",
+    "output": "echo 'cluster = gcp.container.Cluster(\"gke\", initial_node_count=3, node_config=gcp.container.ClusterNodeConfigArgs(machine_type=\"e2-medium\"))' > gke.py"
+  },
+  {
+    "instruction": "Create a Kubernetes namespace with Pulumi",
+    "output": "echo 'import pulumi_kubernetes as k8s; ns = k8s.core.v1.Namespace(\"app\")' > __main__.py"
+  },
+  {
+    "instruction": "Deploy an Nginx pod with Pulumi Kubernetes",
+    "output": "echo 'pod = k8s.apps.v1.Deployment(\"nginx\", spec=k8s.apps.v1.DeploymentSpecArgs(replicas=3, selector=k8s.meta.v1.LabelSelectorArgs(match_labels={\"app\":\"nginx\"}), template=k8s.core.v1.PodTemplateSpecArgs(metadata=k8s.meta.v1.ObjectMetaArgs(labels={\"app\":\"nginx\"}), spec=k8s.core.v1.PodSpecArgs(containers=[k8s.core.v1.ContainerArgs(name=\"nginx\", image=\"nginx:latest\", ports=[k8s.core.v1.ContainerPortArgs(container_port=80)])]))))' > k8s-nginx.py"
+  },
+  {
+    "instruction": "Expose a Kubernetes pod via Service",
+    "output": "echo 'svc = k8s.core.v1.Service(\"nginx\", metadata=k8s.meta.v1.ObjectMetaArgs(labels={\"app\":\"nginx\"}), spec=k8s.core.v1.ServiceSpecArgs(selector={\"app\":\"nginx\"}, ports=[k8s.core.v1.ServicePortArgs(port=80, target_port=80)], type=\"LoadBalancer\"))' > k8s-svc.py"
+  },
+  {
+    "instruction": "Create a ConfigMap in Kubernetes via Pulumi",
+    "output": "echo 'cm = k8s.core.v1.ConfigMap(\"config\", data={\"app.properties\": \"key=value\"})' > k8s-cm.py"
+  },
+  {
+    "instruction": "Create a Kubernetes Secret via Pulumi",
+    "output": "echo 'secret = k8s.core.v1.Secret(\"db\", string_data={\"password\": \"supersecret\"})' > k8s-secret.py"
+  },
+  {
+    "instruction": "Create an Ingress in Kubernetes via Pulumi",
+    "output": "echo 'ing = k8s.networking.v1.Ingress(\"app\", spec=k8s.networking.v1.IngressSpecArgs(ingress_class_name=\"nginx\", rules=[k8s.networking.v1.IngressRuleArgs(host=\"app.example.com\", http=k8s.networking.v1.HTTPIngressRuleValueArgs(paths=[k8s.networking.v1.HTTPIngressPathArgs(path=\"/\", path_type=\"Prefix\", backend=k8s.networking.v1.IngressBackendArgs(service=k8s.networking.v1.IngressServiceBackendArgs(name=svc.metadata.name, port=k8s.networking.v1.ServiceBackendPortArgs(number=80))))]))))' > k8s-ingress.py"
+  },
+  {
+    "instruction": "Create a HorizontalPodAutoscaler in Pulumi K8s",
+    "output": "echo 'hpa = k8s.autoscaling.v2.HorizontalPodAutoscaler(\"web\", spec=k8s.autoscaling.v2.HorizontalPodAutoscalerSpecArgs(max_replicas=10, min_replicas=2, scale_target_ref=k8s.autoscaling.v2.CrossVersionObjectReferenceArgs(kind=\"Deployment\", name=\"nginx\", api_version=\"apps/v1\"), metrics=[k8s.autoscaling.v2.MetricSpecArgs(type=\"Resource\", resource=k8s.autoscaling.v2.ResourceMetricSourceArgs(name=\"cpu\", target=k8s.autoscaling.v2.MetricTargetArgs(type=\"Utilization\", average_utilization=80)))]))' > k8s-hpa.py"
+  },
+  {
+    "instruction": "Deploy to Kubernetes via Helm chart in Pulumi",
+    "output": "echo 'chart = k8s.helm.v3.Chart(\"nginx-ingress\", helm.k8s.helm.v3.ChartArgs(chart=\"nginx-ingress\", repository_opts=k8s.helm.v3.RepositoryOptsArgs(repo=\"https://helm.nginx.com/stable\")))' > helm.py"
+  },
+  {
+    "instruction": "Deploy a Helm chart with custom values in Pulumi",
+    "output": "echo 'chart = k8s.helm.v3.Chart(\"redis\", k8s.helm.v3.ChartArgs(chart=\"redis\", fetch_opts=k8s.helm.v3.FetchOptsArgs(repo=\"https://charts.bitnami.com/bitnami\"), values={\"replica\":{\"replicaCount\":3}}))' > helm-values.py"
+  },
+  {
+    "instruction": "Create a Custom Resource Definition in Pulumi K8s",
+    "output": "echo 'crd = k8s.apiextensions.CustomResource(\"my-resource\", api_version=\"example.com/v1\", kind=\"MyResource\", metadata={\"name\":\"my-instance\"}, other_fields={\"spec\":{\"replicas\":3}})' > crd.py"
+  },
+  {
+    "instruction": "Create a Kubernetes namespace with annotations",
+    "output": "echo 'ns = k8s.core.v1.Namespace(\"team-a\", metadata=k8s.meta.v1.ObjectMetaArgs(name=\"team-a\", annotations={\"scheduler.alpha.kubernetes.io/node-selector\": \"pool=spot\"}))' > namespace.py"
+  },
+  {
+    "instruction": "Create a Kubernetes network policy",
+    "output": "echo 'netpol = k8s.networking.v1.NetworkPolicy(\"deny-all\", spec=k8s.networking.v1.NetworkPolicySpecArgs(pod_selector={}, policy_types=[\"Ingress\",\"Egress\"]))' > network-policy.py"
+  },
+  {
+    "instruction": "Create a Kubernetes resource quota",
+    "output": "echo 'quota = k8s.core.v1.ResourceQuota(\"compute\", spec=k8s.core.v1.ResourceQuotaSpecArgs(hard={\"pods\":\"10\",\"requests.cpu\":\"4\",\"requests.memory\":\"8Gi\",\"limits.cpu\":\"8\",\"limits.memory\":\"16Gi\"}))' > quota.py"
+  },
+  {
+    "instruction": "Create a Kubernetes limit range",
+    "output": "echo 'limits = k8s.core.v1.LimitRange(\"container-limits\", spec=k8s.core.v1.LimitRangeSpecArgs(limits=[k8s.core.v1.LimitRangeItemArgs(type=\"Container\", max={\"cpu\":\"2\",\"memory\":\"1Gi\"}, min={\"cpu\":\"100m\",\"memory\":\"128Mi\"})]))' > limit-range.py"
+  },
+  {
+    "instruction": "Create a Kubernetes pod disruption budget",
+    "output": "echo 'pdb = k8s.policy.v1.PodDisruptionBudget(\"web\", spec=k8s.policy.v1.PodDisruptionBudgetSpecArgs(min_available=2, selector=k8s.meta.v1.LabelSelectorArgs(match_labels={\"app\":\"nginx\"})))' > pdb.py"
+  },
+  {
+    "instruction": "Create a Kubernetes priority class",
+    "output": "echo 'pc = k8s.scheduling.v1.PriorityClass(\"high-priority\", value=1000, global_default=False, description=\"High priority pods\")' > priority.py"
+  },
+  {
+    "instruction": "Create a Kubernetes PVC with storage class",
+    "output": "echo 'pvc = k8s.core.v1.PersistentVolumeClaim(\"data\", spec=k8s.core.v1.PersistentVolumeClaimSpecArgs(access_modes=[\"ReadWriteOnce\"], resources=k8s.core.v1.ResourceRequirementsArgs(requests={\"storage\":\"10Gi\"}), storage_class_name=\"ssd\"))' > pvc.py"
+  }
+]
