@@ -1,0 +1,78 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Jupyter Data Science stack.\n- Jupyter Lab with common DS packages\n- Port 8888",
+    "output": "FROM jupyter/datascience-notebook:latest\nWORKDIR /workspace\nRUN mamba install -y pandas numpy scikit-learn matplotlib seaborn plotly && mamba clean -afy\nEXPOSE 8888\nCMD [\"start-notebook.py\", \"--NotebookApp.token=''\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PyTorch training environment.\n- GPU support via nvidia base\n- Port 6006 for tensorboard",
+    "output": "FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04\nRUN apt-get update && apt-get install -y python3 python3-pip\nRUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124\nWORKDIR /workspace\nCOPY . .\nEXPOSE 6006\nCMD [\"tensorboard\", \"--logdir\", \"/workspace/logs\", \"--host\", \"0.0.0.0\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a TensorFlow GPU training environment.\n- Port 6006 for tensorboard",
+    "output": "FROM tensorflow/tensorflow:2.16.1-gpu\nWORKDIR /workspace\nRUN pip install --no-cache-dir numpy pandas scikit-learn\nCOPY . .\nEXPOSE 6006\nCMD [\"tensorboard\", \"--logdir\", \"/workspace/logs\", \"--host\", \"0.0.0.0\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an MLflow tracking server.\n- Port 5000\n- Uses SQLite backend",
+    "output": "FROM python:3.12-slim\nRUN pip install --no-cache-dir mlflow\nWORKDIR /mlflow\nEXPOSE 5000\nCMD [\"mlflow\", \"server\", \"--host\", \"0.0.0.0\", \"--port\", \"5000\", \"--backend-store-uri\", \"sqlite:///mlflow.db\", \"--default-artifact-root\", \"./mlruns\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Ray cluster head node.\n- Port 8265 for dashboard, 6379 for GCS",
+    "output": "FROM rayproject/ray:2.11.0-py310\nWORKDIR /workspace\nCOPY . .\nEXPOSE 8265 6379\nCMD [\"ray\", \"start\", \"--head\", \"--port=6379\", \"--dashboard-host=0.0.0.0\", \"--dashboard-port=8265\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a FastAPI model serving endpoint with a scikit-learn model.\n- Loads model.pkl on startup\n- Port 8000",
+    "output": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY model.pkl .\nCOPY . .\nEXPOSE 8000\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a DVC (Data Version Control) environment.\n- Includes dvc with s3 support\n- Port 8080 for dvc studio if needed",
+    "output": "FROM python:3.12-slim\nRUN pip install --no-cache-dir \"dvc[s3]\" dvc-data\nWORKDIR /workspace\nCOPY . .\nRUN dvc init || true\nEXPOSE 8080\nCMD [\"bash\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Hugging Face Transformers inference server.\n- Uses the TGI image pattern\n- Port 8080",
+    "output": "FROM ghcr.io/huggingface/text-generation-inference:2.0.4\nENV MODEL_ID=meta-llama/Llama-2-7b-hf\nEXPOSE 8080\nCMD [\"text-generation-launcher\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an Airflow DAG development environment.\n- Includes common providers\n- Port 8080",
+    "output": "FROM apache/airflow:2.9.0-python3.11\nWORKDIR /airflow/dags\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY dags ./dags\nEXPOSE 8080\nCMD [\"airflow\", \"standalone\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Spark driver container.\n- Includes PySpark\n- Port 4040 for Spark UI",
+    "output": "FROM bitnami/spark:3.5\nWORKDIR /workspace\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 4040\nCMD [\"spark-submit\", \"--master\", \"local[*]\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Prometheus ML anomaly detection service.\n- Uses a Python anomaly detection library\n- Port 9090",
+    "output": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 9090\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Feast feature store offline server.\n- Port 6566",
+    "output": "FROM python:3.11-slim\nRUN pip install --no-cache-dir feast\nWORKDIR /feature_repo\nCOPY . .\nEXPOSE 6566\nCMD [\"feast\", \"serve\", \"--host\", \"0.0.0.0\", \"--port\", \"6566\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Label Studio labeling tool.\n- Port 8080",
+    "output": "FROM humansignal/label-studio:latest\nEXPOSE 8080\nCMD [\"label-studio\", \"start\", \"0.0.0.0\", \"8080\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Weaviate vector database.\n- Port 8080",
+    "output": "FROM cr.weaviate.io/semitechnologies/weaviate:1.25.4\nEXPOSE 8080 50051\nCMD [\"--host\", \"0.0.0.0\", \"--port\", \"8080\", \"--scheme\", \"http\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Qdrant vector database.\n- Port 6333",
+    "output": "FROM qdrant/qdrant:v1.9.2\nEXPOSE 6333 6334\nCMD [\"qdrant\", \"--host\", \"0.0.0.0\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a MinIO ML model registry.\n- Port 9000",
+    "output": "FROM minio/minio:latest\nEXPOSE 9000 9001\nCMD [\"server\", \"/data\", \"--console-address\", \":9001\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a LangChain LLM application.\n- Port 8000",
+    "output": "FROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8000\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Streamlit ML dashboard.\n- Port 8501",
+    "output": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8501\nCMD [\"streamlit\", \"run\", \"app.py\", \"--server.port=8501\", \"--server.address=0.0.0.0\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Grafana with ML plugin dashboards.\n- Port 3000",
+    "output": "FROM grafana/grafana:latest\nENV GF_INSTALL_PLUGINS=grafana-machine-learning-app\nEXPOSE 3000\nCMD [\"run\"]"
+  }
+]

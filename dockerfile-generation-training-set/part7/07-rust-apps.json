@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 application.\n- Cargo.toml and Cargo.lock are present\n- src/main.rs is the entry point\n- Port 8080",
+    "output": "FROM rust:1.78\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Actix-web app.\n- Port 8080",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 Axum web app.\n- Port 3000",
+    "output": "FROM rust:1.78\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 3000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust CLI tool.\n- No ports",
+    "output": "FROM rust:1.78\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nCMD [\"./target/release/mycli\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Rocket app.\n- Port 8000",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust app using musl for fully static linking.\n- Port 8080",
+    "output": "FROM rust:1.78 as builder\nRUN rustup target add x86_64-unknown-linux-musl\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release --target x86_64-unknown-linux-musl\n\nFROM scratch\nCOPY --from=builder /app/target/x86_64-unknown-linux-musl/release/app /app\nEXPOSE 8080\nCMD [\"/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app with sqlx offline mode.\n- Uses SQLX_OFFLINE=true\n- Port 8080",
+    "output": "FROM rust:1.78\nWORKDIR /app\nENV SQLX_OFFLINE=true\nCOPY Cargo.toml Cargo.lock ./\nCOPY sqlx-data.json ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Tonic gRPC server.\n- Port 50051",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 50051\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app that uses openssl for TLS.\n- Install pkg-config and libssl-dev\n- Port 8443",
+    "output": "FROM rust:1.78\nRUN apt-get update && apt-get install -y pkg-config libssl-dev\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8443\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 app using tokio with multiple features.\n- Port 8080",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 WASM app compiled with wasm-pack.\n- Build stage compiles to WASM\n- Final stage serves with a static server\n- Port 8080",
+    "output": "FROM rust:1.78 as builder\nRUN rustup target add wasm32-unknown-unknown\nRUN cargo install wasm-pack\nWORKDIR /app\nCOPY . .\nRUN wasm-pack build --target web --out-dir pkg\n\nFROM nginx:alpine\nCOPY --from=builder /app/pkg /usr/share/nginx/html/pkg\nCOPY index.html /usr/share/nginx/html/index.html\nEXPOSE 8080\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Rocket app with dotenv configuration.\n- Port 8000",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nCOPY .env ./\nRUN cargo build --release\nEXPOSE 8000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app that needs cmake for a C dependency.\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN apt-get update && apt-get install -y cmake\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Rocket app with a fairing that needs openssl.\n- Port 8000",
+    "output": "FROM rust:1.77\nRUN apt-get update && apt-get install -y pkg-config libssl-dev\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app using sqlx with a live database connection at build time.\n- Build ARG for DATABASE_URL\n- Port 8080",
+    "output": "FROM rust:1.78\nWORKDIR /app\nARG DATABASE_URL\nENV DATABASE_URL=$DATABASE_URL\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Actix-web app with a custom build script.\n- build.rs is present\n- Port 8080",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY build.rs ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 Rocket app with a fairing for CORS.\n- Port 8000",
+    "output": "FROM rust:1.78\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Axum app with tower middleware.\n- Port 3000",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 3000\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app using diesel with migrations.\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN apt-get update && apt-get install -y libpq-dev\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nCOPY migrations ./migrations\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.77 Actix-web app with a multi-threaded runtime.\n- Port 8080",
+    "output": "FROM rust:1.77\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust 1.78 app using reqwest with native TLS.\n- Install openssl\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN apt-get update && apt-get install -y pkg-config libssl-dev\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nRUN cargo build --release\nEXPOSE 8080\nCMD [\"./target/release/app\"]"
+  }
+]

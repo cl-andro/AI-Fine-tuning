@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dockerfile to serve a static HTML/CSS/JS site with nginx.\n- Files are in the ./public directory\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY ./public /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile to serve a static site with nginx on port 8080.\n- Files in ./dist\n- Custom nginx.conf is provided",
+    "output": "FROM nginx:alpine\nCOPY ./dist /usr/share/nginx/html\nCOPY ./nginx.conf /etc/nginx/nginx.conf\nEXPOSE 8080\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx reverse proxy.\n- Custom nginx.conf with upstream config\n- Port 80 and 443",
+    "output": "FROM nginx:alpine\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80 443\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for nginx with SSL/TLS support using custom certificates.\n- Certificates in ./certs\n- Config in ./nginx.conf\n- Port 443",
+    "output": "FROM nginx:alpine\nCOPY nginx.conf /etc/nginx/nginx.conf\nCOPY certs /etc/nginx/certs\nEXPOSE 443\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Hugo static site.\n- Build stage runs hugo\n- Final stage serves with nginx\n- Port 80",
+    "output": "FROM hugomods/hugo:exts AS builder\nWORKDIR /src\nCOPY . .\nRUN hugo --minify\n\nFROM nginx:alpine\nCOPY --from=builder /src/public /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Jekyll static site.\n- Build stage runs jekyll build\n- Final stage is nginx serving _site\n- Port 80",
+    "output": "FROM jekyll/jekyll:4 AS builder\nWORKDIR /srv/jekyll\nCOPY . .\nRUN jekyll build\n\nFROM nginx:alpine\nCOPY --from=builder /srv/jekyll/_site /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Gatsby static site.\n- Build stage runs gatsby build\n- Final stage is nginx\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/public /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an Astro static site.\n- Build stage runs astro build\n- Final stage is nginx serving dist/\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/dist /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for nginx that serves static files and proxies /api to a backend.\n- Custom nginx.conf\n- Static files in ./html\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY ./html /usr/share/nginx/html\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx CDN cache server.\n- Custom nginx.conf with proxy_cache\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY nginx.conf /etc/nginx/nginx.conf\nRUN mkdir -p /var/cache/nginx\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Pelican static site.\n- Build stage runs pelican\n- Final stage is nginx\n- Port 80",
+    "output": "FROM python:3.12-slim AS builder\nRUN pip install --no-cache-dir pelican markdown\nWORKDIR /src\nCOPY . .\nRUN pelican content -o output\n\nFROM nginx:alpine\nCOPY --from=builder /src/output /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an Eleventy (11ty) static site.\n- Build stage runs eleventy\n- Final stage is nginx\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/_site /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx load balancer distributing traffic to 3 app servers.\n- Custom nginx.conf with upstream block\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Vue CLI production build served by nginx.\n- Build stage runs vue-cli-service build\n- Final stage is nginx\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/dist /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an Angular production build served by nginx.\n- Build stage runs ng build --configuration production\n- Final stage is nginx\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build -- --configuration production\n\nFROM nginx:alpine\nCOPY --from=builder /app/dist/browser /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a SvelteKit static adapter build served by nginx.\n- Build stage runs npm run build\n- Final stage is nginx serving build/\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/build /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx server that enables gzip compression.\n- Custom nginx.conf with gzip on\n- Static files in ./public\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY ./public /usr/share/nginx/html\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx server with HTTP/2 support.\n- Custom nginx.conf with http2 on\n- Port 443",
+    "output": "FROM nginx:alpine\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 443\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a docs site built with VitePress.\n- Build stage runs vitepress build\n- Final stage is nginx\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/docs/.vitepress/dist /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for an nginx server with basic authentication enabled.\n- .htpasswd file is copied\n- Custom nginx.conf\n- Port 80",
+    "output": "FROM nginx:alpine\nCOPY ./public /usr/share/nginx/html\nCOPY nginx.conf /etc/nginx/nginx.conf\nCOPY .htpasswd /etc/nginx/.htpasswd\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  }
+]

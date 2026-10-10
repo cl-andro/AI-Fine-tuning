@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Express application.\n- package.json and package-lock.json are present\n- Entry point is server.js\n- Port 3000",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 Express app with a dev stage that runs npm run dev.\n- Use node:18-slim\n- Port 3000",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"run\", \"dev\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Next.js production build.\n- Build stage runs npm run build\n- Final stage runs npm start\n- Port 3000",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=builder /app/.next ./.next\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nCOPY --from=builder /app/public ./public\nEXPOSE 3000\nCMD [\"npm\", \"start\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 TypeScript app.\n- Uses npm run build then npm start\n- tsconfig.json and src/ are present\n- Port 4000",
+    "output": "FROM node:18-slim AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:18-slim\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 4000\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 NestJS application.\n- Uses npm run build then node dist/main\n- Port 3000",
+    "output": "FROM node:20-slim AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-slim\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 3000\nCMD [\"node\", \"dist/main\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 Socket.IO chat server.\n- package.json includes socket.io\n- server.js is the entry point\n- Port 3000",
+    "output": "FROM node:18-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 app that uses yarn instead of npm.\n- yarn.lock is present\n- Entry is index.js\n- Port 8080",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package.json yarn.lock ./\nRUN yarn install --frozen-lockfile --production\nCOPY . .\nEXPOSE 8080\nCMD [\"node\", \"index.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 Bull queue worker (Redis-backed).\n- worker.js processes jobs\n- No exposed ports",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nCMD [\"node\", \"worker.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Vite React app served by nginx.\n- Build stage runs npm run build producing dist/\n- Final stage uses nginx:alpine to serve static files\n- Port 80",
+    "output": "FROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/dist /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 Meteor application.\n- Uses meteor base image\n- Port 3000",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"start\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 WebSocket server using ws library.\n- server.js is the entry point\n- Port 8080",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 8080\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 GraphQL Apollo Server.\n- index.js sets up Apollo Server\n- Port 4000",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 4000\nCMD [\"node\", \"index.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 app using pnpm.\n- pnpm-lock.yaml is present\n- Entry is src/index.ts compiled to dist/\n- Port 3000",
+    "output": "FROM node:20-slim AS builder\nRUN npm install -g pnpm\nWORKDIR /app\nCOPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm run build\n\nFROM node:20-slim\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 3000\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 app with a custom non-root user.\n- App files in /app\n- Run as user node\n- Port 3000",
+    "output": "FROM node:18-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nRUN chown -R node:node /app\nUSER node\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Telegram bot using node-telegram-bot-api.\n- bot.js is the entry point\n- No exposed ports",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nCMD [\"node\", \"bot.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 Strapi CMS.\n- Uses strapi base pattern\n- Port 1337",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 1337\nCMD [\"npm\", \"run\", \"start\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Discord bot.\n- Uses discord.js\n- bot.js is the entry\n- No ports",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nCMD [\"node\", \"bot.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 18 real-time collaborative editor using y-websocket.\n- server.js is the entry\n- Port 1234",
+    "output": "FROM node:18-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 1234\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js 20 Fastify REST API.\n- Uses npm run start\n- Port 3000",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"run\", \"start\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Node.js 20 app that needs native compilation.\n- Builder installs python3, make, g++ for node-gyp\n- Final image is alpine slim\n- Port 3000",
+    "output": "FROM node:20-alpine AS builder\nRUN apk add --no-cache python3 make g++\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/package.json ./\nEXPOSE 3000\nCMD [\"node\", \"dist/index.js\"]"
+  }
+]

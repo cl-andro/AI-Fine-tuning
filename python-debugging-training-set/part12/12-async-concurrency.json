@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def main():\n    print(\"hello\")\n    await asyncio.sleep(1)\n    print(\"world\")\n\nasyncio.run(main())",
+    "output": "import asyncio\n\nasync def main():\n    print(\"hello\")\n    await asyncio.sleep(1)\n    print(\"world\")\n\nasyncio.run(main())"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def fetch(url):\n    return requests.get(url)",
+    "output": "import asyncio\nimport aiohttp\n\nasync def fetch(url):\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url) as resp:\n            return await resp.text()"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nasync def process(items):\n    for item in items:\n        result = await handle(item)\n    return result",
+    "output": "async def process(items):\n    results = []\n    for item in items:\n        result = await handle(item)\n        results.append(result)\n    return results"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport threading\n\ncounter = 0\n\ndef increment():\n    global counter\n    for _ in range(100000):\n        counter += 1\n\nthreads = [threading.Thread(target=increment) for _ in range(4)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\nprint(counter)",
+    "output": "import threading\n\ncounter = 0\nlock = threading.Lock()\n\ndef increment():\n    global counter\n    for _ in range(100000):\n        with lock:\n            counter += 1\n\nthreads = [threading.Thread(target=increment) for _ in range(4)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\nprint(counter)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def main():\n    tasks = [fetch(url) for url in urls]\n    results = []\n    for t in tasks:\n        results.append(await t)\n    return results",
+    "output": "import asyncio\n\nasync def main():\n    tasks = [fetch(url) for url in urls]\n    results = await asyncio.gather(*tasks)\n    return results"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\ndef worker(q):\n    while True:\n        item = q.get()\n        if item is None:\n            break\n        process(item)",
+    "output": "def worker(q):\n    while True:\n        item = q.get()\n        if item is None:\n            q.task_done()\n            break\n        process(item)\n        q.task_done()"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport concurrent.futures\n\ndef compute(x):\n    return x * x\n\nwith concurrent.futures.ThreadPoolExecutor() as ex:\n    results = ex.map(compute, range(10))\n    print(results)",
+    "output": "import concurrent.futures\n\ndef compute(x):\n    return x * x\n\nwith concurrent.futures.ThreadPoolExecutor() as ex:\n    results = list(ex.map(compute, range(10)))\n    print(results)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def delayed_print(msg, delay):\n    await asyncio.sleep(delay)\n    print(msg)\n\nasync def main():\n    delayed_print(\"a\", 2)\n    delayed_print(\"b\", 1)",
+    "output": "import asyncio\n\nasync def delayed_print(msg, delay):\n    await asyncio.sleep(delay)\n    print(msg)\n\nasync def main():\n    await asyncio.gather(\n        delayed_print(\"a\", 2),\n        delayed_print(\"b\", 1),\n    )"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport time\nfrom threading import Thread\n\ndef slow():\n    time.sleep(2)\n    return 42\n\nt = Thread(target=slow)\nt.start()\nprint(t.result())",
+    "output": "import time\nfrom concurrent.futures import ThreadPoolExecutor\n\ndef slow():\n    time.sleep(2)\n    return 42\n\nwith ThreadPoolExecutor() as ex:\n    future = ex.submit(slow)\n    print(future.result())"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def producer(queue):\n    for i in range(5):\n        queue.put(i)\n\nasync def consumer(queue):\n    while True:\n        item = await queue.get()\n        print(item)",
+    "output": "import asyncio\n\nasync def producer(queue):\n    for i in range(5):\n        await queue.put(i)\n    await queue.put(None)\n\nasync def consumer(queue):\n    while True:\n        item = await queue.get()\n        if item is None:\n            break\n        print(item)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport multiprocessing\n\ndef square(x):\n    return x * x\n\nif __name__ == \"__main__\":\n    with multiprocessing.Pool(4) as p:\n        results = p.map(square, range(10))\n    print(results)",
+    "output": "import multiprocessing\n\ndef square(x):\n    return x * x\n\nif __name__ == \"__main__\":\n    with multiprocessing.Pool(4) as p:\n        results = p.map(square, range(10))\n    print(results)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def fetch_all(urls):\n    tasks = []\n    for url in urls:\n        task = asyncio.create_task(fetch(url))\n        tasks.append(task)\n    return tasks",
+    "output": "import asyncio\n\nasync def fetch_all(urls):\n    tasks = [asyncio.create_task(fetch(url)) for url in urls]\n    return await asyncio.gather(*tasks)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport threading\n\ndata = []\n\ndef append():\n    for i in range(1000):\n        data.append(i)\n\nthreads = [threading.Thread(target=append) for _ in range(4)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\nprint(len(data))",
+    "output": "import threading\n\ndata = []\nlock = threading.Lock()\n\ndef append():\n    for i in range(1000):\n        with lock:\n            data.append(i)\n\nthreads = [threading.Thread(target=append) for _ in range(4)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\nprint(len(data))"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def timeout_op():\n    await asyncio.sleep(10)\n    return \"done\"\n\nresult = asyncio.wait_for(timeout_op(), timeout=5)",
+    "output": "import asyncio\n\nasync def timeout_op():\n    await asyncio.sleep(10)\n    return \"done\"\n\nasync def main():\n    try:\n        result = await asyncio.wait_for(timeout_op(), timeout=5)\n    except asyncio.TimeoutError:\n        result = \"timed out\"\n    return result"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nfrom concurrent.futures import ProcessPoolExecutor\n\ndef work(n):\n    return sum(range(n))\n\nwith ProcessPoolExecutor(max_workers=4) as ex:\n    futures = [ex.submit(work, 1000000) for _ in range(10)]\n    for f in futures:\n        print(f.result())",
+    "output": "from concurrent.futures import ProcessPoolExecutor\n\ndef work(n):\n    return sum(range(n))\n\nwith ProcessPoolExecutor(max_workers=4) as ex:\n    futures = [ex.submit(work, 1000000) for _ in range(10)]\n    for f in futures:\n        print(f.result())"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def main():\n    await asyncio.sleep(1)\n    print(\"done\")\n\nasyncio.run(main())\nasyncio.run(main())",
+    "output": "import asyncio\n\nasync def main():\n    await asyncio.sleep(1)\n    print(\"done\")\n\nasyncio.run(main())"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport queue\nimport threading\n\nq = queue.Queue()\n\ndef producer():\n    for i in range(10):\n        q.put(i)\n\ndef consumer():\n    while True:\n        item = q.get()\n        if item == 9:\n            break\n        process(item)",
+    "output": "import queue\nimport threading\n\nq = queue.Queue()\nSENTINEL = None\n\ndef producer():\n    for i in range(10):\n        q.put(i)\n    q.put(SENTINEL)\n\ndef consumer():\n    while True:\n        item = q.get()\n        if item is SENTINEL:\n            break\n        process(item)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def retry_request(url, max_retries=3):\n    for i in range(max_retries):\n        try:\n            return await fetch(url)\n        except Exception:\n            pass",
+    "output": "import asyncio\n\nasync def retry_request(url, max_retries=3):\n    for i in range(max_retries):\n        try:\n            return await fetch(url)\n        except Exception:\n            if i == max_retries - 1:\n                raise\n            await asyncio.sleep(2 ** i)"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport threading\n\nevent = threading.Event()\n\ndef waiter():\n    event.wait()\n    print(\"woke up\")\n\nt = threading.Thread(target=waiter)\nt.start()\nevent.set()",
+    "output": "import threading\nimport time\n\nevent = threading.Event()\n\ndef waiter():\n    event.wait()\n    print(\"woke up\")\n\nt = threading.Thread(target=waiter)\nt.start()\ntime.sleep(0.1)\nevent.set()"
+  },
+  {
+    "instruction": "Fix the bug in this Python code:\n\nimport asyncio\n\nasync def process_batch(items):\n    results = []\n    for item in items:\n        results.append(await handle(item))\n    return results",
+    "output": "import asyncio\n\nasync def process_batch(items):\n    tasks = [handle(item) for item in items]\n    return await asyncio.gather(*tasks)"
+  }
+]

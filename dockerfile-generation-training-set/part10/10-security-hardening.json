@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a security-hardened Dockerfile for a Node.js app.\n- Run as a non-root user\n- Use COPY instead of ADD\n- No secrets in the image\n- Port 3000",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY --chown=node:node . .\nUSER node\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a security-hardened Dockerfile for a Python app.\n- Run as non-root\n- Use .dockerignore conceptually (mention it)\n- No pip cache\n- Port 8000",
+    "output": "FROM python:3.12-slim\nRUN useradd -m -r appuser\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY --chown=appuser:appuser . .\nUSER appuser\nEXPOSE 8000\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a distroless base image for maximum security.\n- Go app compiled statically\n- No shell in final image\n- Port 8080",
+    "output": "FROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 GOOS=linux go build -o server .\n\nFROM gcr.io/distroless/static:nonroot\nCOPY --from=builder /app/server /server\nEXPOSE 8080\nUSER nonroot:nonroot\nENTRYPOINT [\"/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that scans for vulnerabilities using trivy in a build stage.\n- Multi-stage with trivy scan\n- Final stage is clean\n- Port 8080",
+    "output": "FROM aquasec/trivy:latest AS scanner\nCOPY . /app\nRUN trivy filesystem --exit-code 1 --severity HIGH,CRITICAL /app\n\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a read-only root filesystem.\n- All writable paths are tmpfs or volumes\n- Port 8080",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nUSER node\nEXPOSE 8080\nCMD [\"node\", \"server.js\"]\n# Run with: docker run --read-only --tmpfs /tmp --tmpfs /app/tmp ..."
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go app that drops all Linux capabilities.\n- Final stage uses setcap to drop\n- Port 8080",
+    "output": "FROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 go build -o server .\n\nFROM alpine:3.19\nRUN apk add --no-cache libcap \\\n    && setcap 'cap_net_bind_service=+ep' /usr/local/bin/server 2>/dev/null || true\nCOPY --from=builder /app/server /usr/local/bin/server\nEXPOSE 8080\nUSER nobody\nENTRYPOINT [\"server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that verifies checksums of downloaded artifacts.\n- Verify a tarball checksum before extracting\n- Port 8080",
+    "output": "FROM alpine:3.19\nARG VERSION=1.0.0\nARG CHECKSUM=abc123def456\nRUN wget https://example.com/app-${VERSION}.tar.gz \\\n    && echo \"${CHECKSUM}  app-${VERSION}.tar.gz\" | sha256sum -c - \\\n    && tar -xzf app-${VERSION}.tar.gz -C /usr/local/bin \\\n    && rm app-${VERSION}.tar.gz\nEXPOSE 8080\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Python app that uses a virtual environment.\n- venv isolates dependencies\n- Run as non-root\n- Port 8000",
+    "output": "FROM python:3.12-slim\nRUN useradd -m -r appuser\nWORKDIR /app\nCOPY requirements.txt .\nRUN python -m venv /opt/venv\nENV PATH=\"/opt/venv/bin:$PATH\"\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY --chown=appuser:appuser . .\nUSER appuser\nEXPOSE 8000\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses OCI image annotations and labels.\n- Add standard OCI labels\n- Port 8080",
+    "output": "FROM python:3.12-slim\nLABEL org.opencontainers.image.title=\"My App\" \\\n      org.opencontainers.image.description=\"A secure Python application\" \\\n      org.opencontainers.image.vendor=\"My Company\" \\\n      org.opencontainers.image.licenses=\"MIT\"\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a pinned base image by digest (not just tag).\n- Pin by sha256 digest\n- Port 8080",
+    "output": "FROM python:3.12-slim@sha256:0000000000000000000000000000000000000000000000000000000000000000\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that implements a health check without curl/wget.\n- Use the app binary itself for healthcheck\n- Port 8080",
+    "output": "FROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 go build -o server .\n\nFROM alpine:3.19\nCOPY --from=builder /app/server /usr/local/bin/server\nEXPOSE 8080\nHEALTHCHECK --interval=30s --timeout=3s CMD [\"/usr/local/bin/server\", \"-healthcheck\"]\nCMD [\"server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses multi-stage to exclude build tools from final image.\n- Builder has compilers\n- Final is slim runtime only\n- Port 8080",
+    "output": "FROM golang:1.22 AS builder\nRUN apt-get update && apt-get install -y gcc\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=1 go build -o server .\n\nFROM debian:bookworm-slim\nRUN useradd -m -r appuser\nCOPY --from=builder /app/server /usr/local/bin/server\nUSER appuser\nEXPOSE 8080\nENTRYPOINT [\"server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that sets resource limits via labels.\n- Use com.docker.resource-limit labels\n- Port 8080",
+    "output": "FROM python:3.12-slim\nLABEL com.docker.resource.limit.memory=\"512m\" \\\n      com.docker.resource.limit.cpus=\"0.5\"\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js app that uses npm audit in the build.\n- Fail build on high vulnerabilities\n- Port 3000",
+    "output": "FROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nRUN npm audit --audit-level=high\nCOPY . .\nUSER node\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a custom entrypoint script for security setup.\n- Entrypoint drops privileges\n- Port 8080",
+    "output": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCOPY docker-entrypoint.sh /usr/local/bin/\nRUN chmod +x /usr/local/bin/docker-entrypoint.sh\nEXPOSE 8080\nENTRYPOINT [\"docker-entrypoint.sh\"]\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses BuildKit secret mounts for secrets.\n- Use --mount=type=secret\n- Port 8080",
+    "output": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nRUN --mount=type=secret,id=api_key cat /run/secrets/api_key > /app/api_key.txt\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that removes unnecessary packages after build.\n- Clean apt cache\n- Remove docs/man\n- Port 8080",
+    "output": "FROM python:3.12-slim\nRUN apt-get update && apt-get install -y --no-install-recommends \\\n    gcc \\\n    && pip install --no-cache-dir -r /tmp/requirements.txt \\\n    && apt-get purge -y gcc \\\n    && apt-get autoremove -y \\\n    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\nWORKDIR /app\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"app.py\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a minimal base like Alpine for a Java app.\n- Use eclipse-temurin alpine variant\n- Port 8080",
+    "output": "FROM eclipse-temurin:21-jre-alpine\nRUN addgroup -S app && adduser -S app -G app\nWORKDIR /app\nCOPY target/app.jar app.jar\nUSER app\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that implements signed image verification.\n- Verify GPG signature of a downloaded artifact\n- Port 8080",
+    "output": "FROM alpine:3.19\nRUN apk add --no-cache gnupg\nARG VERSION=1.0.0\nRUN wget https://example.com/app-${VERSION}.tar.gz \\\n    && wget https://example.com/app-${VERSION}.tar.gz.sig \\\n    && wget https://example.com/key.asc \\\n    && gpg --import key.asc \\\n    && gpg --verify app-${VERSION}.tar.gz.sig app-${VERSION}.tar.gz \\\n    && tar -xzf app-${VERSION}.tar.gz -C /usr/local/bin \\\n    && rm app-${VERSION}.tar.gz app-${VERSION}.tar.gz.sig key.asc\nEXPOSE 8080\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile that uses a non-executable stack and other hardening flags for a C app.\n- Compile with security flags\n- Port 8080",
+    "output": "FROM gcc:13 AS builder\nWORKDIR /app\nCOPY . .\nRUN gcc -o server -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Wl,-z,relro,-z,now main.c\n\nFROM debian:bookworm-slim\nRUN useradd -m -r appuser\nCOPY --from=builder /app/server /usr/local/bin/server\nUSER appuser\nEXPOSE 8080\nENTRYPOINT [\"server\"]"
+  }
+]

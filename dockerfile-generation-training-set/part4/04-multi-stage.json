@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Go application.\n- Build stage compiles the binary\n- Final stage is scratch/distroless with just the binary\n- Entry is main.go",
+    "output": "FROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 GOOS=linux go build -o server .\n\nFROM gcr.io/distroless/static\nCOPY --from=builder /app/server /server\nENTRYPOINT [\"/server\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Rust application.\n- Builder stage compiles with cargo\n- Final stage is debian slim with just the binary\n- Entry is main.rs",
+    "output": "FROM rust:1.78 AS builder\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nRUN mkdir src && echo \"fn main() {}\" > src/main.rs\nRUN cargo build --release\nCOPY . .\nRUN cargo build --release\n\nFROM debian:bookworm-slim\nCOPY --from=builder /app/target/release/app /usr/local/bin/app\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a .NET 8 application.\n- Build stage restores and publishes\n- Final stage is aspnet runtime\n- Port 8080",
+    "output": "FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder\nWORKDIR /src\nCOPY [\"MyApp.csproj\", \"./\"]\nRUN dotnet restore\nCOPY . .\nRUN dotnet publish -c Release -o /app/publish\n\nFROM mcr.microsoft.com/dotnet/aspnet:8.0\nWORKDIR /app\nCOPY --from=builder /app/publish .\nEXPOSE 8080\nENTRYPOINT [\"dotnet\", \"MyApp.dll\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Java 21 Maven Spring Boot app.\n- Build stage runs mvn package\n- Final stage is eclipse-temurin JRE\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-21 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Node.js app that compiles TypeScript.\n- Builder runs npm ci and npm run build\n- Final is node:alpine with only production deps\n- Port 3000",
+    "output": "FROM node:20 AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-alpine\nWORKDIR /app\nENV NODE_ENV=production\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 3000\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Python app that builds a wheel.\n- Builder stage builds the package\n- Final stage installs the wheel\n- Port 8000",
+    "output": "FROM python:3.12 AS builder\nWORKDIR /app\nRUN pip install --no-cache-dir build\nCOPY . .\nRUN python -m build --wheel\n\nFROM python:3.12-slim\nWORKDIR /app\nCOPY --from=builder /app/dist/*.whl /tmp/\nRUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl\nEXPOSE 8000\nCMD [\"myapp\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a C++ application using cmake.\n- Builder stage compiles with cmake and make\n- Final stage is debian slim\n- Entry is the compiled binary",
+    "output": "FROM gcc:13 AS builder\nWORKDIR /app\nCOPY . .\nRUN cmake -B build -DCMAKE_BUILD_TYPE=Release\nRUN cmake --build build\n\nFROM debian:bookworm-slim\nCOPY --from=builder /app/build/myapp /usr/local/bin/myapp\nCMD [\"myapp\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Deno application.\n- Build stage caches dependencies\n- Final stage runs the app\n- Port 8000",
+    "output": "FROM denoland/deno:latest AS builder\nWORKDIR /app\nCOPY . .\nRUN deno cache main.ts\n\nFROM denoland/deno:latest\nWORKDIR /app\nCOPY --from=builder /deno-dir /deno-dir\nCOPY . .\nEXPOSE 8000\nCMD [\"run\", \"--allow-net\", \"main.ts\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a JVM app using Gradle.\n- Builder stage runs gradle build\n- Final stage is JRE only\n- Port 8080",
+    "output": "FROM gradle:8-jdk21 AS builder\nWORKDIR /app\nCOPY . .\nRUN gradle bootJar --no-daemon\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/build/libs/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a PHP Composer app.\n- Builder installs composer deps\n- Final is php:8.3-apache\n- Port 80",
+    "output": "FROM composer:2 AS builder\nWORKDIR /app\nCOPY composer.json composer.lock ./\nRUN composer install --no-dev --no-scripts\n\nFROM php:8.3-apache\nWORKDIR /var/www/html\nCOPY --from=builder /app/vendor ./vendor\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a GraphQL Yoga server in Node.js.\n- Build stage compiles TypeScript\n- Final stage is node:alpine\n- Port 4000",
+    "output": "FROM node:20 AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-alpine\nWORKDIR /app\nENV NODE_ENV=production\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 4000\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Monorepo with a shared library.\n- Builder builds the library and the app\n- Final stage has only the app runtime\n- Port 3000",
+    "output": "FROM node:20 AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY packages ./packages\nCOPY apps/api ./apps/api\nRUN npm run build --workspace=packages/shared\nRUN npm run build --workspace=apps/api\n\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=builder /app/packages/shared/dist ./packages/shared/dist\nCOPY --from=builder /app/apps/api/dist ./apps/api/dist\nCOPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules\nCOPY --from=builder /app/package.json ./\nEXPOSE 3000\nCMD [\"node\", \"apps/api/dist/index.js\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Dart/Flutter web app.\n- Build stage runs flutter build web\n- Final stage is nginx\n- Port 80",
+    "output": "FROM ghcr.io/cirruslabs/flutter:stable AS builder\nWORKDIR /app\nCOPY . .\nRUN flutter build web --release\n\nFROM nginx:alpine\nCOPY --from=builder /app/build/web /usr/share/nginx/html\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Kotlin/Compose Desktop app.\n- Build stage compiles with gradle\n- Final stage copies the distribution\n- No ports (desktop app)",
+    "output": "FROM gradle:8-jdk21 AS builder\nWORKDIR /app\nCOPY . .\nRUN gradle packageDistributionForCurrentOS --no-daemon\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/build/compose/binaries/main/app /app\nCMD [\"/app/bin/app\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Clojure app using deps.edn.\n- Build stage AOT-compiles\n- Final stage is temurin JRE\n- Port 3000",
+    "output": "FROM clojure:temurin-21 AS builder\nWORKDIR /app\nCOPY deps.edn .\nRUN clojure -P\nCOPY . .\nRUN clojure -T:build uber\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/standalone.jar app.jar\nEXPOSE 3000\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Haskell app using Stack.\n- Build stage compiles with stack\n- Final stage is debian slim\n- Entry is the binary",
+    "output": "FROM fpco/stack-build:lts AS builder\nWORKDIR /app\nCOPY stack.yaml package.yaml ./\nRUN stack build --system-ghc --dependencies-only\nCOPY . .\nRUN stack build --system-ghc\n\nFROM debian:bookworm-slim\nCOPY --from=builder /root/.local/bin/app /usr/local/bin/app\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for an Elixir/Phoenix app.\n- Build stage compiles assets and releases\n- Final stage is elixir slim with the release\n- Port 4000",
+    "output": "FROM hexpm/elixir:1.16.2-erlang-26.2.2-debian-bookworm-20240130 AS builder\nWORKDIR /app\nENV MIX_ENV=prod\nCOPY mix.exs mix.lock ./\nRUN mix deps.get --only prod\nRUN mix deps.compile\nCOPY . .\nRUN mix compile\nRUN mix release\n\nFROM hexpm/elixir:1.16.2-erlang-26.2.2-debian-bookworm-20240130\nWORKDIR /app\nENV MIX_ENV=prod\nCOPY --from=builder /app/_build/prod/rel/myapp ./rel/myapp\nEXPOSE 4000\nCMD [\"rel/myapp/bin/myapp\", \"start\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Scala/sbt app.\n- Build stage compiles with sbt\n- Final stage is temurin JRE\n- Port 8080",
+    "output": "FROM hseeberger/scala-sbt:11.0.2_2.13.12_1.9.7 AS builder\nWORKDIR /app\nCOPY . .\nRUN sbt stage\n\nFROM eclipse-temurin:11-jre\nWORKDIR /app\nCOPY --from=builder /app/target/universal/stage /app\nEXPOSE 8080\nCMD [\"/app/bin/myapp\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Zig application.\n- Builder compiles with zig\n- Final stage is alpine with just the binary\n- Entry is main.zig",
+    "output": "FROM ziglang/zig:0.12 AS builder\nWORKDIR /app\nCOPY . .\nRUN zig build -Drelease-safe=true\n\nFROM alpine:3.19\nCOPY --from=builder /app/zig-out/bin/app /usr/local/bin/app\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Swift application on Linux.\n- Builder compiles with swift build\n- Final stage is swift runtime\n- Entry is the compiled binary",
+    "output": "FROM swift:5.10 AS builder\nWORKDIR /app\nCOPY . .\nRUN swift build -c release\n\nFROM swift:5.10-runtime\nWORKDIR /app\nCOPY --from=builder /app/.build/release/app /app/app\nCMD [\"/app/app\"]"
+  }
+]

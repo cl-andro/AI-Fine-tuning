@@ -1,0 +1,86 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Apache Laravel app.\n- composer.json is present\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN docker-php-ext-install pdo_mysql mbstring opcache\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nRUN chown -R www-data:www-data storage bootstrap/cache\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2-FPM app with nginx.\n- Two-stage: php-fpm + nginx\n- Port 80",
+    "output": "FROM php:8.2-fpm\nRUN docker-php-ext-install pdo_mysql\nWORKDIR /var/www/html\nCOPY . .\n\nFROM nginx:alpine\nCOPY --from=php:8.2-fpm /var/www/html /var/www/html\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 CLI script runner.\n- No Apache, just php\n- Entry is script.php",
+    "output": "FROM php:8.3-cli\nWORKDIR /app\nCOPY . .\nCMD [\"php\", \"script.php\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 WordPress app.\n- Port 80",
+    "output": "FROM php:8.2-apache\nRUN docker-php-ext-install mysqli\nRUN a2enmod rewrite\nCOPY . /var/www/html/\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Symfony app.\n- Uses composer\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN apt-get update && apt-get install -y git unzip\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nRUN mkdir -p var/cache var/log && chown -R www-data:www-data var\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Laravel app with Horizon (queue worker).\n- Port 80 for web, plus a worker command",
+    "output": "FROM php:8.2-apache\nRUN docker-php-ext-install pdo_mysql pcntl bcmath\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nRUN chown -R www-data:www-data storage bootstrap/cache\nEXPOSE 80\nCMD [\"php\", \"artisan\", \"horizon\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 app with Xdebug enabled for development.\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN pecl install xdebug && docker-php-ext-enable xdebug\nWORKDIR /var/www/html\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Yii2 app.\n- Port 80",
+    "output": "FROM php:8.2-apache\nRUN docker-php-ext-install pdo_mysql mbstring\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 CodeIgniter 4 app.\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN docker-php-ext-install pdo_mysql\nWORKDIR /var/www/html\nCOPY . .\nRUN chown -R www-data:www-data writable\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Laravel Octane (Swoole) app.\n- Port 8080",
+    "output": "FROM php:8.2-cli\nRUN pecl install swoole && docker-php-ext-enable swoole\nRUN docker-php-ext-install pdo_mysql\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nEXPOSE 8080\nCMD [\"php\", \"artisan\", \"octane:start\", \"--host=0.0.0.0\", \"--port=8080\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Slim app.\n- Port 8080",
+    "output": "FROM php:8.3-cli\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /app\nCOPY . .\nRUN composer install --no-dev\nEXPOSE 8080\nCMD [\"php\", \"-S\", \"0.0.0.0:8080\", \"-t\", \"public\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 app with OPcache enabled.\n- Port 80",
+    "output": "FROM php:8.2-apache\nRUN docker-php-ext-install opcache\nCOPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini\nWORKDIR /var/www/html\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Laravel app with a scheduler (cron).\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nRUN chown -R www-data:www-data storage bootstrap/cache\nCOPY cron /etc/cron.d/laravel\nRUN chmod 0644 /etc/cron.d/laravel && crontab /etc/cron.d/laravel\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 app with custom php.ini settings.\n- Port 80",
+    "output": "FROM php:8.2-apache\nCOPY php.ini /usr/local/etc/php/conf.d/custom.ini\nWORKDIR /var/www/html\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Laravel app that uses Redis for cache.\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN pecl install redis && docker-php-ext-enable redis\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Symfony app with a PHP-FPM pool config.\n- Port 80",
+    "output": "FROM php:8.2-apache\nRUN apt-get update && apt-get install -y git unzip\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nCOPY zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 app that needs the intl extension.\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN apt-get update && apt-get install -y libicu-dev \\\n    && docker-php-ext-install intl\nWORKDIR /var/www/html\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Laravel app using a multi-stage build to reduce final image size.\n- Port 80",
+    "output": "FROM composer:2 AS builder\nWORKDIR /app\nCOPY composer.json composer.lock ./\nRUN composer install --no-dev --no-scripts\nCOPY . .\nRUN composer dump-autoload --optimize\n\nFROM php:8.2-apache\nRUN docker-php-ext-install pdo_mysql\nWORKDIR /var/www/html\nCOPY --from=builder /app /var/www/html\nRUN chown -R www-data:www-data storage bootstrap/cache\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 WordPress app with wp-cli installed.\n- Port 80",
+    "output": "FROM php:8.3-apache\nRUN docker-php-ext-install mysqli\nRUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \\\n    && chmod +x wp-cli.phar \\\n    && mv wp-cli.phar /usr/local/bin/wp\nWORKDIR /var/www/html\nCOPY . .\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.2 Laravel app that runs as www-data user.\n- Port 80",
+    "output": "FROM php:8.2-apache\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /var/www/html\nCOPY . .\nRUN composer install --no-dev --optimize-autoloader\nRUN chown -R www-data:www-data /var/www/html\nUSER www-data\nEXPOSE 80"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP 8.3 Lumen micro-framework app.\n- Port 8080",
+    "output": "FROM php:8.3-cli\nRUN docker-php-ext-install pdo_mysql\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /app\nCOPY . .\nRUN composer install --no-dev\nEXPOSE 8080\nCMD [\"php\", \"-S\", \"0.0.0.0:8080\", \"-t\", \"public\", \"public/index.php\"]"
+  }
+]

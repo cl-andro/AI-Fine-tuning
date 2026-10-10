@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Spring Boot app built with Maven.\n- pom.xml at project root\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-21 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 Spring Boot app with Gradle.\n- build.gradle is present\n- Port 8080",
+    "output": "FROM gradle:8-jdk17 AS builder\nWORKDIR /app\nCOPY . .\nRUN gradle bootJar --no-daemon\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/build/libs/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 plain JAR application.\n- Jar file is pre-built at target/app.jar\n- Port 9090",
+    "output": "FROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY target/app.jar app.jar\nEXPOSE 9090\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 Quarkus app in JVM mode.\n- Uses the Quarkus runner jar\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-17 AS builder\nWORKDIR /app\nCOPY . .\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/target/quarkus-app/lib/ /app/lib/\nCOPY --from=builder /app/target/quarkus-app/*.jar /app/\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"/app/quarkus-run.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Micronaut app.\n- Port 8080",
+    "output": "FROM gradle:8-jdk21 AS builder\nWORKDIR /app\nCOPY . .\nRUN gradle micronautBuild --no-daemon\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/build/libs/*-all.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 Vert.x app.\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-17 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*-shaded.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Dropwizard app.\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-21 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\", \"server\", \"config.yml\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app with Jib (no Dockerfile-specific build needed conceptually, but write a Dockerfile that runs the Jib output).\n- Port 8080",
+    "output": "FROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY . .\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Kotlin Spring Boot app.\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-21 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app that needs timezone data.\n- Install tzdata\n- Port 8080",
+    "output": "FROM eclipse-temurin:17-jre\nRUN apt-get update && apt-get install -y tzdata\nENV TZ=UTC\nWORKDIR /app\nCOPY target/app.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Spring Boot app with a custom JVM entrypoint script.\n- Port 8080",
+    "output": "FROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY target/app.jar app.jar\nCOPY entrypoint.sh /entrypoint.sh\nRUN chmod +x /entrypoint.sh\nEXPOSE 8080\nENTRYPOINT [\"/entrypoint.sh\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app using sdkman to install a specific Java version.\n- Port 8080",
+    "output": "FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y curl zip unzip\nRUN curl -s \"https://get.sdkman.io\" | bash\nENV SDKMAN_DIR=\"/root/.sdkman\"\nRUN [\"/bin/bash\", \"-c\", \"source $SDKMAN_DIR/bin/sdkman-init.sh && sdk install java 17.0.9-tem && sdk default java 17.0.9-tem\"]\nWORKDIR /app\nCOPY target/app.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 app that runs as a non-root user.\n- Port 8080",
+    "output": "FROM eclipse-temurin:21-jre\nRUN groupadd -r app && useradd -r -g app app\nWORKDIR /app\nCOPY target/app.jar app.jar\nRUN chown -R app:app /app\nUSER app\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 GraalVM native image build.\n- Build stage compiles native image\n- Final stage is slim\n- Port 8080",
+    "output": "FROM ghcr.io/graalvm/graalvm-ce:21 AS builder\nRUN gu install native-image\nWORKDIR /app\nCOPY . .\nRUN mvn package -DskipTests -Pnative\nRUN native-image -jar target/*.jar app\n\nFROM debian:bookworm-slim\nCOPY --from=builder /app/app /usr/local/bin/app\nEXPOSE 8080\nCMD [\"app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Spring Boot app with actuator health checks.\n- Port 8080\n- HEALTHCHECK against /actuator/health",
+    "output": "FROM maven:3.9-eclipse-temurin-21 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:21-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nHEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8080/actuator/health || exit 1\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app with Maven wrapper (mvnw).\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-17 AS builder\nWORKDIR /app\nCOPY . .\nRUN chmod +x mvnw && ./mvnw package -DskipTests\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 app that uses an init system (tini) for proper signal handling.\n- Port 8080",
+    "output": "FROM eclipse-temurin:21-jre\nRUN apt-get update && apt-get install -y tini\nWORKDIR /app\nCOPY target/app.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"tini\", \"--\"]\nCMD [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app with Maven that skips tests and uses a settings.xml for a private repo.\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-17 AS builder\nWORKDIR /app\nCOPY settings.xml /root/.m2/settings.xml\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 21 Spring Boot app with a layered JAR for better caching.\n- Port 8080",
+    "output": "FROM eclipse-temurin:21-jre\nWORKDIR /app\nRUN java -Djarmode=layertools -jar app.jar extract --destination extracted\nCOPY --from=builder /app/extracted/dependencies/ ./\nCOPY --from=builder /app/extracted/spring-boot-loader/ ./\nCOPY --from=builder /app/extracted/snapshot-dependencies/ ./\nCOPY --from=builder /app/extracted/application/ ./\nEXPOSE 8080\nENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java 17 app using a fat JAR with shade plugin.\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-17 AS builder\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY src ./src\nRUN mvn package -DskipTests\n\nFROM eclipse-temurin:17-jre\nWORKDIR /app\nCOPY --from=builder /app/target/shaded.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "instruction": "Write a docker-compose.yml for a Python Flask app with a PostgreSQL database.\n- App on port 5000, postgres on 5432\n- Shared network\n- Named volume for postgres data",
+    "output": "services:\n  app:\n    build: .\n    ports:\n      - \"5000:5000\"\n    environment:\n      - DATABASE_URL=postgresql://user:password@db:5432/mydb\n    depends_on:\n      db:\n        condition: service_healthy\n    networks:\n      - app-net\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=user\n      - POSTGRES_PASSWORD=password\n      - POSTGRES_DB=mydb\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U user\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n    networks:\n      - app-net\n\nvolumes:\n  pgdata:\n\nnetworks:\n  app-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Node.js app with Redis.\n- App on port 3000, redis on 6379\n- Named volume for redis data",
+    "output": "services:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - REDIS_URL=redis://redis:6379\n    depends_on:\n      - redis\n    networks:\n      - app-net\n\n  redis:\n    image: redis:7-alpine\n    volumes:\n      - redisdata:/data\n    networks:\n      - app-net\n\nvolumes:\n  redisdata:\n\nnetworks:\n  app-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a microservices setup: API gateway, auth service, and user service.\n- Gateway on 8080, auth on 8081, user on 8082",
+    "output": "services:\n  gateway:\n    build: ./gateway\n    ports:\n      - \"8080:8080\"\n    depends_on:\n      - auth\n      - user\n    networks:\n      - micro-net\n\n  auth:\n    build: ./auth\n    expose:\n      - \"8081\"\n    networks:\n      - micro-net\n\n  user:\n    build: ./user\n    expose:\n      - \"8082\"\n    networks:\n      - micro-net\n\nnetworks:\n  micro-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a full LEMP stack: Linux, Nginx, MySQL, PHP-FPM.\n- Nginx on 80, MySQL on 3306",
+    "output": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"80:80\"\n    volumes:\n      - ./html:/usr/share/nginx/html\n      - ./nginx.conf:/etc/nginx/nginx.conf\n    depends_on:\n      - php\n    networks:\n      - lemp-net\n\n  php:\n    build: ./php\n    volumes:\n      - ./html:/var/www/html\n    networks:\n      - lemp-net\n\n  mysql:\n    image: mysql:8.0\n    environment:\n      - MYSQL_ROOT_PASSWORD=rootpass\n      - MYSQL_DATABASE=mydb\n    volumes:\n      - mysqldata:/var/lib/mysql\n    networks:\n      - lemp-net\n\nvolumes:\n  mysqldata:\n\nnetworks:\n  lemp-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a monitoring stack: Prometheus and Grafana.\n- Prometheus on 9090, Grafana on 3000",
+    "output": "services:\n  prometheus:\n    image: prom/prometheus:latest\n    ports:\n      - \"9090:9090\"\n    volumes:\n      - ./prometheus.yml:/etc/prometheus/prometheus.yml\n      - promdata:/prometheus\n    networks:\n      - monitoring\n\n  grafana:\n    image: grafana/grafana:latest\n    ports:\n      - \"3000:3000\"\n    environment:\n      - GF_SECURITY_ADMIN_PASSWORD=admin\n    volumes:\n      - grafanadata:/var/lib/grafana\n    depends_on:\n      - prometheus\n    networks:\n      - monitoring\n\nvolumes:\n  promdata:\n  grafanadata:\n\nnetworks:\n  monitoring:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a development environment with hot reload for a Node.js app.\n- Use volumes to mount source\n- Run npm run dev",
+    "output": "services:\n  app:\n    build: .\n    command: npm run dev\n    ports:\n      - \"3000:3000\"\n    volumes:\n      - .:/app\n      - /app/node_modules\n    networks:\n      - dev-net\n\nnetworks:\n  dev-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for an ELK stack: Elasticsearch, Logstash, Kibana.\n- Elasticsearch on 9200, Kibana on 5601",
+    "output": "services:\n  elasticsearch:\n    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0\n    environment:\n      - discovery.type=single-node\n      - xpack.security.enabled=false\n      - ES_JAVA_OPTS=-Xms512m -Xmx512m\n    ports:\n      - \"9200:9200\"\n    volumes:\n      - esdata:/usr/share/elasticsearch/data\n    networks:\n      - elk\n\n  logstash:\n    image: docker.elastic.co/logstash/logstash:8.14.0\n    volumes:\n      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf\n    depends_on:\n      - elasticsearch\n    networks:\n      - elk\n\n  kibana:\n    image: docker.elastic.co/kibana/kibana:8.14.0\n    ports:\n      - \"5601:5601\"\n    environment:\n      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200\n    depends_on:\n      - elasticsearch\n    networks:\n      - elk\n\nvolumes:\n  esdata:\n\nnetworks:\n  elk:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a CI/CD stack with Jenkins.\n- Jenkins on 8080, agent port 50000",
+    "output": "services:\n  jenkins:\n    image: jenkins/jenkins:lts-jdk17\n    ports:\n      - \"8080:8080\"\n      - \"50000:50000\"\n    volumes:\n      - jenkinsdata:/var/jenkins_home\n    networks:\n      - ci-net\n\nvolumes:\n  jenkinsdata:\n\nnetworks:\n  ci-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a local Kubernetes-like setup with a simple app and its database.\n- App on 8000, postgres on 5432\n- Healthchecks and restart policies",
+    "output": "services:\n  app:\n    build: .\n    ports:\n      - \"8000:8000\"\n    environment:\n      - DB_HOST=db\n      - DB_NAME=mydb\n      - DB_USER=user\n      - DB_PASSWORD=password\n    depends_on:\n      db:\n        condition: service_healthy\n    restart: unless-stopped\n    networks:\n      - app-net\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=user\n      - POSTGRES_PASSWORD=password\n      - POSTGRES_DB=mydb\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U user\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n    restart: unless-stopped\n    networks:\n      - app-net\n\nvolumes:\n  pgdata:\n\nnetworks:\n  app-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a message queue system with RabbitMQ and a worker service.\n- RabbitMQ on 5672 and 15672 (management)",
+    "output": "services:\n  rabbitmq:\n    image: rabbitmq:3-management\n    ports:\n      - \"5672:5672\"\n      - \"15672:15672\"\n    environment:\n      - RABBITMQ_DEFAULT_USER=user\n      - RABBITMQ_DEFAULT_PASS=password\n    volumes:\n      - rabbitdata:/var/lib/rabbitmq\n    networks:\n      - mq-net\n\n  worker:\n    build: ./worker\n    depends_on:\n      - rabbitmq\n    environment:\n      - RABBITMQ_URL=amqp://user:password@rabbitmq:5672\n    networks:\n      - mq-net\n\nvolumes:\n  rabbitdata:\n\nnetworks:\n  mq-net:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a full-stack app: React frontend, Node API, and MongoDB.\n- React on 3000, API on 4000, Mongo on 27017",
+    "output": "services:\n  frontend:\n    build: ./frontend\n    ports:\n      - \"3000:3000\"\n    depends_on:\n      - api\n    networks:\n      - fullstack\n\n  api:\n    build: ./api\n    ports:\n      - \"4000:4000\"\n    environment:\n      - MONGODB_URI=mongodb://mongo:27017/mydb\n    depends_on:\n      - mongo\n    networks:\n      - fullstack\n\n  mongo:\n    image: mongo:7\n    volumes:\n      - mongodata:/data/db\n    networks:\n      - fullstack\n\nvolumes:\n  mongodata:\n\nnetworks:\n  fullstack:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a static site served by nginx with a certbot sidecar for SSL.\n- Nginx on 80 and 443",
+    "output": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"80:80\"\n      - \"443:443\"\n    volumes:\n      - ./html:/usr/share/nginx/html\n      - ./nginx.conf:/etc/nginx/nginx.conf\n      - certdata:/etc/letsencrypt\n    networks:\n      - web\n\n  certbot:\n    image: certbot/certbot\n    volumes:\n      - certdata:/etc/letsencrypt\n      - ./html:/var/www/html\n    command: certonly --webroot -w /var/www/html -d example.com --non-interactive --agree-tos\n    networks:\n      - web\n\nvolumes:\n  certdata:\n\nnetworks:\n  web:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a data pipeline with Airflow.\n- Airflow webserver on 8080, scheduler, and worker",
+    "output": "services:\n  postgres:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=airflow\n      - POSTGRES_PASSWORD=airflow\n      - POSTGRES_DB=airflow\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    networks:\n      - airflow\n\n  airflow-webserver:\n    image: apache/airflow:2.9.0\n    command: airflow webserver\n    ports:\n      - \"8080:8080\"\n    environment:\n      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow\n      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor\n    depends_on:\n      - postgres\n    networks:\n      - airflow\n\n  airflow-scheduler:\n    image: apache/airflow:2.9.0\n    command: airflow scheduler\n    environment:\n      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow\n      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor\n    depends_on:\n      - postgres\n    networks:\n      - airflow\n\n  airflow-worker:\n    image: apache/airflow:2.9.0\n    command: airflow celery worker\n    environment:\n      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow\n      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor\n    depends_on:\n      - postgres\n    networks:\n      - airflow\n\nvolumes:\n  pgdata:\n\nnetworks:\n  airflow:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a MinIO S3-compatible object storage server.\n- MinIO console on 9001, API on 9000",
+    "output": "services:\n  minio:\n    image: minio/minio:latest\n    ports:\n      - \"9000:9000\"\n      - \"9001:9001\"\n    environment:\n      - MINIO_ROOT_USER=minioadmin\n      - MINIO_ROOT_PASSWORD=minioadmin\n    volumes:\n      - miniodata:/data\n    command: server /data --console-address \":9001\"\n    networks:\n      - storage\n\nvolumes:\n  miniodata:\n\nnetworks:\n  storage:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Node.js app with a MySQL database and phpMyAdmin for admin.\n- App on 3000, MySQL on 3306, phpMyAdmin on 8080",
+    "output": "services:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - DB_HOST=mysql\n      - DB_USER=user\n      - DB_PASSWORD=password\n      - DB_NAME=mydb\n    depends_on:\n      - mysql\n    networks:\n      - stack\n\n  mysql:\n    image: mysql:8.0\n    environment:\n      - MYSQL_ROOT_PASSWORD=rootpass\n      - MYSQL_DATABASE=mydb\n      - MYSQL_USER=user\n      - MYSQL_PASSWORD=password\n    volumes:\n      - mysqldata:/var/lib/mysql\n    networks:\n      - stack\n\n  phpmyadmin:\n    image: phpmyadmin/phpmyadmin\n    ports:\n      - \"8080:80\"\n    environment:\n      - PMA_HOST=mysql\n      - PMA_PORT=3306\n    depends_on:\n      - mysql\n    networks:\n      - stack\n\nvolumes:\n  mysqldata:\n\nnetworks:\n  stack:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a development stack with a Go app, its PostgreSQL database, and a pgAdmin UI.\n- App on 8080, Postgres on 5432, pgAdmin on 5050",
+    "output": "services:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    environment:\n      - DATABASE_URL=postgresql://user:password@db:5432/mydb?sslmode=disable\n    depends_on:\n      db:\n        condition: service_healthy\n    networks:\n      - dev\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=user\n      - POSTGRES_PASSWORD=password\n      - POSTGRES_DB=mydb\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U user\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n    networks:\n      - dev\n\n  pgadmin:\n    image: dpage/pgadmin4\n    environment:\n      - PGADMIN_DEFAULT_EMAIL=admin@admin.com\n      - PGADMIN_DEFAULT_PASSWORD=admin\n    ports:\n      - \"5050:80\"\n    networks:\n      - dev\n\nvolumes:\n  pgdata:\n\nnetworks:\n  dev:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Grafana Loki and Promtail logging stack.\n- Loki on 3100, Grafana on 3000",
+    "output": "services:\n  loki:\n    image: grafana/loki:3.1.0\n    ports:\n      - \"3100:3100\"\n    command: -config.file=/etc/loki/local-config.yaml\n    networks:\n      - logging\n\n  promtail:\n    image: grafana/promtail:3.1.0\n    volumes:\n      - /var/log:/var/log\n      - ./promtail-config.yml:/etc/promtail/config.yml\n    command: -config.file=/etc/promtail/config.yml\n    depends_on:\n      - loki\n    networks:\n      - logging\n\n  grafana:\n    image: grafana/grafana:latest\n    ports:\n      - \"3000:3000\"\n    environment:\n      - GF_SECURITY_ADMIN_PASSWORD=admin\n    volumes:\n      - grafanadata:/var/lib/grafana\n    depends_on:\n      - loki\n    networks:\n      - logging\n\nvolumes:\n  grafanadata:\n\nnetworks:\n  logging:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Keycloak identity server with a PostgreSQL backend.\n- Keycloak on 8080, Postgres on 5432",
+    "output": "services:\n  keycloak:\n    image: quay.io/keycloak/keycloak:25.0\n    ports:\n      - \"8080:8080\"\n    environment:\n      - KC_DB=postgres\n      - KC_DB_URL=jdbc:postgresql://db:5432/keycloak\n      - KC_DB_USERNAME=keycloak\n      - KC_DB_PASSWORD=password\n      - KC_HEALTH_ENABLED=true\n      - KEYCLOAK_ADMIN=admin\n      - KEYCLOAK_ADMIN_PASSWORD=admin\n    command: start-dev\n    depends_on:\n      - db\n    networks:\n      - idp\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=keycloak\n      - POSTGRES_PASSWORD=password\n      - POSTGRES_DB=keycloak\n    volumes:\n      - kcdata:/var/lib/postgresql/data\n    networks:\n      - idp\n\nvolumes:\n  kcdata:\n\nnetworks:\n  idp:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Temporal workflow engine with its dependencies.\n- Temporal UI on 8088, server on 7233, Cassandra on 9042",
+    "output": "services:\n  temporal:\n    image: temporalio/auto-setup:1.25\n    ports:\n      - \"7233:7233\"\n    environment:\n      - DB=cassandra\n      - DB_PORT=9042\n      - CASSANDRA_SEEDS=cassandra\n    depends_on:\n      - cassandra\n    networks:\n      - temporal\n\n  temporal-ui:\n    image: temporalio/ui:2.31\n    ports:\n      - \"8088:8080\"\n    environment:\n      - TEMPORAL_ADDRESS=temporal:7233\n    depends_on:\n      - temporal\n    networks:\n      - temporal\n\n  cassandra:\n    image: cassandra:4.1\n    volumes:\n      - cassandradata:/var/lib/cassandra\n    networks:\n      - temporal\n\nvolumes:\n  cassandradata:\n\nnetworks:\n  temporal:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Matomo analytics server with MySQL and Redis.\n- Matomo on 80, MySQL on 3306, Redis on 6379",
+    "output": "services:\n  matomo:\n    image: matomo:5\n    ports:\n      - \"80:80\"\n    environment:\n      - MATOMO_DATABASE_HOST=mysql\n      - MATOMO_DATABASE_ADAPTER=mysqli\n      - MATOMO_DATABASE_USERNAME=matomo\n      - MATOMO_DATABASE_PASSWORD=password\n      - MATOMO_DATABASE_DBNAME=matomo\n      - MATOMO_ENABLE_PHP_DEBUGGER=0\n    volumes:\n      - matomodata:/var/www/html\n    depends_on:\n      - mysql\n      - redis\n    networks:\n      - analytics\n\n  mysql:\n    image: mysql:8.0\n    environment:\n      - MYSQL_ROOT_PASSWORD=rootpass\n      - MYSQL_DATABASE=matomo\n      - MYSQL_USER=matomo\n      - MYSQL_PASSWORD=password\n    volumes:\n      - mysqldata:/var/lib/mysql\n    networks:\n      - analytics\n\n  redis:\n    image: redis:7-alpine\n    volumes:\n      - redisdata:/data\n    networks:\n      - analytics\n\nvolumes:\n  matomodata:\n  mysqldata:\n  redisdata:\n\nnetworks:\n  analytics:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for an n8n workflow automation server.\n- n8n on 5678 with persistent data",
+    "output": "services:\n  n8n:\n    image: n8nio/n8n\n    ports:\n      - \"5678:5678\"\n    environment:\n      - N8N_BASIC_AUTH_ACTIVE=true\n      - N8N_BASIC_AUTH_USER=admin\n      - N8N_BASIC_AUTH_PASSWORD=admin\n      - GENERIC_TIMEZONE=UTC\n    volumes:\n      - n8ndata:/home/node/.n8n\n    networks:\n      - automation\n\nvolumes:\n  n8ndata:\n\nnetworks:\n  automation:"
+  },
+  {
+    "instruction": "Write a docker-compose.yml for a Sentry error-tracking server.\n- Sentry web on 9000, with its workers and Redis",
+    "output": "services:\n  sentry:\n    image: sentry:latest\n    ports:\n      - \"9000:9000\"\n    environment:\n      - SENTRY_SECRET_KEY=secret-key-here\n      - SENTRY_POSTGRES_HOST=postgres\n      - SENTRY_DB_USER=sentry\n      - SENTRY_DB_PASSWORD=sentry\n      - SENTRY_DB_NAME=sentry\n      - SENTRY_REDIS_HOST=redis\n    depends_on:\n      - postgres\n      - redis\n    networks:\n      - sentry\n\n  worker:\n    image: sentry:latest\n    command: run worker\n    environment:\n      - SENTRY_SECRET_KEY=secret-key-here\n      - SENTRY_POSTGRES_HOST=postgres\n      - SENTRY_DB_USER=sentry\n      - SENTRY_DB_PASSWORD=sentry\n      - SENTRY_DB_NAME=sentry\n      - SENTRY_REDIS_HOST=redis\n    depends_on:\n      - postgres\n      - redis\n    networks:\n      - sentry\n\n  postgres:\n    image: postgres:16-alpine\n    environment:\n      - POSTGRES_USER=sentry\n      - POSTGRES_PASSWORD=sentry\n      - POSTGRES_DB=sentry\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n    networks:\n      - sentry\n\n  redis:\n    image: redis:7-alpine\n    volumes:\n      - redisdata:/data\n    networks:\n      - sentry\n\nvolumes:\n  pgdata:\n  redisdata:\n\nnetworks:\n  sentry:"
+  }
+]

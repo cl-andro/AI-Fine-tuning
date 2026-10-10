@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Go 1.22 application.\n- go.mod and go.sum are present\n- main.go is the entry point\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.21 app with CGO disabled.\n- Static binary build\n- Port 8080",
+    "output": "FROM golang:1.21\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go gRPC server.\n- Port 50051",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 50051\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go CLI tool.\n- Builds a binary named mycli\n- No ports",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o mycli .\nCMD [\"./mycli\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.22 app using air for hot reload in development.\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nRUN go install github.com/air-verse/air@latest\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nEXPOSE 8080\nCMD [\"air\", \"-c\", \".air.toml\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application that uses make.\n- Makefile builds the binary\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nRUN apt-get update && apt-get install -y make\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN make build\nEXPOSE 8080\nCMD [\"./bin/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.21 Fiber web framework app.\n- Port 3000",
+    "output": "FROM golang:1.21\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 3000\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application with embedded static assets.\n- Uses go:embed\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application with multiple build tags.\n- Builds with -tags prod\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -tags prod -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.20 app using an older version.\n- Port 8080",
+    "output": "FROM golang:1.20\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application that needs git in the build.\n- For private module downloads\n- Port 8080",
+    "output": "FROM golang:1.22\nRUN apt-get update && apt-get install -y git\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go app with test stage.\n- First stage runs go test\n- Second stage builds\n- Port 8080",
+    "output": "FROM golang:1.22 AS tester\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go test ./...\n\nFROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\n\nFROM alpine:3.19\nCOPY --from=builder /app/server /server\nEXPOSE 8080\nCMD [\"/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.22 app using GOPROXY.\n- Set GOPROXY=https://proxy.golang.org,direct\n- Port 8080",
+    "output": "FROM golang:1.22\nENV GOPROXY=https://proxy.golang.org,direct\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application with a Makefile that runs lint and build.\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nRUN apt-get update && apt-get install -y make golangci-lint\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN make lint\nRUN make build\nEXPOSE 8080\nCMD [\"./bin/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go app that uses modules in vendor mode.\n- vendor/ directory is present\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nCOPY vendor ./vendor\nCOPY . .\nRUN go build -mod=vendor -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application with race detector enabled in tests.\n- Test stage uses -race flag\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go test -race ./...\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.21 gRPC-Gateway REST proxy.\n- Port 8080",
+    "output": "FROM golang:1.21\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\nEXPOSE 8080\nCMD [\"./server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go app that needs ca-certificates at runtime.\n- Install ca-certificates in final stage\n- Port 8080",
+    "output": "FROM golang:1.22 AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o server .\n\nFROM alpine:3.19\nRUN apk add --no-cache ca-certificates\nCOPY --from=builder /app/server /server\nEXPOSE 8080\nCMD [\"/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go 1.22 app with a custom build output path.\n- Output to /out/server\n- Port 8080",
+    "output": "FROM golang:1.22\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o /out/server .\nEXPOSE 8080\nCMD [\"/out/server\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go application using multi-arch buildx.\n- Use TARGETPLATFORM build arg\n- Port 8080",
+    "output": "FROM --platform=$BUILDPLATFORM golang:1.22 AS builder\nARG TARGETOS\nARG TARGETARCH\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o server .\n\nFROM alpine:3.19\nCOPY --from=builder /app/server /server\nEXPOSE 8080\nCMD [\"/server\"]"
+  }
+]

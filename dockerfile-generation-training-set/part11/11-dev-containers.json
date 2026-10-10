@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dockerfile for a Python development container.\n- Includes common dev tools\n- Installs requirements including dev dependencies\n- Port 8000",
+    "output": "FROM python:3.12-slim\nRUN apt-get update && apt-get install -y git curl make\nWORKDIR /app\nCOPY requirements*.txt ./\nRUN pip install --no-cache-dir -r requirements-dev.txt\nCOPY . .\nEXPOSE 8000\nCMD [\"python\", \"-m\", \"app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js development container with hot reload.\n- Uses nodemon\n- Port 3000",
+    "output": "FROM node:20-slim\nRUN npm install -g nodemon\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000\nCMD [\"nodemon\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go development container.\n- Includes air for hot reload\n- Port 8080",
+    "output": "FROM golang:1.22\nRUN go install github.com/air-verse/air@latest\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nEXPOSE 8080\nCMD [\"air\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust development container.\n- Includes cargo-watch for hot reload\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN cargo install cargo-watch\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nEXPOSE 8080\nCMD [\"cargo\", \"watch\", \"-x\", \"run\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java development container with Maven.\n- Includes Maven and JDK\n- Port 8080",
+    "output": "FROM maven:3.9-eclipse-temurin-21\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn dependency:go-offline\nCOPY . .\nEXPOSE 8080\nCMD [\"mvn\", \"spring-boot:run\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a full-stack development container with multiple tools.\n- Python, Node, Go, and basic tools\n- Port 3000",
+    "output": "FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y curl git make \\\n    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \\\n    && apt-get install -y nodejs \\\n    && curl -sS https://dl.cloudsmith.io/public/caddy/stable/gpg.key | apt-key add - \\\n    && apt-get install -y python3 python3-pip golang\nWORKDIR /workspace\nEXPOSE 3000\nCMD [\"bash\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a PHP development container with Xdebug.\n- Port 80",
+    "output": "FROM php:8.3-cli\nRUN pecl install xdebug && docker-php-ext-enable xdebug\nRUN apt-get update && apt-get install -y git unzip\nCOPY --from=composer:2 /usr/bin/composer /usr/bin/composer\nWORKDIR /app\nCOPY . .\nRUN composer install\nEXPOSE 80\nCMD [\"php\", \"-S\", \"0.0.0.0:80\", \"-t\", \"public\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Kubernetes development container with kubectl and helm.\n- Port 8080",
+    "output": "FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y curl apt-transport-https\nRUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \\\n    && echo \"deb https://apt.kubernetes.io/ kubernetes-xenial main\" > /etc/apt/sources.list.d/kubernetes.list \\\n    && apt-get update && apt-get install -y kubectl\nRUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash\nWORKDIR /workspace\nEXPOSE 8080\nCMD [\"bash\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a data science development container.\n- Jupyter, pandas, numpy, scikit-learn\n- Port 8888",
+    "output": "FROM python:3.12-slim\nRUN pip install --no-cache-dir jupyter pandas numpy scikit-learn matplotlib seaborn\nWORKDIR /workspace\nEXPOSE 8888\nCMD [\"jupyter\", \"notebook\", \"--ip\", \"0.0.0.0\", \"--port\", \"8888\", \"--no-browser\", \"--allow-root\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust development container with rust-analyzer.\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN rustup component add rustfmt clippy\nRUN cargo install cargo-watch\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nEXPOSE 8080\nCMD [\"cargo\", \"watch\", \"-x\", \"run\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js development container with debugging support.\n- Installs node inspector\n- Port 9229 for debugger, 3000 for app",
+    "output": "FROM node:20-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000 9229\nCMD [\"node\", \"--inspect=0.0.0.0:9229\", \"server.js\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Python development container with pytest and coverage.\n- Port 8000",
+    "output": "FROM python:3.12-slim\nRUN apt-get update && apt-get install -y git\nWORKDIR /app\nCOPY requirements*.txt ./\nRUN pip install --no-cache-dir -r requirements-dev.txt pytest pytest-cov\nCOPY . .\nEXPOSE 8000\nCMD [\"pytest\", \"--cov=.\", \"-v\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Go development container with delve debugger.\n- Port 8080 for app, 2345 for delve",
+    "output": "FROM golang:1.22\nRUN go install github.com/go-delve/delve/cmd/dlv@latest\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nEXPOSE 8080 2345\nCMD [\"dlv\", \"debug\", \"--listen=:2345\", \"--headless=true\", \"./main.go\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a TypeScript development container with ts-node.\n- Port 3000",
+    "output": "FROM node:20-slim\nRUN npm install -g ts-node typescript\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000\nCMD [\"ts-node\", \"src/index.ts\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Rust development container with a Makefile.\n- Port 8080",
+    "output": "FROM rust:1.78\nRUN apt-get update && apt-get install -y make\nWORKDIR /app\nCOPY Cargo.toml Cargo.lock ./\nCOPY src ./src\nEXPOSE 8080\nCMD [\"make\", \"dev\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js development container with yarn and hot reload.\n- Port 3000",
+    "output": "FROM node:20-slim\nRUN npm install -g nodemon yarn\nWORKDIR /app\nCOPY package.json yarn.lock ./\nRUN yarn install\nCOPY . .\nEXPOSE 3000\nCMD [\"nodemon\", \"--exec\", \"yarn\", \"start\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Python development container with a pre-commit hooks setup.\n- Port 8000",
+    "output": "FROM python:3.12-slim\nRUN apt-get update && apt-get install -y git\nRUN pip install --no-cache-dir pre-commit\nWORKDIR /app\nCOPY requirements*.txt ./\nRUN pip install --no-cache-dir -r requirements-dev.txt\nCOPY . .\nRUN pre-commit install\nEXPOSE 8000\nCMD [\"python\", \"-m\", \"app\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Java development container with Gradle and hot reload via Spring Boot DevTools.\n- Port 8080",
+    "output": "FROM gradle:8-jdk21\nWORKDIR /app\nCOPY build.gradle settings.gradle ./\nRUN gradle dependencies --no-daemon\nCOPY . .\nEXPOSE 8080\nCMD [\"gradle\", \"bootRun\", \"--no-daemon\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a Node.js development container that runs tests in watch mode.\n- Port 3000",
+    "output": "FROM node:20-slim\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"test\", \"--\", \"--watch\"]"
+  },
+  {
+    "instruction": "Write a Dockerfile for a full development environment with zsh and useful CLI tools.\n- Port 8080",
+    "output": "FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y zsh git curl wget tmux htop \\\n    && sh -c \"$(wget -O- https://github.com/ohmyzsh/ohmyzsh/raw/master/tools/install.sh)\"\nWORKDIR /workspace\nEXPOSE 8080\nCMD [\"zsh\"]"
+  }
+]
