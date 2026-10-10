@@ -1,3 +1,12 @@
+> **© 2026 [CL-Andro](https://github.com/cl-andro) / Mohammad Zaid — All Rights Reserved.**
+>
+> All source code, training datasets, documentation, and associated materials in this
+> repository are the exclusive intellectual property of CL-Andro / Mohammad Zaid.
+> Unauthorized copying, modification, redistribution, or commercial use — in whole or
+> in part — without prior written consent is strictly prohibited.
+
+---
+
 # Kaggle LLM Fine-tuning Lab
 
 Monorepo for QLoRA fine-tuning experiments on Kaggle free GPUs, plus the custom
