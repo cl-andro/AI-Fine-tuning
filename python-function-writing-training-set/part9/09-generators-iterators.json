@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a generator function that yields Fibonacci numbers indefinitely, starting from 0 and 1.",
+    "output": "def fib_generator():\n    a, b = 0, 1\n    while True:\n        yield a\n        a, b = b, a + b\n\ngen = fib_generator()\nprint([next(gen) for _ in range(10)])"
+  },
+  {
+    "instruction": "Write a generator function that yields successive chunks of an iterable, padding the final chunk with a fill value up to the chunk size.",
+    "output": "def chunked(iterable, size, fill=None):\n    it = iter(iterable)\n    while True:\n        chunk = []\n        for _ in range(size):\n            try:\n                chunk.append(next(it))\n            except StopIteration:\n                break\n        if not chunk:\n            return\n        if len(chunk) < size:\n            chunk.extend([fill] * (size - len(chunk)))\n        yield chunk\n\nprint(list(chunked(range(5), 3, fill=-1)))"
+  },
+  {
+    "instruction": "Write a generator that yields sliding windows of size n over a sequence, advancing one element at a time.",
+    "output": "def windows(seq, n):\n    if n <= 0:\n        raise ValueError('n must be positive')\n    window = []\n    for item in seq:\n        window.append(item)\n        if len(window) > n:\n            window.pop(0)\n        if len(window) == n:\n            yield tuple(window)\n\nprint(list(windows([1, 2, 3, 4], 3)))"
+  },
+  {
+    "instruction": "Write a recursive generator that flattens arbitrarily nested iterables (lists and tuples) into a stream of leaf values.",
+    "output": "def flatten(iterable):\n    for item in iterable:\n        if isinstance(item, (list, tuple)):\n            yield from flatten(item)\n        else:\n            yield item\n\nprint(list(flatten([[1, (2, 3)], [4, [5, 6]], 7])))"
+  },
+  {
+    "instruction": "Write a generator that cycles through an iterable infinitely, materializing it only once, like itertools.cycle.",
+    "output": "def cycle(iterable):\n    saved = []\n    for item in iterable:\n        saved.append(item)\n        yield item\n    if not saved:\n        return\n    while True:\n        for item in saved:\n            yield item\n\ngen = cycle('ab')\nprint([next(gen) for _ in range(5)])"
+  },
+  {
+    "instruction": "Write a countdown iterator class with __iter__ and __next__ that counts from n down to 1 and raises StopIteration when exhausted.",
+    "output": "class Countdown:\n    def __init__(self, start):\n        if start < 1:\n            raise ValueError('start must be at least 1')\n        self.current = start\n\n    def __iter__(self):\n        return self\n\n    def __next__(self):\n        if self.current < 1:\n            raise StopIteration\n        value = self.current\n        self.current -= 1\n        return value\n\nprint(list(Countdown(4)))"
+  },
+  {
+    "instruction": "Write a generator that reads a text file lazily line by line, stripping newlines, without ever loading the full file.",
+    "output": "def read_lines_lazy(path):\n    with open(path, 'r', encoding='utf-8') as f:\n        for line in f:\n            yield line.rstrip('\\n')\n\nfor line in read_lines_lazy('data.log'):\n    print(line)"
+  },
+  {
+    "instruction": "Write a generator using yield from that performs an in-order traversal of a binary search tree represented as nested dicts with 'value', 'left' and 'right' keys.",
+    "output": "def inorder(tree):\n    if tree is None:\n        return\n    yield from inorder(tree.get('left'))\n    yield tree['value']\n    yield from inorder(tree.get('right'))\n\ntree = {'value': 4, 'left': {'value': 2, 'left': {'value': 1}, 'right': {'value': 3}}, 'right': {'value': 6}}\nprint(list(inorder(tree)))"
+  },
+  {
+    "instruction": "Write a generator that yields items from an iterable, skipping duplicates while preserving the order of first appearance.",
+    "output": "def unique_everseen(iterable):\n    seen = set()\n    for item in iterable:\n        if item not in seen:\n            seen.add(item)\n            yield item\n\nprint(list(unique_everseen(['b', 'a', 'b', 'c', 'a'])))"
+  },
+  {
+    "instruction": "Write a generator pipeline that lazily applies a list of transformation functions to each item of an input iterable, composing them in order.",
+    "output": "def pipeline(iterable, *steps):\n    stream = iter(iterable)\n    for step in steps:\n        stream = (step(item) for item in stream)\n    yield from stream\n\nresult = pipeline(range(10), lambda x: x * 2, lambda x: x + 1, lambda x: x if x % 3 == 0 else None)\nprint([x for x in result if x is not None])"
+  },
+  {
+    "instruction": "Write a generator that yields the positions and values of each local maximum (peak) in a numeric sequence, comparing with both neighbors.",
+    "output": "def peaks(seq):\n    if len(seq) < 3:\n        return\n    for i in range(1, len(seq) - 1):\n        if seq[i] > seq[i - 1] and seq[i] > seq[i + 1]:\n            yield i, seq[i]\n\nprint(list(peaks([1, 3, 2, 5, 4, 4, 6])))"
+  },
+  {
+    "instruction": "Write a generator that incrementally yields prime numbers one at a time, testing candidates with previously found primes.",
+    "output": "def primes():\n    found = []\n    candidate = 2\n    while True:\n        is_prime = all(candidate % p for p in found if p * p <= candidate)\n        if is_prime:\n            found.append(candidate)\n            yield candidate\n        candidate += 1\n\ngen = primes()\nprint([next(gen) for _ in range(10)])"
+  },
+  {
+    "instruction": "Write a generator that behaves like itertools.zip_longest, pairing items from two iterables and padding the exhausted side with a fill value.",
+    "output": "def zip_longest_gen(a, b, fill=None):\n    a, b = iter(a), iter(b)\n    while True:\n        x = next(a, fill)\n        y = next(b, fill)\n        if x is fill and y is fill:\n            return\n        yield (x, y)\n\nprint(list(zip_longest_gen([1, 2, 3], ['a'], fill=None)))"
+  },
+  {
+    "instruction": "Write a generator that yields items only while a predicate holds (take_while), stopping at the first failing item without consuming further.",
+    "output": "def take_while(iterable, predicate):\n    for item in iterable:\n        if not predicate(item):\n            break\n        yield item\n\nprint(list(take_while([2, 4, 5, 6, 8], lambda x: x % 2 == 0)))"
+  },
+  {
+    "instruction": "Write a generator that drops items from the start of an iterable while a predicate holds, then yields every remaining item (drop_while).",
+    "output": "def drop_while(iterable, predicate):\n    dropping = True\n    for item in iterable:\n        if dropping and predicate(item):\n            continue\n        dropping = False\n        yield item\n\nprint(list(drop_while([1, 3, 5, 6, 7], lambda x: x % 2 == 1)))"
+  },
+  {
+    "instruction": "Write a generator that yields overlapping pairs of consecutive items from an iterable, like pairwise in itertools.",
+    "output": "def pairwise(iterable):\n    it = iter(iterable)\n    try:\n        prev = next(it)\n    except StopIteration:\n        return\n    for item in it:\n        yield (prev, item)\n        prev = item\n\nprint(list(pairwise('ABCDE')))"
+  },
+  {
+    "instruction": "Write a coroutine function that receives numbers via .send() and keeps a running average, yielding the current average after each send.",
+    "output": "def running_average():\n    total = 0.0\n    count = 0\n    while True:\n        value = yield\n        total += value\n        count += 1\n        yield total / count\n\ncor = running_average()\nnext(cor)\nresults = []\nfor n in [10, 20, 30]:\n    cor.send(n)\n    results.append(cor.send(None))\nprint(results)"
+  },
+  {
+    "instruction": "Write a generator that yields items from several iterables in round-robin order, stopping when the shortest iterable is exhausted.",
+    "output": "def round_robin(*iterables):\n    iterators = [iter(it) for it in iterables]\n    while iterators:\n        for it in list(iterators):\n            try:\n                yield next(it)\n            except StopIteration:\n                iterators.remove(it)\n\nprint(list(round_robin('ABC', 'xy', '1234')))"
+  },
+  {
+    "instruction": "Write a generator that performs a breadth-first traversal of a dict-of-lists adjacency map, yielding visited nodes in BFS order and guarding against cycles.",
+    "output": "from collections import deque\n\ndef bfs(graph, start):\n    visited = {start}\n    queue = deque([start])\n    while queue:\n        node = queue.popleft()\n        yield node\n        for neighbor in graph.get(node, []):\n            if neighbor not in visited:\n                visited.add(neighbor)\n                queue.append(neighbor)\n\ngraph = {'A': ['B', 'C'], 'B': ['D'], 'C': ['D', 'A'], 'D': []}\nprint(list(bfs(graph, 'A')))"
+  },
+  {
+    "instruction": "Write a generator that yields batches of at most n items from an iterable, flushing the partial batch at the end.",
+    "output": "def batched_flush(iterable, n):\n    batch = []\n    for item in iterable:\n        batch.append(item)\n        if len(batch) == n:\n            yield batch\n            batch = []\n    if batch:\n        yield batch\n\nprint(list(batched_flush(range(7), 3)))"
+  }
+]

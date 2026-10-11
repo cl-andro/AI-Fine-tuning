@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Socket-activate a daemon listening on TCP port 8080.",
+    "output": "# app.socket\n[Socket]\nListenStream=8080\n\n[Install]\nWantedBy=sockets.target\n\n# app.service\n[Service]\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Create a Unix domain socket for a service.",
+    "output": "[Socket]\nListenStream=/run/myapp/myapp.sock\nSocketMode=0660\n\n[Install]\nWantedBy=sockets.target"
+  },
+  {
+    "instruction": "Pass the socket file descriptor to the service.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nStandardInput=socket"
+  },
+  {
+    "instruction": "Accept a connection per process with Accept=yes.",
+    "output": "[Socket]\nListenStream=2222\nAccept=yes\n\n# The templated service app@.service handles each connection."
+  },
+  {
+    "instruction": "Write the templated per-connection service.",
+    "output": "# app@.service\n[Service]\nExecStart=/usr/local/bin/handle-connection\nStandardInput=socket\nStandardError=journal"
+  },
+  {
+    "instruction": "Bind a socket to a specific address and port.",
+    "output": "[Socket]\nListenStream=10.0.0.5:9000\n[Install]\nWantedBy=sockets.target"
+  },
+  {
+    "instruction": "Create a Datagram socket for UDP traffic.",
+    "output": "[Socket]\nListenDatagram=9999\n[Install]\nWantedBy=sockets.target"
+  },
+  {
+    "instruction": "Set socket permissions and ownership.",
+    "output": "[Socket]\nListenStream=/run/app.sock\nSocketUser=app\nSocketGroup=app\nSocketMode=0660"
+  },
+  {
+    "instruction": "Create a custom target that groups several services.",
+    "output": "# maintenance.target\n[Unit]\nDescription=Maintenance mode\nRequires=db-maintenance.service cache-flush.service\nAfter=db-maintenance.service cache-flush.service"
+  },
+  {
+    "instruction": "Make services part of a custom target.",
+    "output": "[Unit]\nDescription=Worker pool\nPartOf=workers.target\n\n[Service]\nExecStart=/usr/local/bin/worker"
+  },
+  {
+    "instruction": "Start a whole target on boot.",
+    "output": "[Install]\nWantedBy=multi-user.target\n# In /etc/systemd/system/maintenance.target.wants/, or:\nsystemctl enable maintenance.target"
+  },
+  {
+    "instruction": "Override a target using WantedBy in a drop-in.",
+    "output": "# drop-in adding a unit to a target\n[Install]\nWantedBy=workers.target"
+  },
+  {
+    "instruction": "Explain sockets.target vs multi-user.target.",
+    "output": "# sockets.target: set of socket units, pulls in services on demand\n# multi-user.target: standard non-graphical boot target\n# Socket units are WantedBy=sockets.target so they activate early."
+  },
+  {
+    "instruction": "Set a backlog and max connections on a socket.",
+    "output": "[Socket]\nListenStream=8080\nBacklog=512\nMaxConnections=1000"
+  },
+  {
+    "instruction": "Trigger socket activation only when data arrives.",
+    "output": "[Socket]\nListenStream=8080\nTriggerLimitIntervalSec=2\nTriggerLimitBurst=10\n[Install]\nWantedBy=sockets.target"
+  },
+  {
+    "instruction": "Show active sockets and their services.",
+    "output": "systemctl list-sockets --all\nsystemctl status app.socket"
+  },
+  {
+    "instruction": "Reload a socket after changing its definition.",
+    "output": "systemctl daemon-reload\nsystemctl restart app.socket"
+  },
+  {
+    "instruction": "Use FreeBind to bind a not-yet-configured address.",
+    "output": "[Socket]\nListenStream=10.0.0.9:8080\nFreeBind=yes"
+  },
+  {
+    "instruction": "Delay socket activation until network is online.",
+    "output": "[Unit]\nAfter=network-online.target\nWants=network-online.target\n\n[Socket]\nListenStream=8080"
+  },
+  {
+    "instruction": "Disable a socket and stop its service cleanly.",
+    "output": "systemctl disable --now app.socket\nsystemctl stop app.service"
+  }
+]

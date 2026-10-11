@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Build a Docker image and push it to GHCR with login, metadata, and build-push actions.",
+    "output": "name: ghcr-push\non:\n  push:\n    branches: [main]\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ghcr.io/${{ github.repository }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: ${{ steps.meta.outputs.tags }}\n          labels: ${{ steps.meta.outputs.labels }}"
+  },
+  {
+    "instruction": "Push an image to Docker Hub using username and token secrets.",
+    "output": "name: dockerhub-push\non:\n  push:\n    tags: ['v*']\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          username: ${{ secrets.DOCKERHUB_USERNAME }}\n          password: ${{ secrets.DOCKERHUB_TOKEN }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: ${{ secrets.DOCKERHUB_USERNAME }}/webapp:${{ github.ref_name }}"
+  },
+  {
+    "instruction": "Build a multi-architecture image for linux/amd64 and linux/arm64 with QEMU and buildx.",
+    "output": "name: multiarch\non:\n  push:\n    branches: [main]\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-qemu-action@v3\n      - uses: docker/setup-buildx-action@v3\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          platforms: linux/amd64,linux/arm64\n          push: true\n          tags: ghcr.io/${{ github.repository }}:latest"
+  },
+  {
+    "instruction": "Build the image on pull requests without pushing it anywhere.",
+    "output": "name: pr-build-only\non: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-buildx-action@v3\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: false\n          tags: webapp:pr-${{ github.event.pull_request.number }}"
+  },
+  {
+    "instruction": "Apply semantic version tags from git tags with docker/metadata-action.",
+    "output": "name: semver-tags\non:\n  push:\n    tags: ['v*']\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ghcr.io/${{ github.repository }}\n          tags: |\n            type=semver,pattern={{version}}\n            type=semver,pattern={{major}}.{{minor}}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: ${{ steps.meta.outputs.tags }}"
+  },
+  {
+    "instruction": "Build the image with build arguments for the application version and git commit.",
+    "output": "name: build-args\non: push\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: false\n          build-args: |\n            APP_VERSION=${{ github.ref_name }}\n            GIT_SHA=${{ github.sha }}"
+  },
+  {
+    "instruction": "Use the GitHub Actions cache backend to speed up Docker layer rebuilds.",
+    "output": "name: gha-layer-cache\non: push\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-buildx-action@v3\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: false\n          cache-from: type=gha\n          cache-to: type=gha,mode=max"
+  },
+  {
+    "instruction": "Push the image only when a version tag is created, tagging it as both latest and the version.",
+    "output": "name: tag-push\non:\n  push:\n    tags: ['v[0-9]+.[0-9]+.[0-9]+']\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: |\n            ghcr.io/${{ github.repository }}:latest\n            ghcr.io/${{ github.repository }}:${{ github.ref_name }}"
+  },
+  {
+    "instruction": "Build multiple Dockerfiles in the repo with a matrix of image names.",
+    "output": "name: dockerfile-matrix\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        include:\n          - image: api\n            dockerfile: Dockerfile.api\n          - image: worker\n            dockerfile: Dockerfile.worker\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          file: ${{ matrix.dockerfile }}\n          push: false\n          tags: ${{ matrix.image }}:ci"
+  },
+  {
+    "instruction": "Push images with SBOM and provenance attestations enabled.",
+    "output": "name: sbom-provenance\non:\n  push:\n    branches: [main]\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}\n          sbom: true\n          provenance: mode=max"
+  },
+  {
+    "instruction": "Authenticate to Amazon ECR and push the image with a commit-sha tag.",
+    "output": "name: ecr-push\non:\n  push:\n    branches: [main]\njobs:\n  ecr:\n    runs-on: ubuntu-latest\n    permissions:\n      id-token: write\n      contents: read\n    steps:\n      - uses: actions/checkout@v4\n      - uses: aws-actions/configure-aws-credentials@v4\n        with:\n          role-to-assume: ${{ secrets.AWS_ECR_ROLE_ARN }}\n          aws-region: us-east-1\n      - id: login\n        uses: aws-actions/amazon-ecr-login@v2\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          tags: ${{ steps.login.outputs.registry }}/webapp:${{ github.sha }}"
+  },
+  {
+    "instruction": "Log in to Azure Container Registry and push the built image.",
+    "output": "name: acr-push\non:\n  push:\n    branches: [main]\njobs:\n  acr:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: azure/docker-login@v2\n        with:\n          login-server: myregistry.azurecr.io\n          username: ${{ secrets.ACR_USERNAME }}\n          password: ${{ secrets.ACR_PASSWORD }}\n      - run: docker build -t myregistry.azurecr.io/webapp:${{ github.sha }} .\n      - run: docker push myregistry.azurecr.io/webapp:${{ github.sha }}"
+  },
+  {
+    "instruction": "Build a multi-stage image selecting only the final runtime stage with target.",
+    "output": "name: build-target\non: push\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          target: runtime\n          push: false\n          tags: webapp:runtime"
+  },
+  {
+    "instruction": "Build the Compose stack and print the resolved configuration.",
+    "output": "name: compose-build\non: push\njobs:\n  compose:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: docker compose config\n      - run: docker compose build\n      - run: docker compose down -v"
+  },
+  {
+    "instruction": "Tag the image with OCI labels including source URL, revision, and created timestamp.",
+    "output": "name: oci-labels\non: push\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ghcr.io/${{ github.repository }}\n          labels: |\n            org.opencontainers.image.title=webapp\n            org.opencontainers.image.revision=${{ github.sha }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: true\n          labels: ${{ steps.meta.outputs.labels }}\n          tags: ${{ steps.meta.outputs.tags }}"
+  },
+  {
+    "instruction": "Build in one job, export the image as a tarball artifact, then load and smoke-test it in another.",
+    "output": "name: image-artifact\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: docker build -t webapp:ci .\n      - run: docker save webapp:ci | gzip > webapp.tar.gz\n      - uses: actions/upload-artifact@v4\n        with:\n          name: docker-image\n          path: webapp.tar.gz\n  smoke:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: docker-image\n      - run: gunzip -c webapp.tar.gz | docker load\n      - run: docker run --rm webapp:ci --version"
+  },
+  {
+    "instruction": "Push the image to a GitLab container registry with deploy token credentials.",
+    "output": "name: gitlab-registry\non:\n  push:\n    tags: ['v*']\njobs:\n  push:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: echo \"${{ secrets.GITLAB_TOKEN }}\" | docker login registry.gitlab.com -u gitlab-ci-token --password-stdin\n      - run: docker build -t registry.gitlab.com/mygroup/webapp:${{ github.ref_name }} .\n      - run: docker push registry.gitlab.com/mygroup/webapp:${{ github.ref_name }}"
+  },
+  {
+    "instruction": "Build for a specific BuildKit platform and push it as an edge tag.",
+    "output": "name: platform-build\non:\n  push:\n    branches: [develop]\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: docker/setup-buildx-action@v3\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          platforms: linux/amd64\n          push: true\n          tags: ghcr.io/${{ github.repository }}:edge"
+  },
+  {
+    "instruction": "Generate PR-friendly tags from branch and pull request numbers with metadata-action.",
+    "output": "name: pr-tags\non: pull_request\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      packages: write\n    steps:\n      - uses: actions/checkout@v4\n      - id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ghcr.io/${{ github.repository }}\n          tags: |\n            type=ref,event=pr\n            type=sha\n      - uses: docker/build-push-action@v6\n        with:\n          context: .\n          push: false\n          tags: ${{ steps.meta.outputs.tags }}"
+  },
+  {
+    "instruction": "Build the image, run a container, and verify the health endpoint before finishing.",
+    "output": "name: run-smoke\non: pull_request\njobs:\n  docker:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: docker build -t webapp:pr .\n      - name: Start container\n        run: docker run -d --name webapp -p 8080:8080 webapp:pr\n      - name: Health check\n        run: |\n          for i in $(seq 1 30); do\n            curl -sf http://localhost:8080/health && exit 0\n            sleep 2\n          done\n          docker logs webapp\n          exit 1\n      - name: Cleanup\n        if: always()\n        run: docker rm -f webapp || true"
+  }
+]

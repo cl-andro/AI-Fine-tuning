@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Keep the 5 features with the best ANOVA F-score for a classification target.",
+    "output": "from sklearn.feature_selection import SelectKBest, f_classif\nsel = SelectKBest(f_classif, k=5)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Keep the features most linearly related to a continuous target.",
+    "output": "from sklearn.feature_selection import SelectKBest, f_regression\nsel = SelectKBest(f_regression, k=10)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Keep only the top 30 percent of the features.",
+    "output": "from sklearn.feature_selection import SelectPercentile, f_classif\nsel = SelectPercentile(f_classif, percentile=30)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Remove features that never change across samples.",
+    "output": "from sklearn.feature_selection import VarianceThreshold\nsel = VarianceThreshold(threshold=0.0)\nX = sel.fit_transform(X)"
+  },
+  {
+    "instruction": "Run recursive feature elimination with a logistic regression estimator.",
+    "output": "from sklearn.feature_selection import RFE\nfrom sklearn.linear_model import LogisticRegression\nsel = RFE(LogisticRegression(), n_features_to_select=5)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Let cross-validation decide how many features recursive elimination should keep.",
+    "output": "from sklearn.feature_selection import RFECV\nfrom sklearn.linear_model import LogisticRegression\nsel = RFECV(LogisticRegression(), min_features_to_select=3)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Select features with a Lasso-based importance threshold.",
+    "output": "from sklearn.feature_selection import SelectFromModel\nfrom sklearn.linear_model import Lasso\nsel = SelectFromModel(Lasso(alpha=0.01, max_iter=5000))\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Pick the most important features reported by a random forest.",
+    "output": "from sklearn.feature_selection import SelectFromModel\nfrom sklearn.ensemble import RandomForestClassifier\nsel = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=0))\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Select features by their mutual information with the target.",
+    "output": "from sklearn.feature_selection import SelectKBest\nfrom sklearn.feature_selection import mutual_info_classif\nsel = SelectKBest(mutual_info_classif, k=7)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Add features one at a time until cross-validated accuracy stops improving.",
+    "output": "from sklearn.feature_selection import SequentialFeatureSelector\nfrom sklearn.linear_model import LogisticRegression\nsel = SequentialFeatureSelector(LogisticRegression(), direction='forward', n_features_to_select=3)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Remove the least useful features one at a time with backward selection.",
+    "output": "from sklearn.feature_selection import SequentialFeatureSelector\nfrom sklearn.linear_model import LogisticRegression\nsel = SequentialFeatureSelector(LogisticRegression(), direction='backward', n_features_to_select=3)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Get the boolean mask of the features that a fitted selector kept.",
+    "output": "mask = sel.get_support()\nprint(mask)"
+  },
+  {
+    "instruction": "Get the positional indices of the selected features.",
+    "output": "idx = sel.get_support(indices=True)\nprint(idx)"
+  },
+  {
+    "instruction": "Transform the dataset down to only the selected columns.",
+    "output": "X_selected = sel.transform(X)"
+  },
+  {
+    "instruction": "Select features with a chi-squared test at a fixed false positive rate.",
+    "output": "from sklearn.feature_selection import SelectFpr, chi2\nsel = SelectFpr(chi2, alpha=0.05)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Select features by mutual information for a regression target.",
+    "output": "from sklearn.feature_selection import SelectKBest\nfrom sklearn.feature_selection import mutual_info_regression\nsel = SelectKBest(mutual_info_regression, k=6)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Rank features with permutation importance and keep those above the mean score.",
+    "output": "import numpy as np\nfrom sklearn.inspection import permutation_importance\nr = permutation_importance(model, X_test, y_test, n_repeats=10, random_state=0)\nsel = r.importances_mean > np.mean(r.importances_mean)\nX = X_test[:, sel]"
+  },
+  {
+    "instruction": "Drop any feature that is more than 0.95 correlated with another feature.",
+    "output": "import numpy as np\nimport pandas as pd\ncorr = df.corr().abs()\nupper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))\ndrop = [c for c in upper.columns if (upper[c] > 0.95).any()]\nX = df.drop(columns=drop)"
+  },
+  {
+    "instruction": "Keep only the k largest coefficients of a fitted linear model.",
+    "output": "import numpy as np\nfrom sklearn.feature_selection import SelectFromModel\nfrom sklearn.linear_model import LogisticRegression\nsel = SelectFromModel(LogisticRegression(), max_features=4, threshold=-np.inf)\nX = sel.fit_transform(X, y)"
+  },
+  {
+    "instruction": "Select every feature whose model importance is above the median importance.",
+    "output": "from sklearn.feature_selection import SelectFromModel\nfrom sklearn.ensemble import ExtraTreesClassifier\nsel = SelectFromModel(ExtraTreesClassifier(n_estimators=100, random_state=0), threshold='median')\nX = sel.fit_transform(X, y)"
+  }
+]

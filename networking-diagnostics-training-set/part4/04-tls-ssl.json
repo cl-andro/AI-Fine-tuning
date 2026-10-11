@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "curl reports 'SSL certificate problem: unable to get local issuer certificate'. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v https://example.com\nopenssl s_client -connect example.com:443 -servername example.com -showcerts\nopenssl s_client -connect example.com:443 -CAfile /etc/ssl/certs/ca-certificates.crt\n**Interpretation:** The server is not sending the intermediate certificate, so clients cannot build the chain to a trusted root. s_client verification returns 'unable to verify the first certificate' or notes the missing intermediate.\n**Fix:** Configure the server to serve the full chain (leaf + intermediates) in the certificate file, e.g `ssl_certificate fullchain.pem;` in nginx, or concatenate them for Apache/HAProxy. Reload and verify with `openssl s_client -verify_return_error`."
+  },
+  {
+    "instruction": "A certificate expired and renewals are not happening. Diagnose the expiry and automation.",
+    "output": "**Diagnose:**\necho | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -dates\necho | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -subject -issuer\ncertbot certificates\nsystemctl list-timers | grep certbot\n**Interpretation:** openssl shows notAfter in the past. certbot may have a renewal timer that is not running, or the HTTP-01 challenge failed due to a firewall/redirect.\n**Fix:** Renew manually to see the error: `certbot renew --dry-run`. Fix the challenge (open port 80 or use DNS-01), enable `certbot.timer`, and reload the web server on renewal via a deploy hook. Verify notAfter is in the future."
+  },
+  {
+    "instruction": "Chrome shows NET::ERR_CERT_COMMON_NAME_INVALID but curl -k works. Diagnose SAN/CN.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'\nopenssl x509 -noout -subject -in cert.pem\n**Interpretation:** Browsers require the hostname in the SAN extension; the legacy CN is ignored. If only CN is set, or the SAN lists a different name, browsers reject it even though curl -k skips verification.\n**Fix:** Reissue the certificate with a SAN containing every name (including www and the apex). Update the server config and reload. Verify with openssl SAN output and a browser."
+  },
+  {
+    "instruction": "TLS handshake fails with 'no shared cipher' between a legacy client and a hardened server. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -tls1_2\nopenssl s_client -connect example.com:443 -cipher 'AES128-SHA'\nnmap --script ssl-enum-ciphers -p 443 example.com\n**Interpretation:** 'no shared cipher' means the client's offered suites are all disabled on the server (or vice versa). If only TLS 1.0/old CBC suites match the legacy client, the hardened server rejects them.\n**Fix:** Prefer upgrading the client to TLS 1.2+. If unavoidable, add a narrowly scoped TLS 1.2 ECDHE suite on the specific vhost for that client, not globally. Verify with `nmap --script ssl-enum-ciphers`."
+  },
+  {
+    "instruction": "A service presents the wrong certificate when accessed by a second hostname. Diagnose SNI.",
+    "output": "**Diagnose:**\nopenssl s_client -connect 10.0.0.5:443 -servername a.example.com 2>/dev/null | openssl x509 -noout -subject\nopenssl s_client -connect 10.0.0.5:443 -servername b.example.com 2>/dev/null | openssl x509 -noout -subject\nnginx -T | grep -E 'server_name|ssl_certificate'\n**Interpretation:** If both SNI names return the same cert, the server has a default vhost mismatched to b.example.com or is missing an SNI-enabled vhost for it. Without SNI, the client gets a cert for the wrong name.\n**Fix:** Add a vhost for b.example.com with its own certificate, or use a SAN cert covering both names on one vhost. Reload and re-test each SNI with openssl."
+  },
+  {
+    "instruction": "TLS error 'unsafe legacy renegotiation disabled'. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443\nopenssl s_client -connect example.com:443 -legacy_renegotiation\n**Interpretation:** The client (or a middlebox) initiates insecure renegotiation, which modern OpenSSL blocks by default after CVE-2009-3555. It often indicates an old appliance or client library on the path.\n**Fix:** Update the client/middlebox to support secure renegotiation. As a temporary, risky workaround on a controlled client, set `Options = UnsafeLegacyRenegotiation` in openssl.cnf. Prefer fixing the endpoint."
+  },
+  {
+    "instruction": "`openssl s_client` hangs at 'CONNECTED' with no handshake. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -servername example.com\nsudo tcpdump -ni eth0 'tcp port 443'\ntimeout 5 openssl s_client -connect example.com:443 </dev/null\n**Interpretation:** If the TCP handshake completes but no TLS records appear, the server is not starting TLS (plain HTTP on 443, or a broken listener). If there is no TCP handshake, it is a firewall/path issue.\n**Fix:** Confirm you are hitting the TLS port and the server speaks TLS; if plain HTTP is on 443, use `curl http://` or move TLS to the right port. Fix the listener or firewall accordingly and retest."
+  },
+  {
+    "instruction": "A client rejects a self-signed certificate. Diagnose trust options.",
+    "output": "**Diagnose:**\nopenssl s_client -connect internal.example.com:443 -servername internal.example.com -showcerts\ncurl -v https://internal.example.com/\ncurl -v --cacert /path/ca.crt https://internal.example.com/\n**Interpretation:** Verification fails because the private CA is not in the client's trust store. `--cacert` succeeding proves the chain is otherwise valid.\n**Fix:** Distribute the internal root CA to clients' trust stores (copy to /usr/local/share/ca-certificates/ then `update-ca-certificates`), or configure the app's truststore. Avoid `-k`/`--insecure` in production as it disables verification entirely."
+  },
+  {
+    "instruction": "TLS session resumption is not working, causing high CPU. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -reconnect -servername example.com 2>&1 | grep -i -E 'reused|session'\nopenssl s_client -connect example.com:443 -sess_out sess.pem </dev/null\nopenssl s_client -connect example.com:443 -sess_in sess.pem </dev/null 2>&1 | grep -i reused\n**Interpretation:** If 'Reused' shows No, session IDs/tickets are disabled or the server does not share session state across workers/instances. High handshake CPU with many clients points here.\n**Fix:** Enable TLS session tickets/cache and share session state: nginx `ssl_session_cache shared:SSL:10m; ssl_session_tickets on;`. For multi-instance services, use a shared ticket key or consistent routing. Verify 'Reused: Yes' with s_client."
+  },
+  {
+    "instruction": "TLS 1.3 works but TLS 1.2 clients fail with handshake failure. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -tls1_2\nopenssl s_client -connect example.com:443 -tls1_3\nopenssl s_client -connect example.com:443 -tls1_2 -cipher 'ECDHE-RSA-AES128-GCM-SHA256'\nnmap --script ssl-enum-ciphers -p 443 example.com\n**Interpretation:** If only TLS 1.3 succeeds, the TLS 1.2 cipher list is empty or incompatible with the client. A misapplied `ssl_ciphers` directive can leave no usable TLS 1.2 suites.\n**Fix:** Configure a valid TLS 1.2 suite list, e.g `ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:...';` and `ssl_protocols TLSv1.2 TLSv1.3;`. Reload and verify both versions with s_client."
+  },
+  {
+    "instruction": "A certificate is valid by date but clients report 'certificate is not yet valid'. Diagnose clock skew.",
+    "output": "**Diagnose:**\ndate -u\nsudo timedatectl\nchronyc tracking 2>/dev/null || ntpq -p\necho | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -dates\n**Interpretation:** 'not yet valid' means the client clock is behind the cert's notBefore. If `timedatectl` shows 'System clock synchronized: no', NTP is not syncing.\n**Fix:** Enable NTP: `timedatectl set-ntp true` and ensure chronyd/ntpd runs. The UTC clock must be accurate. Re-check `openssl x509 -dates` and retry."
+  },
+  {
+    "instruction": "An HTTPS endpoint fails with 'sslv3 alert handshake failure' specifically from Java clients. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect api.example.com:443 -servername api.example.com\njava -Djavax.net.debug=ssl,handshake -jar client.jar 2>&1 | grep -i -E 'cipher|alert|protocol'\nnmap --script ssl-enum-ciphers -p 443 api.example.com\n**Interpretation:** Java's default cipher/protocol set differs from OpenSSL's. If the server requires suites the JVM disables (or the JVM offers only suites the server rejects), the handshake fails with an alert.\n**Fix:** Align the server's cipher list with the JVM's supported suites, or configure the client's `jdk.tls.disabledAlgorithms`/cipher list. Verify with `-Djavax.net.debug=ssl` that a common suite is negotiated."
+  },
+  {
+    "instruction": "Certificate chain verification fails behind an enterprise proxy doing TLS inspection. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -servername example.com -showcerts 2>/dev/null | openssl x509 -noout -issuer\ncurl -v https://example.com/\nenv | grep -i -E 'SSL_CERT|REQUESTS_CA|CURL_CA'\n**Interpretation:** The issuer shown is the enterprise CA, not the public CA, meaning the proxy intercepts TLS. Clients that do not trust the corporate root fail verification.\n**Fix:** Install the enterprise root CA into the application's trust store (system CA bundle, Java cacerts, or the app's CA file) and set the relevant env vars (`SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`). Do not disable verification."
+  },
+  {
+    "instruction": "TLS handshake is slow (multiple round trips) on new connections. Diagnose.",
+    "output": "**Diagnose:**\ncurl -w 'tls:%{time_appconnect} conn:%{time_connect}\\n' -o /dev/null -s https://example.com/\nopenssl s_client -connect example.com:443 -tls1_2 -msg 2>&1 | grep -i -E 'Hello|Certificate|Finished'\nip route get example.com\n**Interpretation:** A high `time_appconnect` minus `time_connect` indicates extra RTTs: OCSP stapling disabled, no session resumption, or a geographically remote server. Packet-level -msg shows the handshake steps.\n**Fix:** Enable OCSP stapling (`ssl_stapling on; ssl_stapling_verify on;`), session tickets/resumption, and TLS 1.3 (1-RTT). Use a CDN/edge closer to users. Verify time_appconnect drops."
+  },
+  {
+    "instruction": "A certificate renewal succeeded but the server still serves the old cert. Diagnose.",
+    "output": "**Diagnose:**\necho | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -dates -serial\nopenssl x509 -noout -dates -serial -in /etc/letsencrypt/live/example.com/fullchain.pem\nsudo nginx -t && systemctl reload nginx\nsystemctl status nginx | head\n**Interpretation:** The file on disk is new but the running process loaded the old cert until reload/restart. Some servers only load certs at startup.\n**Fix:** Reload the web server after renewal (`systemctl reload nginx` or `apachectl graceful`) via a certbot deploy hook. If the process still serves the old serial, restart it. Verify the served serial matches the file."
+  },
+  {
+    "instruction": "TLS client authentication (mTLS) fails with 'certificate required'. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect api.example.com:443 -servername api.example.com -cert client.crt -key client.key\nopenssl s_client -connect api.example.com:443 -servername api.example.com\nsudo tail -f /var/log/nginx/error.log\n**Interpretation:** Without a client cert the server aborts with 'certificate required' (it has `ssl_verify_client on`). With the cert, a failure means the client CA is not trusted by the server or the cert is expired.\n**Fix:** Configure the server's `ssl_client_certificate` to the CA that signed client certs, and `ssl_verify_client on`. Ensure the client presents the right cert/key. Verify with s_client showing 'Verify return code: 0 (ok)'."
+  },
+  {
+    "instruction": "A wildcard certificate does not cover a second-level subdomain. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect a.b.example.com:443 -servername a.b.example.com 2>/dev/null | openssl x509 -noout -text | grep -A1 'Subject Alternative Name'\n**Interpretation:** A `*.example.com` wildcard matches only one label (a.example.com), not a.b.example.com. Clients reject the name mismatch.\n**Fix:** Issue a certificate with an explicit SAN for a.b.example.com or a second wildcard `*.b.example.com`. Update the server vhost and reload. Verify each hostname with openssl."
+  },
+  {
+    "instruction": "TLS handshake fails only over IPv6. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect [2001:db8::5]:443 -servername example.com\nopenssl s_client -connect 10.0.0.5:443 -servername example.com\nss -tlnp | grep 443\nip -6 addr\n**Interpretation:** If IPv4 works and IPv6 fails at the handshake, the service may listen on IPv4 only, or an IPv6 firewall/route drops the connection. IPv6 MTU/fragmentation can also break the larger handshake.\n**Fix:** Make the listener bind dual-stack (`::`), open IPv6 firewall rules (ip6tables/nft), and verify the IPv6 path MTU. Test with `openssl s_client` per family."
+  },
+  {
+    "instruction": "An old client connects with a deprecated protocol after a server upgrade. Diagnose protocol support.",
+    "output": "**Diagnose:**\nopenssl s_client -connect example.com:443 -tls1_1\nopenssl s_client -connect example.com:443 -tls1\nnmap --script ssl-enum-ciphers -p 443 example.com\n**Interpretation:** If TLS 1.0/1.1 now fail after the upgrade, the server disabled them (recommended). The old client cannot negotiate a supported protocol.\n**Fix:** Update the client to TLS 1.2+. If that is impossible, isolate the legacy client and allow TLS 1.2 (not 1.0/1.1) on a dedicated vhost with a compensating control, then plan client migration. Verify with s_client."
+  },
+  {
+    "instruction": "A service returns 'wrong version number' when connecting with openssl s_client. Diagnose.",
+    "output": "**Diagnose:**\nopenssl s_client -connect host:443\ncurl -v http://host:443/\nopenssl s_client -connect host:8443\nss -tlnp | grep -E '443|8443'\n**Interpretation:** 'wrong version number' means you spoke TLS to a plaintext port (or vice versa). The server sent HTTP where the client expected a TLS record.\n**Fix:** Use the correct protocol and port: `curl http://host:443/` if plain HTTP, or `openssl s_client -connect host:8443` if TLS is on 8443. Fix the service config so the intended protocol listens on the intended port."
+  }
+]

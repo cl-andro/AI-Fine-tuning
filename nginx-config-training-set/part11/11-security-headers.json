@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Add HSTS for one year including subdomains.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name secure.example.com;\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\n    location / {\n        root /var/www/secure;\n    }\n}"
+  },
+  {
+    "instruction": "Set X-Content-Type-Options and X-Frame-Options globally for all responses.",
+    "output": "server {\n    listen 80;\n    server_name www.example.com;\n    add_header X-Content-Type-Options \"nosniff\" always;\n    add_header X-Frame-Options \"SAMEORIGIN\" always;\n    location / {\n        root /var/www/html;\n    }\n}"
+  },
+  {
+    "instruction": "Add a strict Content-Security-Policy that only allows same-origin scripts.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name app.example.com;\n    add_header Content-Security-Policy \"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:\" always;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n    }\n}"
+  },
+  {
+    "instruction": "Set a Referrer-Policy to limit leaking of full URLs to other origins.",
+    "output": "server {\n    listen 80;\n    server_name www.example.com;\n    add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n    location / {\n        root /var/www/html;\n    }\n}"
+  },
+  {
+    "instruction": "Disable the server version banner in responses.",
+    "output": "http {\n    server_tokens off;\n    server {\n        listen 80;\n        server_name www.example.com;\n        location / {\n            root /var/www/html;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Add Permissions-Policy to disable camera, microphone and geolocation.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name privacy.example.com;\n    add_header Permissions-Policy \"camera=(), microphone=(), geolocation=()\" always;\n    location / {\n        root /var/www/privacy;\n    }\n}"
+  },
+  {
+    "instruction": "Prevent MIME sniffing and block framing on all responses including errors.",
+    "output": "server {\n    listen 80;\n    server_name www.example.com;\n    add_header X-Content-Type-Options \"nosniff\" always;\n    add_header X-Frame-Options \"DENY\" always;\n    location / {\n        root /var/www/html;\n    }\n}"
+  },
+  {
+    "instruction": "Enable HSTS only after ensuring the whole site is HTTPS, with preload.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name preload.example.com;\n    ssl_certificate /etc/ssl/certs/preload.crt;\n    ssl_certificate_key /etc/ssl/private/preload.key;\n    add_header Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\" always;\n    location / {\n        root /var/www/preload;\n    }\n}\n\nserver {\n    listen 80;\n    server_name preload.example.com;\n    return 301 https://$host$request_uri;\n}"
+  },
+  {
+    "instruction": "Cross-Origin-Opener-Policy and Cross-Origin-Resource-Policy for isolation.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name isolated.example.com;\n    add_header Cross-Origin-Opener-Policy \"same-origin\" always;\n    add_header Cross-Origin-Resource-Policy \"same-origin\" always;\n    location / {\n        root /var/www/isolated;\n    }\n}"
+  },
+  {
+    "instruction": "Allow scripts and styles from a CDN in the CSP.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name cdnapp.example.com;\n    add_header Content-Security-Policy \"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'\" always;\n    location / {\n        root /var/www/cdnapp;\n    }\n}"
+  },
+  {
+    "instruction": "Remove the X-Powered-By header from proxied responses.",
+    "output": "server {\n    listen 80;\n    server_name strip.example.com;\n    location / {\n        proxy_pass http://127.0.0.1:8080;\n        proxy_hide_header X-Powered-By;\n        proxy_hide_header Server;\n    }\n}"
+  },
+  {
+    "instruction": "Add cache-control no-store to authenticated API responses.",
+    "output": "server {\n    listen 80;\n    server_name api.example.com;\n    location /api/ {\n        proxy_pass http://127.0.0.1:8080;\n        add_header Cache-Control \"no-store\" always;\n        add_header Pragma \"no-cache\" always;\n    }\n}"
+  },
+  {
+    "instruction": "Set security headers only on HTML responses, not on static assets.",
+    "output": "server {\n    listen 80;\n    server_name selective.example.com;\n    location ~ \\.html$ {\n        root /var/www/selective;\n        add_header X-Frame-Options \"DENY\" always;\n    }\n    location ~* \\.(css|js|png|jpg|svg)$ {\n        root /var/www/selective;\n    }\n}"
+  },
+  {
+    "instruction": "Add a report-only CSP to test violations without blocking.",
+    "output": "server {\n    listen 80;\n    server_name report.example.com;\n    add_header Content-Security-Policy-Report-Only \"default-src 'self'; report-uri /csp-report\" always;\n    location /csp-report {\n        proxy_pass http://127.0.0.1:9000;\n    }\n}"
+  },
+  {
+    "instruction": "Reject requests without HTTPS by returning a 444 for plain HTTP after migration.",
+    "output": "server {\n    listen 80;\n    server_name gone.example.com;\n    return 444;\n}"
+  },
+  {
+    "instruction": "Force HTTPS redirect and keep the original request path.",
+    "output": "server {\n    listen 80;\n    server_name www.example.com;\n    return 301 https://$host$request_uri;\n}"
+  },
+  {
+    "instruction": "Set X-XSS-Protection to the modern safe value.",
+    "output": "server {\n    listen 80;\n    server_name legacy.example.com;\n    add_header X-XSS-Protection \"0\" always;\n    location / {\n        root /var/www/legacy;\n    }\n}"
+  },
+  {
+    "instruction": "Apply a CSP that allows Google Analytics while blocking everything else third-party.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name analytics.example.com;\n    add_header Content-Security-Policy \"default-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com\" always;\n    location / {\n        root /var/www/analytics;\n    }\n}"
+  },
+  {
+    "instruction": "Block framing only on sensitive pages while allowing embedding elsewhere.",
+    "output": "server {\n    listen 80;\n    server_name embed.example.com;\n    location = /checkout {\n        add_header X-Frame-Options \"DENY\" always;\n        proxy_pass http://127.0.0.1:8080;\n    }\n    location /widget {\n        add_header Content-Security-Policy \"frame-ancestors https://partner.example.com\" always;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Set all common security headers in one server block for a static site.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name www.example.com;\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\n    add_header X-Content-Type-Options \"nosniff\" always;\n    add_header X-Frame-Options \"SAMEORIGIN\" always;\n    add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n    add_header Permissions-Policy \"geolocation=(), microphone=()\" always;\n    location / {\n        root /var/www/html;\n    }\n}"
+  }
+]

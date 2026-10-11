@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create a user-level service for a personal sync tool.",
+    "output": "# ~/.config/systemd/user/sync.service\n[Unit]\nDescription=Personal sync\n\n[Service]\nExecStart=%h/bin/sync --watch\nRestart=on-failure\n\n[Install]\nWantedBy=default.target"
+  },
+  {
+    "instruction": "Enable lingering so a user service runs without an active login.",
+    "output": "loginctl enable-linger $USER\nsystemctl --user enable --now sync.service"
+  },
+  {
+    "instruction": "Start and inspect a user service.",
+    "output": "systemctl --user daemon-reload\nsystemctl --user enable --now sync.service\nsystemctl --user status sync.service"
+  },
+  {
+    "instruction": "Create a user timer that runs every 30 minutes.",
+    "output": "# ~/.config/systemd/user/check.timer\n[Timer]\nOnCalendar=*:0/30\nPersistent=true\n\n[Install]\nWantedBy=timers.target"
+  },
+  {
+    "instruction": "Use %h and %u specifiers in a user unit.",
+    "output": "[Service]\nExecStart=%h/bin/backup --user %u"
+  },
+  {
+    "instruction": "Set a user unit's environment file.",
+    "output": "[Service]\nEnvironmentFile=%h/.config/myapp/env\nExecStart=%h/bin/app"
+  },
+  {
+    "instruction": "Import environment variables from the user session.",
+    "output": "[Service]\nExecStart=%h/bin/app\n# To pass the graphical session env:\nsystemctl --user import-environment DISPLAY WAYLAND_DISPLAY"
+  },
+  {
+    "instruction": "Create a user service that must run after the graphical session.",
+    "output": "[Unit]\nAfter=graphical-session.target\nPartOf=graphical-session.target\n\n[Service]\nExecStart=%h/bin/tray-app"
+  },
+  {
+    "instruction": "List all user services and timers.",
+    "output": "systemctl --user list-units --type=service\nsystemctl --user list-timers --all"
+  },
+  {
+    "instruction": "Reload a user daemon after editing a unit.",
+    "output": "systemctl --user daemon-reload\nsystemctl --user restart sync.service"
+  },
+  {
+    "instruction": "Explain the difference between system and user managers.",
+    "output": "# System manager: /etc/systemd/system, root, systemctl\n# User manager:   ~/.config/systemd/user, per-user, systemctl --user\n# User services cannot normally bind <1024 ports or manage system-wide resources."
+  },
+  {
+    "instruction": "View user service logs.",
+    "output": "journalctl --user -u sync.service -f"
+  },
+  {
+    "instruction": "Run a user service only while a session is active.",
+    "output": "# Omit enable-linger so the service stops at logout\n[Service]\nExecStart=%h/bin/session-task"
+  },
+  {
+    "instruction": "Enable a user unit to start at login.",
+    "output": "systemctl --user enable sync.service\n# Requires the user manager; ensure it is started:\nsystemctl --user start default.target"
+  },
+  {
+    "instruction": "Create a user socket-activated service.",
+    "output": "# ~/.config/systemd/user/app.socket\n[Socket]\nListenStream=%t/app.sock\n\n[Install]\nWantedBy=sockets.target\n\n# The matching app.service uses standard input sockets."
+  },
+  {
+    "instruction": "Pass the systemd user runtime directory to a service.",
+    "output": "[Service]\nRuntimeDirectory=myapp\nExecStart=%h/bin/app --socket %t/%N/myapp.sock"
+  },
+  {
+    "instruction": "Troubleshoot why a user service exits immediately.",
+    "output": "systemctl --user status sync.service\njournalctl --user -u sync.service -n 100\n# Common causes: missing PATH, %h not expanded, missing dependencies"
+  },
+  {
+    "instruction": "Set memory limits on a user service.",
+    "output": "[Service]\nMemoryMax=1G\nExecStart=%h/bin/dev-server"
+  },
+  {
+    "instruction": "Use a drop-in to override a user unit.",
+    "output": "# ~/.config/systemd/user/sync.service.d/override.conf\n[Service]\nEnvironment=VERBOSE=1\n# then: systemctl --user daemon-reload && systemctl --user restart sync.service"
+  },
+  {
+    "instruction": "Make a user service depend on a system service being up.",
+    "output": "[Unit]\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nExecStart=%h/bin/cloud-sync"
+  }
+]

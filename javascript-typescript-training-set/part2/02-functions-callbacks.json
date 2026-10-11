@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a JavaScript function readFile(path, callback) in Node.js style that invokes callback(err, data), calling callback with an Error when the path is empty.",
+    "output": "const fs = require(\"fs\");\n\nfunction readFile(path, callback) {\n  if (!path) return callback(new Error(\"path required\"));\n  fs.readFile(path, \"utf8\", (err, data) => {\n    if (err) return callback(err);\n    callback(null, data);\n  });\n}"
+  },
+  {
+    "instruction": "Write a JavaScript mapWith(arr, fn) higher-order function that applies fn to every element and returns a new array, without using Array.prototype.map.",
+    "output": "function mapWith(arr, fn) {\n  const out = [];\n  for (let i = 0; i < arr.length; i++) {\n    out.push(fn(arr[i], i));\n  }\n  return out;\n}\n\nconsole.log(mapWith([1, 2, 3], (x) => x * 2)); // [2, 4, 6]"
+  },
+  {
+    "instruction": "Write a JavaScript function applyTwice(fn, value) that calls fn on the result of the first call.",
+    "output": "function applyTwice(fn, value) {\n  return fn(fn(value));\n}\n\nconsole.log(applyTwice((x) => x + 3, 1)); // 7\nconsole.log(applyTwice((x) => x * 2, 5)); // 20"
+  },
+  {
+    "instruction": "Write a JavaScript compose(f, g) that returns a function applying g first then f: compose(f, g)(x) === f(g(x)).",
+    "output": "function compose(f, g) {\n  return (x) => f(g(x));\n}\n\nconst double = (x) => x * 2;\nconst inc = (x) => x + 1;\nconsole.log(compose(double, inc)(5)); // 12  (double(inc(5)))"
+  },
+  {
+    "instruction": "Write a JavaScript once wrapper for a callback-style function so the underlying callback only ever fires once.",
+    "output": "function onceCallback(fn) {\n  let done = false;\n  return function (...args) {\n    if (done) return;\n    done = true;\n    return fn.apply(this, args);\n  };\n}\n\nconst warn = onceCallback((msg) => console.warn(msg));\nwarn(\"first\");\nwarn(\"second\"); // ignored"
+  },
+  {
+    "instruction": "Write a JavaScript function delayCallback(fn, ms, ...args) that invokes fn with args after ms milliseconds via setTimeout.",
+    "output": "function delayCallback(fn, ms, ...args) {\n  setTimeout(() => fn(...args), ms);\n}\n\ndelayCallback((name) => console.log(`hi ${name}`), 1000, \"Ada\");"
+  },
+  {
+    "instruction": "Write a JavaScript forEachWith(arr, fn) that mimics Array.prototype.forEach including the index and array arguments and ignores the return value.",
+    "output": "function forEachWith(arr, fn) {\n  for (let i = 0; i < arr.length; i++) {\n    fn(arr[i], i, arr);\n  }\n}\n\nforEachWith([\"a\", \"b\"], (item, i) => console.log(i, item));"
+  },
+  {
+    "instruction": "Write a JavaScript someWith(arr, predicate) that returns true as soon as the predicate matches one element, without using Array.prototype.some.",
+    "output": "function someWith(arr, predicate) {\n  for (const item of arr) {\n    if (predicate(item)) return true;\n  }\n  return false;\n}\n\nconsole.log(someWith([1, 2, 3], (n) => n > 2)); // true\nconsole.log(someWith([1, 2], (n) => n > 5)); // false"
+  },
+  {
+    "instruction": "Write a JavaScript curry2(fn) that curries a two-argument function: curry2(fn)(a)(b) === fn(a, b).",
+    "output": "function curry2(fn) {\n  return (a) => (b) => fn(a, b);\n}\n\nconst mul = curry2((a, b) => a * b);\nconsole.log(mul(3)(4)); // 12"
+  },
+  {
+    "instruction": "Write a JavaScript partial(fn, ...preset) helper that pre-fills leading arguments and returns a function taking the rest.",
+    "output": "function partial(fn, ...preset) {\n  return function (...rest) {\n    return fn(...preset, ...rest);\n  };\n}\n\nconst greet = (greeting, name) => `${greeting}, ${name}!`;\nconst sayHi = partial(greet, \"Hi\");\nconsole.log(sayHi(\"Grace\")); // \"Hi, Grace!\""
+  },
+  {
+    "instruction": "Write a JavaScript function callbackToPromise(fn) that wraps a Node-style callback function (err, result) into one returning a Promise.",
+    "output": "function callbackToPromise(fn) {\n  return (...args) =>\n    new Promise((resolve, reject) => {\n      fn(...args, (err, result) => (err ? reject(err) : resolve(result)));\n    });\n}\n\nconst delayedEcho = callbackToPromise((value, cb) => setTimeout(() => cb(null, value), 10));\ndelayedEcho(\"ok\").then(console.log); // \"ok\""
+  },
+  {
+    "instruction": "Write a JavaScript adder(base) function returning a function that adds its argument to the captured base each call.",
+    "output": "function adder(base) {\n  return (n) => base + n;\n}\n\nconst addTen = adder(10);\nconsole.log(addTen(5)); // 15\nconsole.log(addTen(7)); // 17"
+  },
+  {
+    "instruction": "Write a JavaScript walkTree(node, visit) recursive callback that calls visit on every node of a nested {value, children} tree in depth-first order.",
+    "output": "function walkTree(node, visit) {\n  visit(node);\n  for (const child of node.children || []) {\n    walkTree(child, visit);\n  }\n}\n\nwalkTree(\n  { value: 1, children: [{ value: 2, children: [] }, { value: 3, children: [] }] },\n  (n) => console.log(n.value)\n); // 1, 2, 3"
+  },
+  {
+    "instruction": "Write a JavaScript class Greeter with methods that use bind so the callbacks keep the correct this when passed around.",
+    "output": "class Greeter {\n  constructor(name) {\n    this.name = name;\n    this.greet = this.greet.bind(this);\n  }\n  greet(punctuation = \"!\") {\n    return `Hello, ${this.name}${punctuation}`;\n  }\n}\n\nconst g = new Greeter(\"Ada\");\nconst fn = g.greet;\nconsole.log(fn()); // \"Hello, Ada!\""
+  },
+  {
+    "instruction": "Write a JavaScript sortWith(arr, compareFn) that sorts using a comparator callback, and use it to sort numbers descending.",
+    "output": "function sortWith(arr, compareFn) {\n  return [...arr].sort(compareFn);\n}\n\nconst nums = [3, 1, 4, 1, 5];\nconsole.log(sortWith(nums, (a, b) => b - a)); // [5, 4, 3, 1, 1]"
+  },
+  {
+    "instruction": "Write a JavaScript registerHandler(eventName, handler) and emit(eventName, payload) pair that dispatches to registered callbacks.",
+    "output": "const handlers = new Map();\n\nfunction registerHandler(eventName, handler) {\n  if (!handlers.has(eventName)) handlers.set(eventName, []);\n  handlers.get(eventName).push(handler);\n}\n\nfunction emit(eventName, payload) {\n  for (const handler of handlers.get(eventName) || []) {\n    handler(payload);\n  }\n}\n\nregisterHandler(\"ping\", (data) => console.log(\"pong\", data));\nemit(\"ping\", 1); // \"pong 1\""
+  },
+  {
+    "instruction": "Write a JavaScript retry(times, fn, callback) that calls fn up to times times, passing the final error or result to callback.",
+    "output": "function retry(times, fn, callback) {\n  fn((err, result) => {\n    if (!err || times <= 1) return callback(err, result);\n    retry(times - 1, fn, callback);\n  });\n}\n\nlet attempts = 0;\nretry(\n  3,\n  (cb) => {\n    attempts++;\n    cb(attempts < 3 ? new Error(\"fail\") : null, attempts);\n  },\n  (err, result) => console.log(err, result) // null 3\n);"
+  },
+  {
+    "instruction": "Write a JavaScript memoizeWith(fn, keyFn) that caches by a custom key derived from the arguments via keyFn.",
+    "output": "function memoizeWith(fn, keyFn) {\n  const cache = new Map();\n  return (...args) => {\n    const key = keyFn(...args);\n    if (cache.has(key)) return cache.get(key);\n    const value = fn(...args);\n    cache.set(key, value);\n    return value;\n  };\n}\n\nconst byFirstLetter = memoizeWith(\n  (s) => s.toUpperCase(),\n  (s) => s[0]\n);\nconsole.log(byFirstLetter(\"apple\")); // \"APPLE\"\nconsole.log(byFirstLetter(\"avocado\")); // cached via key \"a\""
+  },
+  {
+    "instruction": "Write a JavaScript safeCall(fn, args, onError) that invokes fn, catching synchronous exceptions and routing them to onError.",
+    "output": "function safeCall(fn, args, onError) {\n  try {\n    return fn(...args);\n  } catch (err) {\n    onError(err);\n    return undefined;\n  }\n}\n\nsafeCall(\n  (a, b) => a / b,\n  [10, 0],\n  (err) => console.error(\"caught:\", err.message)\n);"
+  },
+  {
+    "instruction": "Write a JavaScript pipeline(...fns) that chains unary functions left-to-right: pipeline(f, g, h)(x) === h(g(f(x))).",
+    "output": "function pipeline(...fns) {\n  return (x) => fns.reduce((acc, fn) => fn(acc), x);\n}\n\nconst process = pipeline(\n  (s) => s.trim(),\n  (s) => s.toLowerCase(),\n  (s) => s.split(\" \").join(\"-\")\n);\nconsole.log(process(\"  Hello World  \")); // \"hello-world\""
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Run golangci-lint on every pull request.",
+    "output": "name: golangci-lint\non: pull_request\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-go@v5\n        with:\n          go-version: '1.22'\n      - uses: golangci/golangci-lint-action@v6\n        with:\n          version: latest"
+  },
+  {
+    "instruction": "Install ShellCheck and lint every shell script in the repository.",
+    "output": "name: shellcheck\non: pull_request\njobs:\n  shellcheck:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: sudo apt-get update && sudo apt-get install -y shellcheck\n      - run: shellcheck scripts/*.sh"
+  },
+  {
+    "instruction": "Lint the Dockerfile with Hadolint.",
+    "output": "name: hadolint\non: pull_request\njobs:\n  hadolint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: hadolint/hadolint-action@v3.1.0\n        with:\n          dockerfile: Dockerfile\n          failure-threshold: warning"
+  },
+  {
+    "instruction": "Lint all YAML files including workflow files with yamllint.",
+    "output": "name: yamllint\non: pull_request\njobs:\n  yamllint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install yamllint\n      - run: yamllint -d relaxed .github/workflows/"
+  },
+  {
+    "instruction": "Check Markdown documentation with markdownlint-cli.",
+    "output": "name: markdownlint\non: pull_request\njobs:\n  markdown:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - run: npx markdownlint-cli \"docs/**/*.md\""
+  },
+  {
+    "instruction": "Initialize CodeQL, autobuild, and analyze JavaScript and TypeScript code.",
+    "output": "name: codeql-js\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  analyze:\n    runs-on: ubuntu-latest\n    permissions:\n      security-events: write\n      actions: read\n      contents: read\n    steps:\n      - uses: actions/checkout@v4\n      - uses: github/codeql-action/init@v3\n        with:\n          languages: javascript-typescript\n      - uses: github/codeql-action/autobuild@v3\n      - uses: github/codeql-action/analyze@v3"
+  },
+  {
+    "instruction": "Run the CodeQL analysis workflow for Python code.",
+    "output": "name: codeql-python\non:\n  push:\n    branches: [main]\n  schedule:\n    - cron: '0 5 * * 1'\njobs:\n  analyze:\n    runs-on: ubuntu-latest\n    permissions:\n      security-events: write\n      actions: read\n      contents: read\n    steps:\n      - uses: actions/checkout@v4\n      - uses: github/codeql-action/init@v3\n        with:\n          languages: python\n      - uses: github/codeql-action/analyze@v3"
+  },
+  {
+    "instruction": "Scan the repository for secrets with Gitleaks on every pull request.",
+    "output": "name: gitleaks\non: pull_request\njobs:\n  gitleaks:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - uses: trufflesecurity/gitleaks-action@v2\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
+  },
+  {
+    "instruction": "Review dependency changes on pull requests with the Dependency Review Action.",
+    "output": "name: dependency-review\non: pull_request\njobs:\n  dependency-review:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/dependency-review-action@v4\n        with:\n          fail-on-severity: high"
+  },
+  {
+    "instruction": "Scan the filesystem for known vulnerabilities with Trivy and fail on high findings.",
+    "output": "name: trivy-fs\non: push\njobs:\n  trivy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: aquasecurity/trivy-action@0.28.0\n        with:\n          scan-type: fs\n          scan-ref: .\n          severity: CRITICAL,HIGH\n          exit-code: '1'"
+  },
+  {
+    "instruction": "Run the OpenSSF Scorecard security analysis and upload the results.",
+    "output": "name: scorecard\non:\n  branch_protection_rule:\n  schedule:\n    - cron: '0 6 * * 1'\n  push:\n    branches: [main]\npermissions: read-all\njobs:\n  scorecard:\n    runs-on: ubuntu-latest\n    permissions:\n      security-events: write\n      id-token: write\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          persist-credentials: false\n      - uses: ossf/scorecard-action@v2\n        with:\n          results_file: results.sarif\n          results_format: sarif\n          publish_results: true\n      - uses: github/codeql-action/upload-sarif@v3\n        with:\n          sarif_file: results.sarif"
+  },
+  {
+    "instruction": "Run Semgrep with the auto rule pack on every pull request.",
+    "output": "name: semgrep\non: pull_request\njobs:\n  semgrep:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install semgrep\n      - run: semgrep --config auto --error"
+  },
+  {
+    "instruction": "Enforce a minimum pytest coverage percentage as a quality gate.",
+    "output": "name: coverage-gate-tests\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install pytest pytest-cov\n      - run: pytest --cov=src --cov-fail-under=85"
+  },
+  {
+    "instruction": "Fail the build when the pylint score for the package drops below 9 out of 10.",
+    "output": "name: pylint-score\non: pull_request\njobs:\n  pylint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install pylint\n      - run: pylint src --fail-under=9.0"
+  },
+  {
+    "instruction": "Run cargo fmt and clippy on a Rust project.",
+    "output": "name: cargo-clippy\non: push\njobs:\n  rust:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: dtolnay/rust-toolchain@stable\n        with:\n          components: rustfmt, clippy\n      - run: cargo fmt --all -- --check\n      - run: cargo clippy --all-targets --all-features -- -D warnings"
+  },
+  {
+    "instruction": "Check Terraform formatting and run TFLint on the infrastructure directory.",
+    "output": "name: terraform-lint\non: pull_request\njobs:\n  terraform:\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: infra\n    steps:\n      - uses: actions/checkout@v4\n      - uses: hashicorp/setup-terraform@v3\n      - run: terraform fmt -check -recursive\n      - name: Install TFLint\n        run: |\n          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash\n      - run: tflint"
+  },
+  {
+    "instruction": "Scan the repository history for secrets with Yelp detect-secrets.",
+    "output": "name: detect-secrets\non: pull_request\njobs:\n  detect-secrets:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install detect-secrets\n      - run: detect-secrets scan --all-files > .secrets.baseline.new\n      - run: diff -u .secrets.baseline .secrets.baseline.new"
+  },
+  {
+    "instruction": "Run Checkov infrastructure security scanning on the Terraform directory.",
+    "output": "name: checkov\non: pull_request\njobs:\n  checkov:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: bridgecrewio/checkov-action@v12\n        with:\n          directory: infra\n          framework: terraform\n          soft_fail: false"
+  },
+  {
+    "instruction": "Validate every GitHub Actions workflow file with actionlint.",
+    "output": "name: actionlint\non: pull_request\njobs:\n  actionlint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: rhysd/actionlint@v1.7.7"
+  },
+  {
+    "instruction": "Run the unit tests and lint checks together as separate jobs joined by a required gate.",
+    "output": "name: lint-test-gate\non: pull_request\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make lint\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test\n  gate:\n    needs: [lint, test]\n    if: always()\n    runs-on: ubuntu-latest\n    steps:\n      - name: Check results\n        run: |\n          if [ \"${{ needs.lint.result }}\" != \"success\" ] || [ \"${{ needs.test.result }}\" != \"success\" ]; then\n            exit 1\n          fi"
+  }
+]

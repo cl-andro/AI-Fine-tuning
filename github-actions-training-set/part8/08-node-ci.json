@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Install dependencies with npm ci and run the test suite on Node 20 with npm caching.",
+    "output": "name: npm-ci-test\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Install with a frozen Yarn lockfile and run Jest.",
+    "output": "name: yarn-jest\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: yarn\n      - run: yarn install --frozen-lockfile\n      - run: yarn jest --ci"
+  },
+  {
+    "instruction": "Set up pnpm and run the workspace test scripts.",
+    "output": "name: pnpm-workspaces\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 9\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm -r test"
+  },
+  {
+    "instruction": "Lint the codebase with ESLint and check formatting with Prettier.",
+    "output": "name: eslint-prettier\non: pull_request\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx eslint .\n      - run: npx prettier --check ."
+  },
+  {
+    "instruction": "Build a Next.js application for production.",
+    "output": "name: next-build\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run build\n        env:\n          NEXT_TELEMETRY_DISABLED: 1"
+  },
+  {
+    "instruction": "Build a Vite frontend and upload the dist folder as an artifact.",
+    "output": "name: vite-build\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: vite-dist\n          path: dist/"
+  },
+  {
+    "instruction": "Install Playwright browsers with dependencies and run the e2e suite.",
+    "output": "name: playwright\non: pull_request\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx playwright install --with-deps\n      - run: npx playwright test\n      - uses: actions/upload-artifact@v4\n        if: failure()\n        with:\n          name: playwright-report\n          path: playwright-report/"
+  },
+  {
+    "instruction": "Run the Cypress end-to-end suite in a single run with screenshots on failure.",
+    "output": "name: cypress\non: pull_request\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx cypress run\n      - uses: actions/upload-artifact@v4\n        if: failure()\n        with:\n          name: cypress-screenshots\n          path: cypress/screenshots"
+  },
+  {
+    "instruction": "Type-check the TypeScript project with tsc --noEmit.",
+    "output": "name: tsc-check\non: push\njobs:\n  typecheck:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx tsc --noEmit"
+  },
+  {
+    "instruction": "Fail the build when npm audit reports high-severity vulnerabilities.",
+    "output": "name: npm-audit\non: pull_request\njobs:\n  audit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm audit --audit-level=high"
+  },
+  {
+    "instruction": "Test the library on Node 18, 20, and 22 with an npm cache per version.",
+    "output": "name: node-version-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n          cache: npm\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Run Jest with coverage thresholds and archive the coverage directory.",
+    "output": "name: jest-coverage\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test -- --coverage\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: coverage\n          path: coverage/"
+  },
+  {
+    "instruction": "Build a Storybook static site and publish it as a workflow artifact.",
+    "output": "name: storybook\non: push\njobs:\n  storybook:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npx storybook build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: storybook-static\n          path: storybook-static/"
+  },
+  {
+    "instruction": "Build and test all packages of an npm workspaces monorepo.",
+    "output": "name: npm-workspaces\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci --workspaces\n      - run: npm run build --workspaces\n      - run: npm test --workspaces"
+  },
+  {
+    "instruction": "Check formatting and lint issues with Biome.",
+    "output": "name: biome\non: pull_request\njobs:\n  biome:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - run: npx @biomejs/biome check ."
+  },
+  {
+    "instruction": "Run unit tests against a MongoDB service container.",
+    "output": "name: mongo-integration\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    services:\n      mongo:\n        image: mongo:7\n        ports:\n          - 27017:27017\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run test:integration\n        env:\n          MONGO_URL: mongodb://localhost:27017/testdb"
+  },
+  {
+    "instruction": "Publish a new version to npm when a release is published, authenticating with a secret.",
+    "output": "name: npm-publish-release\non:\n  release:\n    types: [published]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          registry-url: https://registry.npmjs.org\n      - run: npm ci\n      - run: npm publish --access public\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}"
+  },
+  {
+    "instruction": "Run a bundle-size check script after building the project.",
+    "output": "name: bundle-size\non: pull_request\njobs:\n  size:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run build\n      - run: npm run size-limit"
+  },
+  {
+    "instruction": "Run both lint and unit tests for a pull request with readable job names.",
+    "output": "name: lint-and-test\non: pull_request\njobs:\n  lint:\n    name: ESLint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run lint\n  unit:\n    name: Unit tests\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm run test:unit"
+  },
+  {
+    "instruction": "Run npm scripts inside a node:20 container image on the runner.",
+    "output": "name: node-container\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    container: node:20-bookworm\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test"
+  }
+]

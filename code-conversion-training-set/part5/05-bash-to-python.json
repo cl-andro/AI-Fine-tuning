@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Convert this Bash loop to Python:\n\nfor f in *.txt; do\n  echo \"$f\"\ndone",
+    "output": "import glob\n\nfor f in glob.glob(\"*.txt\"):\n    print(f)"
+  },
+  {
+    "instruction": "Convert this grep command to Python:\n\ngrep -n \"ERROR\" app.log",
+    "output": "import re\n\nwith open(\"app.log\") as f:\n    for i, line in enumerate(f, 1):\n        if \"ERROR\" in line:\n            print(f\"{i}:{line.rstrip()}\")"
+  },
+  {
+    "instruction": "Convert this sed command to Python:\n\nsed -i 's/old/new/g' file.txt",
+    "output": "from pathlib import Path\n\np = Path(\"file.txt\")\np.write_text(p.read_text().replace(\"old\", \"new\"))"
+  },
+  {
+    "instruction": "Convert this awk command to Python:\n\nawk '{print $2, $3}' data.txt",
+    "output": "with open(\"data.txt\") as f:\n    for line in f:\n        parts = line.split()\n        if len(parts) >= 3:\n            print(parts[1], parts[2])"
+  },
+  {
+    "instruction": "Convert this Bash conditional to Python:\n\nif [ -f \"$1\" ]; then\n  cat \"$1\"\nelse\n  echo \"missing\" >&2\nfi",
+    "output": "import sys\n\nif len(sys.argv) < 2:\n    print(\"missing\", file=sys.stderr)\nelse:\n    try:\n        print(open(sys.argv[1]).read())\n    except FileNotFoundError:\n        print(\"missing\", file=sys.stderr)"
+  },
+  {
+    "instruction": "Convert this Bash read loop to Python:\n\nwhile IFS= read -r line; do\n  echo \">> $line\"\ndone < input.txt",
+    "output": "with open(\"input.txt\") as f:\n    for line in f:\n        print(\">> \" + line.rstrip(\"\\n\"))"
+  },
+  {
+    "instruction": "Convert this Bash sort/uniq pipeline to Python:\n\nsort file.txt | uniq -c | sort -rn",
+    "output": "from collections import Counter\n\nwith open(\"file.txt\") as f:\n    counts = Counter(line.rstrip(\"\\n\") for line in f)\nfor line, n in counts.most_common():\n    print(f\"{n:7d} {line}\")"
+  },
+  {
+    "instruction": "Convert this curl command to Python:\n\ncurl -s -H \"Accept: application/json\" https://api.example.com/items",
+    "output": "import requests\n\nres = requests.get(\n    \"https://api.example.com/items\",\n    headers={\"Accept\": \"application/json\"},\n)\nprint(res.text)"
+  },
+  {
+    "instruction": "Convert this mkdir command to Python:\n\nmkdir -p a/b/c",
+    "output": "from pathlib import Path\n\nPath(\"a/b/c\").mkdir(parents=True, exist_ok=True)"
+  },
+  {
+    "instruction": "Convert this Bash script with set -euo pipefail to Python:\n\nset -euo pipefail\ninput=\"$1\"\nwc -l \"$input\"",
+    "output": "import sys\n\nif len(sys.argv) < 2:\n    sys.exit(\"usage: script.py <file>\")\nwith open(sys.argv[1]) as f:\n    print(sum(1 for _ in f))"
+  },
+  {
+    "instruction": "Convert this Bash case statement to Python:\n\ncase \"$1\" in\n  start) echo starting ;;\n  stop) echo stopping ;;\n  *) echo unknown ;;\nesac",
+    "output": "cmd = sys.argv[1] if len(sys.argv) > 1 else \"\"\nif cmd == \"start\":\n    print(\"starting\")\nelif cmd == \"stop\":\n    print(\"stopping\")\nelse:\n    print(\"unknown\")"
+  },
+  {
+    "instruction": "Convert this Bash getopts loop to Python:\n\nwhile getopts \"v:f:\" opt; do\n  case \"$opt\" in\n    v) VER=\"$OPTARG\" ;;\n    f) FILE=\"$OPTARG\" ;;\n  esac\ndone",
+    "output": "import argparse\n\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-v\", dest=\"ver\")\nparser.add_argument(\"-f\", dest=\"file\")\nargs = parser.parse_args()\nver, file = args.ver, args.file"
+  },
+  {
+    "instruction": "Convert this find command to Python:\n\nfind . -name \"*.py\" -type f",
+    "output": "from pathlib import Path\n\nfor p in Path(\".\").rglob(\"*.py\"):\n    if p.is_file():\n        print(p)"
+  },
+  {
+    "instruction": "Convert this date formatting command to Python:\n\ndate '+%Y-%m-%d %H:%M:%S'",
+    "output": "from datetime import datetime\n\nprint(datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"))"
+  },
+  {
+    "instruction": "Convert this wc command to Python:\n\nwc -l < access.log",
+    "output": "with open(\"access.log\") as f:\n    print(sum(1 for _ in f))"
+  },
+  {
+    "instruction": "Convert this Bash trap to Python:\n\ncleanup() { rm -f /tmp/lock.$$; }\ntrap cleanup EXIT\nmkdir /tmp/lock.$$",
+    "output": "import os, tempfile\n\nfd, path = tempfile.mkstemp(prefix=\"lock-\")\nos.close(fd)\ntry:\n    # critical section\n    pass\nfinally:\n    os.unlink(path)"
+  },
+  {
+    "instruction": "Convert this Bash parameter expansion to Python:\n\nNAME=\"${NAME:-guest}\"\nPATH_=\"${PATH_:-/tmp}\"",
+    "output": "name = os.environ.get(\"NAME\", \"guest\")\npath = os.environ.get(\"PATH_\", \"/tmp\")"
+  },
+  {
+    "instruction": "Convert this Bash heredoc to Python:\n\ncat <<EOF > greeting.txt\nHello, $USER!\nToday is $(date +%F)\nEOF",
+    "output": "from datetime import date\n\nuser = os.environ.get(\"USER\", \"world\")\nopen(\"greeting.txt\", \"w\").write(\n    f\"Hello, {user}!\\nToday is {date.today().isoformat()}\\n\"\n)"
+  },
+  {
+    "instruction": "Convert these head/tail commands to Python:\n\nhead -n 5 data.csv\ntail -n 3 data.csv",
+    "output": "with open(\"data.csv\") as f:\n    lines = f.readlines()\nprint(\"\".join(lines[:5]))\nprint(\"\".join(lines[-3:]))"
+  },
+  {
+    "instruction": "Convert this cut command to Python:\n\ncut -d, -f1,3 report.csv",
+    "output": "import csv\n\nwith open(\"report.csv\", newline=\"\") as f:\n    for row in csv.reader(f):\n        if len(row) >= 3:\n            print(f\"{row[0]},{row[2]}\")"
+  }
+]

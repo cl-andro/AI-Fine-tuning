@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this Python traceback.\nContext: daily stats script run on an empty dataset.\n\nTraceback (most recent call last):\n  File \"/app/stats.py\", line 14, in <module>\n    avg = total / len(values)\nZeroDivisionError: division by zero",
+    "output": "**Root cause:** `values` is empty, so `len(values)` is 0 and dividing by it is invalid.\n**Fix:** Guard the empty case first (`if not values: return 0.0`) or ensure a non-empty list is passed in."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: billing module computing an order total.\n\nTraceback (most recent call last):\n  File \"/app/billing.py\", line 22, in <module>\n    total = subtotal + shipping\nNameError: name 'shipping' is not defined",
+    "output": "**Root cause:** `shipping` was never assigned in this scope; it is only set inside a branch that did not run (or is misspelled).\n**Fix:** Initialize `shipping = 0.0` before the branch that adds it, and check the spelling of the name."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: CLI tool adding a discount read from user input.\n\nTraceback (most recent call last):\n  File \"/app/cli.py\", line 9, in <module>\n    price = 100 + input(\"Discount: \")\nTypeError: unsupported operand type(s) for +: 'int' and 'str'",
+    "output": "**Root cause:** `input()` always returns a `str`, so the int `100` is being added to a string.\n**Fix:** Convert the input first: `price = 100 + int(input(\"Discount: \"))` (or `float(...)` for decimals)."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: grid processor returning the final element of each row.\n\nTraceback (most recent call last):\n  File \"/app/grid.py\", line 31, in process_row\n    return row[len(row)]\nIndexError: list index out of range",
+    "output": "**Root cause:** valid indices run `0..len(row)-1`, but `row[len(row)]` reads one element past the end.\n**Fix:** Use `row[-1]` (or `row[len(row) - 1]`) to read the last element."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: normalizer running over records loaded from a partial CSV export.\n\nTraceback (most recent call last):\n  File \"/app/normalize.py\", line 18, in normalize\n    domain = user[\"email\"].split(\"@\")[1]\nKeyError: 'email'",
+    "output": "**Root cause:** some records in `user` have no `email` key, and direct subscript access raises instead of returning None.\n**Fix:** Use `user.get(\"email\")` with an explicit fallback and validate required fields while loading the CSV."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: host parser handling a malformed URL.\n\nTraceback (most recent call last):\n  File \"/app/parse.py\", line 25, in parse\n    port = int(m.group(1))\nAttributeError: 'NoneType' object has no attribute 'group'",
+    "output": "**Root cause:** the regex match returned `None` because the input did not match the pattern, so `.group()` is called on None.\n**Fix:** Check `if m is None:` and raise a clear parse error or supply a default port before reading groups."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: ETL job launched from cron with a relative data path.\n\nTraceback (most recent call last):\n  File \"/app/load.py\", line 6, in <module>\n    with open(\"data/input.csv\") as f:\nFileNotFoundError: [Errno 2] No such file or directory: 'data/input.csv'",
+    "output": "**Root cause:** the path is resolved against the process working directory (`/` for cron), not the script's directory, so the file is not found.\n**Fix:** Build the path from the script location: `Path(__file__).parent / \"data/input.csv\"`, or pass an absolute path."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: freshly cloned repo, run with the system Python.\n\nTraceback (most recent call last):\n  File \"/app/etl.py\", line 3, in <module>\n    import requests\nModuleNotFoundError: No module named 'requests'",
+    "output": "**Root cause:** `requests` is not installed in the interpreter/venv that is executing the script.\n**Fix:** `pip install requests` into the active environment and confirm with `which python` that the right one is used."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: importer parsing a CSV where some quantities are marked unavailable.\n\nTraceback (most recent call last):\n  File \"/app/import.py\", line 44, in <module>\n    qty = int(row[\"qty\"])\nValueError: invalid literal for int() with base 10: 'N/A'",
+    "output": "**Root cause:** the cell contains the text `N/A`, which is not a base-10 integer literal.\n**Fix:** Sanitize before converting, e.g. `qty = int(row[\"qty\"]) if row[\"qty\"].strip().isdigit() else 0`, or catch ValueError and default."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: recursive tree-depth function run on a graph with circular references.\n\nTraceback (most recent call last):\n  File \"/app/tree.py\", line 52, in depth\n    return 1 + max(depth(c) for c in node.children)\nRecursionError: maximum recursion depth exceeded",
+    "output": "**Root cause:** `depth()` never stops: there is no base case for leaf/None nodes, or the graph contains a cycle, so calls nest until the interpreter limit is hit.\n**Fix:** Return 0 for `node is None or not node.children`, and track visited nodes to break cycles (raising the recursion limit only hides the bug)."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: reader opening a binary dump as UTF-8 text.\n\nTraceback (most recent call last):\n  File \"/app/reader.py\", line 11, in <module>\n    text = open(\"dump.bin\", encoding=\"utf-8\").read()\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte",
+    "output": "**Root cause:** the file is not UTF-8 (0xFF at position 0 is a UTF-16LE byte-order mark), so the decoder rejects it immediately.\n**Fix:** Read in binary mode and decode with the real encoding (`data.decode(\"utf-16\")`), or open with `encoding=\"utf-16\"`."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: cache loader reading a JSON file written by an upstream service.\n\nTraceback (most recent call last):\n  File \"/app/cache.py\", line 27, in load_cache\n    data = json.loads(fh.read())\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+    "output": "**Root cause:** the file is empty or holds non-JSON (for example an HTML error page), so parsing fails at the very first character.\n**Fix:** Verify size/content before parsing and catch `JSONDecodeError` to rebuild the cache instead of crashing."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: report generator edited in two editors, one using tabs.\n\nTraceback (most recent call last):\n  File \"/app/report.py\", line 16\n    print(total)\nIndentationError: unexpected indent",
+    "output": "**Root cause:** the `print(total)` line is indented one level deeper than its surrounding block, due to mixed tabs and spaces.\n**Fix:** Re-indent the line to the block level (convert the file to spaces, e.g. `:set expandtab` then reformat)."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: inventory reservation API called with a large quantity.\n\nTraceback (most recent call last):\n  File \"/app/inventory.py\", line 73, in reserve\n    assert qty <= stock, \"insufficient stock\"\nAssertionError: insufficient stock",
+    "output": "**Root cause:** the guard fired: the requested `qty` exceeds `stock`, because the reservation ran before stock was checked.\n**Fix:** Validate quantity up front and return a clean \"insufficient stock\" error to the caller instead of relying on an assert."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: event feed consumer polling after the feed has been drained.\n\nTraceback (most recent call last):\n  File \"/app/feed.py\", line 40, in next_event\n    return next(self.events)\nStopIteration",
+    "output": "**Root cause:** `next()` was called on an exhausted generator with no default, so it raised StopIteration instead of signalling end-of-feed.\n**Fix:** Use `next(self.events, None)` and treat `None` as the end of the feed."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: API handler counting rows produced by a lazy query.\n\nTraceback (most recent call last):\n  File \"/app/api.py\", line 12, in handler\n    if len(rows) == 0:\nTypeError: object of type 'generator' has no len()",
+    "output": "**Root cause:** `rows` is a generator expression (written with parentheses), and generators do not support `len()` because they are not materialized.\n**Fix:** Materialize it first (`rows = [...]`) before calling `len()`, or test emptiness with `next(rows, None) is None`."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: order finalizer on the code path where a discount coupon is absent.\n\nTraceback (most recent call last):\n  File \"/app/order.py\", line 88, in finalize\n    print(result)\nUnboundLocalError: local variable 'result' referenced before assignment",
+    "output": "**Root cause:** `result` is assigned only inside an `if` branch, and that branch did not execute, so the local name is still unbound.\n**Fix:** Initialize `result = None` before the branches (or raise a clear error in the `else` path)."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: CSV line splitter fed a truncated row from a partial upload.\n\nTraceback (most recent call last):\n  File \"/app/parse_rows.py\", line 21, in <module>\n    a, b, c = line.split(\",\")\nValueError: not enough values to unpack (expected 3, got 2)",
+    "output": "**Root cause:** the row contains only two comma-separated fields, so it cannot be unpacked into three names.\n**Fix:** Check the field count first (`parts = line.split(\",\"); if len(parts) != 3: skip/log`) and skip malformed rows."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: scheduler comparing local server time with timestamps parsed from UTC logs.\n\nTraceback (most recent call last):\n  File \"/app/schedule.py\", line 57, in is_recent\n    return now() > event_time\nTypeError: can't compare offset-naive and offset-aware datetimes",
+    "output": "**Root cause:** `now()` returns a naive datetime while `event_time` carries a UTC offset from ISO input, and naive/aware values cannot be compared.\n**Fix:** Use `datetime.now(timezone.utc)` so both sides are timezone-aware and comparable."
+  },
+  {
+    "instruction": "Root cause this Python traceback.\nContext: report sorting a list of record dictionaries by default order.\n\nTraceback (most recent call last):\n  File \"/app/sort.py\", line 5, in <module>\n    for row in sorted(rows):\nTypeError: '<' not supported between instances of 'dict' and 'dict'",
+    "output": "**Root cause:** `sorted()` compares elements with `<`, and `dict` does not define ordering, so the comparison fails.\n**Fix:** Provide a key, e.g. `sorted(rows, key=lambda r: r[\"created_at\"])`."
+  }
+]

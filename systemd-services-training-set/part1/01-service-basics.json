@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a systemd service that runs a Python app at /opt/myapp/app.py as user deploy.",
+    "output": "[Unit]\nDescription=MyApp Python service\nAfter=network.target\n\n[Service]\nType=simple\nUser=deploy\nWorkingDirectory=/opt/myapp\nExecStart=/usr/bin/python3 /opt/myapp/app.py\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a systemd unit for a Node.js app started with npm start in /srv/web.",
+    "output": "[Unit]\nDescription=Web Node.js app\nAfter=network.target\n\n[Service]\nType=simple\nUser=www-data\nWorkingDirectory=/srv/web\nExecStart=/usr/bin/npm start\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a unit that runs a compiled Go binary /usr/local/bin/agent.",
+    "output": "[Unit]\nDescription=Telemetry agent\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/agent\nRestart=always\nRestartSec=5\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a service that keeps nginx running and reloads it on config change.",
+    "output": "[Unit]\nDescription=The nginx HTTP server\nAfter=network.target remote-fs.target nss-lookup.target\n\n[Service]\nType=forking\nPIDFile=/run/nginx.pid\nExecStartPre=/usr/sbin/nginx -t\nExecStart=/usr/sbin/nginx\nExecReload=/usr/sbin/nginx -s reload\nExecStop=/sbin/start-stop-daemon --stop --quiet --pidfile /run/nginx.pid\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a oneshot unit that runs a database migration before the app starts.",
+    "output": "[Unit]\nDescription=Run database migrations\nAfter=network.target postgresql.service\nRequires=postgresql.service\n\n[Service]\nType=oneshot\nUser=deploy\nWorkingDirectory=/opt/myapp\nExecStart=/opt/myapp/venv/bin/python manage.py migrate\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a service for a Java Spring Boot app packaged as a jar.",
+    "output": "[Unit]\nDescription=Spring Boot API\nAfter=network.target\n\n[Service]\nType=simple\nUser=spring\nWorkingDirectory=/opt/api\nExecStart=/usr/bin/java -jar /opt/api/api.jar\nSuccessExitStatus=143\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a unit that runs a Celery worker with four concurrency slots.",
+    "output": "[Unit]\nDescription=Celery worker\nAfter=network.target redis.service\nRequires=redis.service\n\n[Service]\nType=simple\nUser=celery\nWorkingDirectory=/opt/app\nEnvironment=CELERY_APP=app\nExecStart=/opt/app/venv/bin/celery -A app worker --concurrency=4 --loglevel=info\nRestart=always\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Define a service that serves a static site using python3 -m http.server on port 8080.",
+    "output": "[Unit]\nDescription=Static site server\nAfter=network.target\n\n[Service]\nType=simple\nUser=www-data\nWorkingDirectory=/var/www/site\nExecStart=/usr/bin/python3 -m http.server 8080\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a unit for a background sync daemon that should never stop.",
+    "output": "[Unit]\nDescription=File sync daemon\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/syncd --interval 60\nRestart=always\nRestartSec=10\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a service that runs a Ruby on Rails app with Puma.",
+    "output": "[Unit]\nDescription=Rails app (Puma)\nAfter=network.target\n\n[Service]\nType=simple\nUser=rails\nWorkingDirectory=/srv/rails\nEnvironment=RAILS_ENV=production\nExecStart=/srv/rails/bin/bundle exec puma -C config/puma.rb\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a simple service for a Python HTTP API using uvicorn on port 8000.",
+    "output": "[Unit]\nDescription=Uvicorn API\nAfter=network.target\n\n[Service]\nType=simple\nUser=app\nWorkingDirectory=/opt/api\nExecStart=/opt/api/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a unit that starts a Docker Compose stack at boot.",
+    "output": "[Unit]\nDescription=Docker Compose stack\nRequires=docker.service\nAfter=docker.service\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nWorkingDirectory=/opt/stack\nExecStart=/usr/bin/docker compose up -d\nExecStop=/usr/bin/docker compose down\nTimeoutStartSec=0\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a service for a message queue consumer written in Python.",
+    "output": "[Unit]\nDescription=Queue consumer\nAfter=network.target rabbitmq-server.service\nRequires=rabbitmq-server.service\n\n[Service]\nType=simple\nUser=consumer\nWorkingDirectory=/opt/consumer\nExecStart=/opt/consumer/venv/bin/python consumer.py\nRestart=always\nEnvironment=PYTHONUNBUFFERED=1\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a service that runs a scheduled report generator as a long-running process.",
+    "output": "[Unit]\nDescription=Report generator daemon\nAfter=network.target\n\n[Service]\nType=simple\nUser=reports\nExecStart=/usr/local/bin/reportd --serve\nRestart=on-failure\nRestartSec=30\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Define a simple service with a custom description and standard dependencies.",
+    "output": "[Unit]\nDescription=Custom application service\nDocumentation=https://example.com/docs\nAfter=network.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/myapp\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a unit that runs an Elixir/Phoenix release.",
+    "output": "[Unit]\nDescription=Phoenix app\nAfter=network.target\n\n[Service]\nType=simple\nUser=phoenix\nWorkingDirectory=/opt/app\nEnvironment=PHX_SERVER=true\nExecStart=/opt/app/bin/app start\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a service that runs a Python scraper as a loop with a small delay.",
+    "output": "[Unit]\nDescription=Web scraper\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nType=simple\nUser=scraper\nExecStart=/opt/scraper/venv/bin/python /opt/scraper/run.py\nRestart=always\nRestartSec=60\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a basic unit for a .NET background service.",
+    "output": "[Unit]\nDescription=.NET background service\nAfter=network.target\n\n[Service]\nType=simple\nUser=dotnet\nWorkingDirectory=/opt/dotnet\nExecStart=/usr/bin/dotnet /opt/dotnet/Worker.dll\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Write a service that runs a PHP-FPM pool helper script at boot.",
+    "output": "[Unit]\nDescription=PHP helper\nAfter=network.target\n\n[Service]\nType=simple\nUser=www-data\nExecStart=/usr/local/bin/php-helper\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Create a minimal service and enable it to start at boot.",
+    "output": "[Unit]\nDescription=Minimal service\n\n[Service]\nExecStart=/usr/local/bin/minimal\n\n[Install]\nWantedBy=multi-user.target\n\n# Enable with: sudo systemctl daemon-reload && sudo systemctl enable --now minimal.service"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Permanently redirect all HTTP traffic for shop.example.com to HTTPS, keeping the path and query string.",
+    "output": "server {\n    listen 80;\n    server_name shop.example.com;\n    return 301 https://$host$request_uri;\n}"
+  },
+  {
+    "instruction": "Permanently redirect example.net to www.example.net over HTTPS including all subpaths.",
+    "output": "server {\n    listen 80;\n    server_name example.net;\n    return 301 https://www.example.net$request_uri;\n}"
+  },
+  {
+    "instruction": "Permanently redirect www.blog.example to blog.example, stripping the www prefix from every URL.",
+    "output": "server {\n    listen 80;\n    server_name www.blog.example;\n    return 301 https://blog.example$request_uri;\n}"
+  },
+  {
+    "instruction": "Temporarily redirect every visitor of shop-v2.example.com to the maintenance page while the site is being upgraded.",
+    "output": "server {\n    listen 80;\n    server_name shop-v2.example.com;\n    return 302 https://shop-v2.example.com/maintenance.html;\n}"
+  },
+  {
+    "instruction": "Mark the discontinued product page as gone by returning 410 for /products/old-widget.",
+    "output": "location = /products/old-widget {\n    return 410;\n}"
+  },
+  {
+    "instruction": "Permanently rewrite dated blog URLs of the form /blog/2024/05/my-post to /posts/my-post.",
+    "output": "location ~ ^/blog/(\\d{4})/(\\d{2})/(.+)$ {\n    return 301 /posts/$3;\n}"
+  },
+  {
+    "instruction": "Redirect the old pricing page to the new plans page while preserving any query string.",
+    "output": "location = /pricing.html {\n    return 301 /plans$is_args$args;\n}"
+  },
+  {
+    "instruction": "Internally rewrite incoming /v1/... API documentation requests to /stable/... before serving them from disk.",
+    "output": "location /v1/ {\n    rewrite ^/v1/(.*)$ /stable/$1 last;\n}\nlocation /stable/ {\n    root /var/www/api-docs;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Add a trailing slash to directory URLs on dirsite.example.com so relative links resolve correctly.",
+    "output": "location / {\n    root /var/www/dir-site;\n    if (-d $request_filename) {\n        rewrite ^(.*[^/])$ $uri/ permanent;\n    }\n    try_files $uri $uri/ =404;\n}"
+  },
+  {
+    "instruction": "Redirect requests for index.html or home.html to the clean root URL.",
+    "output": "location ~ ^/(index|home)\\.html$ {\n    return 301 /;\n}"
+  },
+  {
+    "instruction": "Strip the .html extension from article URLs so /article/how-to-nginx.html redirects to /article/how-to-nginx.",
+    "output": "location ~ ^/article/([a-z0-9-]+)\\.html$ {\n    return 301 /article/$1;\n}"
+  },
+  {
+    "instruction": "Send all requests under /forum to the new community portal at community.example.org, preserving the path.",
+    "output": "location /forum {\n    return 301 https://community.example.org$request_uri;\n}"
+  },
+  {
+    "instruction": "Rewrite the incoming /legacy/... path to /v2/... and then proxy it to the app on 127.0.0.1:8080 without changing the upstream URI.",
+    "output": "location /legacy/ {\n    rewrite ^/legacy/(.*)$ /v2/$1 break;\n    proxy_pass http://127.0.0.1:8080;\n    proxy_set_header Host $host;\n}"
+  },
+  {
+    "instruction": "Return a 503 maintenance page whenever /var/www/site/maintenance.html exists, and serve the site normally otherwise.",
+    "output": "server {\n    listen 80;\n    server_name legacy.example.org;\n    root /var/www/site;\n    set $maintenance 0;\n    if (-f /var/www/site/maintenance.html) {\n        set $maintenance 1;\n    }\n    if ($maintenance = 1) {\n        return 503;\n    }\n    error_page 503 @maintenance;\n    location @maintenance {\n        rewrite ^(.*)$ /maintenance.html break;\n    }\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Redirect the root URL of multilingual.example.com to the English locale directory.",
+    "output": "location = / {\n    return 301 /en/;\n}"
+  },
+  {
+    "instruction": "Remove trailing slashes from all URLs except the root so /about/ and /about are the same canonical URL.",
+    "output": "server {\n    listen 80;\n    server_name www.canonical.example;\n    root /var/www/canonical;\n    if ($uri ~ \"^(.+)/$\") {\n        return 301 $scheme://$host$1;\n    }\n}"
+  },
+  {
+    "instruction": "Send old Internet Explorer users detected by their user agent to the lightweight legacy site.",
+    "output": "server {\n    listen 80;\n    server_name www.modern.example;\n    root /var/www/modern;\n    if ($http_user_agent ~* \"MSIE [1-9]\\.\") {\n        return 301 http://legacy.example.com$request_uri;\n    }\n}"
+  },
+  {
+    "instruction": "Force every PDF link under /docs/ to the new documentation portal at docs.example.io.",
+    "output": "location ~* ^/docs/.+\\.pdf$ {\n    return 301 https://docs.example.io$request_uri;\n}"
+  },
+  {
+    "instruction": "Rewrite pretty portal URLs like /portal/settings to the PHP script they map to and hand them to PHP-FPM.",
+    "output": "location /portal/ {\n    rewrite ^/portal/([a-z0-9-]+)$ /portal/index.php?page=$1 last;\n}\nlocation ~ \\.php$ {\n    root /var/www/portal;\n    fastcgi_pass 127.0.0.1:9000;\n    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n    include fastcgi_params;\n}"
+  },
+  {
+    "instruction": "Redirect three deprecated marketing URLs to their new locations using an nginx map.",
+    "output": "map $uri $moved_page {\n    default 0;\n    /about-us /company;\n    /contact-us /contact;\n    /pricing /plans;\n}\nserver {\n    listen 80;\n    server_name www.marketing.example;\n    root /var/www/marketing;\n    if ($moved_page) {\n        return 301 $scheme://$host$moved_page;\n    }\n}"
+  }
+]

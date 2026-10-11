@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a PromQL query counting how many targets exist in total",
+    "output": "count(up)"
+  },
+  {
+    "instruction": "Write a PromQL query counting how many distinct jobs are configured",
+    "output": "count(count by (job) (up))"
+  },
+  {
+    "instruction": "Write a PromQL query counting targets per job label",
+    "output": "count by (job) (up)"
+  },
+  {
+    "instruction": "Write a PromQL query listing the 10 metric names with the most series",
+    "output": "topk(10, count by (__name__) ({__name__=~\".+\"}))"
+  },
+  {
+    "instruction": "Write a PromQL query using label_replace to add a host label extracted from the instance label",
+    "output": "label_replace(up, \"host\", \"$1\", \"instance\", \"([^:]+):.*\")"
+  },
+  {
+    "instruction": "Write a PromQL query using label_replace to drop the high cardinality pod label from a metric",
+    "output": "label_replace(http_requests_total, \"pod\", \"\", \"pod\", \".*\")"
+  },
+  {
+    "instruction": "Write a PromQL query using label_join to combine instance and job into a single target label",
+    "output": "label_join(up, \"target\", \":\", \"instance\", \"job\")"
+  },
+  {
+    "instruction": "Write a PromQL query counting distinct pod label values in kube_pod_info",
+    "output": "count(count by (pod) (kube_pod_info))"
+  },
+  {
+    "instruction": "Write a PromQL query counting series per metric name for everything exported by the api job",
+    "output": "count by (__name__) ({job=\"api\"})"
+  },
+  {
+    "instruction": "Write a PromQL query adding a static env=production label to the up metric",
+    "output": "label_replace(up, \"env\", \"production\", \"job\", \".*\")"
+  },
+  {
+    "instruction": "Write a PromQL query using label_replace to strip the _total suffix from metric names",
+    "output": "label_replace(node_network_receive_bytes_total, \"__name__\", \"$1\", \"__name__\", \"(.*)_total\")"
+  },
+  {
+    "instruction": "Write a PromQL query monitoring series growth for all custom_ prefixed metrics",
+    "output": "count by (__name__) ({__name__=~\"custom_.*\"})"
+  },
+  {
+    "instruction": "Write a PromQL query counting how many instances each job scrapes",
+    "output": "count by (job) (up)"
+  },
+  {
+    "instruction": "Write a PromQL query renaming the cpu label to cpu_core with label_replace",
+    "output": "label_replace(node_cpu_seconds_total, \"cpu_core\", \"$1\", \"cpu\", \"(.*)\")"
+  },
+  {
+    "instruction": "Write a PromQL query counting distinct instances across the whole system",
+    "output": "count(count by (instance) (up))"
+  },
+  {
+    "instruction": "Write a PromQL query counting series that have no namespace label attached",
+    "output": "count({__name__=~\".+\", namespace=\"\"})"
+  },
+  {
+    "instruction": "Write a PromQL query counting series per network device label",
+    "output": "count by (device) (node_network_receive_bytes_total)"
+  },
+  {
+    "instruction": "Write a PromQL query listing the top 5 pods by number of exported series",
+    "output": "topk(5, count by (pod) (container_cpu_usage_seconds_total))"
+  },
+  {
+    "instruction": "Write a PromQL query that strips the env label from a metric to lower cardinality before aggregation",
+    "output": "label_replace(http_request_duration_seconds_bucket, \"env\", \"\", \"env\", \".*\")"
+  },
+  {
+    "instruction": "Write a PromQL query extracting the numeric pod index into a new idx label with label_replace",
+    "output": "label_replace(kube_pod_info, \"idx\", \"$1\", \"pod\", \".*-(\\\\d+)$\")"
+  }
+]

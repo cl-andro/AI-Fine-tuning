@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write an ES module math.js exporting add and mul as named exports, and a main.js importing and using them.",
+    "output": "// math.js\nexport function add(a, b) {\n  return a + b;\n}\nexport function mul(a, b) {\n  return a * b;\n}\n\n// main.js\nimport { add, mul } from \"./math.js\";\nconsole.log(add(2, 3));\nconsole.log(mul(2, 3));"
+  },
+  {
+    "instruction": "Write a JavaScript module default-exporting a Config class, and consumer code importing it under a different name.",
+    "output": "// config.js\nexport default class Config {\n  constructor(values = {}) {\n    this.values = values;\n  }\n  get(key) {\n    return this.values[key];\n  }\n}\n\n// app.js\nimport Settings from \"./config.js\";\nconst settings = new Settings({ theme: \"dark\" });\nconsole.log(settings.get(\"theme\"));"
+  },
+  {
+    "instruction": "Write a JavaScript class Queue using private field #items with enqueue, dequeue and size, throwing on empty dequeue.",
+    "output": "class Queue {\n  #items = [];\n\n  enqueue(item) {\n    this.#items.push(item);\n  }\n\n  dequeue() {\n    if (this.#items.length === 0) throw new Error(\"Queue is empty\");\n    return this.#items.shift();\n  }\n\n  get size() {\n    return this.#items.length;\n  }\n}"
+  },
+  {
+    "instruction": "Write a JavaScript class Animal with a constructor and speak, and a Dog subclass that overrides speak and calls super in its constructor.",
+    "output": "class Animal {\n  constructor(name) {\n    this.name = name;\n  }\n  speak() {\n    return `${this.name} makes a sound`;\n  }\n}\n\nclass Dog extends Animal {\n  constructor(name) {\n    super(name);\n    this.kind = \"dog\";\n  }\n  speak() {\n    return `${this.name} barks`;\n  }\n}\n\nconsole.log(new Dog(\"Rex\").speak()); // \"Rex barks\""
+  },
+  {
+    "instruction": "Write a JavaScript class StringUtils with static methods reverse(s) and isPalindrome(s).",
+    "output": "class StringUtils {\n  static reverse(s) {\n    return [...s].reverse().join(\"\");\n  }\n\n  static isPalindrome(s) {\n    const clean = s.toLowerCase().replace(/[^a-z0-9]/g, \"\");\n    return clean === StringUtils.reverse(clean);\n  }\n}\n\nconsole.log(StringUtils.isPalindrome(\"A man, a plan, a canal: Panama\")); // true"
+  },
+  {
+    "instruction": "Write a JavaScript class Temperature with a getter celsius and setter celsius that keeps a private _fahrenheit in sync, plus a static freezing constant.",
+    "output": "class Temperature {\n  static freezing = 0;\n\n  constructor(fahrenheit) {\n    this._fahrenheit = fahrenheit;\n  }\n\n  get celsius() {\n    return ((this._fahrenheit - 32) * 5) / 9;\n  }\n\n  set celsius(value) {\n    this._fahrenheit = (value * 9) / 5 + 32;\n  }\n}\n\nconst t = new Temperature(212);\nconsole.log(t.celsius); // 100"
+  },
+  {
+    "instruction": "Write a JavaScript EventEmitter class implementing on, off and emit with a private handlers map.",
+    "output": "class EventEmitter {\n  #handlers = new Map();\n\n  on(event, fn) {\n    if (!this.#handlers.has(event)) this.#handlers.set(event, new Set());\n    this.#handlers.get(event).add(fn);\n    return () => this.off(event, fn);\n  }\n\n  off(event, fn) {\n    this.#handlers.get(event)?.delete(fn);\n  }\n\n  emit(event, payload) {\n    for (const fn of this.#handlers.get(event) || []) fn(payload);\n  }\n}\n\nconst emitter = new EventEmitter();\nemitter.on(\"ping\", (data) => console.log(\"pong\", data));\nemitter.emit(\"ping\", 1);"
+  },
+  {
+    "instruction": "Write a TypeScript abstract class Shape with abstract area() and a concrete describe() that calls area, plus a Rectangle implementation.",
+    "output": "abstract class Shape {\n  abstract area(): number;\n\n  describe(): string {\n    return `area is ${this.area()}`;\n  }\n}\n\nclass Rectangle extends Shape {\n  constructor(private width: number, private height: number) {\n    super();\n  }\n\n  area(): number {\n    return this.width * this.height;\n  }\n}\n\nconsole.log(new Rectangle(3, 4).describe()); // \"area is 12\""
+  },
+  {
+    "instruction": "Write JavaScript code showing named versus default exports: a utils.js with one named and one default export, and an importer using both.",
+    "output": "// utils.js\nexport const VERSION = \"1.0.0\";\nexport default function log(message) {\n  console.log(`[v${VERSION}]`, message);\n}\n\n// main.js\nimport log, { VERSION } from \"./utils.js\";\nconsole.log(VERSION);\nlog(\"ready\");"
+  },
+  {
+    "instruction": "Write a JavaScript barrel module index.js that re-exports everything from two modules, and consumer code importing from the barrel.",
+    "output": "// shapes.js\nexport function circle(r) {\n  return Math.PI * r ** 2;\n}\n\n// strings.js\nexport function shout(s) {\n  return s.toUpperCase() + \"!\";\n}\n\n// index.js\nexport * from \"./shapes.js\";\nexport * from \"./strings.js\";\n\n// app.js\nimport { circle, shout } from \"./index.js\";\nconsole.log(circle(1), shout(\"hi\"));"
+  },
+  {
+    "instruction": "Write a JavaScript singleton module counter.js whose state is shared by every importer, plus two consumer modules that increment it.",
+    "output": "// counter.js\nlet total = 0;\nexport function increment() {\n  return ++total;\n}\nexport function getTotal() {\n  return total;\n}\n\n// a.js\nimport { increment } from \"./counter.js\";\nincrement();\n\n// b.js\nimport { getTotal } from \"./counter.js\";\nconsole.log(getTotal()); // 1 — same module instance"
+  },
+  {
+    "instruction": "Write a TypeScript class Database with a private constructor and a static connect() factory returning the instance (singleton).",
+    "output": "class Database {\n  private static instance: Database;\n\n  private constructor(public readonly name: string) {}\n\n  static connect(name: string): Database {\n    if (!Database.instance) {\n      Database.instance = new Database(name);\n    }\n    return Database.instance;\n  }\n}\n\nconst a = Database.connect(\"main\");\nconst b = Database.connect(\"other\");\nconsole.log(a === b); // true"
+  },
+  {
+    "instruction": "Write a JavaScript class Logger with a fluent API where each method returns this so calls can chain: logger.level(\"info\").tag(\"app\").write(\"msg\").",
+    "output": "class Logger {\n  #parts = [];\n\n  level(value) {\n    this.#parts.push(`[${value.toUpperCase()}]`);\n    return this;\n  }\n\n  tag(value) {\n    this.#parts.push(`(${value})`);\n    return this;\n  }\n\n  write(message) {\n    console.log([...this.#parts, message].join(\" \"));\n    return this;\n  }\n}\n\nnew Logger().level(\"info\").tag(\"app\").write(\"booted\");"
+  },
+  {
+    "instruction": "Write JavaScript code contrasting class field declarations initialized inline versus assigning in the constructor, including calling a method before fields initialize (use-before-init trap).",
+    "output": "class Example {\n  label = this.makeLabel(); // runs before constructor body\n\n  constructor(name) {\n    this.name = name;\n  }\n\n  makeLabel() {\n    return \"ready\";\n  }\n}\n\nconsole.log(new Example(\"x\").label); // \"ready\"\n\n// Trap: referencing this.name in the field initializer above would\n// throw because constructor assignments run after field initializers."
+  },
+  {
+    "instruction": "Write JavaScript code using dynamic import() to load a module lazily inside a function, with error handling.",
+    "output": "async function loadPlugin(name) {\n  try {\n    const module = await import(`./plugins/${name}.js`);\n    if (typeof module.default !== \"function\") {\n      throw new Error(`plugin ${name} has no default export`);\n    }\n    return module.default();\n  } catch (err) {\n    console.error(\"failed to load plugin:\", err);\n    return null;\n  }\n}"
+  },
+  {
+    "instruction": "Write JavaScript code importing a module namespace with import * as and calling one of its functions.",
+    "output": "// geometry.js\nexport function area(r) {\n  return Math.PI * r ** 2;\n}\nexport function circumference(r) {\n  return 2 * Math.PI * r;\n}\n\n// main.js\nimport * as geometry from \"./geometry.js\";\nconsole.log(geometry.area(2));\nconsole.log(geometry.circumference(2));"
+  },
+  {
+    "instruction": "Write a JavaScript class SearchIndex where the onSearch callback is stored as an arrow class field so this stays bound when the callback is passed elsewhere.",
+    "output": "class SearchIndex {\n  items = [];\n\n  onSearch = (query) => {\n    const hits = this.items.filter((item) => item.includes(query));\n    return hits;\n  };\n\n  constructor(items) {\n    this.items = items;\n  }\n}\n\nconst index = new SearchIndex([\"apple\", \"apricot\", \"banana\"]);\nconst callback = index.onSearch;\nconsole.log(callback(\"ap\")); // [\"apple\", \"apricot\"]"
+  },
+  {
+    "instruction": "Write a TypeScript class PaymentProcessor using composition: it holds a Logger instance and delegates logging in each method.",
+    "output": "class Logger {\n  log(message: string) {\n    console.log(message);\n  }\n}\n\nclass PaymentProcessor {\n  constructor(private logger: Logger) {}\n\n  charge(amount: number): void {\n    if (amount <= 0) {\n      this.logger.log(`rejected charge of ${amount}`);\n      return;\n    }\n    this.logger.log(`charged ${amount}`);\n  }\n}\n\nnew PaymentProcessor(new Logger()).charge(25);"
+  },
+  {
+    "instruction": "Write JavaScript code defining a class with a static initialization block that precomputes a lookup table used by instance methods.",
+    "output": "class TaxTable {\n  static rates;\n\n  static {\n    TaxTable.rates = new Map([\n      [\"US\", 0.07],\n      [\"DE\", 0.19],\n      [\"JP\", 0.1],\n    ]);\n  }\n\n  static forCountry(code) {\n    return TaxTable.rates.get(code) ?? 0;\n  }\n}\n\nconsole.log(TaxTable.forCountry(\"DE\")); // 0.19"
+  },
+  {
+    "instruction": "Write a JavaScript mixin function applyMixin(Base) returning a subclass with an extra speak() method, demonstrating mixin-based reuse instead of inheritance chains.",
+    "output": "function applyMixin(Base) {\n  return class extends Base {\n    speak() {\n      return `${this.constructor.name} speaks`;\n    }\n  };\n}\n\nclass Bird {}\nclass Robot {}\n\nconst TalkativeBird = applyMixin(Bird);\nconst TalkativeRobot = applyMixin(Robot);\nconsole.log(new TalkativeBird().speak()); // \"TalkativeBird speaks\"\nconsole.log(new TalkativeRobot().speak()); // \"TalkativeRobot speaks\""
+  }
+]

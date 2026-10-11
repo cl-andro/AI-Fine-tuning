@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Given a sorted array of integers and a target sum, return the indices of the two numbers that add up to the target (assume exactly one solution). Do not use the same element twice.\n\nExample: nums = [2,7,11,15], target = 9 -> [0,1]",
+    "output": "def two_sum_sorted(nums, target):\n    left, right = 0, len(nums) - 1\n    while left < right:\n        s = nums[left] + nums[right]\n        if s == target:\n            return [left, right]\n        if s < target:\n            left += 1\n        else:\n            right -= 1\n    return []\n\n# Example: two_sum_sorted([2,7,11,15], 9) -> [0, 1]\n# Time: O(n), Space: O(1). One pass from both ends of the sorted array."
+  },
+  {
+    "instruction": "Given an integer array, return a new array of the squares of each number sorted in non-decreasing order, using O(n) time.\n\nExample: nums = [-4,-1,0,3,10] -> [0,1,9,16,100]",
+    "output": "def sorted_squares(nums):\n    n = len(nums)\n    result = [0] * n\n    left, right, pos = 0, n - 1, n - 1\n    while left <= right:\n        l2 = nums[left] * nums[left]\n        r2 = nums[right] * nums[right]\n        if l2 >= r2:\n            result[pos] = l2\n            left += 1\n        else:\n            result[pos] = r2\n            right -= 1\n        pos -= 1\n    return result\n\n# Example: sorted_squares([-4,-1,0,3,10]) -> [0,1,9,16,100]\n# Time: O(n), Space: O(1) extra (excluding output). Two pointers from both ends."
+  },
+  {
+    "instruction": "Remove duplicates from a sorted array in-place so that each unique element appears once, and return the number of unique elements. The unique prefix must occupy the first part of the array.\n\nExample: nums = [0,0,1,1,1,2,2,3,3,4] -> return 5, array becomes [0,1,2,3,4,...]",
+    "output": "def remove_duplicates(nums):\n    if not nums:\n        return 0\n    write = 1\n    for read in range(1, len(nums)):\n        if nums[read] != nums[write - 1]:\n            nums[write] = nums[read]\n            write += 1\n    return write\n\n# Example: nums=[0,0,1,1,1,2,2,3,3,4]; remove_duplicates(nums) -> 5, nums[:5] = [0,1,2,3,4]\n# Time: O(n), Space: O(1). Fast/slow (read/write) two pointers."
+  },
+  {
+    "instruction": "Given an array of integers, move all zeros to the end while maintaining the relative order of the non-zero elements. Do this in-place.\n\nExample: nums = [0,1,0,3,12] -> [1,3,12,0,0]",
+    "output": "def move_zeroes(nums):\n    write = 0\n    for num in nums:\n        if num != 0:\n            nums[write] = num\n            write += 1\n    while write < len(nums):\n        nums[write] = 0\n        write += 1\n    return nums\n\n# Example: move_zeroes([0,1,0,3,12]) -> [1,3,12,0,0]\n# Time: O(n), Space: O(1). Partition non-zeros then backfill zeros."
+  },
+  {
+    "instruction": "Given a target value and a sorted array of unique integers, return the range [start, end] of the target's first and last occurrence, or [-1,-1] if not present. Must run in O(log n).\n\nExample: nums = [5,7,7,8,8,10], target = 8 -> [3,4]",
+    "output": "def search_range(nums, target):\n    def lower_bound(x):\n        lo, hi = 0, len(nums)\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if nums[mid] < x:\n                lo = mid + 1\n            else:\n                hi = mid\n        return lo\n    lo = lower_bound(target)\n    hi = lower_bound(target + 1)\n    if lo == hi:\n        return [-1, -1]\n    return [lo, hi - 1]\n\n# Example: search_range([5,7,7,8,8,10], 8) -> [3,4]\n# Time: O(log n), Space: O(1). Two binary-search lower bounds."
+  },
+  {
+    "instruction": "Merge two sorted integer arrays, nums1 (with buffer space at the end) and nums2, into nums1 in-place so nums1 is fully sorted. nums1 has length m+n with only the first m elements valid.\n\nExample: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3 -> [1,2,2,3,5,6]",
+    "output": "def merge(nums1, m, nums2, n):\n    i, j, k = m - 1, n - 1, m + n - 1\n    while i >= 0 and j >= 0:\n        if nums1[i] >= nums2[j]:\n            nums1[k] = nums1[i]\n            i -= 1\n        else:\n            nums1[k] = nums2[j]\n            j -= 1\n        k -= 1\n    while j >= 0:\n        nums1[k] = nums2[j]\n        j -= 1\n        k -= 1\n\n# Example: merge([1,2,3,0,0,0], 3, [2,5,6], 3) -> nums1 = [1,2,2,3,5,6]\n# Time: O(m+n), Space: O(1). Merge from the back to avoid overwriting."
+  },
+  {
+    "instruction": "Given an array of size n containing numbers from 1 to n (with one duplicate), find the duplicate number without modifying the array and using only constant extra space.\n\nExample: nums = [1,3,4,2,2] -> 2",
+    "output": "def find_duplicate(nums):\n    slow = nums[0]\n    fast = nums[0]\n    while True:\n        slow = nums[slow]\n        fast = nums[nums[fast]]\n        if slow == fast:\n            break\n    slow = nums[0]\n    while slow != fast:\n        slow = nums[slow]\n        fast = nums[fast]\n    return slow\n\n# Example: find_duplicate([1,3,4,2,2]) -> 2\n# Time: O(n), Space: O(1). Floyd's cycle detection (treat indices as a linked list)."
+  },
+  {
+    "instruction": "Given an array of positive integers and a target, count the number of contiguous subarrays whose sum equals the target.\n\nExample: nums = [1,1,1], target = 2 -> 2",
+    "output": "def subarray_sum(nums, target):\n    count = 0\n    current = 0\n    prefix = {0: 1}\n    for num in nums:\n        current += num\n        count += prefix.get(current - target, 0)\n        prefix[current] = prefix.get(current, 0) + 1\n    return count\n\n# Example: subarray_sum([1,1,1], 2) -> 2\n# Time: O(n), Space: O(n). Prefix-sum hash map counts complements."
+  },
+  {
+    "instruction": "Given a 2D matrix where each row is sorted left to right and the first element of every row is greater than the last element of the previous row, search for a target value. Return True if found.\n\nExample: matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3 -> True",
+    "output": "def search_matrix(matrix, target):\n    if not matrix or not matrix[0]:\n        return False\n    m, n = len(matrix), len(matrix[0])\n    lo, hi = 0, m * n - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        val = matrix[mid // n][mid % n]\n        if val == target:\n            return True\n        if val < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return False\n\n# Example: search_matrix([[1,3,5,7],[10,11,16,20],[23,30,34,60]], 3) -> True\n# Time: O(log(m*n)), Space: O(1). Treat the 2D matrix as a virtual 1D sorted array."
+  },
+  {
+    "instruction": "Given a circular integer array nums, return the maximum sum of non-empty subarrays where the subarray is considered circular (it may wrap around the end).\n\nExample: nums = [1,-2,3,-2] -> 3",
+    "output": "def max_circular_subarray(nums):\n    total = 0\n    max_sum = cur_max = nums[0]\n    min_sum = cur_min = nums[0]\n    for i in range(1, len(nums)):\n        num = nums[i]\n        cur_max = max(num, cur_max + num)\n        max_sum = max(max_sum, cur_max)\n        cur_min = min(num, cur_min + num)\n        min_sum = min(min_sum, cur_min)\n        total += num\n    if max_sum < 0:\n        return max_sum\n    return max(max_sum, total - min_sum)\n\n# Example: max_circular_subarray([1,-2,3,-2]) -> 3\n# Time: O(n), Space: O(1). Kadane for max and min; wrap = total - min subarray."
+  },
+  {
+    "instruction": "Implement container-with-most-water: given n non-negative heights, pick two lines that together with the x-axis form a container holding the most water. Return the maximum area.\n\nExample: height = [1,8,6,2,5,4,8,3,7] -> 49",
+    "output": "def max_area(height):\n    left, right = 0, len(height) - 1\n    best = 0\n    while left < right:\n        area = min(height[left], height[right]) * (right - left)\n        best = max(best, area)\n        if height[left] < height[right]:\n            left += 1\n        else:\n            right -= 1\n    return best\n\n# Example: max_area([1,8,6,2,5,4,8,3,7]) -> 49\n# Time: O(n), Space: O(1). Two pointers shrink the narrower side."
+  },
+  {
+    "instruction": "Given an array nums of distinct integers and a target, return all unique triplets [a,b,c] such that a+b+c == 0. The solution set must not contain duplicate triplets.\n\nExample: nums = [-1,0,1,2,-1,-4] -> [[-1,-1,2],[-1,0,1]]",
+    "output": "def three_sum(nums):\n    nums.sort()\n    result = []\n    n = len(nums)\n    for i in range(n - 2):\n        if i > 0 and nums[i] == nums[i-1]:\n            continue\n        if nums[i] > 0:\n            break\n        left, right = i + 1, n - 1\n        while left < right:\n            s = nums[i] + nums[left] + nums[right]\n            if s == 0:\n                result.append([nums[i], nums[left], nums[right]])\n                left += 1\n                right -= 1\n                while left < right and nums[left] == nums[left-1]:\n                    left += 1\n                while left < right and nums[right] == nums[right+1]:\n                    right -= 1\n            elif s < 0:\n                left += 1\n            else:\n                right -= 1\n    return result\n\n# Example: three_sum([-1,0,1,2,-1,-4]) -> [[-1,-1,2],[-1,0,1]]\n# Time: O(n^2), Space: O(1) extra. Sort then two-pointer pairs for each anchor."
+  },
+  {
+    "instruction": "Given an array of integers where every element appears twice except one, find that single element. Must run in O(n) time and O(1) space.\n\nExample: nums = [4,1,2,1,2] -> 4",
+    "output": "def single_number(nums):\n    acc = 0\n    for num in nums:\n        acc ^= num\n    return acc\n\n# Example: single_number([4,1,2,1,2]) -> 4\n# Time: O(n), Space: O(1). XOR cancels duplicate pairs."
+  },
+  {
+    "instruction": "Given an array of non-negative integers and a height map, compute how much water it can trap after raining.\n\nExample: height = [0,1,0,2,1,0,1,3,2,1,2,1] -> 6",
+    "output": "def trap(height):\n    left, right = 0, len(height) - 1\n    left_max = right_max = water = 0\n    while left < right:\n        if height[left] < height[right]:\n            left_max = max(left_max, height[left])\n            water += left_max - height[left]\n            left += 1\n        else:\n            right_max = max(right_max, height[right])\n            water += right_max - height[right]\n            right -= 1\n    return water\n\n# Example: trap([0,1,0,2,1,0,1,3,2,1,2,1]) -> 6\n# Time: O(n), Space: O(1). Two pointers with running left/right maxima."
+  },
+  {
+    "instruction": "Given an array of integers and a value k, rotate the array to the right by k steps in-place.\n\nExample: nums = [1,2,3,4,5,6,7], k = 3 -> [5,6,7,1,2,3,4]",
+    "output": "def rotate(nums, k):\n    n = len(nums)\n    k %= n\n    def reverse(lo, hi):\n        while lo < hi:\n            nums[lo], nums[hi] = nums[hi], nums[lo]\n            lo += 1\n            hi -= 1\n    reverse(0, n - 1)\n    reverse(0, k - 1)\n    reverse(k, n - 1)\n\n# Example: rotate([1,2,3,4,5,6,7], 3) -> [5,6,7,1,2,3,4]\n# Time: O(n), Space: O(1). Reverse whole array, then reverse each half."
+  },
+  {
+    "instruction": "Return the length of the longest bitonic subsequence: first strictly increasing then strictly decreasing. A single element counts as bitonic.\n\nExample: nums = [1,11,2,10,4,5,2,1] -> 6 (1,2,4,5,2,1)",
+    "output": "def longest_bitonic(nums):\n    n = len(nums)\n    if n == 0:\n        return 0\n    inc = [1] * n\n    dec = [1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if nums[j] < nums[i]:\n                inc[i] = max(inc[i], inc[j] + 1)\n    for i in range(n - 2, -1, -1):\n        for j in range(i + 1, n):\n            if nums[j] < nums[i]:\n                dec[i] = max(dec[i], dec[j] + 1)\n    best = 0\n    for i in range(n):\n        best = max(best, inc[i] + dec[i] - 1)\n    return best\n\n# Example: longest_bitonic([1,11,2,10,4,5,2,1]) -> 6\n# Time: O(n^2), Space: O(n). LIS from left + LIS from right combined at each peak."
+  },
+  {
+    "instruction": "Given a non-empty array of positive integers, find the minimum number of coins needed to make up a given amount. Return -1 if the amount cannot be made.\n\nExample: coins = [1,2,5], amount = 11 -> 3 (5+5+1)",
+    "output": "def coin_change(coins, amount):\n    INF = float('inf')\n    dp = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and dp[a - c] != INF:\n                dp[a] = min(dp[a], dp[a - c] + 1)\n    return dp[amount] if dp[amount] != INF else -1\n\n# Example: coin_change([1,2,5], 11) -> 3\n# Time: O(amount * len(coins)), Space: O(amount). Bottom-up coin DP."
+  },
+  {
+    "instruction": "Given a sorted array of distinct integers and a target, return the index of the target or where it should be inserted to keep the array sorted (lower bound). Implement in O(log n).\n\nExample: nums = [1,3,5,6], target = 5 -> 2; target = 2 -> 1",
+    "output": "def search_insert(nums, target):\n    lo, hi = 0, len(nums)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if nums[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n\n# Example: search_insert([1,3,5,6], 5) -> 2; search_insert([1,3,5,6], 2) -> 1\n# Time: O(log n), Space: O(1). Classic lower-bound binary search."
+  },
+  {
+    "instruction": "Given an integer array nums, find a contiguous non-empty subarray with the largest product, and return that product.\n\nExample: nums = [2,3,-2,4] -> 6; nums = [-2,0,-1] -> 0",
+    "output": "def max_product(nums):\n    best = nums[0]\n    mx = mn = nums[0]\n    for num in nums[1:]:\n        candidates = (num, mx * num, mn * num)\n        mx = max(candidates)\n        mn = min(candidates)\n        best = max(best, mx)\n    return best\n\n# Example: max_product([2,3,-2,4]) -> 6\n# Time: O(n), Space: O(1). Track max and min products (negatives flip)."
+  },
+  {
+    "instruction": "Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals and return the non-overlapping result.\n\nExample: intervals = [[1,3],[2,6],[8,10],[15,18]] -> [[1,6],[8,10],[15,18]]",
+    "output": "def merge_intervals(intervals):\n    intervals.sort(key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged\n\n# Example: merge_intervals([[1,3],[2,6],[8,10],[15,18]]) -> [[1,6],[8,10],[15,18]]\n# Time: O(n log n) for the sort, O(n) for the sweep. Space: O(n) for the output (O(1) extra beyond that)."
+  }
+]

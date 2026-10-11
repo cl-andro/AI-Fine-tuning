@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this Go panic.\nContext: HTTP handler dereferencing a client response without checking the error.\n\npanic: runtime error: invalid memory address or nil pointer dereference\n[signal SIGSEGV: segmentation violation code=0x1 addr=0x0 pc=0x45f0a5]\n\ngoroutine 1 [running]:\nmain.handleRequest(0xc0001a2000, 0x0)\n\t/app/server.go:88 +0x1a5\nmain.main()\n\t/app/main.go:14 +0x4e",
+    "output": "**Root cause:** the second argument is a nil `*Response`; the error returned by the upstream call was ignored, so the code dereferences nil.\n**Fix:** Check the error (`if err != nil { return err }`) before using the pointer, and never discard errors with `_`."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: report loop reading the last column of a row.\n\npanic: runtime error: index out of range [5] with length 3\n\ngoroutine 1 [running]:\nmain.rowValue(0xc0000b4000, 0x5)\n\t/app/report.go:41 +0x1c5\nmain.main()\n\t/app/main.go:22 +0x4e",
+    "output": "**Root cause:** the row holds 3 elements but the code indexes position 5, which is beyond `len(row)-1`.\n**Fix:** Validate `if i >= len(row)` (or derive the index from `len(row)-1`) before reading."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: concurrent request counter built once per worker goroutine.\n\npanic: assignment to entry in nil map\n\ngoroutine 6 [running]:\nmain.(*Counter).Inc(0xc0000e4000, 0x1)\n\t/app/counter.go:19 +0x85\nmain.worker()\n\t/app/worker.go:33 +0x1f",
+    "output": "**Root cause:** the map field was declared with `var counts map[string]int` but never made with `make`, and writes to a nil map panic.\n**Fix:** Initialise the map in the constructor (`counts: make(map[string]int)`) and copy it if shared across goroutines."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: decoding a generic payload from a JSON array of interface values.\n\npanic: interface conversion: interface {} is string, not int\n\ngoroutine 1 [running]:\nmain.sumItems(0xc0000b6000)\n\t/app/sum.go:12 +0x17e\nmain.main()\n\t/app/main.go:30 +0x4e",
+    "output": "**Root cause:** a value that is actually a `string` was type-asserted to `int` with `.(int)` without a comma-ok check, so the assertion panicked.\n**Fix:** Use `v, ok := item.(int); if !ok { ... }`, or decode into a typed struct instead of `interface{}`."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: split routine dividing a total by the number of contributors.\n\npanic: runtime error: integer divide by zero\n\ngoroutine 1 [running]:\nmain.split(0x0, 0x4e2)\n\t/app/split.go:27 +0x13c\nmain.main()\n\t/app/main.go:9 +0x4e",
+    "output": "**Root cause:** `n` is 0 (no contributors), and integer division by zero panics at runtime in Go.\n**Fix:** Guard with `if n == 0 { return 0, errors.New(\"no contributors\") }` before dividing."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: worker pool shutting down while a producer finishes a batch.\n\npanic: close of closed channel\n\ngoroutine 8 [running]:\nmain.(*Pool).Stop(0xc0000e6000)\n\t/app/pool.go:64 +0x8f\nmain.main()\n\t/app/main.go:51 +0x4e",
+    "output": "**Root cause:** `close(jobs)` ran twice - Stop() was called from both the shutdown hook and the normal exit path.\n**Fix:** Guard with `sync.Once` (or an atomic `stopped` flag) so the channel is closed exactly once."
+  },
+  {
+    "instruction": "Root cause this Go deadlock.\nContext: two goroutines each taking the same two mutexes in opposite order.\n\nfatal error: all goroutines are asleep - deadlock!\n\ngoroutine 1 [semacquire]:\nmain.transfer(0xc000010270, 0x1)\n\t/app/ledger.go:58 +0x36\ngoroutine 6 [semacquire]:\nmain.transfer(0xc0000102a0, 0x0)\n\t/app/ledger.go:55 +0x2f",
+    "output": "**Root cause:** lock-order inversion: one goroutine locks A then B while the other locks B then A, so both block forever and the runtime reports a deadlock.\n**Fix:** Always acquire locks in a global order (e.g. sort by id), or use a single mutex / `TryLock` with backoff."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: builder slicing a decoded message body into a fixed frame size.\n\npanic: slice bounds out of range [:10] with capacity 7\n\ngoroutine 1 [running]:\nmain.readFrame(0xc0000b8000, 0x7)\n\t/app/frame.go:36 +0x1ae\nmain.main()\n\t/app/main.go:44 +0x4e",
+    "output": "**Root cause:** `buf[:10]` is requested on a 7-byte slice, and slicing past `cap` panics.\n**Fix:** Clamp with `end := 10; if end > len(buf) { end = len(buf) }`, or read/extend until at least 10 bytes are buffered."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: rate limiter unlocking a read-write mutex it only read from.\n\npanic: sync: Unlock of unlocked RWMutex\n\ngoroutine 1 [running]:\nsync.(*RWMutex).Unlock(0xc0000e8000)\n\t/usr/local/go/src/sync/rwmutex.go:71 +0x90\nmain.(*Limiter).Release(0xc0000e8000)\n\t/app/limiter.go:47 +0x1c",
+    "output": "**Root cause:** `RUnlock` was called without a matching `RLock` (the lock path returned early), so the mutex counter goes negative and panics.\n**Fix:** Keep `RLock`/`RUnlock` in matched pairs (defer `RUnlock()` immediately after `RLock()`) and remove the extra unlock."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: buffer sized from a negative value read out of a config file.\n\npanic: make: negative length (-10)\n\ngoroutine 1 [running]:\nmain.newBuffer(0xfffffffffffffff6)\n\t/app/buf.go:14 +0x7b\nmain.main()\n\t/app/main.go:6 +0x4e",
+    "output": "**Root cause:** `make([]byte, n)` was called with n = -10, which comes from an unvalidated (negative) config value.\n**Fix:** Reject negative sizes during config parsing and clamp to a sane default before `make`."
+  },
+  {
+    "instruction": "Root cause this Go fatal error.\nContext: parent traversal in a tree loaded from a database with a self-referencing row.\n\nfatal error: stack overflow\n\ngoroutine 1 [running]:\nmain.depth(0xc0000b2000)\n\t/app/tree.go:71 +0x3f\nmain.depth(0xc0000b2000)\n\t/app/tree.go:74 +0x62\nmain.depth(0xc0000b2000)\n\t/app/tree.go:74 +0x62",
+    "output": "**Root cause:** `depth` recurses on the same node forever because a row points to itself as parent, exhausting the goroutine stack.\n**Fix:** Track visited ids in a map and stop when a node repeats (and validate that the tree is acyclic at ingest)."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: unmarshalling an order document where \"age\" is stored as a quoted string.\n\npanic: json: cannot unmarshal string into Go struct field User.age of type int\n\ngoroutine 1 [running]:\nencoding/json.(*decodeState).object(0xc0000e2000)\n\t/usr/local/go/src/encoding/json/decode.go:895 +0x1d2\nmain.loadUser(0xc0000b4000)\n\t/app/user.go:23 +0x5c",
+    "output": "**Root cause:** the JSON field `age` contains `\"29\"` (a string), but the target struct field is `int`, so decoding fails.\n**Fix:** Correct the upstream document, or use `json.Number`/a custom type and convert after decoding."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: HTTP handler indexing an empty list of candidates while under a load test.\n\nhttp: panic serving 127.0.0.1:52344: runtime error: index out of range [0] with length 0\n\ngoroutine 128 [running]:\nmain.pickCandidate(...)\n\t/app/picker.go:16 +0x1a5\nnet/http.(*conn).serve(0xc0001c0000)\n\t/usr/local/go/src/net/http/server.go:2047 +0x8f",
+    "output": "**Root cause:** the candidate slice is empty (the upstream returned zero results) and `cands[0]` is read anyway; net/http recovers the panic per-connection.\n**Fix:** Check `len(cands) == 0` and return 404/422 instead of indexing."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: ingest allocating a buffer from a size header supplied by a client.\n\npanic: makeslice: len out of range\n\ngoroutine 1 [running]:\nmain.readBody(0x7fffffffffffffff, 0x1)\n\t/app/ingest.go:44 +0x8c\nmain.main()\n\t/app/main.go:33 +0x4e",
+    "output": "**Root cause:** the client-supplied length is enormous (near max int), so `make([]byte, len)` exceeds the maximum allocatable size.\n**Fix:** Enforce a maximum body size (e.g. 1 MB) before allocating and reject oversized headers with 413."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: deduplicating cache entries with a plain == comparison.\n\npanic: runtime error: comparing uncomparable type\n\ngoroutine 1 [running]:\nmain.dedupe(0xc0000b6000)\n\t/app/cache.go:52 +0x149\nmain.main()\n\t/app/main.go:18 +0x4e",
+    "output": "**Root cause:** the struct being compared contains a slice, and structs with slices are not comparable with `==`, so the comparison panics.\n**Fix:** Compare a comparable identity field (or hash key), or switch the struct to hold an array/fixed-size field."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: fan-in collector still receiving from producers after shutdown.\n\npanic: send on closed channel\n\ngoroutine 7 [running]:\nmain.produce(0xc0000e4000)\n\t/app/producer.go:29 +0x64\nmain.worker()\n\t/app/worker.go:41 +0x14",
+    "output": "**Root cause:** the results channel was closed by the shutdown path while a producer was still sending to it.\n**Fix:** Close the channel only from the sender side after all producers finish (WaitGroup), or use `sync.Once` plus a done signal to stop sends first."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: telemetry flusher stopping a stream that was never created on this path.\n\npanic: close of nil channel\n\ngoroutine 9 [running]:\nmain.(*Flusher).Close(0xc0000e6000)\n\t/app/flush.go:88 +0x7a\nmain.main()\n\t/app/main.go:77 +0x4e",
+    "output": "**Root cause:** `ch` is nil because it is only assigned when streaming is enabled, and closing a nil channel panics.\n**Fix:** Check `if ch != nil { close(ch) }`, or always create the channel and skip work when disabled."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: invariant guard in the ledger for a state that should be unreachable.\n\npanic: unreachable: settlement for negative amount\n\ngoroutine 1 [running]:\nmain.settle(0xc0000b8000)\n\t/app/ledger.go:131 +0x9c\nmain.main()\n\t/app/main.go:61 +0x4e",
+    "output": "**Root cause:** a business invariant was violated upstream (a negative amount reached settlement), and the explicit panic fired.\n**Fix:** Find where negative amounts are produced and reject them at validation; keep the panic only as a last-resort safety net."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: sub-slicing a decoded header using a high index computed from a bogus length field.\n\npanic: slice bounds out of range [3:2]\n\ngoroutine 1 [running]:\nmain.trimField(0xc0000ba000, 0x3, 0x2)\n\t/app/proto.go:57 +0x126\nmain.main()\n\t/app/main.go:40 +0x4e",
+    "output": "**Root cause:** `s[3:2]` has a high bound smaller than the low bound, which Go rejects at runtime.\n**Fix:** Validate `start <= end` (and `end <= len(s)`) before slicing the field."
+  },
+  {
+    "instruction": "Root cause this Go panic.\nContext: ring buffer sized from a value parsed out of an environment variable.\n\npanic: makeslice: integer overflow\n\ngoroutine 1 [running]:\nmain.newRing(0x400000000000000)\n\t/app/ring.go:11 +0x85\nmain.main()\n\t/app/main.go:5 +0x4e",
+    "output": "**Root cause:** the requested capacity multiplied by element size overflows int64, so `make` panics with an overflow.\n**Fix:** Parse the config value with bounds checking (reject values above a limit such as 1<<20) before allocating."
+  }
+]

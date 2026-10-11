@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this dependency error.\nContext: pip install in a fresh virtualenv.\n\nERROR: Cannot install -r requirements.txt because these package versions have conflicting dependencies.\nThe conflict is caused by:\n    httpx 0.27.0 depends on anyio<5,>=3.7.1\n    langchain 0.1.0 depends on anyio<4,>=3.7.0\nYou can try a compatible resolution with:\n    pip install 'httpx<0.27' 'langchain<0.2'",
+    "output": "**Root cause:** two pinned packages demand incompatible `anyio` ranges (`<4` vs `<5`), so pip cannot produce a single consistent resolution.\n**Fix:** Adjust one pin (e.g. `httpx<0.27` or a langchain version that accepts `anyio>=4`) so the ranges overlap, then re-run `pip install`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: library upgraded in place without a matching interpreter.\n\nTraceback (most recent call last):\n  File \"/app/cache.py\", line 4, in <module>\n    from functools import cached_property\nImportError: cannot import name 'cached_property' from 'functools'",
+    "output": "**Root cause:** `functools.cached_property` requires Python >= 3.8, but the running interpreter is older (3.7), so the attribute does not exist.\n**Fix:** Run on Python >= 3.8 (check `python --version`), or use `functools.lru_cache`/`werkzeug`-style fallback for older interpreters."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: pip installing a PostgreSQL driver from source.\n\nerror: subprocess-exited-with-error\n  preparing metadata (pyproject.toml) did not run successfully\n  exit code: 1\n  ... /bin/sh: 1: pg_config: not found\n  hint: pkg-config executable 'pg_config' not found: command 'pg_config' failed",
+    "output": "**Root cause:** the source build needs the PostgreSQL client headers/tools (`pg_config` from `libpq-dev`), which are absent, so the wheel cannot be produced.\n**Fix:** `apt-get install -y libpq-dev gcc`, or install a prebuilt wheel (`pip install psycopg2-binary`)."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: model service after a transitive protobuf upgrade.\n\nTypeError: Descriptors cannot not be created directly.\nIf this call came from a _pb2.py file, your generated code is out of date and must be regenerated with protoc >= 3.19.0.\nIf your message came from another language, the protobuf runtime must be updated.",
+    "output": "**Root cause:** generated `_pb2.py` code targets an older protobuf API while the installed runtime is >= 4.x, so descriptor creation is refused.\n**Fix:** Regenerate the stubs with a matching `protoc`, or pin `protobuf<4` (`pip install \"protobuf<4\"`) until regeneration is done."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: running a prebuilt Python wheel on an old Linux image.\n\nImportError: /usr/local/lib/python3.11/site-packages/numpy/core/_multiarray_umath.cpython-311-x86_64-linux-gnu.so: version `GLIBC_2.28' not found (required by /lib/x86_64-linux-gnu/libc.so.6)",
+    "output": "**Root cause:** the wheel was compiled against glibc 2.28+, but the container's image ships an older glibc, so the shared library cannot resolve its symbols.\n**Fix:** Use a newer base image (e.g. `python:3.11-slim-bookworm`), or install a wheel built for manylinux/glibc of that image."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: script run against a Python that never installed the project's requirements.\n\nTraceback (most recent call last):\n  File \"/app/export.py\", line 6, in <module>\n    import yaml\nModuleNotFoundError: No module named 'yaml'",
+    "output": "**Root cause:** PyYAML (import name `yaml`) is not installed in the interpreter being used - requirements were installed into a different venv.\n**Fix:** `pip install -r requirements.txt` in the active environment (`python -m pip install ...`) and confirm with `python -m pip show PyYAML`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: React project installing dependencies with npm 9.\n\nnpm ERR! ERESOLVE Unable to resolve dependency tree\nnpm ERR!\nnpm ERR! While resolving: react-scripts@5.0.1\nnpm ERR! Found: react@18.2.0\nnpm ERR! node_modules/react\nnpm ERR!  peer react@\"^18.0.0\" from react-scripts@5.0.1\nnpm ERR!\nnpm ERR! Could not resolve dependency:\nnpm ERR! peer react@\"^17.0.0\" from react-router-dom@6.3.0",
+    "output": "**Root cause:** `react-router-dom@6.3.0` declares a peer dependency on React 17 while the tree has React 18, and npm 7+ enforces peers strictly.\n**Fix:** Upgrade `react-router-dom` to a version supporting React 18, or install with `--legacy-peer-deps` after confirming compatibility."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: CommonJS build pulling in a package upgraded to v5.\n\nError [ERR_REQUIRE_ESM]: require() of ES Module /app/node_modules/chalk/source/index.js from /app/dist/logger.js not supported.\nInstead change the require of /app/node_modules/chalk/source/index.js in /app/dist/logger.js to a dynamic import() ...",
+    "output": "**Root cause:** chalk 5 ships ESM only, so `require(\"chalk\")` from a CommonJS file fails at load time.\n**Fix:** Downgrade to `chalk@4`, or convert the module to ESM (`\"type\": \"module\"` + `import`)."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: CI installing a nightly-only package version.\n\nnpm ERR! code ETARGET\nnpm ERR! notarget No matching version found for lodash@4.17.21-beta.1\nnpm ERR! notarget No matching version found for lodash@4.17.21-beta.1\nnpm ERR! notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.",
+    "output": "**Root cause:** the requested semver range resolves to a version that was never published (the beta tag does not exist in the registry).\n**Fix:** Use an existing version (`^4.17.21`) or explicitly install the correct dist-tag (`npm install lodash@next` if a tag exists)."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: Java jar built in CI but run from a different classpath.\n\nException in thread \"main\" java.lang.ClassNotFoundException: com.google.gson.Gson\n\tat java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)\n\tat com.acme.export.Main.main(Main.java:16)",
+    "output": "**Root cause:** the `gson` jar is declared as `provided` (or omitted from the runtime classpath), so the class is missing when the fat jar/classic path runs.\n**Fix:** Move the dependency to `compile`/runtime scope and build a shaded/executable jar, or add the jar to `-cp`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: app on the classpath with two different Guava versions.\n\njava.lang.NoSuchMethodError: com.google.common.collect.ImmutableList.of()Ljava/util/List;\n\tat com.acme.plugin.Registry.<clinit>(Registry.java:29)\n\tat com.acme.plugin.PluginManager.load(PluginManager.java:51)",
+    "output": "**Root cause:** an older Guava (or a shaded copy inside another jar) is loaded first, and it lacks the `ImmutableList.of()` signature the code was compiled against.\n**Fix:** Deduplicate Guava versions (exclude transitives with Maven/Gradle, use `dependencyManagement`), and check with `mvn dependency:tree` / `gradle dependencies`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: war deployed to Tomcat 10.1 after upgrading the server image.\n\njava.lang.NoClassDefFoundError: javax/servlet/ServletContext\n\tat org.springframework.web.context.WebApplicationContext.getRootWebApplicationContext(WebApplicationContext.java:354)\n\tat org.springframework.web.servlet.FrameworkServlet.initWebApplicationContext(FrameworkServlet.java:432)",
+    "output": "**Root cause:** Tomcat 10 implements the `jakarta.servlet` namespace, while the app was compiled against `javax.servlet` (Tomcat 9 and earlier), so the old class is absent.\n**Fix:** Migrate to Spring Boot 3 / `jakarta.*` packages, or deploy to a Tomcat 9 line that still provides `javax.servlet`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: Maven build on a developer machine against an internal artifact.\n\n[ERROR] Failed to execute goal on project billing-service: Could not resolve dependencies for project com.acme:billing-service:jar:1.4.2:\n[ERROR]   Could not find artifact com.acme:common-lib:jar:2.3.1 in central (https://repo.maven.apache.org/maven2)\n[ERROR]   Could not find artifact com.acme:common-lib:jar:2.3.1",
+    "output": "**Root cause:** `common-lib:2.3.1` lives in the private Nexus/Artifactory repo (or was never published), and only Maven Central is configured for this build.\n**Fix:** Add the internal `<repository>` (with credentials in `settings.xml`) or publish the artifact, and confirm the version actually exists in the remote."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: Gradle daemon started under an older toolchain after a JDK upgrade.\n\nFAILURE: Build failed with an exception.\n* What went wrong:\nCould not determine the dependencies of task ':compileJava'.\n> unsupported class file major version 65\n\n* Try: Run with --stacktrace to get the full stack trace.",
+    "output": "**Root cause:** the code is compiled for Java 21 (class file 65) while the Gradle version in use only understands up to a lower version.\n**Fix:** Upgrade Gradle (or the wrapper) to a release supporting Java 21, or build with an older JDK toolchain."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: .NET Framework app after a partial package upgrade.\n\nUnhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed' or one of its dependencies. The located assembly's manifest definition does not match the assembly reference. (Exception from HRESULT: 0x80131040)\n   at App.Serialization.LegacyReader.Read(String json)",
+    "output": "**Root cause:** the code references Newtonsoft.Json 12.0.0.0 but the deployed assembly is 13.x (or vice versa), and no binding redirect reconciles them.\n**Fix:** Align all projects on one version and generate binding redirects (`AutoGenerateBindingRedirects`), or use a `package.json`-style central version via `Directory.Packages.props`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: dotnet restore in CI for a legacy csproj.\n\nerror NU1102: Unable to find package Microsoft.AspNetCore.Mvc.Razor with version (>= 2.2.0)\nerror NU1102:   - Found 20 version(s) in nuget.org [ Nearest version: 2.2.0-preview3-35497 ]\nerror NU1102: Package restore failed. Rolled back packages.config changes.",
+    "output": "**Root cause:** version 2.2.0 of that package does not exist on the feed (only a preview), so restore fails and rolls back.\n**Fix:** Use an existing version (e.g. the 2.2.0 preview range that exists, or upgrade the package family) and pin an exact published version."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: Rails app boot after changing BUNDLE_PATH.\n\nCould not find rake-13.0.1 in locally installed gems, run `bundle install`\n\nBundler::GemNotFound: Could not find rake-13.0.1 in locally installed gems, run `bundle install`",
+    "output": "**Root cause:** the lockfile pins `rake 13.0.1`, but that gem is not installed in the configured `BUNDLE_PATH` (gems were installed elsewhere, or the path was wiped).\n**Fix:** Run `bundle install` against the same `BUNDLE_PATH`/`deployment` config (and rebuild the image layer that installs gems)."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: pip refusing to install into a system interpreter (PEP 668 image).\n\nerror: externally-managed-environment\n\nThis environment is externally managed\nHint: To attempt to install despite externally managed environment, use\n    pip install --break-system-packages\n\nAlternatively, create a virtual environment:\n    python3 -m venv /path/to/new/venv",
+    "output": "**Root cause:** the distribution marks the system Python as externally managed (Debian/Ubuntu policy), so pip will not install into it by default.\n**Fix:** Create and use a virtualenv (`python3 -m venv .venv && . .venv/bin/activate`) rather than forcing `--break-system-packages`."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: platform binary executed inside an ARM64 container.\n\nstandard_init_linux.go:294: exec user process caused: exec format error\n/bin/sh: 1: ./vendor-tool: not found",
+    "output": "**Root cause:** the binary is built for amd64 (or the container is amd64-only) and the kernel cannot execute it on this architecture.\n**Fix:** Rebuild the image with the correct platform (`docker build --platform linux/arm64` or multi-arch buildx) so image and host architectures match."
+  },
+  {
+    "instruction": "Root cause this dependency error.\nContext: app started on a newer distro image after a base-image bump.\n\n./report-generator: error while loading shared libraries: libssl.so.1.1: cannot open shared object file: No such file or directory",
+    "output": "**Root cause:** the binary links OpenSSL 1.1, but the new image ships OpenSSL 3 (`libssl.so.3`), so the loader cannot find `libssl.so.1.1`.\n**Fix:** Rebuild the tool against OpenSSL 3, or install a compatibility package/add a legacy repo providing `libssl.so.1.1`."
+  }
+]

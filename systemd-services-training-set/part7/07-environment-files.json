@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Load environment variables from a file.",
+    "output": "[Service]\nEnvironmentFile=/etc/myapp/env\nExecStart=/usr/local/bin/myapp"
+  },
+  {
+    "instruction": "Load multiple environment files, with later ones overriding earlier.",
+    "output": "[Service]\nEnvironmentFile=/etc/myapp/env\nEnvironmentFile=-/etc/myapp/env.local\nExecStart=/usr/local/bin/myapp"
+  },
+  {
+    "instruction": "Set inline environment variables in the unit.",
+    "output": "[Service]\nEnvironment=DATABASE_URL=postgres://localhost/app\nEnvironment=LOG_LEVEL=info\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Make an environment file optional so the unit starts even if it is missing.",
+    "output": "[Service]\nEnvironmentFile=-/etc/myapp/optional.env\nExecStart=/usr/local/bin/myapp"
+  },
+  {
+    "instruction": "Pass a variable into a shell command inside ExecStart.",
+    "output": "[Service]\nEnvironment=GREETING=\"hello world\"\nExecStart=/bin/sh -c 'echo \"$GREETING\"'"
+  },
+  {
+    "instruction": "Reference another unit's environment via a drop-in.",
+    "output": "# /etc/systemd/system/myapp.service.d/env.conf\n[Service]\nEnvironment=FEATURE_FLAG=on"
+  },
+  {
+    "instruction": "Use a secrets file with restricted permissions.",
+    "output": "[Service]\nEnvironmentFile=/etc/myapp/secrets.env\n# chmod 600 /etc/myapp/secrets.env, owned by root\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Quote values containing spaces in an environment file.",
+    "output": "# /etc/myapp/env (no export, no quotes needed unless spaces)\nAPP_NAME=My Application\nAPP_TAG=\"release candidate\"\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Explain the format of EnvironmentFile and common mistakes.",
+    "output": "# Files use KEY=VALUE, one per line. Do NOT use 'export'.\n# Quotes are optional but required for values with spaces.\n# Comments start with #. Line continuations use a trailing backslash.\n[Service]\nEnvironmentFile=/etc/myapp/env"
+  },
+  {
+    "instruction": "Set a service-specific PATH via EnvironmentFile.",
+    "output": "# /etc/myapp/env\nPATH=/opt/myapp/bin:/usr/local/bin:/usr/bin"
+  },
+  {
+    "instruction": "Override an environment variable with an ExecStart prefix.",
+    "output": "[Service]\nEnvironment=MODE=production\nExecStart=/usr/bin/env MODE=canary /usr/local/bin/app"
+  },
+  {
+    "instruction": "Expand a variable inside another variable in the unit.",
+    "output": "[Service]\nEnvironment=APP_HOME=/opt/app\nEnvironment=APP_CONFIG=${APP_HOME}/config.yml\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Load environment from a file and ensure it is only readable by root.",
+    "output": "[Service]\nEnvironmentFile=/run/credentials/myapp.env\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Use LoadCredential to inject a secret as a file.",
+    "output": "[Service]\nLoadCredential=db_password:/etc/myapp/db_password\nExecStart=/usr/local/bin/app --password-file ${CREDENTIALS_DIRECTORY}/db_password"
+  },
+  {
+    "instruction": "Set locale-related environment variables.",
+    "output": "[Service]\nEnvironment=LANG=C.UTF-8\nEnvironment=LC_ALL=C.UTF-8\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Undefine a variable for a single command.",
+    "output": "[Service]\nEnvironment=DEBUG=1\nExecStart=/usr/bin/env -u DEBUG /usr/local/bin/app"
+  },
+  {
+    "instruction": "Use an EnvironmentFile with systemd specifiers.",
+    "output": "[Service]\nEnvironmentFile=/etc/myapp/%N.env\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Demonstrate the precedence of environment sources.",
+    "output": "[Service]\n# Precedence (low to high): EnvironmentFile=, Environment=, inline in ExecStart\nEnvironmentFile=/etc/myapp/env\nEnvironment=LOG_LEVEL=debug\nExecStart=/usr/bin/env LOG_LEVEL=trace /usr/local/bin/app"
+  },
+  {
+    "instruction": "Set a default value using an environment file plus inline fallback.",
+    "output": "[Service]\nEnvironmentFile=-/etc/myapp/env\nEnvironment=PORT=8080\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Comment the pitfalls of spaces around '=' in env files.",
+    "output": "# WRONG: KEY = value (spaces become part of the key/value)\n# RIGHT: KEY=value\n[Service]\nEnvironmentFile=/etc/myapp/env"
+  }
+]

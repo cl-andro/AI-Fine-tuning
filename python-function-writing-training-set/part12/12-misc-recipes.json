@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a minimal LRU cache class with get/put in O(1) using an OrderedDict (or dict plus a doubly linked list), evicting the least recently used entry at capacity.",
+    "output": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity):\n        if capacity < 1:\n            raise ValueError('capacity must be positive')\n        self.capacity = capacity\n        self._data = OrderedDict()\n\n    def get(self, key, default=None):\n        if key not in self._data:\n            return default\n        self._data.move_to_end(key)\n        return self._data[key]\n\n    def put(self, key, value):\n        if key in self._data:\n            self._data.move_to_end(key)\n        self._data[key] = value\n        if len(self._data) > self.capacity:\n            self._data.popitem(last=False)\n\ncache = LRUCache(2)\ncache.put('a', 1)\ncache.put('b', 2)\ncache.get('a')\ncache.put('c', 3)\nprint(cache.get('a'), cache.get('b'), cache.get('c'))"
+  },
+  {
+    "instruction": "Write a token-bucket rate limiter class with allow() that returns True when a request is permitted and False otherwise, refilling tokens at a steady rate.",
+    "output": "import time\n\nclass TokenBucket:\n    def __init__(self, rate_per_sec, capacity):\n        self.rate = rate_per_sec\n        self.capacity = capacity\n        self.tokens = float(capacity)\n        self.updated = time.monotonic()\n\n    def allow(self, tokens=1):\n        now = time.monotonic()\n        self.tokens = min(self.capacity, self.tokens + (now - self.updated) * self.rate)\n        self.updated = now\n        if self.tokens >= tokens:\n            self.tokens -= tokens\n            return True\n        return False\n\nbucket = TokenBucket(rate_per_sec=100, capacity=3)\nprint([bucket.allow() for _ in range(5)])"
+  },
+  {
+    "instruction": "Write a function that makes a slug unique by appending -2, -3 and so on when a base slug already exists in a set of taken slugs.",
+    "output": "def unique_slug(base, taken):\n    slug = base.strip().lower().replace(' ', '-')\n    if slug not in taken:\n        return slug\n    n = 2\n    while f'{slug}-{n}' in taken:\n        n += 1\n    return f'{slug}-{n}'\n\nprint(unique_slug('hello world', {'hello-world', 'hello-world-2'}))"
+  },
+  {
+    "instruction": "Write a function that produces a unified diff between two multi-line strings using difflib, suitable for writing into a patch file.",
+    "output": "import difflib\n\ndef unified_diff(old_text, new_text, from_name='old', to_name='new'):\n    return '\\n'.join(difflib.unified_diff(\n        old_text.splitlines(), new_text.splitlines(),\n        fromfile=from_name, tofile=to_name, lineterm='',\n    ))\n\nprint(unified_diff('a\\nb\\nc', 'a\\nB\\nc\\nd'))"
+  },
+  {
+    "instruction": "Write a minimal event emitter class supporting subscribe(event, handler), unsubscribe and emit(event, **payload), isolating handler errors.",
+    "output": "class EventEmitter:\n    def __init__(self):\n        self._handlers = {}\n\n    def subscribe(self, event, handler):\n        self._handlers.setdefault(event, []).append(handler)\n        return handler\n\n    def unsubscribe(self, event, handler):\n        if event in self._handlers and handler in self._handlers[event]:\n            self._handlers[event].remove(handler)\n\n    def emit(self, event, **payload):\n        errors = []\n        for handler in list(self._handlers.get(event, [])):\n            try:\n                handler(**payload)\n            except Exception as exc:\n                errors.append(exc)\n        return errors\n\nevents = EventEmitter()\nseen = []\nevents.subscribe('save', lambda **p: seen.append(p['id']))\nevents.subscribe('save', lambda **p: 1 / 0)\nprint(events.emit('save', id=7), seen)"
+  },
+  {
+    "instruction": "Write a plugin registry that lets classes register themselves under a name via a decorator and be instantiated by name with create(name, **kwargs).",
+    "output": "class PluginRegistry:\n    def __init__(self):\n        self._plugins = {}\n\n    def register(self, name):\n        def decorator(cls):\n            if name in self._plugins:\n                raise ValueError(f'duplicate plugin: {name}')\n            self._plugins[name] = cls\n            return cls\n        return decorator\n\n    def create(self, name, **kwargs):\n        if name not in self._plugins:\n            raise KeyError(f'unknown plugin: {name}')\n        return self._plugins[name](**kwargs)\n\nregistry = PluginRegistry()\n@registry.register('csv')\nclass CsvLoader:\n    def __init__(self, path=''):\n        self.path = path\n\nprint(type(registry.create('csv', path='x.csv')).__name__)"
+  },
+  {
+    "instruction": "Write a simple dependency-injection container that registers providers (factories or instances) by name and resolves them lazily, caching singletons when requested.",
+    "output": "class Container:\n    def __init__(self):\n        self._providers = {}\n        self._singletons = {}\n\n    def register(self, name, provider, singleton=False):\n        self._providers[name] = (provider, singleton)\n\n    def resolve(self, name, **kwargs):\n        if name not in self._providers:\n            raise KeyError(f'not registered: {name}')\n        provider, singleton = self._providers[name]\n        if singleton:\n            if name not in self._singletons:\n                self._singletons[name] = provider(**kwargs) if callable(provider) else provider\n            return self._singletons[name]\n        return provider(**kwargs) if callable(provider) else provider\n\ncontainer = Container()\ncontainer.register('config', lambda: {'debug': True}, singleton=True)\nprint(container.resolve('config') is container.resolve('config'))"
+  },
+  {
+    "instruction": "Write a function that generates sequential slug-safe ids for a base name by tracking counts in a dict, e.g. 'report' then 'report-2'.",
+    "output": "class IdGenerator:\n    def __init__(self):\n        self._counts = {}\n\n    def next_id(self, base):\n        cleaned = ''.join(ch if ch.isalnum() else '-' for ch in base.lower()).strip('-')\n        cleaned = '-'.join(filter(None, cleaned.split('-')))\n        self._counts[cleaned] = self._counts.get(cleaned, 0) + 1\n        return cleaned if self._counts[cleaned] == 1 else f'{cleaned}-{self._counts[cleaned]}'\n\ngen = IdGenerator()\nprint([gen.next_id('Monthly Report') for _ in range(3)])"
+  },
+  {
+    "instruction": "Write a function that redacts sensitive keys (password, token, secret, api_key, authorization) from a nested dict or list structure, replacing values with '[REDACTED]'.",
+    "output": "SENSITIVE = {'password', 'token', 'secret', 'api_key', 'authorization'}\n\ndef redact(data, key=None):\n    if isinstance(data, dict):\n        return {k: ('[REDACTED]' if k.lower() in SENSITIVE else redact(v, k)) for k, v in data.items()}\n    if isinstance(data, list):\n        return [redact(item) for item in data]\n    return data\n\nprint(redact({'user': 'ann', 'token': 'abc', 'nested': {'api_key': 'xyz', 'n': 1}}))"
+  },
+  {
+    "instruction": "Write a priority queue class backed by heapq that supports push(item, priority), pop() returning the highest-priority item, and peek().",
+    "output": "import heapq\n\nclass PriorityQueue:\n    def __init__(self):\n        self._heap = []\n        self._seq = 0\n\n    def push(self, item, priority=0):\n        heapq.heappush(self._heap, (priority, self._seq, item))\n        self._seq += 1\n\n    def pop(self):\n        if not self._heap:\n            raise IndexError('pop from empty priority queue')\n        priority, _, item = heapq.heappop(self._heap)\n        return item\n\n    def peek(self):\n        if not self._heap:\n            raise IndexError('peek from empty priority queue')\n        return self._heap[0][2]\n\n    def __len__(self):\n        return len(self._heap)\n\nq = PriorityQueue()\nq.push('low', 5)\nq.push('high', 1)\nq.push('mid', 3)\nprint(q.peek(), q.pop(), len(q))"
+  },
+  {
+    "instruction": "Write a function that computes the Jaccard similarity between two sets (or lists) of tokens, returning 0.0 when both are empty.",
+    "output": "def jaccard_similarity(a, b):\n    set_a, set_b = set(a), set(b)\n    if not set_a and not set_b:\n        return 0.0\n    return len(set_a & set_b) / len(set_a | set_b)\n\nprint(round(jaccard_similarity('the cat sat'.split(), 'the cat ran'.split()), 3))"
+  },
+  {
+    "instruction": "Write a function that reads a CSV of sales rows and produces a summary dict: total revenue per region and per product, plus an overall grand total.",
+    "output": "import csv\nfrom collections import defaultdict\n\ndef sales_summary(path):\n    by_region = defaultdict(float)\n    by_product = defaultdict(float)\n    grand = 0.0\n    with open(path, newline='', encoding='utf-8') as f:\n        for row in csv.DictReader(f):\n            amount = float(row['amount'])\n            by_region[row['region']] += amount\n            by_product[row['product']] += amount\n            grand += amount\n    return {'by_region': dict(by_region), 'by_product': dict(by_product), 'grand_total': grand}\n\nprint(sales_summary('sales.csv'))"
+  },
+  {
+    "instruction": "Write a configuration loader that reads settings from environment variables with a prefix, applies defaults, and coerces values to int/bool/float based on the default's type.",
+    "output": "import os\n\ndef load_config(prefix='APP_', defaults=None):\n    config = {}\n    for key, default in (defaults or {}).items():\n        raw = os.environ.get(prefix + key.upper())\n        if raw is None:\n            config[key] = default\n        elif isinstance(default, bool):\n            config[key] = raw.strip().lower() in ('1', 'true', 'yes', 'on')\n        elif isinstance(default, int):\n            config[key] = int(raw)\n        elif isinstance(default, float):\n            config[key] = float(raw)\n        else:\n            config[key] = raw\n    return config\n\nos.environ['APP_WORKERS'] = '8'\nprint(load_config(defaults={'workers': 4, 'debug': False, 'name': 'svc'}))"
+  },
+  {
+    "instruction": "Write a build_histogram function that returns an ASCII bar chart string mapping each label to a bar of '#' characters scaled to the maximum value.",
+    "output": "def build_histogram(counts, width=20):\n    if not counts:\n        return ''\n    top = max(counts.values()) or 1\n    lines = []\n    for label, value in counts.items():\n        bar = '#' * max(1, round(value / top * width)) if value else ''\n        lines.append(f'{label:>8} | {bar} {value}')\n    return '\\n'.join(lines)\n\nprint(build_histogram({'py': 42, 'js': 17, 'go': 5}))"
+  },
+  {
+    "instruction": "Write a tokenizer that splits text into word n-grams for a given n, lowercasing and stripping punctuation at the edges of tokens.",
+    "output": "import re\n\ndef ngrams(text, n=2):\n    words = re.findall(r\"[A-Za-z0-9']+\", text.lower())\n    return [' '.join(words[i:i + n]) for i in range(len(words) - n + 1)]\n\nprint(ngrams('To be, or not to be', n=2))"
+  },
+  {
+    "instruction": "Write a function that computes a deterministic hash key for arbitrary JSON-like data by serializing with sorted keys, useful for cache keys and deduplication.",
+    "output": "import hashlib, json\n\ndef stable_key(data):\n    payload = json.dumps(data, sort_keys=True, separators=(',', ':'), default=str)\n    return hashlib.sha256(payload.encode('utf-8')).hexdigest()\n\nprint(stable_key({'b': 1, 'a': [2, 3]}) == stable_key({'a': [2, 3], 'b': 1}))"
+  },
+  {
+    "instruction": "Write a circuit breaker class with states closed/open/half_open: failures trip the breaker open for reset_timeout seconds, after which one trial call decides whether to close it again.",
+    "output": "import time\n\nclass CircuitBreaker:\n    def __init__(self, failures_threshold=3, reset_timeout=10.0, clock=time.monotonic):\n        self.failures_threshold = failures_threshold\n        self.reset_timeout = reset_timeout\n        self.clock = clock\n        self.failures = 0\n        self.open_until = 0.0\n        self.state = 'closed'\n\n    def call(self, fn, *args):\n        now = self.clock()\n        if self.state == 'open':\n            if now < self.open_until:\n                raise RuntimeError('circuit is open')\n            self.state = 'half_open'\n        try:\n            result = fn(*args)\n        except Exception:\n            self.failures += 1\n            if self.state == 'half_open' or self.failures >= self.failures_threshold:\n                self.state = 'open'\n                self.open_until = now + self.reset_timeout\n            raise\n        if self.state == 'half_open':\n            self.state = 'closed'\n        self.failures = 0\n        return result\n\nbreaker = CircuitBreaker(failures_threshold=2, reset_timeout=5)\nfor _ in range(2):\n    try:\n        breaker.call(lambda: 1 / 0)\n    except ZeroDivisionError:\n        pass\nprint(breaker.state)\ntry:\n    breaker.call(lambda: 'ok')\nexcept RuntimeError as exc:\n    print(exc)"
+  },
+  {
+    "instruction": "Write a data-pipeline function that chains load, transform and save steps, validating that each stage returns the expected type and reporting per-stage timings.",
+    "output": "import time\n\ndef run_pipeline(load, transform, save, **ctx):\n    timings = {}\n    t0 = time.perf_counter()\n    data = load(**ctx)\n    if data is None:\n        raise ValueError('load returned None')\n    timings['load'] = time.perf_counter() - t0\n\n    t0 = time.perf_counter()\n    result = transform(data)\n    if not isinstance(result, list):\n        raise TypeError('transform must return a list')\n    timings['transform'] = time.perf_counter() - t0\n\n    t0 = time.perf_counter()\n    saved = save(result)\n    timings['save'] = time.perf_counter() - t0\n    return {'count': len(result), 'saved': saved, 'timings': timings}\n\nprint(run_pipeline(lambda: [3, 1, 2], sorted, lambda rows: rows == [1, 2, 3]))"
+  },
+  {
+    "instruction": "Write a Python function that converts a positive integer into a Roman numeral string, the inverse of the roman_to_int conversion.",
+    "output": "def int_to_roman(n):\n    if not 1 <= n <= 3999:\n        raise ValueError('value must be between 1 and 3999')\n    table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'),\n             (90, 'XC'), (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'),\n             (5, 'V'), (4, 'IV'), (1, 'I')]\n    out = []\n    for value, symbol in table:\n        while n >= value:\n            out.append(symbol)\n            n -= value\n    return ''.join(out)\n\nprint(int_to_roman(1994))"
+  },
+  {
+    "instruction": "Write a Python function that renders a list of dict records as an aligned ASCII table using the first record's keys as the header row.",
+    "output": "def ascii_table(rows):\n    if not rows:\n        return ''\n    headers = list(rows[0])\n    data = [[str(row.get(h, '')) for h in headers] for row in rows]\n    widths = [max(len(h), *(len(r[i]) for r in data)) for i, h in enumerate(headers)]\n    line = '+'.join('-' * (w + 2) for w in widths)\n    def fmt(cells):\n        return '|'.join(' ' + c.ljust(w) + ' ' for c, w in zip(cells, widths))\n    out = [fmt(headers), line] + [fmt(r) for r in data]\n    return '\\n'.join(out)\n\nprint(ascii_table([{'name': 'ann', 'score': '91'}, {'name': 'bo', 'score': '100'}]))"
+  }
+]

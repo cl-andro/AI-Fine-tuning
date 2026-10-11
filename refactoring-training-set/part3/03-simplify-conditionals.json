@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by flattening the nested conditionals into guard clauses:\n\ndef refund(order):\n    if order is not None:\n        if order['status'] == 'paid':\n            if order['days'] <= 30:\n                money_back(order)\n                return 'refunded'\n            else:\n                return 'too late'\n        else:\n            return 'not paid'\n    else:\n        return 'missing order'",
+    "output": "def refund(order):\n    if order is None:\n        return 'missing order'\n    if order['status'] != 'paid':\n        return 'not paid'\n    if order['days'] > 30:\n        return 'too late'\n    money_back(order)\n    return 'refunded'\n\nWhat changed: nested ifs became a sequence of early-return guards, so the happy path sits at column zero and each failure reads top to bottom."
+  },
+  {
+    "instruction": "Refactor this code by replacing the redundant boolean returns with direct expressions:\n\ndef is_valid_age(age):\n    if age >= 18:\n        return True\n    else:\n        return False\n\ndef has_items(cart):\n    if len(cart) > 0:\n        return True\n    else:\n        return False",
+    "output": "def is_valid_age(age):\n    return age >= 18\n\ndef has_items(cart):\n    return len(cart) > 0\n\nWhat changed: if/else return True/False collapsed into returning the condition itself, halving the lines and removing the pointless else."
+  },
+  {
+    "instruction": "Refactor this code by extracting the compound condition into named predicates:\n\ndef can_checkout(user, cart, promo):\n    if user is not None and user.get('verified') and len(cart) > 0 and (promo is None or promo['active']) and not user.get('suspended'):\n        return True\n    return False",
+    "output": "def user_may_checkout(user):\n    return user is not None and user.get('verified') and not user.get('suspended')\n\ndef cart_may_checkout(cart, promo):\n    return len(cart) > 0 and (promo is None or promo['active'])\n\ndef can_checkout(user, cart, promo):\n    return user_may_checkout(user) and cart_may_checkout(cart, promo)\n\nWhat changed: one unreadable line became three named predicates; each rule can be tested and logged independently."
+  },
+  {
+    "instruction": "Refactor this code by removing the double negatives and inverted flags:\n\ndef needs_review(item):\n    if not item['approved'] == False:\n        if not (item['score'] < 40):\n            return not item['reviewed']\n    return False",
+    "output": "def needs_review(item):\n    if item['approved']:\n        return False\n    if item['score'] >= 40:\n        return False\n    return not item['reviewed']\n\nWhat changed: `not x == False` and `not (score < 40)` became positive comparisons, so the review rules can be read without flipping logic in your head."
+  },
+  {
+    "instruction": "Refactor this code by replacing the elif chain with a membership test:\n\ndef day_type(day):\n    if day == 'mon' or day == 'tue' or day == 'wed' or day == 'thu' or day == 'fri':\n        return 'weekday'\n    elif day == 'sat' or day == 'sun':\n        return 'weekend'\n    else:\n        return 'unknown'",
+    "output": "WEEKDAYS = {'mon', 'tue', 'wed', 'thu', 'fri'}\nWEEKENDS = {'sat', 'sun'}\n\ndef day_type(day):\n    if day in WEEKDAYS:\n        return 'weekday'\n    if day in WEEKENDS:\n        return 'weekend'\n    return 'unknown'\n\nWhat changed: long == chains became set membership, the days are now data not branches, and the final else was simplified to a plain return."
+  },
+  {
+    "instruction": "Refactor this code by pulling the repeated condition into a local variable:\n\ndef ship(order):\n    if order['weight'] > 0 and order['addr'] and order['paid']:\n        if order['weight'] > 0 and order['addr'] and order['paid'] and order['stock_ok']:\n            dispatch(order)\n    if order['weight'] > 0 and order['addr'] and order['paid']:\n        notify(order)",
+    "output": "ready = order['weight'] > 0 and order['addr'] and order['paid']\n\nif ready and order['stock_ok']:\n    dispatch(order)\n\nif ready:\n    notify(order)\n\nWhat changed: the identical boolean expression is computed once as `ready`, so changing a shipping rule no longer means hunting through five copies."
+  },
+  {
+    "instruction": "Refactor this code by inverting the flag logic so the positive path is the default:\n\ndef render(item, skip):\n    if not skip:\n        if item['visible']:\n            return html(item)\n        else:\n            return ''\n    else:\n        return ''",
+    "output": "def render(item, skip=False):\n    if skip or not item['visible']:\n        return ''\n    return html(item)\n\nWhat changed: two branches producing the same empty string merged into one guard, and the inverted `not skip` no longer wraps the whole body."
+  },
+  {
+    "instruction": "Refactor this code by converting the nested loop with else into a straightforward search:\n\ndef contains(items, target):\n    found = False\n    for it in items:\n        if it['sku'] == target:\n            found = True\n            break\n    else:\n        found = False\n    return found",
+    "output": "def contains(items, target):\n    return any(it['sku'] == target for it in items)\n\nWhat changed: the flag-and-break dance (plus a misleading for/else) collapsed into a single `any()` expression that states the question directly."
+  },
+  {
+    "instruction": "Refactor this code by replacing the nested ternary with readable branches:\n\ndef label(v):\n    return 'high' if v > 90 else ('mid' if v > 60 else ('low' if v > 30 else 'tiny'))",
+    "output": "def label(value):\n    if value > 90:\n        return 'high'\n    if value > 60:\n        return 'mid'\n    if value > 30:\n        return 'low'\n    return 'tiny'\n\nWhat changed: a nested one-liner ternary chain became sequential early returns; thresholds can now be reordered or commented without precedence risk."
+  },
+  {
+    "instruction": "Refactor this code by removing the dead else after an unconditional return:\n\ndef divide(a, b):\n    if b == 0:\n        return None\n    else:\n        return a / b\n\ndef pick(item):\n    if item is None:\n        return 0\n    else:\n        return item['value']",
+    "output": "def divide(a, b):\n    if b == 0:\n        return None\n    return a / b\n\ndef pick(item):\n    if item is None:\n        return 0\n    return item['value']\n\nWhat changed: else blocks after return were deleted; in Python an else after an early return only adds indentation, not meaning."
+  },
+  {
+    "instruction": "Refactor this code by dispatching on a dictionary instead of an if/elif chain:\n\ndef area(shape, a, b=None):\n    if shape == 'circle':\n        return 3.14159 * a * a\n    elif shape == 'rect':\n        return a * b\n    elif shape == 'triangle':\n        return 0.5 * a * b\n    else:\n        return 0",
+    "output": "from math import pi\n\ndef area(shape, a, b=None):\n    calculators = {\n        'circle': lambda: pi * a * a,\n        'rect': lambda: a * b,\n        'triangle': lambda: 0.5 * a * b,\n    }\n    return calculators.get(shape, lambda: 0)()\n\nWhat changed: an if/elif ladder became a dispatch table; adding a shape is one new entry instead of a new branch and a re-indent."
+  },
+  {
+    "instruction": "Refactor this code by simplifying the while-True loop with break into a clean condition:\n\ndef skip_spaces(text):\n    i = 0\n    while True:\n        if i >= len(text):\n            break\n        if text[i] != ' ':\n            break\n        i += 1\n    return text[i:]",
+    "output": "def skip_spaces(text):\n    i = 0\n    while i < len(text) and text[i] == ' ':\n        i += 1\n    return text[i:]\n\nWhat changed: two break statements folded into the while condition, so the loop's exit rules are visible on the loop line itself."
+  },
+  {
+    "instruction": "Refactor this code by consolidating the repeated null checks into one guard:\n\ndef total(cart):\n    if cart is None:\n        return 0\n    items = cart.get('items')\n    if items is None:\n        return 0\n    if len(items) == 0:\n        return 0\n    s = 0\n    for it in items:\n        if it is not None:\n            if it.get('price') is not None:\n                s += it['price']\n    return s",
+    "output": "def total(cart):\n    if not cart or not cart.get('items'):\n        return 0\n    return sum(i['price'] for i in cart['items'] if i and i.get('price') is not None)\n\nWhat changed: four separate None/empty checks merged into one guard and the accumulation became a sum comprehension; behavior is identical for every input shape."
+  },
+  {
+    "instruction": "Refactor this code by replacing compare-to-boolean with plain truthiness:\n\ndef active(u):\n    if u['active'] == True:\n        return True\n    elif u['active'] == False:\n        return False\n    else:\n        return None",
+    "output": "def active(user):\n    if user['active'] is None:\n        return None\n    return bool(user['active'])\n\nWhat changed: == True / == False comparisons became truthiness with an explicit None branch for the genuinely unknown case."
+  },
+  {
+    "instruction": "Refactor this code by moving the validation above the processing to remove the nested else:\n\ndef record(entry):\n    if entry is not None:\n        if 'id' in entry:\n            if entry['id'] > 0:\n                db.insert(entry)\n                return 'ok'\n            else:\n                return 'bad id'\n        else:\n            return 'no id'\n    else:\n        return 'no entry'",
+    "output": "def record(entry):\n    if entry is None:\n        return 'no entry'\n    if 'id' not in entry:\n        return 'no id'\n    if entry['id'] <= 0:\n        return 'bad id'\n    db.insert(entry)\n    return 'ok'\n\nWhat changed: three nested validation levels became three flat guards, so insert() and the success path share the same indentation level."
+  },
+  {
+    "instruction": "Refactor this code by extracting the repeated predicate from the loop body:\n\ndef summarize(rows):\n    good = 0\n    bad = 0\n    for r in rows:\n        if r['status'] == 'ok' and r['code'] < 400 and r['bytes'] > 0:\n            good += 1\n        else:\n            if not (r['status'] == 'ok' and r['code'] < 400 and r['bytes'] > 0):\n                bad += 1",
+    "output": "def is_good(r):\n    return r['status'] == 'ok' and r['code'] < 400 and r['bytes'] > 0\n\ndef summarize(rows):\n    good = sum(1 for r in rows if is_good(r))\n    bad = len(rows) - good\n    return {'good': good, 'bad': bad}\n\nWhat changed: the compound condition exists once as is_good(), and the counts no longer re-evaluate it in both branches."
+  },
+  {
+    "instruction": "Refactor this code by replacing the flag-modifying conditional with clear branches:\n\ndef process(order):\n    ok = True\n    if order['total'] > 1000:\n        ok = False\n    if order['country'] == 'XX':\n        ok = False\n    if ok:\n        return 'accepted'\n    return 'rejected'",
+    "output": "def process(order):\n    if order['total'] > 1000:\n        return 'rejected'\n    if order['country'] == 'XX':\n        return 'rejected'\n    return 'accepted'\n\nWhat changed: a mutable ok flag replaced by direct returns; each rejection reason is now a separate readable condition with no state to trace."
+  },
+  {
+    "instruction": "Refactor this code by simplifying the boolean flag parameter that branches twice:\n\ndef format(value, compact):\n    if compact:\n        if isinstance(value, float):\n            return f'{value:.2f}'\n        else:\n            return str(value)\n    else:\n        if isinstance(value, float):\n            return f'{value:,.2f}'\n        else:\n            return str(value).upper()",
+    "output": "def format(value, compact):\n    if not isinstance(value, float):\n        return str(value) if compact else str(value).upper()\n    return f'{value:.2f}' if compact else f'{value:,.2f}'\n\nWhat changed: the type check is now the outer branch (where it actually differs) and each arm is a single expression, removing duplicated float handling."
+  },
+  {
+    "instruction": "Refactor this code by removing the redundant len() comparisons and else clauses:\n\ndef empty_report(rows):\n    if len(rows) == 0:\n        return 'no data'\n    else:\n        if len(rows) < 10:\n            return 'small'\n        else:\n            return 'large'",
+    "output": "def empty_report(rows):\n    if not rows:\n        return 'no data'\n    if len(rows) < 10:\n        return 'small'\n    return 'large'\n\nWhat changed: `len(rows) == 0` became `not rows`, and else-after-return nesting was flattened to three sequential checks."
+  },
+  {
+    "instruction": "Refactor this code by converting the if/else assignment into a conditional expression:\n\ndef label(v):\n    if v >= 90:\n        s = 'pass'\n    else:\n        s = 'fail'\n    return s",
+    "output": "def label(v):\n    return 'pass' if v >= 90 else 'fail'\n\nWhat changed: a four-line if/else whose only job was assigning one value collapsed into a single return with a conditional expression."
+  }
+]

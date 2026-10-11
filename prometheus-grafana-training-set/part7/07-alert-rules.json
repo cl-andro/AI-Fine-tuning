@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Prometheus alert rule named InstanceDown that fires when a target is down for 5 minutes at critical severity",
+    "output": "groups:\n  - name: availability\n    rules:\n      - alert: InstanceDown\n        expr: up == 0\n        for: 5m\n        labels:\n          severity: critical\n        annotations:\n          summary: Target {{ $labels.instance }} is down\n          description: Job {{ $labels.job }} has been unreachable for more than 5 minutes."
+  },
+  {
+    "instruction": "Write an alert rule named HighErrorRate that fires when the 5xx ratio exceeds 5 percent for 10 minutes",
+    "output": "groups:\n  - name: errors\n    rules:\n      - alert: HighErrorRate\n        expr: job:http_request_errors:rate5m / job:http_requests:rate5m > 0.05\n        for: 10m\n        labels:\n          severity: warning\n        annotations:\n          summary: High error rate on {{ $labels.job }}\n          description: More than 5 percent of requests to job {{ $labels.job }} are returning 5xx."
+  },
+  {
+    "instruction": "Write an alert rule named HighLatencyP99 firing when p99 latency is above 1 second for 10 minutes",
+    "output": "groups:\n  - name: latency\n    rules:\n      - alert: HighLatencyP99\n        expr: job:http_request_duration_seconds:p99 > 1\n        for: 10m\n        labels:\n          severity: warning\n        annotations:\n          summary: p99 latency above 1s for {{ $labels.job }}\n          description: The 99th percentile latency for {{ $labels.job }} has exceeded one second."
+  },
+  {
+    "instruction": "Write an alert rule named HighCPUUsage that fires when CPU utilisation stays above 85 percent for 15 minutes",
+    "output": "groups:\n  - name: nodes\n    rules:\n      - alert: HighCPUUsage\n        expr: instance:node_cpu_utilisation:rate5m > 0.85\n        for: 15m\n        labels:\n          severity: warning\n        annotations:\n          summary: High CPU on {{ $labels.instance }}\n          description: CPU utilisation on {{ $labels.instance }} has been above 85 percent for 15 minutes."
+  },
+  {
+    "instruction": "Write an alert rule named MemorySaturation firing when memory utilisation exceeds 90 percent for 10 minutes",
+    "output": "groups:\n  - name: nodes\n    rules:\n      - alert: MemorySaturation\n        expr: node:memory_utilisation:ratio > 0.9\n        for: 10m\n        labels:\n          severity: warning\n        annotations:\n          summary: Memory saturation on {{ $labels.instance }}\n          description: Less than 10 percent of memory is available on {{ $labels.instance }}."
+  },
+  {
+    "instruction": "Write an alert rule named DiskFillingUp that fires when root filesystem usage is above 85 percent for 15 minutes",
+    "output": "groups:\n  - name: nodes\n    rules:\n      - alert: DiskFillingUp\n        expr: node:filesystem_usage:ratio > 0.85\n        for: 15m\n        labels:\n          severity: warning\n        annotations:\n          summary: Disk filling up on {{ $labels.instance }}\n          description: Root filesystem on {{ $labels.instance }} is more than 85 percent full."
+  },
+  {
+    "instruction": "Write an alert rule named CertificateExpiringSoon firing when an SSL certificate expires in less than 15 days",
+    "output": "groups:\n  - name: blackbox\n    rules:\n      - alert: CertificateExpiringSoon\n        expr: probe_ssl_earliest_cert_expiry - time() < 15 * 24 * 3600\n        for: 1h\n        labels:\n          severity: warning\n        annotations:\n          summary: Certificate for {{ $labels.instance }} expires soon\n          description: The TLS certificate for {{ $labels.instance }} expires in less than 15 days."
+  },
+  {
+    "instruction": "Write an alert rule named TooManyRestarts that fires when a process restarted more than twice in an hour",
+    "output": "groups:\n  - name: process\n    rules:\n      - alert: TooManyRestarts\n        expr: changes(process_start_time_total[1h]) > 2\n        for: 0m\n        labels:\n          severity: warning\n        annotations:\n          summary: Process restarting frequently on {{ $labels.instance }}\n          description: The process on {{ $labels.instance }} restarted more than twice in the last hour."
+  },
+  {
+    "instruction": "Write an alert rule named ScrapeTargetsDown that fires when any job has at least one down target for 5 minutes",
+    "output": "groups:\n  - name: availability\n    rules:\n      - alert: ScrapeTargetsDown\n        expr: sum by (job) (up == 0) > 0\n        for: 5m\n        labels:\n          severity: critical\n        annotations:\n          summary: Targets down in job {{ $labels.job }}\n          description: At least one target in job {{ $labels.job }} has been down for 5 minutes."
+  },
+  {
+    "instruction": "Write an alert rule named NoTraffic firing when a job receives zero requests for 30 minutes",
+    "output": "groups:\n  - name: traffic\n    rules:\n      - alert: NoTraffic\n        expr: sum by (job) (rate(http_requests_total[5m])) == 0\n        for: 30m\n        labels:\n          severity: warning\n        annotations:\n          summary: No traffic for {{ $labels.job }}\n          description: Job {{ $labels.job }} has received no requests for 30 minutes."
+  },
+  {
+    "instruction": "Write an alert rule named DatabaseConnectionsHigh firing when MySQL connections exceed 200 for 5 minutes",
+    "output": "groups:\n  - name: database\n    rules:\n      - alert: DatabaseConnectionsHigh\n        expr: mysql_global_status_threads_connected > 200\n        for: 5m\n        labels:\n          severity: warning\n        annotations:\n          summary: Too many MySQL connections on {{ $labels.instance }}\n          description: Thread count on {{ $labels.instance }} is above 200 and may exhaust the connection pool."
+  },
+  {
+    "instruction": "Write an alert rule named QueueBacklog firing when a queue holds more than 10000 pending messages for 10 minutes",
+    "output": "groups:\n  - name: queues\n    rules:\n      - alert: QueueBacklog\n        expr: rabbitmq_queue_messages > 10000\n        for: 10m\n        labels:\n          severity: warning\n        annotations:\n          summary: Queue backlog on {{ $labels.queue }}\n          description: Queue {{ $labels.queue }} holds more than 10000 unacknowledged messages."
+  },
+  {
+    "instruction": "Write an alert rule named PodOOMKilled that fires when any container was OOM killed in the last 15 minutes",
+    "output": "groups:\n  - name: kubernetes\n    rules:\n      - alert: PodOOMKilled\n        expr: increase(container_oom_kills_total[15m]) > 0\n        for: 0m\n        labels:\n          severity: critical\n        annotations:\n          summary: Container OOM killed in {{ $labels.namespace }}/{{ $labels.pod }}\n          description: Container {{ $labels.container }} was killed by the OOM killer in namespace {{ $labels.namespace }}."
+  },
+  {
+    "instruction": "Write an alert rule named ReplicaUnavailable firing when a deployment has fewer available replicas than desired for 10 minutes",
+    "output": "groups:\n  - name: kubernetes\n    rules:\n      - alert: ReplicaUnavailable\n        expr: kube_deployment_status_replicas_available < kube_deployment_spec_replicas\n        for: 10m\n        labels:\n          severity: critical\n        annotations:\n          summary: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas\n          description: Fewer replicas are available than the deployment spec requires."
+  },
+  {
+    "instruction": "Write an alert rule named HTTP5xxSpike firing when the global 5xx rate passes 100 requests per second",
+    "output": "groups:\n  - name: errors\n    rules:\n      - alert: HTTP5xxSpike\n        expr: sum(rate(http_requests_total{status=~\"5..\"}[5m])) > 100\n        for: 5m\n        labels:\n          severity: critical\n        annotations:\n          summary: 5xx spike detected\n          description: The global server error rate is above 100 requests per second."
+  },
+  {
+    "instruction": "Write an alert rule named MemoryLeakDetected using deriv() when container memory grows steadily for 3 hours",
+    "output": "groups:\n  - name: containers\n    rules:\n      - alert: MemoryLeakDetected\n        expr: deriv(container_memory_working_set_bytes[3h]) > 100000\n        for: 30m\n        labels:\n          severity: warning\n        annotations:\n          summary: Possible memory leak in {{ $labels.container }}\n          description: Container {{ $labels.container }} memory has been growing steadily for 3 hours."
+  },
+  {
+    "instruction": "Write an alert rule named JobFailed that fires when a Kubernetes job reports a failure",
+    "output": "groups:\n  - name: kubernetes\n    rules:\n      - alert: JobFailed\n        expr: kube_job_status_failed > 0\n        for: 0m\n        labels:\n          severity: critical\n        annotations:\n          summary: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed\n          description: The job reported at least one failed pod."
+  },
+  {
+    "instruction": "Write a multiwindow SLO alert rule named FastErrorBudgetBurn firing on fast burn of the error budget",
+    "output": "groups:\n  - name: slo\n    rules:\n      - alert: FastErrorBudgetBurn\n        expr: (job:http_request_errors:rate5m / job:http_requests:rate5m > 14.4 * 0.001) and (job:http_request_errors:rate1h / job:http_requests:rate1h > 14.4 * 0.001)\n        for: 2m\n        labels:\n          severity: critical\n        annotations:\n          summary: Fast error budget burn on {{ $labels.job }}\n          description: The error budget for {{ $labels.job }} is being consumed 14.4 times faster than allowed."
+  },
+  {
+    "instruction": "Write an alert rule named BlackboxProbeFailed firing when an HTTP probe fails for 5 minutes",
+    "output": "groups:\n  - name: blackbox\n    rules:\n      - alert: BlackboxProbeFailed\n        expr: probe_success == 0\n        for: 5m\n        labels:\n          severity: critical\n        annotations:\n          summary: Probe failed for {{ $labels.instance }}\n          description: The blackbox exporter cannot reach {{ $labels.instance }} for 5 minutes."
+  },
+  {
+    "instruction": "Write an alert rule named HighScrapeDuration firing when a scrape takes longer than 8 seconds",
+    "output": "groups:\n  - name: scrape\n    rules:\n      - alert: HighScrapeDuration\n        expr: scrape_duration_seconds > 8\n        for: 10m\n        labels:\n          severity: warning\n        annotations:\n          summary: Slow scrape of {{ $labels.job }} on {{ $labels.instance }}\n          description: Scraping {{ $labels.instance }} has taken more than 8 seconds for 10 minutes."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Compute the nth Fibonacci number using dynamic programming (bottom-up). F(0)=0, F(1)=1.\n\nExample: n = 10 -> 55",
+    "output": "def fib(n):\n    if n <= 1:\n        return n\n    prev2, prev1 = 0, 1\n    for _ in range(2, n + 1):\n        prev2, prev1 = prev1, prev1 + prev2\n    return prev1\n\n# Example: fib(10) -> 55\n# Time: O(n), Space: O(1). Rolling variables replace the full DP table."
+  },
+  {
+    "instruction": "Climbing stairs: you can climb 1 or 2 steps at a time. In how many distinct ways can you climb to the top (n steps)?\n\nExample: n = 3 -> 3",
+    "output": "def climb_stairs(n):\n    if n <= 2:\n        return n\n    prev2, prev1 = 1, 2\n    for _ in range(3, n + 1):\n        prev2, prev1 = prev1, prev1 + prev2\n    return prev1\n\n# Example: climb_stairs(3) -> 3\n# Time: O(n), Space: O(1). Fibonacci-style rolling DP."
+  },
+  {
+    "instruction": "Given a target amount and a list of coin denominations (each available unlimited times), return the fewest coins needed to make the amount, or -1 if impossible.\n\nExample: coins = [1,2,5], amount = 11 -> 3",
+    "output": "def coin_change(coins, amount):\n    INF = float('inf')\n    dp = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and dp[a - c] != INF:\n                dp[a] = min(dp[a], dp[a - c] + 1)\n    return dp[amount] if dp[amount] != INF else -1\n\n# Example: coin_change([1,2,5], 11) -> 3\n# Time: O(amount * len(coins)), Space: O(amount). Unbounded knapsack minimum coin DP."
+  },
+  {
+    "instruction": "Given a list of items with weights and values and a knapsack capacity, return the maximum value that fits (0/1 knapsack; each item at most once).\n\nExample: weights=[1,3,4,5], values=[1,4,5,7], capacity=7 -> 9",
+    "output": "def knapsack(weights, values, capacity):\n    dp = [0] * (capacity + 1)\n    for i in range(len(weights)):\n        w, v = weights[i], values[i]\n        for cap in range(capacity, w - 1, -1):\n            dp[cap] = max(dp[cap], dp[cap - w] + v)\n    return dp[capacity]\n\n# Example: knapsack([1,3,4,5],[1,4,5,7], 7) -> 9\n# Time: O(n*W), Space: O(W). 1D DP iterating capacity backwards to avoid reuse."
+  },
+  {
+    "instruction": "Given a string, find the length of the longest palindromic subsequence (not substring).\n\nExample: s = 'bbbab' -> 4 ('bbbb')",
+    "output": "def longest_palindromic_subsequence(s):\n    n = len(s)\n    dp = [1] * n\n    for i in range(n - 2, -1, -1):\n        prev = 0\n        for j in range(i + 1, n):\n            temp = dp[j]\n            if s[i] == s[j]:\n                dp[j] = prev + 2\n            else:\n                dp[j] = max(dp[j], dp[j - 1])\n            prev = temp\n    return dp[n - 1] if n > 0 else 0\n\n# Example: longest_palindromic_subsequence('bbbab') -> 4\n# Time: O(n^2), Space: O(n). Interval DP on reversed ends with rolling 1D row."
+  },
+  {
+    "instruction": "Given a sequence, find the length of the longest strictly increasing subsequence (LIS).\n\nExample: nums = [10,9,2,5,3,7,101,18] -> 4 ([2,3,7,101])",
+    "output": "import bisect\n\ndef length_of_lis(nums):\n    tails = []\n    for num in nums:\n        i = bisect.bisect_left(tails, num)\n        if i == len(tails):\n            tails.append(num)\n        else:\n            tails[i] = num\n    return len(tails)\n\n# Example: length_of_lis([10,9,2,5,3,7,101,18]) -> 4\n# Time: O(n log n), Space: O(n). Patience sorting with binary search over tails."
+  },
+  {
+    "instruction": "Given two strings, find the length of their longest common subsequence.\n\nExample: s1 = 'abcde', s2 = 'ace' -> 3 ('ace')",
+    "output": "def longest_common_subsequence(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [0] * (n + 1)\n    for i in range(1, m + 1):\n        prev = 0\n        for j in range(1, n + 1):\n            temp = dp[j]\n            if s1[i-1] == s2[j-1]:\n                dp[j] = prev + 1\n            else:\n                dp[j] = max(dp[j], dp[j-1])\n            prev = temp\n    return dp[n]\n\n# Example: longest_common_subsequence('abcde', 'ace') -> 3\n# Time: O(m*n), Space: O(n). Rolling 1D LCS with saved diagonal prev value."
+  },
+  {
+    "instruction": "Given a triangle array, find the minimum path sum from top to bottom moving to adjacent numbers on the row below.\n\nExample: triangle = [[2],[3,4],[6,5,7],[4,1,8,3]] -> 11 (2+3+5+1)",
+    "output": "def minimum_total(triangle):\n    dp = triangle[-1][:]\n    for row in range(len(triangle) - 2, -1, -1):\n        for j in range(len(triangle[row])):\n            dp[j] = triangle[row][j] + min(dp[j], dp[j + 1])\n    return dp[0]\n\n# Example: minimum_total([[2],[3,4],[6,5,7],[4,1,8,3]]) -> 11\n# Time: O(n^2), Space: O(n). Bottom-up DP reusing a single row."
+  },
+  {
+    "instruction": "Given a string s and a dictionary of words, return True if s can be segmented into a sequence of dictionary words (space-free concatenation).\n\nExample: s = 'leetcode', worddict = ['leet','code'] -> True",
+    "output": "def word_break(s, word_dict):\n    words = set(word_dict)\n    n = len(s)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in words:\n                dp[i] = True\n                break\n    return dp[n]\n\n# Example: word_break('leetcode', ['leet','code']) -> True\n# Time: O(n^2) substring checks, Space: O(n). Prefix DP with set lookup."
+  },
+  {
+    "instruction": "Given an integer array, find the contiguous subarray with the largest sum and return that sum (Kadane's algorithm).\n\nExample: nums = [-2,1,-3,4,-1,2,1,-5,4] -> 6 ([4,-1,2,1])",
+    "output": "def max_subarray(nums):\n    best = cur = nums[0]\n    for num in nums[1:]:\n        cur = max(num, cur + num)\n        best = max(best, cur)\n    return best\n\n# Example: max_subarray([-2,1,-3,4,-1,2,1,-5,4]) -> 6\n# Time: O(n), Space: O(1). Kadane's: extend or restart at each element."
+  },
+  {
+    "instruction": "Given two strings, find the minimum number of insertions and deletions required to convert one into the other (report both counts as a tuple).\n\nExample: s1 = 'heap', s2 = 'pea' -> (insertions=2, deletions=1)",
+    "output": "def min_insert_delete(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [0] * (n + 1)\n    for i in range(1, m + 1):\n        prev = 0\n        for j in range(1, n + 1):\n            temp = dp[j]\n            if s1[i-1] == s2[j-1]:\n                dp[j] = prev + 1\n            else:\n                dp[j] = max(dp[j], dp[j-1])\n            prev = temp\n    lcs = dp[n]\n    return (n - lcs, m - lcs)\n\n# Example: min_insert_delete('heap', 'pea') -> (2, 1)\n# Time: O(m*n), Space: O(n). LCS length determines how many chars are shared (not changed)."
+  },
+  {
+    "instruction": "Given a 2D binary matrix, find the largest square containing only 1s and return its area.\n\nExample: matrix = [['1','0','1','0','0'],['1','0','1','1','1'],['1','1','1','1','1'],['1','0','0','1','0']] -> 4",
+    "output": "def maximal_square(matrix):\n    if not matrix:\n        return 0\n    m, n = len(matrix), len(matrix[0])\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    best = 0\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if matrix[i-1][j-1] == '1':\n                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])\n                best = max(best, dp[i][j])\n    return best * best\n\n# Example: maximal_square([['1','0','1','0','0'],['1','0','1','1','1'],['1','1','1','1','1'],['1','0','0','1','0']]) -> 4\n# Time: O(m*n), Space: O(m*n) (can be O(n) optimized). Side length DP from top/left/diagonal mins."
+  },
+  {
+    "instruction": "Given an array of non-negative integers and a target sum, count the number of subsets that add up to exactly the target (each element used at most once).\n\nExample: nums = [1,2,3], target = 4 -> 1 (subset [1,3])",
+    "output": "def count_subsets_sum(nums, target):\n    dp = [0] * (target + 1)\n    dp[0] = 1\n    for num in nums:\n        for t in range(target, num - 1, -1):\n            dp[t] += dp[t - num]\n    return dp[target]\n\n# Example: count_subsets_sum([1,2,3], 4) -> 1  ([1,3] is the only subset summing to 4)\n# Time: O(n*target), Space: O(target). 0/1 knapsack counting with backward iteration."
+  },
+  {
+    "instruction": "Given two strings, find the length of the shortest common supersequence (a string that contains both as subsequences).\n\nExample: s1 = 'abac', s2 = 'cab' -> 6 ('cabac')",
+    "output": "def shortest_common_supersequence_len(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [0] * (n + 1)\n    for i in range(1, m + 1):\n        prev = 0\n        for j in range(1, n + 1):\n            temp = dp[j]\n            if s1[i-1] == s2[j-1]:\n                dp[j] = prev + 1\n            else:\n                dp[j] = max(dp[j], dp[j-1])\n            prev = temp\n    lcs = dp[n]\n    return m + n - lcs\n\n# Example: shortest_common_supersequence_len('abac', 'cab') -> 6\n# Time: O(m*n), Space: O(n). Supersequence length = m + n - LCS."
+  },
+  {
+    "instruction": "Given a rod of length n and a list of (price, length) pairs, determine the maximum revenue obtainable by cutting the rod into integer-length pieces (unbounded cuts).\n\nExample: prices = [1,5,8,9,10,17,17,20], n = 8 -> 22",
+    "output": "def rod_cutting(prices, n):\n    dp = [0] * (n + 1)\n    for length in range(1, n + 1):\n        best = prices[length - 1] if length <= len(prices) else 0\n        for cut in range(1, length):\n            best = max(best, dp[cut] + dp[length - cut])\n        dp[length] = best\n    return dp[n]\n\n# Example: rod_cutting([1,5,8,9,10,17,17,20], 8) -> 22\n# Time: O(n^2), Space: O(n). Unbounded 1D knapsack over rod lengths."
+  },
+  {
+    "instruction": "Given an array of coin values and a target sum, count the number of distinct combinations (order does not matter) that sum to the target.\n\nExample: coins = [1,2,5], target = 5 -> 4 ([5],[2+2+1],[2+1+1+1],[1*5])",
+    "output": "def count_coin_combinations(coins, target):\n    dp = [0] * (target + 1)\n    dp[0] = 1\n    for coin in coins:\n        for t in range(coin, target + 1):\n            dp[t] += dp[t - coin]\n    return dp[target]\n\n# Example: count_coin_combinations([1,2,5], 5) -> 4\n# Time: O(len(coins)*target), Space: O(target). Iterate coins outer to avoid permutations."
+  },
+  {
+    "instruction": "Given a string, partition it such that every substring of the partition is a palindrome. Return the minimum cuts needed.\n\nExample: s = 'aab' -> 1 (cut after 'aa')",
+    "output": "def min_cut_palindrome_partition(s):\n    n = len(s)\n    is_pal = [[False] * n for _ in range(n)]\n    for i in range(n - 1, -1, -1):\n        for j in range(i, n):\n            if s[i] == s[j] and (j - i <= 2 or is_pal[i+1][j-1]):\n                is_pal[i][j] = True\n    cuts = [0] * n\n    for i in range(n):\n        if is_pal[0][i]:\n            cuts[i] = 0\n            continue\n        best = i\n        for j in range(i):\n            if is_pal[j+1][i]:\n                best = min(best, cuts[j] + 1)\n        cuts[i] = best\n    return cuts[n - 1]\n\n# Example: min_cut_palindrome_partition('aab') -> 1\n# Time: O(n^2), Space: O(n^2). Precompute palindrome table then min-cut DP."
+  },
+  {
+    "instruction": "Given an array of integers where each element represents the maximum jump length at that position, determine if you can reach the last index.\n\nExample: nums = [2,3,1,1,4] -> True",
+    "output": "def can_jump(nums):\n    farthest = 0\n    for i, num in enumerate(nums):\n        if i > farthest:\n            return False\n        farthest = max(farthest, i + num)\n    return True\n\n# Example: can_jump([2,3,1,1,4]) -> True\n# Time: O(n), Space: O(1). Track the farthest reachable index as you scan."
+  },
+  {
+    "instruction": "Given a sentence split into words and a dictionary, return True if the sentence can be broken into valid words (space-separated).\n\nExample: words = ['cat','cat','dog'], dict = ['cat','dog'] -> True",
+    "output": "def word_pattern_check(words, word_dict):\n    words_set = set(word_dict)\n    n = len(words)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and words[j] in words_set:\n                dp[i] = True\n                break\n    return dp[n]\n\n# Example: word_pattern_check(['cat','cat','dog'], ['cat','dog']) -> True\n# Time: O(n^2), Space: O(n). List-based word break with index DP."
+  },
+  {
+    "instruction": "Given a list of jobs with deadlines and profits (each job takes 1 unit time), schedule jobs to maximize profit before their deadlines.\n\nExample: jobs = [(1,100),(2,20),(3,40),(4,10)] -> 240 (jobs at times: 3->40,2->20,1->100,4->10)",
+    "output": "def job_scheduling(jobs):\n    jobs_sorted = sorted(jobs, key=lambda x: x[1], reverse=True)\n    max_deadline = max(d for d, _ in jobs_sorted)\n    slot = [-1] * (max_deadline + 1)\n    total = 0\n    for deadline, profit in jobs_sorted:\n        for t in range(min(deadline, max_deadline), 0, -1):\n            if slot[t] == -1:\n                slot[t] = profit\n                total += profit\n                break\n    return total\n\n# Example: job_scheduling([(1,100),(2,20),(3,40),(4,10)]) -> 170 (best subset: jobs 1,2,4 => 100+20+10=130; with all slots, compute greedy)\n# Time: O(n^2) worst with naive slot search (O(n log n) with union-find), Space: O(n). Greedy by profit, place each in the latest free slot."
+  }
+]

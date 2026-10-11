@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this Prometheus exposition line into JSON with metric, labels, value and timestamp_ms:\nhttp_requests_total{job=\"api\", code=\"200\"} 1027 1697129107000",
+    "output": "{\"metric\": \"http_requests_total\", \"labels\": {\"job\": \"api\", \"code\": \"200\"}, \"value\": 1027, \"timestamp_ms\": 1697129107000}"
+  },
+  {
+    "instruction": "Parse this exposition block and return JSON with name, help, type and value:\n# HELP http_requests_total Total number of HTTP requests.\n# TYPE http_requests_total counter\nhttp_requests_total{job=\"api\"} 42",
+    "output": "{\"name\": \"http_requests_total\", \"help\": \"Total number of HTTP requests.\", \"type\": \"counter\", \"value\": 42}"
+  },
+  {
+    "instruction": "Parse this StatsD gauge line into JSON with name, value and type:\ngoroutines:123|g",
+    "output": "{\"name\": \"goroutines\", \"value\": 123, \"type\": \"gauge\"}"
+  },
+  {
+    "instruction": "Parse this StatsD timing line with tags into JSON:\nrequest.duration:45.2|ms|#env:prod,region:eu",
+    "output": "{\"name\": \"request.duration\", \"value\": 45.2, \"type\": \"timing\", \"tags\": {\"env\": \"prod\", \"region\": \"eu\"}}"
+  },
+  {
+    "instruction": "Parse this Graphite plaintext line into JSON with path, value and timestamp:\nservers.web01.cpu.load 0.42 1697129107",
+    "output": "{\"path\": \"servers.web01.cpu.load\", \"value\": 0.42, \"timestamp\": 1697129107}"
+  },
+  {
+    "instruction": "Parse this InfluxDB line protocol line into JSON with measurement, tags, fields and timestamp_ns:\ncpu,host=web01,region=us-east usage_user=64.2,usage_system=12.1 1697129107000000000",
+    "output": "{\"measurement\": \"cpu\", \"tags\": {\"host\": \"web01\", \"region\": \"us-east\"}, \"fields\": {\"usage_user\": 64.2, \"usage_system\": 12.1}, \"timestamp_ns\": 1697129107000000000}"
+  },
+  {
+    "instruction": "Parse this Datadog dogstatsd line into JSON with name, value, type and tags:\napp.requests:100|c|#service:api,env:prod",
+    "output": "{\"name\": \"app.requests\", \"value\": 100, \"type\": \"count\", \"tags\": {\"service\": \"api\", \"env\": \"prod\"}}"
+  },
+  {
+    "instruction": "Extract the metric names from these four exposition lines as a JSON array:\nprocess_cpu_seconds_total 123.45\nprocess_resident_memory_bytes 8912345\nhttp_requests_total{job=\"api\"} 42\nup{job=\"api\"} 1",
+    "output": "[\"process_cpu_seconds_total\", \"process_resident_memory_bytes\", \"http_requests_total\", \"up\"]"
+  },
+  {
+    "instruction": "From these two TYPE lines, return a JSON object mapping each metric name to its type:\n# TYPE http_requests_total counter\n# TYPE temperature_celsius gauge",
+    "output": "{\"http_requests_total\": \"counter\", \"temperature_celsius\": \"gauge\"}"
+  },
+  {
+    "instruction": "This exposition line escapes a comma inside a label value. Parse it and unescape the label as JSON:\nlog_messages{message=\"hello\\, world\"} 3",
+    "output": "{\"metric\": \"log_messages\", \"labels\": {\"message\": \"hello, world\"}, \"value\": 3}"
+  },
+  {
+    "instruction": "Write a Python function that parses one Prometheus exposition sample line into a dict with metric, labels and value",
+    "output": "import re\n\nPATTERN = re.compile(r\"^(?P<metric>[a-zA-Z_:][a-zA-Z0-9_:]*)(?P<labels>{[^}]*})? (?P<value>[^ ]+)(?: (?P<ts>\\d+))?$\")\nLABEL = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)=\"((?:[^\"\\\\]|\\\\.)*)\"')\n\ndef parse_sample(line):\n    m = PATTERN.match(line.strip())\n    if not m:\n        return None\n    labels = {}\n    if m.group(\"labels\"):\n        for key, val in LABEL.findall(m.group(\"labels\")):\n            labels[key] = val.replace(chr(92) + '\"', '\"').replace(chr(92) + chr(92), chr(92))\n    return {\"metric\": m.group(\"metric\"), \"labels\": labels, \"value\": float(m.group(\"value\"))}"
+  },
+  {
+    "instruction": "Parse this StatsD counter line with a sample rate and return the effective count as JSON:\nrequests:10|c|@0.1",
+    "output": "{\"name\": \"requests\", \"value\": 10, \"sample_rate\": 0.1, \"effective_count\": 100}"
+  },
+  {
+    "instruction": "Parse this StatsD histogram line into JSON with name, value and type:\nlatency:0.032|h",
+    "output": "{\"name\": \"latency\", \"value\": 0.032, \"type\": \"histogram\"}"
+  },
+  {
+    "instruction": "This exposition sample has no timestamp. Parse it and return timestamp as null in JSON:\nprocess_cpu_seconds_total 123.45",
+    "output": "{\"metric\": \"process_cpu_seconds_total\", \"labels\": {}, \"value\": 123.45, \"timestamp\": null}"
+  },
+  {
+    "instruction": "Count the sample lines in this exposition block (ignore HELP, TYPE and EOF) and return JSON:\n# HELP up Up status\n# TYPE up gauge\nup{job=\"api\"} 1\nup{job=\"db\"} 1\nprocess_cpu_seconds_total 5.5\n# EOF",
+    "output": "{\"samples\": 3, \"meta_lines\": 3}"
+  },
+  {
+    "instruction": "Parse this up metric line and return instance, value and timestamp_ms as JSON:\nup{job=\"api\", instance=\"10.0.0.5:9100\"} 1 1697129107000",
+    "output": "{\"instance\": \"10.0.0.5:9100\", \"job\": \"api\", \"value\": 1, \"timestamp_ms\": 1697129107000}"
+  },
+  {
+    "instruction": "Parse this Datadog distribution line into JSON:\napp.latency:23.4|d|#env:prod,service:checkout",
+    "output": "{\"name\": \"app.latency\", \"value\": 23.4, \"type\": \"distribution\", \"tags\": {\"env\": \"prod\", \"service\": \"checkout\"}}"
+  },
+  {
+    "instruction": "Parse these two histogram bucket lines and return them as a JSON array of objects with le and value:\nhttp_request_duration_seconds_bucket{le=\"0.1\"} 120\nhttp_request_duration_seconds_bucket{le=\"0.5\"} 340",
+    "output": "[{\"le\": \"0.1\", \"value\": 120}, {\"le\": \"0.5\", \"value\": 340}]"
+  },
+  {
+    "instruction": "Parse this Graphite line and compute the free ratio for these two filesystem samples as JSON:\nnodes.web01.fs.root.free 512 1697129107\nnodes.web01.fs.root.total 1024 1697129107",
+    "output": "{\"free\": 512, \"total\": 1024, \"free_ratio\": 0.5}"
+  },
+  {
+    "instruction": "Convert this Graphite path into a JSON object with host, metric and interval extracted:\nweb.requests.60.count 25 1697129107",
+    "output": "{\"host\": \"web\", \"metric\": \"requests\", \"interval\": \"60\", \"aggregation\": \"count\", \"value\": 25, \"timestamp\": 1697129107}"
+  }
+]

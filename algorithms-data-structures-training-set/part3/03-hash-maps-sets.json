@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Given an array of integers and a target, return indices of the two numbers that add up to the target. You may assume exactly one solution exists.\n\nExample: nums = [2,7,11,15], target = 9 -> [0,1]",
+    "output": "def two_sum(nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n\n# Example: two_sum([2,7,11,15], 9) -> [0, 1]\n# Time: O(n), Space: O(n). One pass hash map from value to index."
+  },
+  {
+    "instruction": "Given two integer arrays, return an array of their intersection, counting each element as many times as it appears in both.\n\nExample: nums1 = [1,2,2,1], nums2 = [2,2] -> [2,2]",
+    "output": "from collections import Counter\n\ndef intersect(nums1, nums2):\n    count = Counter(nums1)\n    result = []\n    for num in nums2:\n        if count[num] > 0:\n            result.append(num)\n            count[num] -= 1\n    return result\n\n# Example: intersect([1,2,2,1],[2,2]) -> [2,2]\n# Time: O(m+n), Space: O(min(m,n)). Hash the smaller array, probe with the larger."
+  },
+  {
+    "instruction": "Given an array of strings, group all anagrams together. Return a list of groups (any order).\n\nExample: strs = ['eat','tea','tan','ate','nat','bat'] -> [['eat','tea','ate'],['tan','nat'],['bat']]",
+    "output": "def group_anagrams(strs):\n    groups = {}\n    for s in strs:\n        key = tuple(sorted(s))\n        groups.setdefault(key, []).append(s)\n    return list(groups.values())\n\n# Example: group_anagrams(['eat','tea','tan','ate','nat','bat']) -> [['eat','tea','ate'],['tan','nat'],['bat']]\n# Time: O(n * k log k), Space: O(n*k). Sorted string as the group key."
+  },
+  {
+    "instruction": "Given an array of integers, return True if any value appears at least twice, and False if every element is distinct.\n\nExample: nums = [1,2,3,1] -> True",
+    "output": "def contains_duplicate(nums):\n    seen = set()\n    for num in nums:\n        if num in seen:\n            return True\n        seen.add(num)\n    return False\n\n# Example: contains_duplicate([1,2,3,1]) -> True\n# Time: O(n), Space: O(n). Set membership check in a single pass."
+  },
+  {
+    "instruction": "Given a string s, find the first character that does not repeat and return it, or None if all characters repeat.\n\nExample: s = 'swiss' -> 'w'",
+    "output": "def first_unique_char(s):\n    count = {}\n    for ch in s:\n        count[ch] = count.get(ch, 0) + 1\n    for ch in s:\n        if count[ch] == 1:\n            return ch\n    return None\n\n# Example: first_unique_char('swiss') -> 'w'\n# Time: O(n), Space: O(k). Frequency map then scan for count 1."
+  },
+  {
+    "instruction": "Given a non-empty array of integers where every element appears three times except one that appears once, find that element. Run in linear time and constant space.\n\nExample: nums = [0,1,0,1,0,1,99] -> 99",
+    "output": "def single_number_iii(nums):\n    ones = twos = 0\n    for num in nums:\n        twos |= ones & num\n        ones ^= num\n        threes = ones & twos\n        ones &= ~threes\n        twos &= ~threes\n    return ones\n\n# Example: single_number_iii([0,1,0,1,0,1,99]) -> 99\n# Time: O(n), Space: O(1). Bitwise state machine tracking bit counts mod 3."
+  },
+  {
+    "instruction": "Design a simple set data structure supporting add, remove, and contains with O(1) average time, using a hash map internally.\n\nImplement class MySet with methods add(key), remove(key), contains(key).",
+    "output": "class MySet:\n    def __init__(self):\n        self.map = {}\n    def add(self, key):\n        self.map[key] = True\n    def remove(self, key):\n        self.map.pop(key, None)\n    def contains(self, key):\n        return key in self.map\n\n# Example: s = MySet(); s.add(1); s.contains(1) -> True; s.remove(1); s.contains(1) -> False\n# Time: O(1) average per operation, Space: O(n). Backed by a dict."
+  },
+  {
+    "instruction": "Given an array of meeting time intervals, determine if a person could attend all meetings. Each interval is [start, end).\n\nExample: intervals = [[0,30],[5,10],[15,20]] -> False",
+    "output": "def can_attend_meetings(intervals):\n    starts = sorted(i[0] for i in intervals)\n    ends = sorted(i[1] for i in intervals)\n    for s, e in zip(starts, ends):\n        if s < e:\n            return False\n    return True\n\n# Example: can_attend_meetings([[0,30],[5,10],[15,20]]) -> False\n# Time: O(n log n), Space: O(n). Compare sorted start/end sequences."
+  },
+  {
+    "instruction": "Given a string of opening and closing brackets, return the maximum nesting depth achieved at any point.\n\nExample: s = '(1+(2*3)+((8)/4))+1' -> 3",
+    "output": "def max_depth_brackets(s):\n    depth = 0\n    best = 0\n    for ch in s:\n        if ch == '(':\n            depth += 1\n            best = max(best, depth)\n        elif ch == ')':\n            depth -= 1\n    return best\n\n# Example: max_depth_brackets('(1+(2*3)+((8)/4))+1') -> 3\n# Time: O(n), Space: O(1). Count open/close nesting with a running depth."
+  },
+  {
+    "instruction": "Given an array of integers, return the length of the longest consecutive elements sequence. Must run in O(n).\n\nExample: nums = [100,4,200,1,3,2] -> 4 (1,2,3,4)",
+    "output": "def longest_consecutive(nums):\n    num_set = set(nums)\n    best = 0\n    for num in num_set:\n        if num - 1 not in num_set:\n            current = num\n            length = 1\n            while current + 1 in num_set:\n                current += 1\n                length += 1\n            best = max(best, length)\n    return best\n\n# Example: longest_consecutive([100,4,200,1,3,2]) -> 4\n# Time: O(n), Space: O(n). Only expand from sequence starts (num-1 absent)."
+  },
+  {
+    "instruction": "Given an array of integers and an integer k, return True if there are two distinct indices i and j such that |nums[i] - nums[j]| <= k.\n\nExample: nums = [1,2,3,1], k = 3 -> True",
+    "output": "def contains_nearby_almost_duplicate(nums, k):\n    window = set()\n    for i, num in enumerate(nums):\n        window.add(num)\n        if len(window) > k:\n            window.remove(nums[i - k])\n        for w in window:\n            if abs(num - w) <= 1:\n                return True\n    return False\n\n# Example: contains_nearby_almost_duplicate([1,2,3,1], 3) -> True\n# Time: O(n*k) worst with a plain set; with a sorted structure O(n log k), Space: O(k). Sliding window of size k."
+  },
+  {
+    "instruction": "Given two strings, return True if they are isomorphic (characters in s can be replaced to get t preserving structure).\n\nExample: s = 'egg', t = 'add' -> True",
+    "output": "def is_isomorphic(s, t):\n    if len(s) != len(t):\n        return False\n    s_map, t_map = {}, {}\n    for sc, tc in zip(s, t):\n        if s_map.get(sc, tc) != tc:\n            return False\n        if t_map.get(tc, sc) != sc:\n            return False\n        s_map[sc] = tc\n        t_map[tc] = sc\n    return True\n\n# Example: is_isomorphic('egg', 'add') -> True\n# Time: O(n), Space: O(k). Two-way character mapping."
+  },
+  {
+    "instruction": "Given a string s and an integer k, return the k most frequent elements (or characters) in the string, ordered by frequency descending (ties broken alphabetically).\n\nExample: s = 'aaabbbcccdd', k = 2 -> ['b','c'] (order by count; implement generally)",
+    "output": "from collections import Counter\n\ndef top_k_frequent_chars(s, k):\n    count = Counter(s)\n    items = sorted(count.items(), key=lambda x: (-x[1], x[0]))\n    return [ch for ch, _ in items[:k]]\n\n# Example: top_k_frequent_chars('aaabbbcccdd', 2) -> ['b','c']\n# Time: O(n + k log k), Space: O(k). Count then sort by (-freq, char)."
+  },
+  {
+    "instruction": "Given a list of strings, return the longest common prefix shared by all strings, or '' if none.\n\nExample: strs = ['flower','flow','flight'] -> 'f'",
+    "output": "def longest_common_prefix(strs):\n    if not strs:\n        return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ''\n    return prefix\n\n# Example: longest_common_prefix(['flower','flow','flight']) -> 'f'\n# Time: O(S) total characters, Space: O(1). Shrink a candidate prefix against each string."
+  },
+  {
+    "instruction": "Given a string s, return True if it can be rearranged into a palindrome (at most one odd-frequency character).\n\nExample: s = 'carrace' -> True ('racecar')",
+    "output": "def can_form_palindrome(s):\n    odd = set()\n    for ch in s:\n        if ch in odd:\n            odd.remove(ch)\n        else:\n            odd.add(ch)\n    return len(odd) <= 1\n\n# Example: can_form_palindrome('carrace') -> True\n# Time: O(n), Space: O(k). Toggle membership in an odd-char set."
+  },
+  {
+    "instruction": "Given an integer array, find all unique quadruplets that sum to zero (return lists of four numbers, no duplicate quadruplets).\n\nExample: nums = [1,0,-1,0,-2,2] -> [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]",
+    "output": "def four_sum(nums, target=0):\n    nums.sort()\n    n = len(nums)\n    result = []\n    for i in range(n - 3):\n        if i > 0 and nums[i] == nums[i-1]:\n            continue\n        for j in range(i + 1, n - 2):\n            if j > i + 1 and nums[j] == nums[j-1]:\n                continue\n            left, right = j + 1, n - 1\n            while left < right:\n                s = nums[i] + nums[j] + nums[left] + nums[right]\n                if s == target:\n                    result.append([nums[i], nums[j], nums[left], nums[right]])\n                    left += 1\n                    right -= 1\n                    while left < right and nums[left] == nums[left-1]:\n                        left += 1\n                    while left < right and nums[right] == nums[right+1]:\n                        right -= 1\n                elif s < target:\n                    left += 1\n                else:\n                    right -= 1\n    return result\n\n# Example: four_sum([1,0,-1,0,-2,2]) -> [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]\n# Time: O(n^3), Space: O(1) extra. Sort + nested loops + two pointers."
+  },
+  {
+    "instruction": "Given two lists of integers, report elements present in both but with differing multiplicities, plus elements unique to either list.\n\nExample: a=[1,2,2,3], b=[2,3,4] -> in both with equal count: [3]; in both with different count: [2]; only in a: [1]; only in b: [4]",
+    "output": "from collections import Counter\n\ndef compare_bags(a, b):\n    ca, cb = Counter(a), Counter(b)\n    equal = [x for x in ca if ca[x] == cb.get(x)]\n    differ = [x for x in ca if x in cb and ca[x] != cb[x]]\n    only_a = [x for x in ca if x not in cb]\n    only_b = [x for x in cb if x not in ca]\n    return {'equal': equal, 'differ': differ, 'only_a': only_a, 'only_b': only_b}\n\n# Example: compare_bags([1,2,2,3],[2,3,4]) -> {'equal':[3],'differ':[2],'only_a':[1],'only_b':[4]}\n# Time: O(m+n), Space: O(m+n). Counter diff analysis."
+  },
+  {
+    "instruction": "Given an array of strings and a pattern with '?' (any single char) and '*' (any sequence), determine which strings match the pattern. Return the matching strings.\n\nExample: pattern = 'a*b', strings = ['ab','abc','acb',''] -> ['ab','acb'] (wildcards)",
+    "output": "def wildcard_match(pattern, word):\n    m, n = len(pattern), len(word)\n    dp = [[False] * (n + 1) for _ in range(m + 1)]\n    dp[0][0] = True\n    for i in range(1, m + 1):\n        if pattern[i-1] == '*':\n            dp[i][0] = dp[i-1][0]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if pattern[i-1] == '*':\n                dp[i][j] = dp[i-1][j] or dp[i][j-1]\n            elif pattern[i-1] == '?' or pattern[i-1] == word[j-1]:\n                dp[i][j] = dp[i-1][j-1]\n    return dp[m][n]\n\ndef filter_wildcards(pattern, words):\n    return [w for w in words if wildcard_match(pattern, w)]\n\n# Example: filter_wildcards('a*b', ['ab','abc','acb','']) -> ['ab', 'acb']\n# Time: O(P*L) per word, Space: O(P*L). DP wildcard matcher."
+  },
+  {
+    "instruction": "Given an array of integers and a sliding window of size k moving from left to right, return the maximum value in each window position.\n\nExample: nums = [1,3,-1,-3,5,3,6,7], k = 3 -> [3,3,5,5,6,7]",
+    "output": "from collections import deque\n\ndef max_sliding_window(nums, k):\n    dq = deque()\n    result = []\n    for i, num in enumerate(nums):\n        while dq and nums[dq[-1]] < num:\n            dq.pop()\n        dq.append(i)\n        if dq[0] <= i - k:\n            dq.popleft()\n        if i >= k - 1:\n            result.append(nums[dq[0]])\n    return result\n\n# Example: max_sliding_window([1,3,-1,-3,5,3,6,7], 3) -> [3,3,5,5,6,7]\n# Time: O(n), Space: O(k). Monotonic deque stores candidate maxima indices."
+  },
+  {
+    "instruction": "Given a sentence, return the word that appears the most times. In case of a tie, return the one that appears first.\n\nExample: sentence = 'the cat and the hat and the mat' -> 'the'",
+    "output": "def most_common_word(sentence):\n    words = sentence.lower().split()\n    count = {}\n    order = []\n    for w in words:\n        if w not in count:\n            count[w] = 0\n            order.append(w)\n        count[w] += 1\n    best = order[0]\n    for w in order:\n        if count[w] > count[best]:\n            best = w\n    return best\n\n# Example: most_common_word('the cat and the hat and the mat') -> 'the'\n# Time: O(n), Space: O(k). Preserve first-seen order for stable tie-breaking."
+  }
+]

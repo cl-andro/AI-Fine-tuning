@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Predict and write the console output order of this JavaScript code, then give the code with numbered outputs: console.log(\"A\"); setTimeout(() => console.log(\"B\"), 0); Promise.resolve().then(() => console.log(\"C\")); console.log(\"D\");",
+    "output": "// Output: A, D, C, B\nconsole.log(\"A\");\nsetTimeout(() => console.log(\"B\"), 0);\nPromise.resolve().then(() => console.log(\"C\"));\nconsole.log(\"D\");\n// 1: \"A\" (sync)\n// 2: \"D\" (sync)\n// 3: \"C\" (microtask)\n// 4: \"B\" (macrotask)"
+  },
+  {
+    "instruction": "Write JavaScript code using setInterval that increments a counter every second and clears the interval once it reaches 5.",
+    "output": "let count = 0;\nconst timer = setInterval(() => {\n  count++;\n  console.log(count);\n  if (count >= 5) clearInterval(timer);\n}, 1000);"
+  },
+  {
+    "instruction": "Write JavaScript code that replaces setInterval with a self-rescheduling setTimeout so a slow task never overlaps itself.",
+    "output": "function schedule(task, delay) {\n  let stopped = false;\n  function tick() {\n    if (stopped) return;\n    task();\n    setTimeout(tick, delay);\n  }\n  setTimeout(tick, delay);\n  return () => {\n    stopped = true;\n  };\n}\n\nconst stop = schedule(() => console.log(\"tick\"), 1000);"
+  },
+  {
+    "instruction": "Explain and write JavaScript code showing microtask versus macrotask ordering: log inside setTimeout, queueMicrotask, and Promise.then, in expected order.",
+    "output": "console.log(\"script start\");\nsetTimeout(() => console.log(\"timeout\"), 0);\nqueueMicrotask(() => console.log(\"microtask queueMicrotask\"));\nPromise.resolve().then(() => console.log(\"microtask promise\"));\nconsole.log(\"script end\");\n// Order: script start, script end, microtask queueMicrotask,\n// microtask promise, timeout"
+  },
+  {
+    "instruction": "Write JavaScript code that sets a timeout with an id, cancels it before it fires, and demonstrates clearTimeout with a flag.",
+    "output": "let fired = false;\nconst id = setTimeout(() => {\n  fired = true;\n  console.log(\"should not print\");\n}, 100);\nclearTimeout(id);\nsetTimeout(() => console.log(\"cancelled, fired =\", fired), 200);"
+  },
+  {
+    "instruction": "Write JavaScript code that demonstrates setTimeout(..., 0) still runs after the current synchronous code and after all pending microtasks.",
+    "output": "setTimeout(() => console.log(\"timeout 0\"), 0);\nPromise.resolve().then(() => console.log(\"microtask\"));\nfor (let i = 0; i < 3; i++) console.log(\"sync\", i);\n// Output: sync 0, sync 1, sync 2, microtask, timeout 0"
+  },
+  {
+    "instruction": "Write JavaScript code that schedules a chain of nested setTimeouts printing 1, 2, 3 one second apart without using setInterval.",
+    "output": "function countdown(n) {\n  if (n <= 0) return;\n  setTimeout(() => {\n    console.log(n);\n    countdown(n - 1);\n  }, 1000);\n}\n\ncountdown(3);"
+  },
+  {
+    "instruction": "Write JavaScript code that uses queueMicrotask to run a callback after the current function completes but before timers.",
+    "output": "function main() {\n  queueMicrotask(() => console.log(\"after main\"));\n  console.log(\"inside main\");\n}\n\nmain();\nconsole.log(\"after call\");\n// Output: inside main, after call, after main"
+  },
+  {
+    "instruction": "Write Node.js code demonstrating process.nextTick versus Promise microtask ordering.",
+    "output": "Promise.resolve().then(() => console.log(\"promise\"));\nprocess.nextTick(() => console.log(\"nextTick\"));\nconsole.log(\"sync\");\n// Output: sync, nextTick, promise"
+  },
+  {
+    "instruction": "Write JavaScript code for a timer that tracks remaining time so it can be paused and resumed.",
+    "output": "function createTimer(durationMs, onTick) {\n  let remaining = durationMs;\n  let startedAt = null;\n  let timerId = null;\n\n  function start() {\n    startedAt = Date.now();\n    timerId = setTimeout(() => {\n      remaining = 0;\n      onTick(0);\n    }, remaining);\n  }\n\n  function pause() {\n    clearTimeout(timerId);\n    remaining -= Date.now() - startedAt;\n  }\n\n  return { start, pause };\n}"
+  },
+  {
+    "instruction": "Write JavaScript code that batches DOM-less updates with setTimeout(fn, 0) so 1000 rapid calls coalesce into a single flush.",
+    "output": "let pending = false;\nlet pendingValues = [];\n\nfunction scheduleFlush(value) {\n  pendingValues.push(value);\n  if (pending) return;\n  pending = true;\n  setTimeout(() => {\n    console.log(\"flushing\", pendingValues.length, \"values\");\n    pendingValues = [];\n    pending = false;\n  }, 0);\n}\n\nfor (let i = 0; i < 1000; i++) scheduleFlush(i);"
+  },
+  {
+    "instruction": "Write JavaScript code that measures how long a synchronous block takes using Date.now before/after and compares it with a setTimeout scheduling delay.",
+    "output": "const start = Date.now();\nlet sum = 0;\nfor (let i = 0; i < 1e7; i++) sum += i;\nconsole.log(\"sync work ms:\", Date.now() - start);\n\nsetTimeout(() => {\n  console.log(\"timer fired after ms:\", Date.now() - start);\n}, 0);"
+  },
+  {
+    "instruction": "Write JavaScript code that runs three setTimeouts with delays 300, 100, 200 and logs the actual completion order.",
+    "output": "const delays = [300, 100, 200];\ndelays.forEach((ms) => {\n  setTimeout(() => console.log(`done after ${ms}ms`), ms);\n});\n// Output order: 100ms, 200ms, 300ms"
+  },
+  {
+    "instruction": "Write JavaScript code showing that an uncaught error inside a setTimeout callback cannot be caught by a surrounding try/catch, and how to handle it inside the callback.",
+    "output": "try {\n  setTimeout(() => {\n    try {\n      throw new Error(\"inside timer\");\n    } catch (err) {\n      console.log(\"handled inside callback:\", err.message);\n    }\n  }, 0);\n} catch (err) {\n  // never reached for async throw\n  console.log(\"sync catch\", err.message);\n}"
+  },
+  {
+    "instruction": "Write JavaScript code that implements debounceTimed(fn, wait) using timers, so the trailing call fires only after wait ms of quiet.",
+    "output": "function debounceTimed(fn, wait) {\n  let timerId = null;\n  return function (...args) {\n    clearTimeout(timerId);\n    timerId = setTimeout(() => fn.apply(this, args), wait);\n  };\n}\n\nconst log = debounceTimed((v) => console.log(\"search\", v), 300);\nlog(\"a\");\nlog(\"ab\");\nlog(\"abc\"); // only \"search abc\" fires after 300ms"
+  },
+  {
+    "instruction": "Write Node.js code that uses setImmediate to run a callback after I/O events, contrasting it with setTimeout(fn, 0).",
+    "output": "setTimeout(() => console.log(\"timeout\"), 0);\nsetImmediate(() => console.log(\"immediate\"));\n// Order between these two can vary across runs because both are\n// macrotasks; setImmediate is guaranteed to run after the current\n// poll phase when called from the main module."
+  },
+  {
+    "instruction": "Write JavaScript code that creates an interval clock printing the current time every second, returning a stop function.",
+    "output": "function startClock() {\n  const id = setInterval(() => {\n    console.log(new Date().toISOString());\n  }, 1000);\n  return () => clearInterval(id);\n}\n\nconst stop = startClock();\nsetTimeout(stop, 5000);"
+  },
+  {
+    "instruction": "Write JavaScript code demonstrating that Promise.then callbacks always run before a queued setTimeout(fn, 0) callback.",
+    "output": "Promise.resolve().then(() => console.log(\"then 1\"));\nsetTimeout(() => console.log(\"timeout\"), 0);\nPromise.resolve().then(() => console.log(\"then 2\"));\n// Output: then 1, then 2, timeout"
+  },
+  {
+    "instruction": "Write JavaScript code that recursively schedules work with setTimeout and stops when a predicate becomes true.",
+    "output": "function pollUntil(condition, check, delay = 500) {\n  function tick() {\n    if (condition()) return console.log(\"done\");\n    setTimeout(tick, delay);\n  }\n  tick();\n}\n\nlet value = 0;\npollUntil(() => value > 3, () => value++, 200);\nconst bump = setInterval(() => value++, 100);\nsetTimeout(() => clearInterval(bump), 2000);"
+  },
+  {
+    "instruction": "Write JavaScript code that demonstrates starvation risk: a long synchronous loop blocks a scheduled timer from firing on time.",
+    "output": "const start = Date.now();\nsetTimeout(() => {\n  console.log(\"timer expected ~0ms, actual\", Date.now() - start, \"ms\");\n}, 0);\n\nlet sum = 0;\nfor (let i = 0; i < 3e8; i++) sum += i;\nconsole.log(\"blocked the loop for\", Date.now() - start, \"ms\");"
+  }
+]

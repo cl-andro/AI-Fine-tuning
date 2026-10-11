@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef list_posts(users):\n    out = []\n    for u in users:\n        posts = db.execute(f'SELECT * FROM posts WHERE author_id = {u.id}')\n        out.append((u, posts.fetchall()))\n    return out",
+    "output": "**Issue:** One query per user - the textbook N+1 problem.\n**Why:** 200 users means 201 round trips; each query re-plans and the DB never uses a batch plan, so latency scales linearly.\n**Fix:**\ndef list_posts(users):\n    ids = [u.id for u in users]\n    rows = db.execute(\n        'SELECT * FROM posts WHERE author_id = ANY(%s) ORDER BY author_id', (ids,)\n    ).fetchall()\n    by_author = {}\n    for r in rows:\n        by_author.setdefault(r.author_id, []).append(r)\n    return [(u, by_author.get(u.id, [])) for u in users]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef dashboard(users):\n    data = []\n    for u in users:\n        data.append({\n            'name': u.name,\n            'posts': Post.objects.filter(author=u).count(),\n            'comments': Comment.objects.filter(author=u).count(),\n        })\n    return data",
+    "output": "**Issue:** Two aggregate queries per user inside the ORM.\n**Why:** n users produce 2n queries plus the original fetch; the DB does 401 round trips for a 200-row page.\n**Fix:**\nfrom django.db.models import Count\n\ndef dashboard(users):\n    stats = dict(\n        User.objects.filter(id__in=[u.id for u in users])\n        .annotate(posts=Count('post'), comments=Count('comment'))\n        .values_list('id', 'posts', 'comments')\n    )\n    return [{'name': u.name, 'posts': stats[u.id][0], 'comments': stats[u.id][1]} for u in users]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef import_products(rows):\n    for row in rows:\n        db.execute('INSERT INTO products (sku, name) VALUES (%s, %s)', (row.sku, row.name))\n    db.commit()",
+    "output": "**Issue:** Row-by-row INSERT statements instead of a bulk insert.\n**Why:** 10k rows means 10k parse/plan/execute round trips; each statement takes a lock and redo entry, making the import 50-100x slower.\n**Fix:**\ndef import_products(rows):\n    with db.cursor() as cur:\n        execute_values(cur, 'INSERT INTO products (sku, name) VALUES %s',\n                       [(r.sku, r.name) for r in rows])\n    db.commit()\n# or: cur.executemany('INSERT INTO products (sku, name) VALUES (%s, %s)', tuples)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef apply_discount(rows, pct):\n    for r in rows:\n        db.execute('UPDATE items SET price = price * %s WHERE id = %s', (pct, r.id))\n    db.commit()",
+    "output": "**Issue:** One UPDATE statement per row.\n**Why:** Each statement is its own transaction round trip and row lock; updating 50k rows this way can run for minutes and bloat the WAL.\n**Fix:**\ndef apply_discount(ids, pct):\n    db.execute('UPDATE items SET price = price * %s WHERE id = ANY(%s)', (pct, ids))\n    db.commit()\n# or a single set-based statement:\n# UPDATE items SET price = price * %s WHERE category_id = %s"
+  },
+  {
+    "instruction": "Review this code:\n\ndef export_orders(orders):\n    result = []\n    for o in orders:\n        items = db.execute('SELECT * FROM order_items WHERE order_id = %s', (o.id,)).fetchall()\n        for it in items:\n            product = db.execute('SELECT name FROM products WHERE id = %s', (it.product_id,)).fetchone()\n            result.append((o.id, product[0], it.qty))\n    return result",
+    "output": "**Issue:** Queries nested two levels deep inside loops.\n**Why:** m orders with k items each generate 1 + m + m*k statements; the graph shape explodes the round trips.\n**Fix:**\ndef export_orders(orders):\n    ids = [o.id for o in orders]\n    rows = db.execute('''\n        SELECT oi.order_id, p.name, oi.qty\n        FROM order_items oi JOIN products p ON p.id = oi.product_id\n        WHERE oi.order_id = ANY(%s)\n    ''', (ids,)).fetchall()\n    return [tuple(r) for r in rows]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef top_reviewers(users):\n    out = []\n    for u in users:\n        n = db.execute('SELECT COUNT(*) FROM reviews WHERE user_id = %s', (u.id,)).fetchone()[0]\n        if n > 5:\n            out.append((u, n))\n    return out",
+    "output": "**Issue:** COUNT(*) issued separately for every user.\n**Why:** The database can compute all counts in one grouped pass; per-row counts force an index scan per statement.\n**Fix:**\ndef top_reviewers(users):\n    rows = db.execute('''\n        SELECT u.id, u.name, COUNT(r.id) AS n\n        FROM users u LEFT JOIN reviews r ON r.user_id = u.id\n        GROUP BY u.id, u.name HAVING COUNT(r.id) > 5\n    ''').fetchall()\n    return rows"
+  },
+  {
+    "instruction": "Review this code:\n\ndef active_emails(ids):\n    emails = []\n    for uid in ids:\n        exists = db.execute('SELECT 1 FROM logins WHERE user_id = %s AND last > %s', (uid, cutoff)).fetchone()\n        if exists:\n            emails.append(db.execute('SELECT email FROM users WHERE id = %s', (uid,)).fetchone()[0])\n    return emails",
+    "output": "**Issue:** An existence probe and a fetch for every id.\n**Why:** Two statements per id plus no set operation; a single JOIN with WHERE/EXISTS does it in one round trip.\n**Fix:**\ndef active_emails(ids):\n    rows = db.execute('''\n        SELECT u.email FROM users u\n        WHERE u.id = ANY(%s)\n          AND EXISTS (SELECT 1 FROM logins l WHERE l.user_id = u.id AND l.last > %s)\n    ''', (ids, cutoff)).fetchall()\n    return [r[0] for r in rows]"
+  },
+  {
+    "instruction": "Review this code:\n\norders = db.query(Order).all()\nfor o in orders:\n    print(o.customer.name, o.customer.city)",
+    "output": "**Issue:** Lazy-loading `customer` on every order row (classic ORM N+1).\n**Why:** Each attribute access fires a SELECT; 500 orders produce 500 extra queries even though customers repeat.\n**Fix:**\norders = db.query(Order).options(joinedload(Order.customer)).all()\n# or eager relationship config: customer = relationship('Customer', lazy='joined')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef scores(ids):\n    out = {}\n    for i in ids:\n        row = db.execute('SELECT score FROM results WHERE id = %s', (i,)).fetchone()\n        out[i] = row[0] if row else 0\n    return out",
+    "output": "**Issue:** A query per id instead of one set-based lookup.\n**Why:** 1000 ids = 1000 round trips where a single `WHERE id = ANY(%s)` returns everything at once.\n**Fix:**\ndef scores(ids):\n    rows = db.execute('SELECT id, score FROM results WHERE id = ANY(%s)', (ids,)).fetchall()\n    found = dict(rows)\n    return {i: found.get(i, 0) for i in ids}"
+  },
+  {
+    "instruction": "Review this code:\n\ndef user_rows():\n    users = db.execute('SELECT id, name, role_id FROM users').fetchall()\n    out = []\n    for u in users:\n        role = db.execute('SELECT title FROM roles WHERE id = %s', (u.role_id,)).fetchone()\n        out.append({'name': u.name, 'role': role[0]})\n    return out",
+    "output": "**Issue:** Roles re-fetched for each user even though role_id repeats.\n**Why:** The same handful of roles is queried thousands of times; a JOIN eliminates the loop entirely.\n**Fix:**\ndef user_rows():\n    rows = db.execute('''\n        SELECT u.name, r.title\n        FROM users u JOIN roles r ON r.id = u.role_id\n    ''').fetchall()\n    return [{'name': n, 'role': t} for n, t in rows]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef monthly_totals(orders):\n    buckets = {}\n    for o in orders:\n        key = o.placed_at.strftime('%Y-%m')\n        buckets.setdefault(key, []).append(o.amount)\n    return {k: sum(v) for k, v in buckets.items()}",
+    "output": "**Issue:** Aggregation done in Python over the full result set.\n**Why:** Every row crosses the network only to be summed in the app; GROUP BY lets the DB return ~12 rows instead of 1M.\n**Fix:**\ndef monthly_totals():\n    rows = db.execute('''\n        SELECT to_char(placed_at, 'YYYY-MM') AS month, SUM(amount)\n        FROM orders GROUP BY 1 ORDER BY 1\n    ''').fetchall()\n    return dict(rows)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef comment_tree(post_id):\n    roots = db.execute('SELECT * FROM comments WHERE post_id = %s AND parent IS NULL', (post_id,)).fetchall()\n    for r in roots:\n        r.replies = db.execute('SELECT * FROM comments WHERE parent = %s', (r.id,)).fetchall()\n        for rep in r.replies:\n            rep.replies = db.execute('SELECT * FROM comments WHERE parent = %s', (rep.id,)).fetchall()\n    return roots",
+    "output": "**Issue:** Recursive per-node queries for the reply tree.\n**Why:** The depth is unknown, so a busy thread can issue hundreds of statements; this is the N+1 in tree form.\n**Fix:**\ndef comment_tree(post_id):\n    rows = db.execute('SELECT * FROM comments WHERE post_id = %s ORDER BY created_at', (post_id,)).fetchall()\n    by_parent = {}\n    for r in rows:\n        by_parent.setdefault(r.parent, []).append(r)\n    def attach(node):\n        node.replies = [attach(c) for c in by_parent.get(node.id, [])]\n        return node\n    return [attach(r) for r in by_parent.get(None, [])]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef save_all(items):\n    for it in items:\n        db.execute('INSERT INTO items (name) VALUES (%s)', (it.name,))\n        db.commit()",
+    "output": "**Issue:** A commit after every single insert.\n**Why:** Each commit forces an fsync; per-row commits turn a bulk load into thousands of durable transactions (an N+1 on transaction boundaries).\n**Fix:**\ndef save_all(items):\n    try:\n        for it in items:\n            db.execute('INSERT INTO items (name) VALUES (%s)', (it.name,))\n        db.commit()\n    except Exception:\n        db.rollback()\n        raise"
+  },
+  {
+    "instruction": "Review this code:\n\ndef tag_products(products):\n    result = []\n    for p in products:\n        if not db.execute('SELECT 1 FROM products WHERE id = %s', (p.id,)).fetchone():\n            db.execute('INSERT INTO products (id, name) VALUES (%s, %s)', (p.id, p.name))\n        result.append(p)\n    return result",
+    "output": "**Issue:** SELECT-then-INSERT existence check per row.\n**Why:** Two statements per row plus a TOCTOU race between the check and the insert; the database already has upsert for this.\n**Fix:**\ndef tag_products(products):\n    db.executemany(\n        'INSERT INTO products (id, name) VALUES (%s, %s) ON CONFLICT (id) DO NOTHING',\n        [(p.id, p.name) for p in products],\n    )\n    return products"
+  },
+  {
+    "instruction": "Review this code:\n\ndef order_counts(users):\n    out = []\n    for u in users:\n        orders = db.execute('SELECT id FROM orders WHERE user_id = %s', (u.id,)).fetchall()\n        out.append((u.name, len(orders)))\n    return out",
+    "output": "**Issue:** Fetches whole rows just to count them.\n**Why:** The app downloads thousands of ids to compute a number the DB can produce with COUNT + GROUP BY.\n**Fix:**\ndef order_counts(users):\n    rows = db.execute('''\n        SELECT u.name, COUNT(o.id)\n        FROM users u LEFT JOIN orders o ON o.user_id = u.id\n        WHERE u.id = ANY(%s) GROUP BY u.id, u.name\n    ''', ([u.id for u in users],)).fetchall()\n    return rows"
+  },
+  {
+    "instruction": "Review this code:\n\ndef permissions_for(users):\n    table = {}\n    for u in users:\n        rows = db.execute('SELECT perm FROM perms WHERE user_id = %s', (u.id,)).fetchall()\n        table[u.id] = {r[0] for r in rows}\n    return table",
+    "output": "**Issue:** One permissions query per user in the serialization loop.\n**Why:** An API returning 100 users fires 101 queries; permissions are also shared roles, so results repeat.\n**Fix:**\ndef permissions_for(users):\n    rows = db.execute('SELECT user_id, perm FROM perms WHERE user_id = ANY(%s)',\n                      ([u.id for u in users],)).fetchall()\n    table = {}\n    for uid, perm in rows:\n        table.setdefault(uid, set()).add(perm)\n    return {u.id: table.get(u.id, set()) for u in users}"
+  },
+  {
+    "instruction": "Review this code:\n\ndef page(viewer_ids):\n    for page_no in range(3):\n        n = db.execute('SELECT COUNT(*) FROM notifications WHERE viewer_id = ANY(%s)', (viewer_ids,)).fetchone()[0]\n        rows = db.execute('SELECT * FROM notifications WHERE viewer_id = ANY(%s) LIMIT 20 OFFSET %s',\n                          (viewer_ids, page_no * 20)).fetchall()\n        render(n, rows)",
+    "output": "**Issue:** COUNT(*) re-executed inside the pagination loop.\n**Why:** The total does not change between pages, so the same aggregate is computed three times.\n**Fix:**\ntotal = db.execute('SELECT COUNT(*) FROM notifications WHERE viewer_id = ANY(%s)', (viewer_ids,)).fetchone()[0]\nfor page_no in range(3):\n    rows = db.execute('SELECT * FROM notifications WHERE viewer_id = ANY(%s) LIMIT 20 OFFSET %s',\n                      (viewer_ids, page_no * 20)).fetchall()\n    render(total, rows)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef label_rows(rows):\n    labels = {}\n    for r in rows:\n        code = r['country_code']\n        if code not in labels:\n            labels[code] = db.execute('SELECT name FROM countries WHERE code = %s', (code,)).fetchone()[0]\n        r['country'] = labels[code]\n    return rows",
+    "output": "**Issue:** A dictionary memo used to paper over per-row lookups.\n**Why:** It only helps on repeats; the first pass over 5k distinct codes still fires 5k queries when one `IN` query would do.\n**Fix:**\ndef label_rows(rows):\n    codes = {r['country_code'] for r in rows}\n    pairs = db.execute('SELECT code, name FROM countries WHERE code = ANY(%s)', (list(codes),)).fetchall()\n    lookup = dict(pairs)\n    for r in rows:\n        r['country'] = lookup[r['country_code']]\n    return rows"
+  },
+  {
+    "instruction": "Review this code:\n\ndef recent_pairs(users):\n    out = []\n    for u in users:\n        last_login = db.execute('SELECT MAX(ts) FROM logins WHERE user_id = %s', (u.id,)).fetchone()[0]\n        last_purchase = db.execute('SELECT MAX(ts) FROM purchases WHERE user_id = %s', (u.id,)).fetchone()[0]\n        out.append((u, last_login, last_purchase))\n    return out",
+    "output": "**Issue:** Two aggregate subqueries executed separately for every user.\n**Why:** Two scans per row; correlated subqueries in one SELECT let the planner use each table's index once.\n**Fix:**\ndef recent_pairs(users):\n    return db.execute('''\n        SELECT u.id, u.name,\n               (SELECT MAX(ts) FROM logins WHERE user_id = u.id),\n               (SELECT MAX(ts) FROM purchases WHERE user_id = u.id)\n        FROM users u WHERE u.id = ANY(%s)\n    ''', ([u.id for u in users],)).fetchall()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef catalog(products):\n    out = []\n    for p in products:\n        tags = db.execute('''SELECT t.name FROM tags t\n                             JOIN product_tags pt ON pt.tag_id = t.id\n                             WHERE pt.product_id = %s''', (p.id,)).fetchall()\n        out.append({'name': p.name, 'tags': [t[0] for t in tags]})\n    return out",
+    "output": "**Issue:** A many-to-many tag lookup query per product.\n**Why:** The join is repeated for every row of the catalog; 500 products means 501 statements where one join + grouping answers all of them.\n**Fix:**\ndef catalog(products):\n    rows = db.execute('''\n        SELECT pt.product_id, t.name\n        FROM tags t JOIN product_tags pt ON pt.tag_id = t.id\n        WHERE pt.product_id = ANY(%s)\n    ''', ([p.id for p in products],)).fetchall()\n    by_product = {}\n    for pid, name in rows:\n        by_product.setdefault(pid, []).append(name)\n    return [{'name': p.name, 'tags': by_product.get(p.id, [])} for p in products]"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Convert this pandas filter to SQL:\n\nimport pandas as pd\n\ndf = pd.DataFrame(rows, columns=[\"name\", \"age\", \"dept\"])\nresult = df[df[\"age\"] > 30]",
+    "output": "SELECT *\nFROM employees\nWHERE age > 30;"
+  },
+  {
+    "instruction": "Convert this pandas groupby to SQL:\n\ndf.groupby(\"dept\")[\"salary\"].sum()",
+    "output": "SELECT dept, SUM(salary) AS salary\nFROM employees\nGROUP BY dept;"
+  },
+  {
+    "instruction": "Convert this pandas sort/head to SQL:\n\ndf.sort_values(\"salary\", ascending=False).head(5)",
+    "output": "SELECT *\nFROM employees\nORDER BY salary DESC\nLIMIT 5;"
+  },
+  {
+    "instruction": "Convert this pandas merge to SQL:\n\norders.merge(customers, on=\"customer_id\", how=\"inner\")",
+    "output": "SELECT o.*, c.name, c.email\nFROM orders o\nINNER JOIN customers c ON c.customer_id = o.customer_id;"
+  },
+  {
+    "instruction": "Convert this pandas drop_duplicates to SQL:\n\ndf.drop_duplicates(subset=[\"email\"], keep=\"first\")",
+    "output": "SELECT DISTINCT ON (email) *\nFROM users\nORDER BY email, id;"
+  },
+  {
+    "instruction": "Convert this pandas derived column to SQL:\n\ndf.assign(bonus=df[\"salary\"] * 0.1)[[\"name\", \"bonus\"]]",
+    "output": "SELECT name, salary * 0.1 AS bonus\nFROM employees;"
+  },
+  {
+    "instruction": "Convert this pandas value_counts to SQL:\n\ndf[\"city\"].value_counts()",
+    "output": "SELECT city, COUNT(*) AS count\nFROM residents\nGROUP BY city\nORDER BY count DESC;"
+  },
+  {
+    "instruction": "Convert this pandas query to SQL:\n\ndf.query(\"age > 25 and city == 'Paris'\")",
+    "output": "SELECT *\nFROM residents\nWHERE age > 25 AND city = 'Paris';"
+  },
+  {
+    "instruction": "Convert this pandas aggregation to SQL:\n\ndf.agg({\"salary\": \"mean\", \"age\": \"max\"})",
+    "output": "SELECT AVG(salary) AS salary, MAX(age) AS age\nFROM employees;"
+  },
+  {
+    "instruction": "Convert this pandas isin filter to SQL:\n\ndf[df[\"status\"].isin([\"active\", \"pending\"])]",
+    "output": "SELECT *\nFROM jobs\nWHERE status IN ('active', 'pending');"
+  },
+  {
+    "instruction": "Convert this pandas fillna to SQL:\n\ndf.fillna({\"score\": 0, \"city\": \"unknown\"})",
+    "output": "SELECT COALESCE(score, 0) AS score, COALESCE(city, 'unknown') AS city\nFROM results;"
+  },
+  {
+    "instruction": "Convert this pandas pivot_table to SQL:\n\ndf.pivot_table(index=\"dept\", columns=\"gender\", values=\"salary\", aggfunc=\"mean\")",
+    "output": "SELECT dept,\n  AVG(CASE WHEN gender = 'F' THEN salary END) AS F,\n  AVG(CASE WHEN gender = 'M' THEN salary END) AS M\nFROM employees\nGROUP BY dept;"
+  },
+  {
+    "instruction": "Convert this pandas groupby filter to SQL:\n\ndf.groupby(\"dept\").filter(lambda g: len(g) > 10)",
+    "output": "SELECT *\nFROM employees\nWHERE dept IN (SELECT dept FROM employees GROUP BY dept HAVING COUNT(*) > 10);"
+  },
+  {
+    "instruction": "Convert this pandas string search to SQL:\n\ndf[df[\"name\"].str.startswith(\"A\")]",
+    "output": "SELECT *\nFROM employees\nWHERE name LIKE 'A%';"
+  },
+  {
+    "instruction": "Convert this pandas date range filter to SQL:\n\ndf[(df[\"date\"] >= \"2024-01-01\") & (df[\"date\"] < \"2024-02-01\")]",
+    "output": "SELECT *\nFROM events\nWHERE date >= DATE '2024-01-01' AND date < DATE '2024-02-01';"
+  },
+  {
+    "instruction": "Convert this pandas left join to SQL:\n\ndf.merge(orders, on=\"customer_id\", how=\"left\")",
+    "output": "SELECT c.*, o.order_id, o.total\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.customer_id;"
+  },
+  {
+    "instruction": "Convert this pandas notna filter to SQL:\n\ndf[df[\"email\"].notna()]",
+    "output": "SELECT *\nFROM users\nWHERE email IS NOT NULL;"
+  },
+  {
+    "instruction": "Convert this pandas multi-key groupby to SQL:\n\ndf.groupby([\"dept\", \"level\"]).size().reset_index(name=\"n\")",
+    "output": "SELECT dept, level, COUNT(*) AS n\nFROM employees\nGROUP BY dept, level;"
+  },
+  {
+    "instruction": "Convert this pandas nlargest to SQL:\n\ndf.nlargest(3, \"revenue\")",
+    "output": "SELECT *\nFROM sales\nORDER BY revenue DESC\nLIMIT 3;"
+  },
+  {
+    "instruction": "Convert this pandas datetime extraction to SQL:\n\ndf.assign(month=pd.to_datetime(df[\"date\"]).dt.month)",
+    "output": "SELECT *, EXTRACT(MONTH FROM date) AS month\nFROM orders;"
+  }
+]

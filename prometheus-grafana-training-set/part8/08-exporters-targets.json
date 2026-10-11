@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Prometheus scrape_config YAML block that scrapes a node_exporter on port 9100 every 15 seconds",
+    "output": "scrape_configs:\n  - job_name: node\n    scrape_interval: 15s\n    static_configs:\n      - targets:\n          - node-1:9100\n          - node-2:9100"
+  },
+  {
+    "instruction": "Write a scrape_config that uses the blackbox exporter to probe HTTPS endpoints with the http_2xx module",
+    "output": "scrape_configs:\n  - job_name: blackbox-http\n    metrics_path: /probe\n    params:\n      module: [http_2xx]\n    static_configs:\n      - targets:\n          - https://example.com/health\n    relabel_configs:\n      - source_labels: [__address__]\n        target_label: __param_target\n      - source_labels: [__param_target]\n        target_label: instance\n      - target_label: __address__\n        replacement: blackbox-exporter:9115"
+  },
+  {
+    "instruction": "Write a PromQL query that returns every down target for a Grafana Targets panel",
+    "output": "up == 0"
+  },
+  {
+    "instruction": "Write a PromQL query that returns a single 1 when the job payment-api has no targets at all",
+    "output": "absent(up{job=\"payment-api\"})"
+  },
+  {
+    "instruction": "Write a PromQL query counting down targets per job",
+    "output": "count by (job) (up == 0)"
+  },
+  {
+    "instruction": "Write a PromQL query that finds scrapes taking longer than 10 seconds",
+    "output": "scrape_duration_seconds > 10"
+  },
+  {
+    "instruction": "Write a PromQL query that shows how many samples each target produced after metric relabelling",
+    "output": "scrape_samples_post_metric_relabel_configs"
+  },
+  {
+    "instruction": "Write a PromQL query reporting how many targets each scrape pool currently has",
+    "output": "scrape_pool_targets"
+  },
+  {
+    "instruction": "Write a PromQL query listing every job and instance pair that is currently up",
+    "output": "count by (job, instance) (up)"
+  },
+  {
+    "instruction": "Write a scrape_config YAML that scrapes cAdvisor on port 8080 with honor_labels set to true",
+    "output": "scrape_configs:\n  - job_name: cadvisor\n    honor_labels: true\n    static_configs:\n      - targets:\n          - k8s-node-1:8080\n          - k8s-node-2:8080"
+  },
+  {
+    "instruction": "Write a scrape_config that discovers Kubernetes pods annotated for scraping using kubernetes_sd_configs",
+    "output": "scrape_configs:\n  - job_name: kubernetes-pods\n    kubernetes_sd_configs:\n      - role: pod\n    relabel_configs:\n      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]\n        action: keep\n        regex: \"true\"\n      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]\n        action: replace\n        target_label: __metrics_path__\n        regex: (.+)"
+  },
+  {
+    "instruction": "Write a PromQL query for the blackbox exporter showing failed HTTP probes",
+    "output": "probe_success == 0"
+  },
+  {
+    "instruction": "Write a PromQL query returning the HTTP status code observed by the last TLS probe",
+    "output": "probe_http_status_code"
+  },
+  {
+    "instruction": "Write a PromQL query listing SNMP exporter targets that are currently down",
+    "output": "up{job=\"snmp\"} == 0"
+  },
+  {
+    "instruction": "Write a PromQL query for a Grafana panel showing cAdvisor scrape health",
+    "output": "up{job=\"cadvisor\"}"
+  },
+  {
+    "instruction": "Write a scrape_config YAML block defining a scrape interval of 30 seconds and a timeout of 10 seconds",
+    "output": "scrape_configs:\n  - job_name: slow-app\n    scrape_interval: 30s\n    scrape_timeout: 10s\n    static_configs:\n      - targets:\n          - slow-app.internal:8080"
+  },
+  {
+    "instruction": "Write a PromQL query that detects targets flapping more than 3 times in 15 minutes",
+    "output": "changes(up[15m]) > 3"
+  },
+  {
+    "instruction": "Write a PromQL query showing the 5 slowest scrapes in the fleet right now",
+    "output": "topk(5, scrape_duration_seconds)"
+  },
+  {
+    "instruction": "Write a PromQL query counting targets per exporter job using the job label",
+    "output": "count by (job) (up{job=~\"node|cadvisor|blackbox|snmp\"})"
+  },
+  {
+    "instruction": "Write a scrape_config YAML block scraping a node_exporter over HTTPS with basic auth on port 9440",
+    "output": "scrape_configs:\n  - job_name: node-secure\n    scheme: https\n    tls_config:\n      ca_file: /etc/prometheus/ca.pem\n    basic_auth:\n      username: prometheus\n      password_file: /etc/prometheus/password\n    static_configs:\n      - targets:\n          - node-1:9440"
+  }
+]

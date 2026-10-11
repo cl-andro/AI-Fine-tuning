@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "You need to find which process is listening on port 8080. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -tlnp | grep :8080\nsudo lsof -iTCP:8080 -sTCP:LISTEN\nsudo fuser -n tcp 8080\nsudo netstat -tlnp | grep :8080\n**Interpretation:** ss/lsof map the socket to a PID and process name. If no PID is shown, the socket belongs to another user's process or a namespace, requiring sudo or nsenter.\n**Fix:** Once identified, manage the process (restart its service) via systemctl, or stop it if it is an orphan. Use the PID from lsof to inspect with `ps -fp <pid>`. Add the port check to monitoring."
+  },
+  {
+    "instruction": "A process holds a file/socket open after deletion, filling disk. Diagnose.",
+    "output": "**Diagnose:**\nsudo lsof +L1\nsudo lsof -p <pid> | grep deleted\nsudo find /proc/<pid>/fd -ls | grep deleted\ndf -h\n**Interpretation:** `lsof +L1` lists files with link count 0 (unlinked but open). A process like a logger still writing to a deleted file prevents space reclamation, so df shows full despite deleted files.\n**Fix:** Restart or signal the process to close the handle (`systemctl restart <svc>` or `kill -HUP <pid>`), which frees the space. Configure log rotation properly to avoid this. Verify with df."
+  },
+  {
+    "instruction": "Many sockets are in CLOSE_WAIT and the app leaks connections. Diagnose.",
+    "output": "**Diagnose:**\nss -tan | awk '{print $1}' | sort | uniq -c\nsudo lsof -p <pid> | grep CLOSE_WAIT\nss -tanp state close-wait | head\n**Interpretation:** CLOSE_WAIT means the remote closed but the local application has not called close(). A growing CLOSE_WAIT count is an application bug leaking file descriptors, eventually hitting the FD limit.\n**Fix:** Fix the app to close sockets (or a library upgrade). As a stopgap raise `ulimit -n`/LimitNOFILE and restart the service. Monitor `ss -tan state close-wait | wc -l`."
+  },
+  {
+    "instruction": "A service fails with 'Too many open files'. Diagnose FD limits.",
+    "output": "**Diagnose:**\nsudo lsof -p <pid> | wc -l\ncat /proc/<pid>/limits | grep -i 'open files'\nsysctl fs.file-max\nulimit -n\n**Interpretation:** The process hit its soft/hard LimitNOFILE while the socket table is fine. `/proc/<pid>/limits` shows the actual limit; upping ulimit in the shell does not affect systemd services.\n**Fix:** Set `LimitNOFILE=65536` in the systemd unit (or /etc/security/limits.conf for user sessions), raise `fs.file-max` if needed, then `systemctl daemon-reload && systemctl restart <svc>`. Verify the limit in /proc."
+  },
+  {
+    "instruction": "You must see which remote hosts a process is connected to. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -tnp | grep <pid>\nsudo lsof -p <pid> -i\nsudo lsof -i -a -p <pid>\nnstat -tcp | head\n**Interpretation:** ss -tnp and lsof -i map active connections to the process. State ESTABLISHED with foreign addresses shows the peers; counting unique peers reveals fan-out.\n**Fix:** Use the output to identify rogue connections or a misbehaving client. If a service holds too many, tune its connection pool or upstream limits. Automate with `ss -tnp state established` in monitoring."
+  },
+  {
+    "instruction": "A socket is bound to 127.0.0.1 unexpectedly. Diagnose bind address.",
+    "output": "**Diagnose:**\nss -tlnp | grep <port>\nlsof -iTCP:<port> -sTCP:LISTEN\nss -tlnp | grep -E '127.0.0.1|<port>'\n**Interpretation:** If the listener shows 127.0.0.1 instead of 0.0.0.0 or ::, external clients cannot connect. This is an application or systemd socket-activation setting.\n**Fix:** Reconfigure the service to bind 0.0.0.0 or the specific external IP (e.g nginx `listen 0.0.0.0:8080;`, or the app's bind option), then restart. Verify `ss -tlnp` shows the wildcard address."
+  },
+  {
+    "instruction": "You suspect a process opened a UDP socket but ss only shows TCP. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -ulnp\nsudo lsof -iUDP\nsudo netstat -ulnp\nsudo ss -aup\n**Interpretation:** UDP sockets are connectionless; if the app uses `bind` but never `connect`, lsof/ss still list them under UDP. Missing them usually means you queried only TCP or lack privileges.\n**Fix:** Query UDP explicitly (`ss -ulnp`) with sudo. Identify the process and confirm whether it should be listening on that port; adjust the app config or firewall accordingly."
+  },
+  {
+    "instruction": "Sockets show as TIME_WAIT on the server after graceful close. Diagnose.",
+    "output": "**Diagnose:**\nss -tan state time-wait | head\nss -s\nsysctl net.ipv4.tcp_fin_timeout net.ipv4.tcp_tw_reuse\n**Interpretation:** TIME_WAIT is normal for the side that closes first, lasting 2*MSL. A large accumulation can exhaust ports on a busy client. On a server it is usually benign.\n**Fix:** If it causes port pressure on clients, enable `tcp_tw_reuse`, use connection pooling, and widen the ephemeral port range. Do not use tcp_tw_recycle. Verify counts stabilize with `ss -s`."
+  },
+  {
+    "instruction": "A process is stuck and you need to see its socket backlog. Diagnose.",
+    "output": "**Diagnose:**\nss -lntp\nss -tn state syn-recv\ncat /proc/<pid>/net/tcp 2>/dev/null\nsudo lsof -p <pid> | grep -c sock\n**Interpretation:** `ss -lnt` columns Send-Q (backlog) and Recv-Q (pending accept) reveal a full accept queue. `ss state syn-recv` shows half-open connections if SYN handling is slow.\n**Fix:** Raise the app's listen backlog and `net.core.somaxconn`, and make the accept loop faster. Enable SYN cookies if under flood. Verify Recv-Q drops after the change."
+  },
+  {
+    "instruction": "Multiple processes appear to share the same listening port. Diagnose SO_REUSEPORT.",
+    "output": "**Diagnose:**\nsudo ss -tlnp | grep <port>\nsudo lsof -iTCP:<port> -sTCP:LISTEN\nps -o pid,ppid,cmd -p <pid1>,<pid2>\n**Interpretation:** SO_REUSEPORT lets several processes bind the same port for load distribution. Seeing multiple PIDs for one port with the same service names confirms it, usually a multi-worker server.\n**Fix:** This is often intended (worker processes). If unexpected, identify the parent and stop duplicates; ensure only one supervisor owns the port. Verify the expected worker count with `ss -tlnp`."
+  },
+  {
+    "instruction": "A socket is in SYN_SENT for a long time. Diagnose outbound connection failure.",
+    "output": "**Diagnose:**\nss -tan state syn-sent\nsudo tcpdump -ni eth0 'tcp[tcpflags] & tcp-syn != 0'\nsudo iptables -S OUTPUT\nip route get <dest>\n**Interpretation:** SYN_SENT stuck means the client sent SYNs but got no SYN-ACK: the remote is down, filtered, or the route is wrong. tcpdump shows whether replies arrive.\n**Fix:** Fix the remote service, open the egress/remote firewall, or correct the route. If many SYNs pile up, tune `tcp_syn_retries` only as a stopgap. Verify with `ss -tan state syn-sent` clearing."
+  },
+  {
+    "instruction": "You must map a deleted executable still running to its socket. Diagnose.",
+    "output": "**Diagnose:**\nsudo lsof | grep '<port>'\nls -l /proc/<pid>/exe\nsudo readlink /proc/<pid>/exe\nss -tnp | grep <pid>\n**Interpretation:** When an on-disk binary is upgraded while running, /proc/<pid>/exe shows the deleted path. lsof correlates the socket to the PID and deleted executable.\n**Fix:** Restart the service to load the new binary (`systemctl restart <svc>`), which also releases any deleted files. Verify the new exe path and that the port still listens."
+  },
+  {
+    "instruction": "A process has hundreds of identical sockets. Diagnose a connection leak.",
+    "output": "**Diagnose:**\nsudo lsof -p <pid> -i | wc -l\nsudo lsof -p <pid> -i | awk '{print $9}' | sort | uniq -c | sort -rn | head\nss -tnp | grep <pid> | awk '{print $5}' | sort | uniq -c\n**Interpretation:** Many sockets to the same remote indicates a pool or connection leak. Growing count over time with CLOSE_WAIT or ESTABLISHED confirms the app is not releasing connections.\n**Fix:** Fix the application's connection handling (timeouts, pooling), or restart the service to reclaim. Set sane upstream keep-alive/idle limits. Monitor socket counts per PID."
+  },
+  {
+    "instruction": "A privileged port is used by the wrong user. Diagnose capability ownership.",
+    "output": "**Diagnose:**\nsudo ss -tlnp | grep ':80'\nsudo lsof -iTCP:80 -sTCP:LISTEN\nps -o pid,user,cmd -p <pid>\nsudo getcap /usr/sbin/<binary>\n**Interpretation:** If a non-root user owns port 80, the binary likely has `cap_net_bind_service` or the service uses systemd socket activation. The owner mismatch may be a security concern.\n**Fix:** Confirm the capability is intended. Remove stray capabilities with `setcap -r /path/binary` if not needed, or use a reverse proxy. Restart and verify the listener owner is the expected account."
+  },
+  {
+    "instruction": "Network namespaces hide the socket you need to inspect. Diagnose.",
+    "output": "**Diagnose:**\nip netns list\nsudo lsof -iTCP:<port>\nsudo nsenter -t <pid> -n ss -tlnp\nls -l /proc/<pid>/ns/net\n**Interpretation:** lsof on the host does not see sockets inside a container netns. nsenter into the process's network namespace to list them; matching inode links confirm the namespace.\n**Fix:** Inspect with `nsenter -t <pid> -n <cmd>` (ss, lsof, ip). To expose the service, add a veth/port mapping. Verify the socket appears in the namespace with ss."
+  },
+  {
+    "instruction": "An application reports 'bind: Address already in use' at startup. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -tlnp | grep <port>\nsudo lsof -iTCP:<port> -sTCP:LISTEN\nsudo ss -tan state time-wait | grep <port>\nps -ef | grep <app>\n**Interpretation:** Either another instance already listens, or old sockets in TIME_WAIT hold the port and SO_REUSEADDR is not set. lsof identifies a live listener; ss state time-wait shows residual sockets.\n**Fix:** Stop the duplicate or configure the app with SO_REUSEADDR. Wait out TIME_WAIT for the affected tuple. Verify the port is free with `ss -tlnp` before restart."
+  },
+  {
+    "instruction": "You need to trace which file descriptor maps to which socket. Diagnose.",
+    "output": "**Diagnose:**\nsudo lsof -p <pid> -a -i\nls -l /proc/<pid>/fd | grep socket\nsudo ss -tnp | grep <pid>\ncat /proc/<pid>/fdinfo/<fd> 2>/dev/null\n**Interpretation:** lsof joins FD numbers to socket inodes; /proc/<pid>/fd shows the raw symlinks. Matching the socket inode with ss confirms the mapping.\n**Fix:** Use the mapping to debug leaks or verify that the expected FD is connected. Correlate with /proc/<pid>/fdinfo counts to find the leaking descriptor type. Automate the check in an ops script."
+  },
+  {
+    "instruction": "A UDP service appears to lose packets under load. Diagnose socket buffer drops.",
+    "output": "**Diagnose:**\nss -ulnp -m\ncat /proc/net/udp | head\nnstat -az | grep -i -E 'UdpRcvbufErrors|UdpInErrors'\nsysctl net.core.rmem_max net.core.rmem_default\n**Interpretation:** `ss -ulnp -m` shows the socket receive buffer; nstat UdpRcvbufErrors climbing means the app could not drain the buffer fast enough and the kernel dropped datagrams.\n**Fix:** Increase the socket receive buffer (`sysctl -w net.core.rmem_max=...` and set SO_RCVBUF in the app), and optimize the receive loop. Consider multiple sockets/threads. Verify UdpRcvbufErrors stop rising."
+  },
+  {
+    "instruction": "A service holds a listening socket but never accepts connections. Diagnose the accept loop.",
+    "output": "**Diagnose:**\nss -lntp\ncat /proc/<pid>/stack 2>/dev/null\nsudo strace -p <pid> -f -e trace=accept,accept4 2>&1 | head\nperf top -p <pid> 2>/dev/null\n**Interpretation:** A non-zero Recv-Q on the listening socket means connections are queued but accept() is not being called, so the app is blocked (deadlock, GC, or a slow path). strace shows no accept calls.\n**Fix:** Diagnose the blocking path (lock contention, long GC, synchronous work in the accept handler), fix it, and restart. Raise the backlog as a stopgap. Verify Recv-Q returns to 0 as connections are accepted."
+  },
+  {
+    "instruction": "You must free a port held by a zombie/orphan process. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -tlnp | grep <port>\nsudo fuser -k -n tcp <port>\nps -o pid,ppid,stat,cmd -p <pid>\nsudo lsof -iTCP:<port> -sTCP:LISTEN\n**Interpretation:** A zombie (stat Z) is already dead but not reaped; the parent must reap it. An orphan holds the socket until killed. The process state helps decide.\n**Fix:** For a live listener, stop the owning service or `kill <pid>`. For a zombie, fix/kill the parent so init reaps it. Recheck the port with ss. Avoid `kill -9` unless necessary."
+  }
+]

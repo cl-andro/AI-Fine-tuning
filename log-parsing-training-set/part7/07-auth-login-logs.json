@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this sshd log line into JSON with result, auth method, user, ip and port:\nOct 12 14:20:01 web01 sshd[14001]: Accepted publickey for alice from 10.0.0.5 port 52344 ssh2: RSA SHA256:abc123def",
+    "output": "{\"result\": \"accepted\", \"auth_method\": \"publickey\", \"user\": \"alice\", \"ip\": \"10.0.0.5\", \"port\": 52344, \"key_type\": \"RSA\", \"fingerprint\": \"SHA256:abc123def\"}"
+  },
+  {
+    "instruction": "Parse this sshd failure line into JSON with user, valid_user, ip and port:\nOct 12 14:20:05 web01 sshd[14002]: Failed password for invalid user admin from 203.0.113.9 port 42422 ssh2",
+    "output": "{\"result\": \"failed\", \"user\": \"admin\", \"valid_user\": false, \"ip\": \"203.0.113.9\", \"port\": 42422, \"auth_method\": \"password\"}"
+  },
+  {
+    "instruction": "Parse this systemd-logind session line into JSON with event, session id and user:\nOct 12 14:20:11 web01 systemd-logind[900]: New session 42 of user alice.",
+    "output": "{\"event\": \"new_session\", \"session\": 42, \"user\": \"alice\", \"app\": \"systemd-logind\"}"
+  },
+  {
+    "instruction": "Parse this sudo log line into JSON with user, tty, pwd, run_as and command:\nalice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/bin/systemctl restart nginx",
+    "output": "{\"user\": \"alice\", \"tty\": \"pts/0\", \"pwd\": \"/home/alice\", \"run_as\": \"root\", \"command\": \"/bin/systemctl restart nginx\"}"
+  },
+  {
+    "instruction": "Parse this su log line into JSON with target user, requester and pid:\nOct 12 14:21:00 web01 su[1000]: (to root) alice on pts/0",
+    "output": "{\"target_user\": \"root\", \"requester\": \"alice\", \"tty\": \"pts/0\", \"pid\": 1000, \"app\": \"su\"}"
+  },
+  {
+    "instruction": "Parse this fail2ban log line into JSON with timestamp, jail, action and ip:\n2023-10-12 14:21:30,456 fail2ban.actions [1600]: NOTICE [sshd] Ban 203.0.113.9",
+    "output": "{\"timestamp\": \"2023-10-12 14:21:30,456\", \"logger\": \"fail2ban.actions\", \"pid\": 1600, \"level\": \"NOTICE\", \"jail\": \"sshd\", \"action\": \"Ban\", \"ip\": \"203.0.113.9\"}"
+  },
+  {
+    "instruction": "This is Windows event 4624 (successful logon). Return JSON with user, logon_type number, logon_type_name and ip:\n{\"EventID\": 4624, \"Level\": 4, \"Computer\": \"WIN-01\", \"EventData\": {\"TargetUserName\": \"alice\", \"LogonType\": 10, \"IpAddress\": \"10.0.0.5\", \"IpPort\": \"51234\"}}",
+    "output": "{\"event_id\": 4624, \"user\": \"alice\", \"logon_type\": 10, \"logon_type_name\": \"RemoteInteractive\", \"ip\": \"10.0.0.5\", \"severity\": \"information\"}"
+  },
+  {
+    "instruction": "This is Windows event 4625 (failed logon). Return JSON with user, ip, status and severity name:\n{\"EventID\": 4625, \"Level\": 2, \"Computer\": \"WIN-01\", \"EventData\": {\"TargetUserName\": \"bob\", \"IpAddress\": \"198.51.100.9\", \"Status\": \"0xC000006D\", \"FailureReason\": \"%%2313\"}}",
+    "output": "{\"event_id\": 4625, \"user\": \"bob\", \"ip\": \"198.51.100.9\", \"status\": \"0xC000006D\", \"severity\": \"error\"}"
+  },
+  {
+    "instruction": "Parse this vsftpd login line into JSON with timestamp, pid, user, result and ip:\nWed Oct 12 14:22:01 2023 [pid 44] [alice] FAIL LOGIN: Client \"192.0.2.44\"",
+    "output": "{\"timestamp\": \"Wed Oct 12 14:22:01 2023\", \"pid\": 44, \"user\": \"alice\", \"result\": \"FAIL\", \"action\": \"LOGIN\", \"ip\": \"192.0.2.44\", \"app\": \"vsftpd\"}"
+  },
+  {
+    "instruction": "This JSON login event failed 3 times. Return JSON with user, attempts and a risk value of high when attempts is 3 or more:\n{\"event\": \"login_failed\", \"user\": \"bob\", \"ip\": \"198.51.100.9\", \"reason\": \"bad_password\", \"attempts\": 3}",
+    "output": "{\"event\": \"login_failed\", \"user\": \"bob\", \"ip\": \"198.51.100.9\", \"reason\": \"bad_password\", \"attempts\": 3, \"risk\": \"high\"}"
+  },
+  {
+    "instruction": "Parse this auth-worker line into JSON with event, sub and reason:\nOct 12 14:23:00 web01 auth-worker[991]: token rejected: sub=alice reason=expired",
+    "output": "{\"app\": \"auth-worker\", \"pid\": 991, \"event\": \"token rejected\", \"sub\": \"alice\", \"reason\": \"expired\"}"
+  },
+  {
+    "instruction": "Parse this OpenVPN authentication line into JSON with ip, port, user and assigned vpn ip:\nOct 12 14:24:00 vpn01 openvpn[800]: 198.51.100.9:50000 Alice/10.8.0.5 authenticated via auth-pam",
+    "output": "{\"ip\": \"198.51.100.9\", \"port\": 50000, \"user\": \"Alice\", \"vpn_ip\": \"10.8.0.5\", \"result\": \"authenticated\", \"method\": \"auth-pam\"}"
+  },
+  {
+    "instruction": "Parse this OpenLDAP connection line into JSON with connection id, ip and port:\nOct 12 14:25:00 web01 slapd[500]: conn=1042 fd=13 ACCEPT FROM IP=10.0.0.5:44321",
+    "output": "{\"connection\": 1042, \"fd\": 13, \"action\": \"ACCEPT\", \"ip\": \"10.0.0.5\", \"port\": 44321, \"app\": \"slapd\"}"
+  },
+  {
+    "instruction": "Count the accepted and failed logins in these sshd lines and return the counts as JSON:\nOct 12 14:26:01 web01 sshd[17001]: Accepted password for alice from 10.0.0.5 port 50001 ssh2\nOct 12 14:26:02 web01 sshd[17002]: Failed password for invalid user test from 198.51.100.9 port 50002 ssh2\nOct 12 14:26:03 web01 sshd[17003]: Failed password for root from 198.51.100.9 port 50003 ssh2\nOct 12 14:26:04 web01 sshd[17004]: Accepted publickey for bob from 10.0.0.6 port 50004 ssh2\nOct 12 14:26:05 web01 sshd[17005]: Failed password for root from 198.51.100.9 port 50005 ssh2\nOct 12 14:26:06 web01 sshd[17006]: Accepted password for carol from 10.0.0.7 port 50006 ssh2",
+    "output": "{\"accepted\": 3, \"failed\": 3, \"total\": 6}"
+  },
+  {
+    "instruction": "From these sshd failure lines, count the failures per source ip and return the counts as JSON:\nOct 12 14:27:01 web01 sshd[17101]: Failed password for root from 198.51.100.9 port 51001 ssh2\nOct 12 14:27:02 web01 sshd[17102]: Failed password for root from 198.51.100.9 port 51002 ssh2\nOct 12 14:27:03 web01 sshd[17103]: Failed password for invalid user oracle from 10.0.0.9 port 51003 ssh2\nOct 12 14:27:04 web01 sshd[17104]: Failed password for invalid user admin from 10.0.0.9 port 51004 ssh2\nOct 12 14:27:05 web01 sshd[17105]: Failed password for root from 10.0.0.9 port 51005 ssh2",
+    "output": "{\"198.51.100.9\": 2, \"10.0.0.9\": 3}"
+  },
+  {
+    "instruction": "Write a regex with named groups that parses a successful sshd login line (user, ip, port)",
+    "output": "^(?P<timestamp>[A-Z][a-z]{2} [ 0-9]\\d \\d{2}:\\d{2}:\\d{2}) \\S+ sshd\\[\\d+\\]: Accepted (?P<method>\\w+) for (?P<user>\\S+) from (?P<ip>\\S+) port (?P<port>\\d+) ssh2"
+  },
+  {
+    "instruction": "This OAuth log entry reports an invalid refresh token. Return JSON with client_id, sub, grant and msg:\n{\"level\": \"warn\", \"ts\": 1697129107, \"msg\": \"refresh token invalid\", \"client_id\": \"webapp\", \"sub\": \"alice\", \"grant\": \"refresh_token\"}",
+    "output": "{\"level\": \"warn\", \"ts\": 1697129107, \"msg\": \"refresh token invalid\", \"client_id\": \"webapp\", \"sub\": \"alice\", \"grant\": \"refresh_token\"}"
+  },
+  {
+    "instruction": "This account had four failed ssh logins from one IP. Return JSON with ip, failures and brute_force set to true:\nOct 12 14:29:01 web01 sshd[17201]: Failed password for invalid user test from 203.0.113.44 port 52001 ssh2\nOct 12 14:29:02 web01 sshd[17202]: Failed password for invalid user test from 203.0.113.44 port 52002 ssh2\nOct 12 14:29:03 web01 sshd[17203]: Failed password for invalid user test from 203.0.113.44 port 52003 ssh2\nOct 12 14:29:04 web01 sshd[17204]: Failed password for invalid user test from 203.0.113.44 port 52004 ssh2\nOct 12 14:29:05 web01 sshd[17205]: Accepted password for alice from 10.0.0.5 port 52005 ssh2",
+    "output": "{\"ip\": \"203.0.113.44\", \"failures\": 4, \"brute_force\": true}"
+  },
+  {
+    "instruction": "Parse this application login audit line into JSON with user, action, status and latency_ms:\nOct 12 14:30:00 app01 auth[2200]: user=alice action=login status=401 latency_ms=35",
+    "output": "{\"user\": \"alice\", \"action\": \"login\", \"status\": 401, \"latency_ms\": 35, \"pid\": 2200}"
+  },
+  {
+    "instruction": "Write a Python function that scans sshd lines and returns JSON with the ip that has the most failed password attempts",
+    "output": "import re\nfrom collections import Counter\n\nPATTERN = re.compile(r\"Failed password for (?:invalid user )?(\\S+) from (\\S+) port\")\n\ndef top_offender(lines):\n    counts = Counter()\n    for line in lines:\n        m = PATTERN.search(line)\n        if m:\n            counts[m.group(2)] += 1\n    if not counts:\n        return {\"ip\": None, \"failures\": 0}\n    ip, failures = counts.most_common(1)[0]\n    return {\"ip\": ip, \"failures\": failures}"
+  }
+]

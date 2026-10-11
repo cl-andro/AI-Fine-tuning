@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a JavaScript function flatten(arr) that flattens a arbitrarily nested array of arrays into a single-level array, without using Array.flat.",
+    "output": "function flatten(arr) {\n  const out = [];\n  for (const item of arr) {\n    if (Array.isArray(item)) out.push(...flatten(item));\n    else out.push(item);\n  }\n  return out;\n}\n\nconsole.log(flatten([1, [2, [3, [4]]], 5])); // [1, 2, 3, 4, 5]"
+  },
+  {
+    "instruction": "Write a JavaScript groupBy(arr, keyFn) that groups items into an object whose keys come from keyFn(item) and values are arrays of items.",
+    "output": "function groupBy(arr, keyFn) {\n  return arr.reduce((acc, item) => {\n    const key = keyFn(item);\n    (acc[key] ||= []).push(item);\n    return acc;\n  }, {});\n}\n\nconst people = [\n  { name: \"Ada\", dept: \"eng\" },\n  { name: \"Sam\", dept: \"hr\" },\n  { name: \"Grace\", dept: \"eng\" },\n];\nconsole.log(groupBy(people, (p) => p.dept));"
+  },
+  {
+    "instruction": "Write a JavaScript deepClone(obj) that recursively clones plain objects and arrays without using structuredClone or JSON.parse(JSON.stringify()).",
+    "output": "function deepClone(value) {\n  if (Array.isArray(value)) return value.map(deepClone);\n  if (value && typeof value === \"object\") {\n    const out = {};\n    for (const [key, v] of Object.entries(value)) out[key] = deepClone(v);\n    return out;\n  }\n  return value;\n}\n\nconst original = { a: 1, nested: { b: [1, 2] } };\nconst copy = deepClone(original);\ncopy.nested.b.push(3);\nconsole.log(original.nested.b); // [1, 2]"
+  },
+  {
+    "instruction": "Write a JavaScript unique(arr) that removes duplicates while preserving the first occurrence order.",
+    "output": "function unique(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const item of arr) {\n    if (!seen.has(item)) {\n      seen.add(item);\n      out.push(item);\n    }\n  }\n  return out;\n}\n\nconsole.log(unique([3, 1, 3, 2, 1])); // [3, 1, 2]"
+  },
+  {
+    "instruction": "Write a JavaScript minBy(arr, keyFn) and maxBy(arr, keyFn) that return the item with the smallest/largest key value.",
+    "output": "function minBy(arr, keyFn) {\n  return arr.reduce((best, item) => (keyFn(item) < keyFn(best) ? item : best));\n}\nfunction maxBy(arr, keyFn) {\n  return arr.reduce((best, item) => (keyFn(item) > keyFn(best) ? item : best));\n}\n\nconst items = [\n  { name: \"a\", score: 3 },\n  { name: \"b\", score: 9 },\n  { name: \"c\", score: 5 },\n];\nconsole.log(minBy(items, (i) => i.score).name); // \"a\"\nconsole.log(maxBy(items, (i) => i.score).name); // \"b\""
+  },
+  {
+    "instruction": "Write a JavaScript rotate(arr, n) that rotates an array to the left by n positions (supporting negative n for right rotation).",
+    "output": "function rotate(arr, n) {\n  if (!arr.length) return [];\n  const k = ((n % arr.length) + arr.length) % arr.length;\n  return [...arr.slice(k), ...arr.slice(0, k)];\n}\n\nconsole.log(rotate([1, 2, 3, 4, 5], 2)); // [3, 4, 5, 1, 2]\nconsole.log(rotate([1, 2, 3, 4, 5], -1)); // [5, 1, 2, 3, 4]"
+  },
+  {
+    "instruction": "Write a JavaScript chunk(arr, size) that splits an array into groups of the given size, with the last chunk holding any remainder.",
+    "output": "function chunk(arr, size) {\n  const out = [];\n  for (let i = 0; i < arr.length; i += size) {\n    out.push(arr.slice(i, i + size));\n  }\n  return out;\n}\n\nconsole.log(chunk([1, 2, 3, 4, 5], 2)); // [[1, 2], [3, 4], [5]]"
+  },
+  {
+    "instruction": "Write a JavaScript pick(obj, keys) and omit(obj, keys) pair that return shallow copies with only/without the given keys.",
+    "output": "function pick(obj, keys) {\n  const out = {};\n  for (const key of keys) {\n    if (key in obj) out[key] = obj[key];\n  }\n  return out;\n}\nfunction omit(obj, keys) {\n  const skip = new Set(keys);\n  const out = {};\n  for (const [key, value] of Object.entries(obj)) {\n    if (!skip.has(key)) out[key] = value;\n  }\n  return out;\n}\n\nconst user = { id: 1, name: \"Ada\", secret: \"x\" };\nconsole.log(pick(user, [\"id\", \"name\"]));\nconsole.log(omit(user, [\"secret\"]));"
+  },
+  {
+    "instruction": "Write a JavaScript invert(obj) that swaps keys and values of an object whose values are all strings or numbers.",
+    "output": "function invert(obj) {\n  const out = {};\n  for (const [key, value] of Object.entries(obj)) {\n    out[value] = key;\n  }\n  return out;\n}\n\nconsole.log(invert({ a: \"1\", b: \"2\" })); // { \"1\": \"a\", \"2\": \"b\" }"
+  },
+  {
+    "instruction": "Write a JavaScript frequency(arr) that returns an object counting how many times each value appears.",
+    "output": "function frequency(arr) {\n  const counts = {};\n  for (const item of arr) {\n    counts[item] = (counts[item] || 0) + 1;\n  }\n  return counts;\n}\n\nconsole.log(frequency([\"x\", \"y\", \"x\", \"x\"])); // { x: 3, y: 1 }"
+  },
+  {
+    "instruction": "Write a JavaScript difference(a, b) returning values present in a but not in b.",
+    "output": "function difference(a, b) {\n  const exclude = new Set(b);\n  return a.filter((item) => !exclude.has(item));\n}\n\nconsole.log(difference([1, 2, 3, 4], [2, 4])); // [1, 3]"
+  },
+  {
+    "instruction": "Write a JavaScript sortByMulti(arr, keys) that sorts objects by multiple keys in priority order, e.g. by dept then name.",
+    "output": "function sortByMulti(arr, keys) {\n  return [...arr].sort((a, b) => {\n    for (const { key, dir = 1 } of keys) {\n      if (a[key] < b[key]) return -1 * dir;\n      if (a[key] > b[key]) return 1 * dir;\n    }\n    return 0;\n  });\n}\n\nconst rows = [\n  { dept: \"eng\", name: \"Grace\" },\n  { dept: \"hr\", name: \"Sam\" },\n  { dept: \"eng\", name: \"Ada\" },\n];\nconsole.log(sortByMulti(rows, [{ key: \"dept\" }, { key: \"name\" }]));"
+  },
+  {
+    "instruction": "Write a JavaScript zip(a, b) that pairs elements of two arrays into an array of tuples, stopping at the shorter array.",
+    "output": "function zip(a, b) {\n  const length = Math.min(a.length, b.length);\n  const out = [];\n  for (let i = 0; i < length; i++) {\n    out.push([a[i], b[i]]);\n  }\n  return out;\n}\n\nconsole.log(zip([1, 2, 3], [\"a\", \"b\"])); // [[1, \"a\"], [2, \"b\"]]"
+  },
+  {
+    "instruction": "Write a JavaScript transpose(matrix) that converts rows into columns for a rectangular 2D array.",
+    "output": "function transpose(matrix) {\n  if (!matrix.length) return [];\n  return matrix[0].map((_, colIndex) => matrix.map((row) => row[colIndex]));\n}\n\nconsole.log(transpose([\n  [1, 2, 3],\n  [4, 5, 6],\n])); // [[1, 4], [2, 5], [3, 6]]"
+  },
+  {
+    "instruction": "Write a JavaScript get(obj, path, defaultValue) that reads a nested value by a path string like \"a.b[0].c\", returning defaultValue when missing.",
+    "output": "function get(obj, path, defaultValue) {\n  const keys = path.replace(/\\[(\\d+)\\]/g, \".$1\").split(\".\");\n  let current = obj;\n  for (const key of keys) {\n    if (current == null) return defaultValue;\n    current = current[key];\n  }\n  return current === undefined ? defaultValue : current;\n}\n\nconsole.log(get({ a: { b: [{ c: 42 }] } }, \"a.b[0].c\")); // 42\nconsole.log(get({}, \"x.y\", \"fallback\")); // \"fallback\""
+  },
+  {
+    "instruction": "Write a JavaScript setDefaults(obj, defaults) that returns a new object where missing keys are filled from defaults, without mutating the input.",
+    "output": "function setDefaults(obj, defaults) {\n  return { ...defaults, ...obj };\n}\n\nconsole.log(setDefaults({ b: 2 }, { a: 1, b: 99 })); // { a: 1, b: 2 }"
+  },
+  {
+    "instruction": "Write a JavaScript swap([a, b]) style code that swaps two variables using destructuring, then swaps two object properties without a temp variable.",
+    "output": "let x = 1;\nlet y = 2;\n[x, y] = [y, x];\nconsole.log(x, y); // 2 1\n\nlet p = { n: 1 };\nlet q = { n: 2 };\n[p.n, q.n] = [q.n, p.n];\nconsole.log(p.n, q.n); // 2 1"
+  },
+  {
+    "instruction": "Write a JavaScript range(start, end, step) that generates an array of numbers like Python's range, supporting negative steps.",
+    "output": "function range(start, end, step = 1) {\n  const out = [];\n  if (step > 0) {\n    for (let i = start; i < end; i += step) out.push(i);\n  } else {\n    for (let i = start; i > end; i += step) out.push(i);\n  }\n  return out;\n}\n\nconsole.log(range(0, 5)); // [0, 1, 2, 3, 4]\nconsole.log(range(5, 0, -2)); // [5, 3, 1]"
+  },
+  {
+    "instruction": "Write a JavaScript indexBy(arr, keyFn) that returns an object mapping each key to the last item with that key.",
+    "output": "function indexBy(arr, keyFn) {\n  const out = {};\n  for (const item of arr) {\n    out[keyFn(item)] = item;\n  }\n  return out;\n}\n\nconst users = [\n  { id: \"a\", name: \"Ada\" },\n  { id: \"b\", name: \"Sam\" },\n  { id: \"a\", name: \"Ada 2\" },\n];\nconsole.log(indexBy(users, (u) => u.id));"
+  },
+  {
+    "instruction": "Write a JavaScript mergeDeep(target, source) that recursively merges nested plain objects, with source values winning on conflicts.",
+    "output": "function mergeDeep(target, source) {\n  const out = { ...target };\n  for (const [key, value] of Object.entries(source)) {\n    if (value && typeof value === \"object\" && !Array.isArray(value)) {\n      out[key] = mergeDeep(out[key] || {}, value);\n    } else {\n      out[key] = value;\n    }\n  }\n  return out;\n}\n\nconsole.log(mergeDeep({ a: { x: 1 }, b: 2 }, { a: { y: 3 } }));\n// { a: { x: 1, y: 3 }, b: 2 }"
+  }
+]

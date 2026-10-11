@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "A service fails with 'status=203/EXEC'. What is wrong and how do you fix it?",
+    "output": "# 203/EXEC means the ExecStart binary is missing or not executable.\nls -l /usr/local/bin/app\nchmod +x /usr/local/bin/app\n# Or fix the path in the unit, then:\nsystemctl daemon-reload && systemctl restart app.service"
+  },
+  {
+    "instruction": "Debug a service that starts then immediately exits (status=0).",
+    "output": "# Type=simple considers exit an error; use Type=oneshot for jobs, or\n# make the process long-running. Check the command:\njournalctl -u app.service -n 50 --no-pager\nsystemctl show app.service -p ExecMainStatus"
+  },
+  {
+    "instruction": "Show the exact command systemd runs for ExecStart.",
+    "output": "systemctl show app.service -p ExecStart\nsystemd-analyze verify /etc/systemd/system/app.service"
+  },
+  {
+    "instruction": "A unit has a syntax error. How do you validate it?",
+    "output": "systemd-analyze verify /etc/systemd/system/app.service"
+  },
+  {
+    "instruction": "systemctl says 'Unit not found' after creating a file.",
+    "output": "# Ensure the unit is in a searched path and reload:\nsudo cp app.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsystemctl status app.service"
+  },
+  {
+    "instruction": "Enable failed because of a dependency loop.",
+    "output": "journalctl -b -p err | grep -i loop\nsystemctl list-dependencies app.service\n# Remove the circular After=/Before= pair."
+  },
+  {
+    "instruction": "The service is masked and won't start.",
+    "output": "systemctl status app.service   # shows 'masked'\nsudo systemctl unmask app.service\nsudo systemctl daemon-reload\nsudo systemctl start app.service"
+  },
+  {
+    "instruction": "Investigate why a service is being rate-limited ('start request repeated too quickly').",
+    "output": "systemctl show app.service -p NRestarts\n# Raise limits in a drop-in:\n# [Unit]\n# StartLimitIntervalSec=300\n# StartLimitBurst=20\nsudo systemctl daemon-reload && sudo systemctl reset-failed app.service"
+  },
+  {
+    "instruction": "Find which unit started a process.",
+    "output": "systemctl status <PID>\ncat /proc/<PID>/cgroup"
+  },
+  {
+    "instruction": "Show the reason the last start failed.",
+    "output": "systemctl status app.service -l\njournalctl -u app.service --since '10 min ago'"
+  },
+  {
+    "instruction": "A service can't write to a directory under ProtectSystem=strict.",
+    "output": "# Add the path to ReadWritePaths=\n[Service]\nProtectSystem=strict\nReadWritePaths=/var/lib/app\nsudo systemctl daemon-reload && sudo systemctl restart app.service"
+  },
+  {
+    "instruction": "A user service disappears after logout.",
+    "output": "sudo loginctl enable-linger $USER\nsystemctl --user status app.service"
+  },
+  {
+    "instruction": "See all failed units at a glance.",
+    "output": "systemctl --failed\nsystemctl --user --failed"
+  },
+  {
+    "instruction": "Clear a failed state so the service can start again.",
+    "output": "systemctl reset-failed app.service\nsystemctl start app.service"
+  },
+  {
+    "instruction": "Trace why a timer's service never ran.",
+    "output": "systemctl list-timers --all\nsystemctl status app.timer app.service\njournalctl -u app.timer -u app.service -n 100"
+  },
+  {
+    "instruction": "Diagnose slow boot caused by one unit.",
+    "output": "systemd-analyze blame | head\nsystemd-analyze critical-chain app.service"
+  },
+  {
+    "instruction": "A service sees the wrong working directory.",
+    "output": "systemctl show app.service -p WorkingDirectory\n# Set WorkingDirectory= explicitly in [Service]."
+  },
+  {
+    "instruction": "Check environment variables as seen by the service.",
+    "output": "systemctl show app.service -p Environment\nsystemctl show-environment\n# For a running process:\ncat /proc/<PID>/environ | tr '\\0' '\\n'"
+  },
+  {
+    "instruction": "Reload unit files after making changes safely.",
+    "output": "sudo systemctl daemon-reload\nsudo systemctl restart app.service\n# Verify no errors:\nsystemd-analyze verify /etc/systemd/system/app.service"
+  },
+  {
+    "instruction": "A service binds port 80 but fails with permission denied.",
+    "output": "# Non-root cannot bind <1024 by default. Either run as root,\n# add AmbientCapabilities=CAP_NET_BIND_SERVICE, or use a socket unit.\n[Service]\nAmbientCapabilities=CAP_NET_BIND_SERVICE\nCapabilityBoundingSet=CAP_NET_BIND_SERVICE"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "You need to capture traffic for a specific host and port without flooding disk. Diagnose with tcpdump.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 host 10.0.0.20 and port 443 -c 100 -w /tmp/cap.pcap\nsudo tcpdump -r /tmp/cap.pcap -nn | head\n**Interpretation:** A tight BPF filter limits capture to the flow, and -c bounds the packet count so disk is not exhausted. Reading back with -nn validates the capture without name lookups.\n**Fix:** Use targeted filters in production (`-c`, `-s`, `-w` with a size limit and rotation), then analyze offline with Wireshark/tshark. Verify the pcap contains the expected five-tuple before escalating."
+  },
+  {
+    "instruction": "A connection resets intermittently and you must catch the RST. Diagnose with tcpdump.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni any 'tcp port 443 and (tcp[tcpflags] & (tcp-rst|tcp-fin) != 0)' -w rst.pcap\nsudo tshark -r rst.pcap -Y 'tcp.flags.reset==1'\n**Interpretation:** Capturing RST/FIN shows who initiates teardown. RST from the server after data suggests an app/proxy aborts; RST from a middlebox lacks matching sequence numbers.\n**Fix:** Correlate the RST timestamp with server/proxy logs and upstream timeouts. Fix the component that resets (app exception, proxy idle timeout, or firewall). Verify the RSTs stop after the fix."
+  },
+  {
+    "instruction": "You suspect packet loss but need packet-level proof. Diagnose with capture and analysis.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 host <peer> -w cap.pcap\nsudo tshark -r cap.pcap -Y 'tcp.analysis.retransmission'\nsudo tshark -r cap.pcap -q -z io,stat,1\n**Interpretation:** tshark flags retransmissions, fast retransmits, and duplicate ACKs. A rising retransmission count and sawtooth throughput confirm loss; the direction shows which side suffers.\n**Fix:** Localize the loss to a hop with mtr/tcpdump on both ends, then fix the link/congestion. Verify retransmissions fall after the fix."
+  },
+  {
+    "instruction": "You need to capture on a remote host without installing Wireshark. Diagnose with tcpdump piped to Wireshark.",
+    "output": "**Diagnose:**\nssh user@host 'sudo tcpdump -U -s0 -w - -i eth0 port 443' | wireshark -k -i -\nssh user@host 'sudo tcpdump -s0 -w - -i eth0 port 443' > /tmp/cap.pcap\n**Interpretation:** Streaming with -U (packet-buffered) to a local Wireshark lets you analyze in real time without the capture host having a GUI. Saving to pcap allows offline sharing.\n**Fix:** Use the pipe for live triage and file capture for evidence. Restrict the filter and duration to limit data. Verify the local Wireshark shows packets as they arrive."
+  },
+  {
+    "instruction": "You must capture traffic inside a container namespace. Diagnose.",
+    "output": "**Diagnose:**\ndocker exec -it ctr tcpdump -ni eth0 -c 20\nsudo nsenter -t <pid> -n tcpdump -ni any port 80\nip netns identify <pid>\nsudo nsenter -t <pid> -n ip addr\n**Interpretation:** The container's eth0 lives in its netns; capturing on the host eth0 misses it. Run tcpdump inside the namespace (docker exec or nsenter) to see container traffic.\n**Fix:** Capture in the correct namespace, or add a mirror/veth on the host. Verify you see the container's packets with the expected addresses."
+  },
+  {
+    "instruction": "Capture misses the beginning of a connection. Diagnose ring buffer usage.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -w cap.pcap -W 5 -C 100 port 443\nls -lh cap.pcap*\n**Interpretation:** Continuous capture with rotation (-C/-W) overwrites older files, so if you start before reproducing the issue you have the full handshake; starting too late loses the start. The symptom may have occurred before capture began.\n**Fix:** Start the capture with rotation before reproducing, and increase file count/size. Use `-G` for time-based rotation. Verify the handshake (SYN) is present in the captured pcap."
+  },
+  {
+    "instruction": "TLS traffic is unreadable and you need to see the HTTP layer. Diagnose decryption options.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 port 443 -w tls.pcap\nsudo tshark -r tls.pcap -Y 'http'\nopenssl s_client -connect example.com:443 -keylogfile /tmp/keys.log\n**Interpretation:** Without the session keys, tcpdump shows only TLS records. If you control the client, export an SSLKEYLOGFILE and load it in Wireshark to decrypt; otherwise you must terminate TLS or use an endpoint capture.\n**Fix:** Capture at a TLS-terminating proxy/ingress where plaintext is visible, or use key logging on controlled clients. Verify decrypted HTTP appears in Wireshark."
+  },
+  {
+    "instruction": "You need to identify a top talker consuming bandwidth. Diagnose with capture statistics.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -c 5000 -w cap.pcap\nsudo tshark -r cap.pcap -q -z conv,ip\nsudo tshark -r cap.pcap -q -z io,phs\n**Interpretation:** tshark conversation stats rank endpoints by bytes/packets, revealing the top talker. Protocol hierarchy shows what dominates (e.g video vs DNS).\n**Fix:** Once identified, apply QoS/rate limits to that host/protocol or investigate the app. Re-run the stats after changes to confirm the top talker is reduced."
+  },
+  {
+    "instruction": "Capturing everything degrades the server. Diagnose capture overhead.",
+    "output": "**Diagnose:**\ntop -b -n1 | head\nsudo tcpdump -ni eth0 -s 96 -c 10000 host <peer> -w cap.pcap\nethtool -S eth0 | grep -i drop\n**Interpretation:** Full-packet snaplength (-s0) and huge filters consume CPU/disk and can drop packets. Using a small snaplen (-s 96) for headers and a tight filter lowers overhead.\n**Fix:** Capture headers only when payload is not needed, use a busy-poll-free kernel path, and offload with `-w` to a fast disk. Verify capture drop counters stay low and server load is acceptable."
+  },
+  {
+    "instruction": "You need to prove whether packets leave the host. Diagnose simultaneous captures.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 host <peer> -w local.pcap &\nssh user@<peer> 'sudo tcpdump -ni eth0 host <myip> -w /tmp/remote.pcap'\nsudo tcpdump -r local.pcap -nn | head\n**Interpretation:** Comparing local (egress) and remote (ingress) captures shows whether packets leave but never arrive, localizing loss to the network, or never leave (local issue).\n**Fix:** If they leave but do not arrive, escalate the network path with both pcaps. If they never leave, fix the local routing/firewall/app. Verify the matching sequence numbers across captures."
+  },
+  {
+    "instruction": "You need to capture only DNS queries with their responses. Diagnose with tcpdump.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni any port 53 -w dns.pcap\nsudo tshark -r dns.pcap -Y 'dns.flags.response==0' -T fields -e dns.qry.name\nsudo tshark -r dns.pcap -Y 'dns.flags.rcode!=0'\n**Interpretation:** Filtering port 53 captures queries and responses; tshark fields list queried names and flag non-zero rcodes (NXDOMAIN/SERVFAIL), revealing what is failing.\n**Fix:** Use the query list to identify failing lookups, then fix upstream/zone config. Re-capture to confirm rcodes are all 0 for the affected names."
+  },
+  {
+    "instruction": "A capture shows duplicate packets. Diagnose capture point duplication.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni any -c 50 | grep -c 'IP'\nsudo tcpdump -ni eth0 -c 50 | wc -l\nsudo tcpdump -ni any -c 50 | head\n**Interpretation:** Capturing on `any` can show a packet twice (ingress and egress points) or across bonded interfaces, producing apparent duplicates. Capturing on a specific interface avoids this.\n**Fix:** Capture on the specific interface for one direction, or account for the duplication when analyzing. Use `-Q in|out` to select direction. Verify counts match expectations."
+  },
+  {
+    "instruction": "You must analyze HTTP request/response times from a capture. Diagnose with tshark.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 port 80 -w http.pcap\nsudo tshark -r http.pcap -q -z http,tree\nsudo tshark -r http.pcap -Y 'http.request' -T fields -e http.request.uri -e frame.time_relative\n**Interpretation:** tshark HTTP statistics show request/response counts and timing; relative frame times reveal delays between request and response, localizing slow endpoints.\n**Fix:** Use the timing to identify slow paths, then optimize the backend/proxy. Re-capture and compare after the fix to confirm latency dropped."
+  },
+  {
+    "instruction": "You need to capture traffic from a specific VLAN. Diagnose tag handling.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -e -c 20 | grep -i vlan\nsudo tcpdump -ni eth0.100 -c 20\nsudo tcpdump -ni eth0 vlan 100 -c 20\n**Interpretation:** Tagged frames may be captured on the parent interface with the VLAN header, or you must use the subinterface. If no tagged frames appear, the switch may untag or the capture point is wrong.\n**Fix:** Capture on the VLAN subinterface or use a `vlan` filter on the parent, and confirm tags with -e. Verify the expected VLAN traffic is visible."
+  },
+  {
+    "instruction": "You need to find why a TCP handshake never completes. Diagnose with capture and sequence analysis.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni any 'host <peer> and tcp' -w hs.pcap\nsudo tshark -r hs.pcap -Y 'tcp.flags.syn==1 or tcp.flags.ack==1' -T fields -e ip.src -e ip.dst -e tcp.flags.syn -e tcp.flags.ack -e tcp.seq\n**Interpretation:** The capture shows SYN -> SYN-ACK -> ACK steps. A missing SYN-ACK means the server/firewall is silent; a SYN-ACK with a wrong ACK or repeated SYNs indicates loss or an asymmetric path.\n**Fix:** Chase the missing response to the responsible host/firewall. If SYNs repeat without reply, check the server listener and the path. Verify the handshake completes after the fix."
+  },
+  {
+    "instruction": "You need to throttle/target a capture to a single process's traffic. Diagnose.",
+    "output": "**Diagnose:**\nss -tnp | grep <pid>\nsudo tcpdump -ni any host <remote-ip> and port <port> -c 100\nsudo strace -p <pid> -e trace=network -f -tt 2>&1 | head\n**Interpretation:** tcpdump cannot filter by PID; you derive the flow from ss/strace and filter by the resulting five-tuple. strace shows the syscalls and addresses the process uses.\n**Fix:** Identify the exact remote address/port via ss, then use a tight tcpdump filter. For per-process isolation use cgroup/BPF-based tools. Verify the capture contains only the intended flow."
+  },
+  {
+    "instruction": "Captured traffic shows checksum errors. Diagnose checksum offload.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -c 20 -v | grep -i 'incorrect'\nethtool -k eth0 | grep -i -E 'tx|rx'\nsudo tcpdump -ni eth0 -c 5 -v\n**Interpretation:** On the sending host, NIC checksum offload means tcpdump sees packets before the NIC computes checksums, so it flags 'incorrect checksum'. This is a capture artifact, not real corruption.\n**Fix:** Either ignore send-side checksum errors when offload is on, or disable offload temporarily (`ethtool -K eth0 tx off rx off`) for accurate capture. Re-capture to confirm checksums are valid."
+  },
+  {
+    "instruction": "You need a long-duration capture without filling the disk. Diagnose rotation.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -w /var/tmp/cap -C 200 -W 10 -z gzip port 443\ndf -h /var/tmp\nls -lh /var/tmp/cap*\n**Interpretation:** -C caps each file at 200MB, -W keeps 10 files (ring), and -z compresses finished files. This bounds total disk use while retaining recent history.\n**Fix:** Size the ring to hold enough history for the investigation window, and monitor free space. Verify rotation by listing the files and checking total size during capture."
+  },
+  {
+    "instruction": "You need to verify whether a firewall is dropping a specific packet. Diagnose with capture.",
+    "output": "**Diagnose:**\nsudo iptables -L -n -v | grep -i drop\nsudo tcpdump -ni eth0 'tcp port <port>' -c 50\nsudo nft list ruleset | grep -i drop\n**Interpretation:** If the client sends SYN and the server capture shows no SYN, an upstream/firewall dropped it; if the server sees SYN but sends no SYN-ACK, a local rule or listener drops it. Match counters with the drop rule.\n**Fix:** Adjust the specific drop rule or open the port, then re-capture to confirm the packet now traverses. Verify with the client connection succeeding."
+  },
+  {
+    "instruction": "A capture on the host misses traffic between two containers on the same bridge. Diagnose capture point.",
+    "output": "**Diagnose:**\nip link show | grep -E 'docker|br-'\nsudo tcpdump -ni br-xxxx -c 20\nsudo tcpdump -ni docker0 -c 20\ndocker network inspect bridge | head\n**Interpretation:** Container-to-container traffic on the same bridge may be switched locally and not traverse the physical interface, so capturing only eth0 misses it. Capture on the bridge (docker0/br-*) instead.\n**Fix:** Capture on the bridge interface or inside a container namespace. For complete visibility, mirror the bridge traffic. Verify the inter-container packets appear."
+  }
+]

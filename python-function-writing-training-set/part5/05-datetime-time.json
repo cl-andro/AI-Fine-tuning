@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that parses a date string in one of several common formats (YYYY-MM-DD, DD/MM/YYYY, Month DD, YYYY) into a datetime.date.",
+    "output": "from datetime import datetime\n\ndef parse_date(text):\n    for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%B %d, %Y'):\n        try:\n            return datetime.strptime(text, fmt).date()\n        except ValueError:\n            continue\n    raise ValueError(f'unrecognized date: {text}')\n\nprint(parse_date('March 7, 2024'))"
+  },
+  {
+    "instruction": "Write a Python function that converts a past timestamp into a human-friendly relative string like '3 days ago' or 'just now'.",
+    "output": "from datetime import datetime, timezone\n\ndef relative_time(then, now=None):\n    now = now or datetime.now(timezone.utc)\n    seconds = int((now - then).total_seconds())\n    if seconds < 60:\n        return 'just now'\n    if seconds < 3600:\n        return f'{seconds // 60} minutes ago'\n    if seconds < 86400:\n        return f'{seconds // 3600} hours ago'\n    return f'{seconds // 86400} days ago'\n\nprint(relative_time(datetime(2024, 5, 1), datetime(2024, 5, 4)))"
+  },
+  {
+    "instruction": "Write a Python function that adds n business days (Monday to Friday) to a starting date, skipping weekends.",
+    "output": "from datetime import timedelta, date\n\ndef add_business_days(start, days):\n    current = start\n    added = 0\n    while added < days:\n        current += timedelta(days=1)\n        if current.weekday() < 5:\n            added += 1\n    return current\n\nprint(add_business_days(date(2024, 3, 1), 5))"
+  },
+  {
+    "instruction": "Write a Python function that returns the number of whole days between two dates, ignoring time-of-day components.",
+    "output": "from datetime import date\n\ndef days_between(a, b):\n    return abs((b - a).days)\n\nprint(days_between(date(2024, 1, 1), date(2024, 12, 31)))"
+  },
+  {
+    "instruction": "Write a Python function that returns the ISO-8601 week number and year for a given date.",
+    "output": "def iso_week(d):\n    year, week, _ = d.isocalendar()\n    return year, week\n\nfrom datetime import date\nprint(iso_week(date(2024, 1, 1)))"
+  },
+  {
+    "instruction": "Write a Python function that computes a person's age in full years as of a given reference date, given their date of birth.",
+    "output": "def age_on(birth_date, today):\n    years = today.year - birth_date.year\n    if (today.month, today.day) < (birth_date.month, birth_date.day):\n        years -= 1\n    return years\n\nfrom datetime import date\nprint(age_on(date(1990, 6, 15), date(2024, 3, 1)))"
+  },
+  {
+    "instruction": "Write a Python function that determines whether two time intervals [start1, end1] and [start2, end2] overlap (touching endpoints count as overlap).",
+    "output": "def intervals_overlap(s1, e1, s2, e2):\n    return s1 <= e2 and s2 <= e1\n\nprint(intervals_overlap(10, 14, 14, 16))"
+  },
+  {
+    "instruction": "Write a Python function that formats a number of seconds as a compact human-readable duration like '1h 30m 5s'.",
+    "output": "def humanize_duration(seconds):\n    if seconds < 0:\n        raise ValueError('duration must be non-negative')\n    hours, rem = divmod(int(seconds), 3600)\n    minutes, secs = divmod(rem, 60)\n    parts = []\n    if hours:\n        parts.append(f'{hours}h')\n    if minutes:\n        parts.append(f'{minutes}m')\n    if secs or not parts:\n        parts.append(f'{secs}s')\n    return ' '.join(parts)\n\nprint(humanize_duration(5432))"
+  },
+  {
+    "instruction": "Write a Python function that returns the Monday and Sunday dates of the week containing a given date.",
+    "output": "from datetime import timedelta\n\ndef week_bounds(d):\n    monday = d - timedelta(days=d.weekday())\n    return monday, monday + timedelta(days=6)\n\nfrom datetime import date\nprint(week_bounds(date(2024, 3, 13)))"
+  },
+  {
+    "instruction": "Write a Python function that rounds a datetime to the nearest 15-minute boundary.",
+    "output": "from datetime import datetime, timedelta\n\ndef round_to_quarter(dt):\n    minutes = (dt.minute // 15) * 15\n    rounded = dt.replace(minute=minutes, second=0, microsecond=0)\n    if dt.minute % 15 >= 8:\n        rounded += timedelta(minutes=15)\n    return rounded\n\nprint(round_to_quarter(datetime(2024, 3, 13, 9, 22)))"
+  },
+  {
+    "instruction": "Write a Python function that converts a datetime between time zones using the zoneinfo module.",
+    "output": "from datetime import datetime\nfrom zoneinfo import ZoneInfo\n\ndef convert_tz(dt, from_tz, to_tz):\n    return dt.replace(tzinfo=ZoneInfo(from_tz)).astimezone(ZoneInfo(to_tz))\n\nprint(convert_tz(datetime(2024, 3, 13, 12, 0), 'UTC', 'Asia/Tokyo'))"
+  },
+  {
+    "instruction": "Write a Python function that determines whether a given date falls in a leap year, using the calendar rules.",
+    "output": "import calendar\n\ndef is_leap_year(d):\n    return calendar.isleap(d.year)\n\nfrom datetime import date\nprint(is_leap_year(date(2024, 6, 1)))"
+  },
+  {
+    "instruction": "Write a Python function that generates a list of dates from a start date to an end date inclusive, stepping by one day.",
+    "output": "from datetime import timedelta\n\ndef date_range(start, end):\n    days = []\n    current = start\n    while current <= end:\n        days.append(current)\n        current += timedelta(days=1)\n    return days\n\nfrom datetime import date\nprint(date_range(date(2024, 1, 1), date(2024, 1, 5)))"
+  },
+  {
+    "instruction": "Write a Python pair of functions: one that converts a Unix timestamp to a UTC datetime and one that converts a datetime back to a Unix timestamp.",
+    "output": "from datetime import datetime, timezone\n\ndef ts_to_dt(ts):\n    return datetime.fromtimestamp(ts, tz=timezone.utc)\n\ndef dt_to_ts(dt):\n    if dt.tzinfo is None:\n        dt = dt.replace(tzinfo=timezone.utc)\n    return int(dt.timestamp())\n\nprint(ts_to_dt(1700000000), dt_to_ts(datetime(2023, 11, 14, 22, 13, 20, tzinfo=timezone.utc)))"
+  },
+  {
+    "instruction": "Write a Python function that computes how many seconds remain until the next occurrence of a given local time (HH:MM) today or tomorrow.",
+    "output": "from datetime import datetime, timedelta\n\ndef seconds_until(hour, minute, now=None):\n    now = now or datetime.now()\n    target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)\n    if target <= now:\n        target += timedelta(days=1)\n    return int((target - now).total_seconds())\n\nprint(seconds_until(9, 30))"
+  },
+  {
+    "instruction": "Write a Python function that parses a duration string like '1h30m15s' (any of h, m, s may be omitted) into total seconds.",
+    "output": "import re\n\ndef parse_duration(text):\n    pattern = r'(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?'\n    m = re.fullmatch(pattern, text.strip())\n    if not m or not any(m.groups()):\n        raise ValueError(f'invalid duration: {text}')\n    hours, minutes, seconds = (int(g or 0) for g in m.groups())\n    return hours * 3600 + minutes * 60 + seconds\n\nprint(parse_duration('1h30m15s'))"
+  },
+  {
+    "instruction": "Write a Python function that returns the calendar quarter (1-4) and the fiscal quarter assuming an October fiscal year start.",
+    "output": "def quarters(d):\n    calendar_q = (d.month - 1) // 3 + 1\n    fiscal_month = (d.month + 2) % 12\n    fiscal_q = fiscal_month // 3 + 1\n    return calendar_q, fiscal_q\n\nfrom datetime import date\nprint(quarters(date(2024, 11, 15)))"
+  },
+  {
+    "instruction": "Write a Python function that returns the date of the next weekday (Mon-Fri) strictly after a given date.",
+    "output": "from datetime import timedelta\n\ndef next_weekday(d):\n    current = d + timedelta(days=1)\n    while current.weekday() >= 5:\n        current += timedelta(days=1)\n    return current\n\nfrom datetime import date\nprint(next_weekday(date(2024, 3, 15)))"
+  },
+  {
+    "instruction": "Write a Python function that checks whether a datetime falls within business hours (e.g. 09:00-17:00, Monday to Friday).",
+    "output": "def is_business_hours(dt, open_hour=9, close_hour=17):\n    return dt.weekday() < 5 and open_hour <= dt.hour < close_hour\n\nfrom datetime import datetime\nprint(is_business_hours(datetime(2024, 3, 13, 10, 30)))"
+  },
+  {
+    "instruction": "Write a Python function that parses a time-of-day string 'HH:MM' or 'HH:MM:SS' into a datetime.time object, rejecting out-of-range hours, minutes or seconds.",
+    "output": "from datetime import time\n\ndef parse_time(text):\n    parts = text.strip().split(':')\n    if len(parts) not in (2, 3):\n        raise ValueError(f'cannot parse time: {text!r}')\n    nums = [int(p) for p in parts]\n    hour, minute = nums[0], nums[1]\n    second = nums[2] if len(nums) == 3 else 0\n    if not (0 <= hour <= 23 and 0 <= minute <= 59 and 0 <= second <= 59):\n        raise ValueError(f'time component out of range: {text!r}')\n    return time(hour, minute, second)\n\nprint(parse_time('23:59:59'), parse_time('08:30'))"
+  }
+]

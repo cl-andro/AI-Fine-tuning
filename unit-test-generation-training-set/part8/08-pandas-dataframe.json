@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write pytest tests for clean_users that drops rows with missing names, checking shape and remaining index values.\n\nimport pandas as pd\n\ndef clean_users(df):\n    return df.dropna(subset=['name'])",
+    "output": "import pandas as pd\nimport pytest\nfrom cleaning import clean_users\n\n@pytest.fixture\ndef users_df():\n    return pd.DataFrame({'name': ['Ann', None, 'Bob'], 'age': [31, 25, None]})\n\ndef test_clean_users_shape(users_df):\n    cleaned = clean_users(users_df)\n    assert cleaned.shape == (2, 2)\n\ndef test_clean_users_index(users_df):\n    cleaned = clean_users(users_df)\n    assert list(cleaned.index) == [0, 2]"
+  },
+  {
+    "instruction": "Write pytest tests for filter_active that keeps only rows where active is True, verifying values with pandas testing utilities.\n\nimport pandas as pd\n\ndef filter_active(df):\n    return df[df['active']]",
+    "output": "import pandas as pd\nfrom filtering import filter_active\n\ndef make_df():\n    return pd.DataFrame({'id': [1, 2, 3], 'active': [True, False, True]})\n\ndef test_filter_active():\n    result = filter_active(make_df())\n    expected = pd.DataFrame({'id': [1, 3], 'active': [True, True]}, index=[0, 2])\n    pd.testing.assert_frame_equal(result, expected)\n\ndef test_filter_active_empty():\n    df = pd.DataFrame({'id': [1], 'active': [False]})\n    assert filter_active(df).empty"
+  },
+  {
+    "instruction": "Write pytest tests for sales_by_region that groups by region and sums amounts, asserting the resulting series name and values.\n\nimport pandas as pd\n\ndef sales_by_region(df):\n    return df.groupby('region')['amount'].sum()",
+    "output": "import pandas as pd\nimport pytest\nfrom reports import sales_by_region\n\n@pytest.fixture\ndef sales_df():\n    return pd.DataFrame({\n        'region': ['east', 'west', 'east'],\n        'amount': [100.0, 250.5, 50.5],\n    })\n\ndef test_sales_by_region(sales_df):\n    result = sales_by_region(sales_df)\n    assert result['east'] == 150.5\n    assert result['west'] == 250.5\n\ndef test_sales_by_region_name(sales_df):\n    assert sales_by_region(sales_df).name == 'amount'"
+  },
+  {
+    "instruction": "Write pytest tests for fill_missing_scores that fills NaN scores with the column mean rounded to 1 decimal, asserting no NaN remains.\n\nimport pandas as pd\n\ndef fill_missing_scores(df):\n    df = df.copy()\n    df['score'] = df['score'].fillna(round(df['score'].mean(), 1))\n    return df",
+    "output": "import pandas as pd\nfrom scores import fill_missing_scores\n\ndef test_fill_missing_scores_no_nan_left():\n    df = pd.DataFrame({'name': ['a', 'b', 'c'], 'score': [90.0, None, 70.0]})\n    filled = fill_missing_scores(df)\n    assert filled['score'].isna().sum() == 0\n    assert filled.loc[1, 'score'] == 80.0\n\ndef test_fill_missing_scores_does_not_mutate_input():\n    df = pd.DataFrame({'name': ['a'], 'score': [None]})\n    fill_missing_scores(df)\n    assert df['score'].isna().sum() == 1"
+  },
+  {
+    "instruction": "Write pytest tests for sort_by_score that sorts descending and returns a new frame, checking the first row's name.\n\nimport pandas as pd\n\ndef sort_by_score(df):\n    return df.sort_values('score', ascending=False).reset_index(drop=True)",
+    "output": "import pandas as pd\nfrom leaderboard import sort_by_score\n\ndef test_sort_by_score_order():\n    df = pd.DataFrame({'name': ['ann', 'bob', 'cat'], 'score': [70, 95, 80]})\n    result = sort_by_score(df)\n    assert list(result['name']) == ['bob', 'cat', 'ann']\n\ndef test_sort_by_score_resets_index():\n    df = pd.DataFrame({'name': ['ann', 'bob'], 'score': [1, 2]})\n    result = sort_by_score(df)\n    assert list(result.index) == [0, 1]"
+  },
+  {
+    "instruction": "Write pytest tests for merge_orders that joins orders with customers on customer_id, asserting the merged columns and row count.\n\nimport pandas as pd\n\ndef merge_orders(orders, customers):\n    return orders.merge(customers, on='customer_id', how='left')",
+    "output": "import pandas as pd\nfrom join import merge_orders\n\ndef test_merge_orders_keeps_all_orders():\n    orders = pd.DataFrame({'order_id': [1, 2], 'customer_id': [10, 99]})\n    customers = pd.DataFrame({'customer_id': [10], 'name': ['Ann']})\n    result = merge_orders(orders, customers)\n    assert len(result) == 2\n    assert result.loc[0, 'name'] == 'Ann'\n    assert pd.isna(result.loc[1, 'name'])\n\ndef test_merge_orders_columns():\n    orders = pd.DataFrame({'order_id': [1], 'customer_id': [10]})\n    customers = pd.DataFrame({'customer_id': [10], 'name': ['Ann']})\n    result = merge_orders(orders, customers)\n    assert set(result.columns) == {'order_id', 'customer_id', 'name'}"
+  },
+  {
+    "instruction": "Write pytest tests for rename_columns that lowercases and underscores column names, asserting the exact new column list.\n\nimport pandas as pd\n\ndef rename_columns(df):\n    mapping = {c: c.lower().replace(' ', '_') for c in df.columns}\n    return df.rename(columns=mapping)",
+    "output": "import pandas as pd\nfrom schema import rename_columns\n\ndef test_rename_columns():\n    df = pd.DataFrame({'First Name': ['Ann'], 'Last Name': ['Lee']})\n    result = rename_columns(df)\n    assert list(result.columns) == ['first_name', 'last_name']\n\ndef test_rename_columns_already_snake():\n    df = pd.DataFrame({'id': [1], 'value': [2]})\n    assert list(rename_columns(df).columns) == ['id', 'value']"
+  },
+  {
+    "instruction": "Write pytest tests for build_pivot that creates a pivot table of sales by region and product, checking a specific cell value.\n\nimport pandas as pd\n\ndef build_pivot(df):\n    return df.pivot_table(index='region', columns='product', values='amount', aggfunc='sum', fill_value=0)",
+    "output": "import pandas as pd\nimport pytest\nfrom pivots import build_pivot\n\n@pytest.fixture\ndef sales():\n    return pd.DataFrame({\n        'region': ['east', 'east', 'west'],\n        'product': ['a', 'b', 'a'],\n        'amount': [10, 20, 30],\n    })\n\ndef test_build_pivot_cell(sales):\n    table = build_pivot(sales)\n    assert table.loc['east', 'a'] == 10\n    assert table.loc['east', 'b'] == 20\n    assert table.loc['west', 'a'] == 30\n\ndef test_build_pivot_no_nans(sales):\n    table = build_pivot(sales)\n    assert not table.isna().any().any()"
+  },
+  {
+    "instruction": "Write pytest tests for records round-trip: a function converts list of dicts to DataFrame and back, assert equality of content.\n\nimport pandas as pd\n\ndef to_records(df):\n    return df.to_dict(orient='records')",
+    "output": "import pandas as pd\nfrom records import to_records\n\ndef test_to_records_round_trip():\n    rows = [{'a': 1, 'b': 'x'}, {'a': 2, 'b': 'y'}]\n    df = pd.DataFrame(rows)\n    assert to_records(df) == rows\n\ndef test_to_records_empty():\n    df = pd.DataFrame(columns=['a', 'b'])\n    assert to_records(df) == []"
+  },
+  {
+    "instruction": "Write pytest tests for describe_scores that returns the count/mean/std summary for a scores column, asserting the count and approximate mean.\n\nimport pandas as pd\n\ndef describe_scores(df):\n    return df['score'].describe()",
+    "output": "import pytest\nfrom stats import describe_scores\n\ndef test_describe_scores_count_and_mean():\n    import pandas as pd\n    df = pd.DataFrame({'score': [60, 70, 80, 90]})\n    stats = describe_scores(df)\n    assert stats['count'] == 4\n    assert stats['mean'] == pytest.approx(75.0)\n\ndef test_describe_scores_std():\n    import pandas as pd\n    df = pd.DataFrame({'score': [0, 10]})\n    stats = describe_scores(df)\n    assert stats['std'] == pytest.approx(7.071, abs=0.001)"
+  },
+  {
+    "instruction": "Write pytest tests for normalize_names that strips whitespace and title-cases a name column, checking specific cell values.\n\nimport pandas as pd\n\ndef normalize_names(df):\n    df = df.copy()\n    df['name'] = df['name'].str.strip().str.title()\n    return df",
+    "output": "import pandas as pd\nfrom cleaning import normalize_names\n\ndef test_normalize_names_values():\n    df = pd.DataFrame({'name': ['  ann lee ', 'bOB smith']})\n    result = normalize_names(df)\n    assert list(result['name']) == ['Ann Lee', 'Bob Smith']\n\ndef test_normalize_names_leaves_other_columns():\n    df = pd.DataFrame({'name': ['ann'], 'id': [1]})\n    result = normalize_names(df)\n    assert list(result['id']) == [1]"
+  },
+  {
+    "instruction": "Write pytest tests for drop_duplicates_subset that removes duplicate rows based on the 'id' column, keeping the first occurrence.\n\nimport pandas as pd\n\ndef drop_duplicates_subset(df):\n    return df.drop_duplicates(subset='id', keep='first')",
+    "output": "import pandas as pd\nfrom dedupe import drop_duplicates_subset\n\ndef test_drop_duplicates_keeps_first():\n    df = pd.DataFrame({'id': [1, 1, 2], 'value': ['first', 'second', 'other']})\n    result = drop_duplicates_subset(df)\n    assert list(result['value']) == ['first', 'other']\n\ndef test_drop_duplicates_no_change_when_unique():\n    df = pd.DataFrame({'id': [1, 2], 'value': ['a', 'b']})\n    assert len(drop_duplicates_subset(df)) == 2"
+  },
+  {
+    "instruction": "Write pytest tests for parse_event_times that converts a string column to datetime and counts events per day.\n\nimport pandas as pd\n\ndef parse_event_times(df):\n    df = df.copy()\n    df['ts'] = pd.to_datetime(df['ts'])\n    return df\n\ndef count_events_per_day(df):\n    return parse_event_times(df).groupby(df['ts'].dt.date).size()",
+    "output": "import pandas as pd\nfrom events import count_events_per_day\n\ndef test_count_events_per_day():\n    df = pd.DataFrame({'ts': ['2024-01-01 10:00', '2024-01-01 23:00', '2024-01-02 08:00']})\n    counts = count_events_per_day(df)\n    assert counts.iloc[0] == 2\n    assert counts.iloc[1] == 1\n\ndef test_parse_event_times_dtype():\n    import pandas as pd\n    from events import parse_event_times\n    df = pd.DataFrame({'ts': ['2024-06-01']})\n    result = parse_event_times(df)\n    assert pd.api.types.is_datetime64_any_dtype(result['ts'])"
+  },
+  {
+    "instruction": "Write pytest tests for apply_category that maps numeric values into bins using a Series.map or cut, asserting category labels.\n\nimport pandas as pd\n\ndef apply_category(series):\n    return pd.cut(series, bins=[-1, 60, 80, 100], labels=['fail', 'pass', 'distinction'])",
+    "output": "import pandas as pd\nfrom grading import apply_category\n\ndef test_apply_category_labels():\n    result = apply_category(pd.Series([50, 70, 90, 100]))\n    assert [str(v) for v in result] == ['fail', 'pass', 'distinction', 'distinction']\n\ndef test_apply_category_dtype():\n    result = apply_category(pd.Series([70]))\n    assert str(result.dtype) == 'category'"
+  },
+  {
+    "instruction": "Write pytest tests for concat_frames that vertically concatenates two frames with different indexes and resets the index.\n\nimport pandas as pd\n\ndef concat_frames(frames):\n    return pd.concat(frames, ignore_index=True)",
+    "output": "import pandas as pd\nfrom combine import concat_frames\n\ndef test_concat_frames_resets_index():\n    a = pd.DataFrame({'x': [1, 2]})\n    b = pd.DataFrame({'x': [3]})\n    result = concat_frames([a, b])\n    assert list(result['x']) == [1, 2, 3]\n    assert list(result.index) == [0, 1, 2]\n\ndef test_concat_frames_column_union():\n    a = pd.DataFrame({'x': [1]})\n    b = pd.DataFrame({'y': [2]})\n    result = concat_frames([a, b])\n    assert set(result.columns) == {'x', 'y'}\n    assert result.isna().sum().sum() == 2"
+  },
+  {
+    "instruction": "Write pytest tests for query_active_high_value using df.query, checking that both conditions are applied.\n\nimport pandas as pd\n\ndef query_active_high_value(df):\n    return df.query('active == True and amount > 100')",
+    "output": "import pandas as pd\nfrom filtering import query_active_high_value\n\ndef test_query_filters_both_conditions():\n    df = pd.DataFrame({\n        'active': [True, True, False],\n        'amount': [200, 50, 300],\n        'label': ['keep1', 'too-small', 'inactive'],\n    })\n    result = query_active_high_value(df)\n    assert list(result['label']) == ['keep1']\n\ndef test_query_no_matches():\n    df = pd.DataFrame({'active': [True], 'amount': [10]})\n    assert query_active_high_value(df).empty"
+  },
+  {
+    "instruction": "Write pytest tests for set_index_by_id that sets 'id' as the index and verifies label-based lookup with .loc.\n\nimport pandas as pd\n\ndef set_index_by_id(df):\n    return df.set_index('id')",
+    "output": "import pandas as pd\nfrom indexing import set_index_by_id\n\ndef test_set_index_by_id_loc_lookup():\n    df = pd.DataFrame({'id': [101, 102], 'name': ['Ann', 'Bob']})\n    indexed = set_index_by_id(df)\n    assert indexed.loc[102, 'name'] == 'Bob'\n\ndef test_set_index_by_id_drops_column():\n    df = pd.DataFrame({'id': [1], 'name': ['x']})\n    indexed = set_index_by_id(df)\n    assert 'id' not in indexed.columns\n    assert indexed.index.name == 'id'"
+  },
+  {
+    "instruction": "Write pytest tests for coerce_numeric that converts a column with bad values to numeric with errors='coerce', producing NaN for junk.\n\nimport pandas as pd\n\ndef coerce_numeric(series):\n    return pd.to_numeric(series, errors='coerce')",
+    "output": "import pandas as pd\nfrom dtypes import coerce_numeric\n\ndef test_coerce_numeric_valid():\n    result = coerce_numeric(pd.Series(['1', '2.5', '3']))\n    assert list(result) == [1.0, 2.5, 3.0]\n\ndef test_coerce_numeric_bad_values_become_nan():\n    result = coerce_numeric(pd.Series(['1', 'oops', None]))\n    assert pd.isna(result[1])\n    assert pd.isna(result[2])\n    assert result[0] == 1.0"
+  },
+  {
+    "instruction": "Write pytest tests for melt_inventory that unpivots wide product columns into long (product, quantity) rows.\n\nimport pandas as pd\n\ndef melt_inventory(df):\n    return pd.melt(df, id_vars=['store'], var_name='product', value_name='quantity')",
+    "output": "import pandas as pd\nfrom reshaping import melt_inventory\n\ndef test_melt_inventory_rows():\n    df = pd.DataFrame({'store': ['s1'], 'apples': [5], 'pears': [2]})\n    long = melt_inventory(df)\n    assert len(long) == 2\n    assert set(long['product']) == {'apples', 'pears'}\n\ndef test_melt_inventory_values():\n    df = pd.DataFrame({'store': ['s1'], 'apples': [5], 'pears': [2]})\n    long = melt_inventory(df)\n    apples = long[long['product'] == 'apples']\n    assert apples['quantity'].iloc[0] == 5"
+  },
+  {
+    "instruction": "Write pytest tests comparing two DataFrames with assert_frame_equal, both when they match and when a dtype mismatch should fail the check.\n\nimport pandas as pd\n\ndef build_frame(values):\n    return pd.DataFrame({'value': values})",
+    "output": "import pandas as pd\nimport pytest\nfrom factory import build_frame\n\ndef test_frames_equal():\n    a = build_frame([1, 2, 3])\n    b = build_frame([1, 2, 3])\n    pd.testing.assert_frame_equal(a, b)\n\ndef test_dtype_mismatch_raises():\n    a = build_frame([1, 2])\n    b = build_frame([1.0, 2.0])\n    with pytest.raises(AssertionError):\n        pd.testing.assert_frame_equal(a, b)\n\ndef test_dtype_mismatch_allowed_when_relaxed():\n    a = build_frame([1, 2])\n    b = build_frame([1.0, 2.0])\n    pd.testing.assert_frame_equal(a, b, check_dtype=False)"
+  }
+]

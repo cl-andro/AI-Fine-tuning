@@ -29,6 +29,31 @@ training sets they consume.
 | [`multi-turn-debugging-training-set/`](./multi-turn-debugging-training-set) | Multi-turn debugging conversations (transcript → fix), 12 parts · 240 entries. |
 | [`bash-scripting-training-set/`](./bash-scripting-training-set) | Bash scripting (quoting, traps, awk/sed, cron, real scripts), 12 parts · 240 entries. |
 | [`pandas-data-wrangling-training-set/`](./pandas-data-wrangling-training-set) | pandas data wrangling (IO, cleaning, groupby, merge, reshape), 12 parts · 240 entries. |
+| [`python-function-writing-training-set/`](./python-function-writing-training-set) | Python function writing from natural-language specs, 12 parts · 240 entries. |
+| [`unit-test-generation-training-set/`](./unit-test-generation-training-set) | Unit test generation (pytest, fixtures, parametrize), 12 parts · 240 entries. |
+| [`code-review-training-set/`](./code-review-training-set) | Code review with issues, severity and fixes, 12 parts · 240 entries. |
+| [`refactoring-training-set/`](./refactoring-training-set) | Code refactoring (extract, simplify, modernize), 12 parts · 240 entries. |
+| [`code-conversion-training-set/`](./code-conversion-training-set) | Code conversion between languages (Py↔JS↔SQL etc.), 12 parts · 240 entries. |
+| [`javascript-typescript-training-set/`](./javascript-typescript-training-set) | JavaScript / TypeScript bugs, async and types, 12 parts · 240 entries. |
+| [`html-css-tailwind-training-set/`](./html-css-tailwind-training-set) | HTML / CSS / Tailwind UI generation, 12 parts · 240 entries. |
+| [`algorithms-data-structures-training-set/`](./algorithms-data-structures-training-set) | Algorithms & data structures (implement, trace, analyze), 12 parts · 240 entries. |
+| [`github-actions-training-set/`](./github-actions-training-set) | GitHub Actions CI/CD workflow authoring, 12 parts · 240 entries. |
+| [`terraform-training-set/`](./terraform-training-set) | Terraform infrastructure-as-code (resources, modules, state), 12 parts · 240 entries. |
+| [`nginx-config-training-set/`](./nginx-config-training-set) | nginx server/proxy config and troubleshooting, 12 parts · 240 entries. |
+| [`systemd-services-training-set/`](./systemd-services-training-set) | systemd units, timers and journal debugging, 12 parts · 240 entries. |
+| [`prometheus-grafana-training-set/`](./prometheus-grafana-training-set) | Prometheus PromQL, exporters and Grafana dashboards, 12 parts · 240 entries. |
+| [`log-parsing-training-set/`](./log-parsing-training-set) | Log parsing / extraction with awk, sed and regex, 12 parts · 240 entries. |
+| [`json-schema-extraction-training-set/`](./json-schema-extraction-training-set) | JSON → schema inference and validation rules, 12 parts · 240 entries. |
+| [`commit-message-generation-training-set/`](./commit-message-generation-training-set) | Conventional-commit message generation from diffs, 12 parts · 240 entries. |
+| [`stacktrace-rootcause-training-set/`](./stacktrace-rootcause-training-set) | Stacktrace / error → root cause and fix, 12 parts · 240 entries. |
+| [`instruction-following-training-set/`](./instruction-following-training-set) | Strict instruction-following (format, constraints), 12 parts · 240 entries. |
+| [`pytorch-tensor-ops-training-set/`](./pytorch-tensor-ops-training-set) | PyTorch tensor ops, autograd and training loops, 12 parts · 240 entries. |
+| [`sklearn-pipeline-training-set/`](./sklearn-pipeline-training-set) | scikit-learn pipelines, preprocessing and CV, 12 parts · 240 entries. |
+| [`matplotlib-plot-code-training-set/`](./matplotlib-plot-code-training-set) | matplotlib plotting code from plot descriptions, 12 parts · 240 entries. |
+| [`secure-code-audit-training-set/`](./secure-code-audit-training-set) | Security code audit (injection, XSS, SSRF, secrets, deps), 12 parts · 240 entries. |
+| [`networking-diagnostics-training-set/`](./networking-diagnostics-training-set) | Networking diagnostics (DNS, TLS, routing, tcpdump), 12 parts · 240 entries. |
+| [`technical-docs-training-set/`](./technical-docs-training-set) | Technical documentation (README, docstrings, ADRs), 12 parts · 240 entries. |
+| [`text-classification-training-set/`](./text-classification-training-set) | Text classification labels and rules, 12 parts · 240 entries. |
 
 ## Quick start
 

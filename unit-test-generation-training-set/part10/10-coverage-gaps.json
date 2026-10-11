@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "This function has an uncovered else branch. Write tests that cover both the if and the else path.\n\ndef classify(n):\n    if n > 0:\n        return 'positive'\n    else:\n        return 'non-positive'",
+    "output": "from logic import classify\n\ndef test_positive_branch():\n    assert classify(5) == 'positive'\n\ndef test_else_branch():\n    assert classify(-1) == 'non-positive'\n\ndef test_else_branch_zero():\n    assert classify(0) == 'non-positive'"
+  },
+  {
+    "instruction": "The except branch in this function is never exercised. Write tests that hit both the happy path and the exception path.\n\ndef read_int(text):\n    try:\n        return int(text)\n    except ValueError:\n        return None",
+    "output": "from parsing import read_int\n\ndef test_read_int_success():\n    assert read_int('42') == 42\n\ndef test_read_int_failure_branch():\n    assert read_int('oops') is None\n\ndef test_read_int_empty_string_branch():\n    assert read_int('') is None"
+  },
+  {
+    "instruction": "Both sides of this boolean short-circuit are untested. Write tests for the early-return case and the full-evaluation case.\n\ndef is_valid_request(payload):\n    if payload is None or 'id' not in payload:\n        return False\n    return True",
+    "output": "from validation import is_valid_request\n\ndef test_none_short_circuits():\n    assert is_valid_request(None) is False\n\ndef test_missing_id_branch():\n    assert is_valid_request({'name': 'x'}) is False\n\ndef test_valid_payload():\n    assert is_valid_request({'id': 1}) is True"
+  },
+  {
+    "instruction": "This guard-clause function is only tested on its happy path. Write a test that covers the early return.\n\ndef divide_unless_zero(a, b):\n    if b == 0:\n        return None\n    return a / b\n\ndef average(numbers):\n    if not numbers:\n        return None\n    return sum(numbers) / len(numbers)",
+    "output": "from stats import divide_unless_zero, average\n\ndef test_average_happy_path():\n    assert average([2, 4]) == 3\n\ndef test_average_empty_guard():\n    assert average([]) is None\n\ndef test_divide_guard():\n    assert divide_unless_zero(1, 0) is None\n\ndef test_divide_happy():\n    assert divide_unless_zero(6, 3) == 2"
+  },
+  {
+    "instruction": "The loop's break and continue paths are untested. Write tests that force each path.\n\ndef first_even_or_none(numbers):\n    for n in numbers:\n        if n % 2 != 0:\n            continue\n        return n\n    return None\n\ndef first_negative(numbers):\n    for n in numbers:\n        if n >= 0:\n            continue\n        return n\n    return None",
+    "output": "from search import first_even_or_none, first_negative\n\ndef test_continue_path_skips_odds():\n    assert first_even_or_none([1, 3, 4, 6]) == 4\n\ndef test_break_like_return_on_first_match():\n    assert first_even_or_none([2, 4, 6]) == 2\n\ndef test_loop_exhausts_to_none():\n    assert first_even_or_none([1, 3, 5]) is None\n\ndef test_first_negative():\n    assert first_negative([0, -1, -2]) == -1"
+  },
+  {
+    "instruction": "dict.get's default path is uncovered. Write tests covering a cache hit and a cache miss.\n\ndef cached_lookup(cache, key, compute):\n    if key in cache:\n        return cache[key]\n    value = compute(key)\n    cache[key] = value\n    return value",
+    "output": "from caching import cached_lookup\n\ndef test_cache_hit_path():\n    compute = lambda k: 1 / 0\n    assert cached_lookup({'a': 5}, 'a', compute) == 5\n\ndef test_cache_miss_computes_and_stores():\n    cache = {}\n    assert cached_lookup(cache, 'b', lambda k: len(k) * 10) == 20\n    assert cache == {'b': 20}"
+  },
+  {
+    "instruction": "This ternary expression only evaluates one side in tests. Write tests covering both branches.\n\ndef size_label(n):\n    return 'big' if n >= 100 else 'small'",
+    "output": "from labels import size_label\n\ndef test_big_branch():\n    assert size_label(150) == 'big'\n\ndef test_big_branch_boundary():\n    assert size_label(100) == 'big'\n\ndef test_small_branch():\n    assert size_label(99) == 'small'"
+  },
+  {
+    "instruction": "The multiple except clauses are only partly covered. Write tests for each exception type this function can raise.\n\ndef parse_entry(text):\n    try:\n        number = int(text)\n        return 100 // number\n    except ValueError:\n        return 'not-a-number'\n    except ZeroDivisionError:\n        return 'divide-by-zero'",
+    "output": "from parser import parse_entry\n\ndef test_success_path():\n    assert parse_entry('5') == 20\n\ndef test_value_error_branch():\n    assert parse_entry('abc') == 'not-a-number'\n\ndef test_zero_division_branch():\n    assert parse_entry('0') == 'divide-by-zero'"
+  },
+  {
+    "instruction": "The raise-inside-condition path is uncovered. Write tests covering both the accepted and rejected cases with the custom error.\n\ndef enroll(student, min_age=18):\n    if student['age'] < min_age:\n        raise ValueError(f\"{student['name']} is too young\")\n    return f\"enrolled {student['name']}\"",
+    "output": "import pytest\nfrom enrollment import enroll\n\ndef test_enroll_success():\n    assert enroll({'name': 'Ann', 'age': 20}) == 'enrolled Ann'\n\ndef test_enroll_too_young_raises():\n    with pytest.raises(ValueError, match='too young'):\n        enroll({'name': 'Sam', 'age': 15})\n\ndef test_enroll_age_boundary_is_accepted():\n    assert enroll({'name': 'Kim', 'age': 18}) == 'enrolled Kim'"
+  },
+  {
+    "instruction": "This nested if structure leaves the inner branches uncovered. Write tests covering all four combinations.\n\ndef can_checkout(cart, user):\n    if cart:\n        if user.get('verified'):\n            return True\n        return False\n    return False",
+    "output": "from checkout import can_checkout\n\ndef test_nonempty_cart_verified_user():\n    assert can_checkout([1], {'verified': True}) is True\n\ndef test_nonempty_cart_unverified_user():\n    assert can_checkout([1], {}) is False\n\ndef test_empty_cart_verified_user():\n    assert can_checkout([], {'verified': True}) is False\n\ndef test_empty_cart_unverified_user():\n    assert can_checkout([], {}) is False"
+  },
+  {
+    "instruction": "Only the cache-miss path of this memoized function is covered. Write tests covering cache hits, including repeated and different arguments.\n\nimport functools\n\ndef expensive(n):\n    return n * n\n\nmemo = functools.lru_cache(maxsize=None)(expensive)",
+    "output": "from module import memo\n\ndef test_cache_hit_for_same_args():\n    first = memo(10)\n    second = memo(10)\n    assert first == second == 100\n    assert memo.cache_info().hits >= 1\n\ndef test_cache_miss_for_new_args():\n    assert memo(11) == 121\n    assert memo.cache_info().misses >= 1\n\ndef test_multiple_args_cached():\n    assert memo(12) == 144\n    assert memo(12) == 144"
+  },
+  {
+    "instruction": "The retry function's final-failure raise is untested. Write tests for first-attempt success, success after retries, and exhaustion.\n\ndef retry_call(fn, attempts=3):\n    last = None\n    for _ in range(attempts):\n        try:\n            return fn()\n        except ValueError as exc:\n            last = exc\n    raise last",
+    "output": "import pytest\nfrom retry import retry_call\n\ndef test_success_first_attempt():\n    calls = []\n    def ok():\n        calls.append(1)\n        return 'ok'\n    assert retry_call(ok) == 'ok'\n    assert len(calls) == 1\n\ndef test_success_after_retry():\n    state = {'n': 0}\n    def flaky():\n        state['n'] += 1\n        if state['n'] < 2:\n            raise ValueError('again')\n        return 'recovered'\n    assert retry_call(flaky) == 'recovered'\n\ndef test_attempts_exhausted():\n    def always():\n        raise ValueError('never')\n    with pytest.raises(ValueError, match='never'):\n        retry_call(always, attempts=2)"
+  },
+  {
+    "instruction": "Only the non-empty branch of this summarizer is tested. Write tests covering the empty case and the single-item case as well.\n\ndef summarize(values):\n    if not values:\n        return {'count': 0, 'total': 0}\n    if len(values) == 1:\n        return {'count': 1, 'total': values[0]}\n    return {'count': len(values), 'total': sum(values), 'mean': sum(values) / len(values)}",
+    "output": "from stats import summarize\n\ndef test_empty_branch():\n    assert summarize([]) == {'count': 0, 'total': 0}\n\ndef test_single_item_branch():\n    assert summarize([7]) == {'count': 1, 'total': 7}\n\ndef test_many_items_branch():\n    assert summarize([1, 2, 3]) == {'count': 3, 'total': 6, 'mean': 2.0}"
+  },
+  {
+    "instruction": "This parser silently skips blank lines only on one path. Write tests covering blank-line skipping, comment skipping, and parsed lines.\n\ndef parse_properties(text):\n    result = {}\n    for line in text.splitlines():\n        stripped = line.strip()\n        if not stripped:\n            continue\n        if stripped.startswith('#'):\n            continue\n        key, _, value = stripped.partition('=')\n        result[key.strip()] = value.strip()\n    return result",
+    "output": "from props import parse_properties\n\ndef test_blank_lines_skipped():\n    assert parse_properties('a=1\\n\\n\\nb=2') == {'a': '1', 'b': '2'}\n\ndef test_comment_lines_skipped():\n    assert parse_properties('# header\\na=1\\n  # inline note\\nb=2') == {'a': '1', 'b': '2'}\n\ndef test_parsed_values():\n    assert parse_properties('  name = Ada  ') == {'name': 'Ada'}"
+  },
+  {
+    "instruction": "The isinstance dispatch in this formatter has uncovered arms. Write tests covering str, int and the fallback arm.\n\ndef format_value(value):\n    if isinstance(value, str):\n        return f'text:{value}'\n    if isinstance(value, int):\n        return f'num:{value}'\n    return f'other:{value!r}'",
+    "output": "from formatting import format_value\n\ndef test_str_arm():\n    assert format_value('hi') == 'text:hi'\n\ndef test_int_arm():\n    assert format_value(42) == 'num:42'\n\ndef test_fallback_arm():\n    assert format_value(3.14) == 'other:3.14'"
+  },
+  {
+    "instruction": "Only the initial open state of a circuit breaker is tested. Write tests that trip the breaker open and let it become half-open again.\n\nclass CircuitBreaker:\n    def __init__(self, threshold=2, reset_after=1):\n        self.threshold = threshold\n        self.failures = 0\n        self.state = 'closed'\n    def record(self, success):\n        if success:\n            self.failures = 0\n            self.state = 'closed'\n        else:\n            self.failures += 1\n            if self.failures >= self.threshold:\n                self.state = 'open'",
+    "output": "from breaker import CircuitBreaker\n\ndef test_trips_open_after_failures():\n    cb = CircuitBreaker(threshold=2)\n    cb.record(False)\n    assert cb.state == 'closed'\n    cb.record(False)\n    assert cb.state == 'open'\n\ndef test_success_resets_to_closed():\n    cb = CircuitBreaker(threshold=2)\n    cb.record(False)\n    cb.record(True)\n    assert cb.state == 'closed'\n    assert cb.failures == 0"
+  },
+  {
+    "instruction": "This function's empty-input and whitespace-only branches lack coverage. Write tests for each distinct branch.\n\ndef dominant_word(text):\n    words = [w for w in text.split() if w]\n    if not words:\n        return None\n    counts = {}\n    for w in words:\n        counts[w] = counts.get(w, 0) + 1\n    return max(counts, key=counts.get)",
+    "output": "from textstats import dominant_word\n\ndef test_normal_text():\n    assert dominant_word('a b a c a b') == 'a'\n\ndef test_empty_input_branch():\n    assert dominant_word('') is None\n\ndef test_whitespace_only_branch():\n    assert dominant_word('   \\t  ') is None\n\ndef test_single_word():\n    assert dominant_word('only') == 'only'"
+  },
+  {
+    "instruction": "The except-else-finally flow in this writer is only partly tested. Write a test that triggers the finally cleanup and one that triggers the except path.\n\ndef write_report(path, content):\n    handle = None\n    try:\n        handle = open(path, 'w')\n        if content is None:\n            raise ValueError('no content')\n        handle.write(content)\n        return 'written'\n    except ValueError:\n        return 'rejected'\n    finally:\n        if handle is not None:\n            handle.close()",
+    "output": "import pytest\nfrom report import write_report\n\ndef test_written_branch(tmp_path):\n    path = tmp_path / 'r.txt'\n    assert write_report(path, 'hello') == 'written'\n    assert path.read_text() == 'hello'\n\ndef test_rejected_branch(tmp_path):\n    path = tmp_path / 'r2.txt'\n    assert write_report(path, None) == 'rejected'\n    assert path.read_text() == ''\n\ndef test_finally_closed_even_on_success(tmp_path, monkeypatch):\n    closed = {}\n    real_open = open\n    class Spy:\n        def __init__(self, *a, **k):\n            self._f = real_open(*a, **k)\n        def write(self, data):\n            return self._f.write(data)\n        def close(self):\n            closed['yes'] = True\n            self._f.close()\n    monkeypatch.setitem(__import__('builtins').__dict__, 'open', lambda *a, **k: Spy(*a, **k))\n    write_report(tmp_path / 'r3.txt', 'x')\n    assert closed.get('yes') is True"
+  },
+  {
+    "instruction": "This calculator's error branches are uncovered: division by zero and unknown operators. Write tests covering every operator plus both error paths.\n\ndef apply_op(a, op, b):\n    if op == '+':\n        return a + b\n    if op == '-':\n        return a - b\n    if op == '/':\n        if b == 0:\n            raise ZeroDivisionError('cannot divide by zero')\n        return a / b\n    raise ValueError(f'unknown operator {op!r}')",
+    "output": "import pytest\nfrom calc import apply_op\n\ndef test_add():\n    assert apply_op(2, '+', 3) == 5\n\ndef test_sub():\n    assert apply_op(5, '-', 2) == 3\n\ndef test_div():\n    assert apply_op(6, '/', 3) == 2\n\ndef test_div_by_zero_branch():\n    with pytest.raises(ZeroDivisionError):\n        apply_op(1, '/', 0)\n\ndef test_unknown_operator_branch():\n    with pytest.raises(ValueError, match='unknown operator'):\n        apply_op(1, '*', 2)"
+  },
+  {
+    "instruction": "This config merger's deep-merge recursion and scalar-overwrite branches need coverage. Write tests exercising nested dicts and scalar overrides.\n\ndef merge(base, override):\n    result = dict(base)\n    for key, value in override.items():\n        if isinstance(value, dict) and isinstance(result.get(key), dict):\n            result[key] = merge(result[key], value)\n        else:\n            result[key] = value\n    return result",
+    "output": "from config import merge\n\ndef test_scalar_override_branch():\n    assert merge({'a': 1, 'b': 2}, {'b': 3}) == {'a': 1, 'b': 3}\n\ndef test_deep_merge_branch():\n    base = {'x': {'y': 1, 'z': 2}, 'keep': True}\n    override = {'x': {'z': 99}}\n    assert merge(base, override) == {'x': {'y': 1, 'z': 99}, 'keep': True}\n\ndef test_new_key_branch():\n    assert merge({}, {'fresh': 1}) == {'fresh': 1}"
+  }
+]

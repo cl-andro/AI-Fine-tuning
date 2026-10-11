@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by replacing the append loop with a list comprehension:\n\ndef doubles(nums):\n    out = []\n    for n in nums:\n        out.append(n * 2)\n    return out",
+    "output": "def doubles(nums):\n    return [n * 2 for n in nums]\n\nWhat changed: the accumulator variable and append bookkeeping disappeared; the expression and the source are visible in one line."
+  },
+  {
+    "instruction": "Refactor this code by converting the nested loops into a nested comprehension:\n\ndef grid(m):\n    out = []\n    for row in m:\n        r = []\n        for v in row:\n            r.append(v * v)\n        out.append(r)\n    return out",
+    "output": "def grid(m):\n    return [[v * v for v in row] for row in m]\n\nWhat changed: two loops, two temporaries and two appends became one nested comprehension mirroring the matrix shape."
+  },
+  {
+    "instruction": "Refactor this code by replacing the dict-building loop:\n\ndef index_by_id(rows):\n    d = {}\n    for r in rows:\n        d[r['id']] = r\n    return d",
+    "output": "def index_by_id(rows):\n    return {r['id']: r for r in rows}\n\nWhat changed: the mutable dict and manual assignment became a dict comprehension; insertion order and overwrite semantics stay identical."
+  },
+  {
+    "instruction": "Refactor this code by replacing the set-building loop:\n\ndef tags(items):\n    s = set()\n    for it in items:\n        for t in it['tags']:\n            s.add(t)\n    return s",
+    "output": "def tags(items):\n    return {t for it in items for t in it['tags']}\n\nWhat changed: the nested loops and add() calls became a set comprehension, which also documents that duplicates collapse."
+  },
+  {
+    "instruction": "Refactor this code by replacing the accumulation loop with sum():\n\ndef total(prices):\n    s = 0\n    for p in prices:\n        s += p\n    return s",
+    "output": "def total(prices):\n    return sum(prices)\n\nWhat changed: the hand-rolled accumulator is a built-in; sum() starts at 0 and cannot forget to initialize."
+  },
+  {
+    "instruction": "Refactor this code by replacing the manual flag loops with all()/any():\n\ndef all_valid(rows):\n    ok = True\n    for r in rows:\n        if r['qty'] <= 0:\n            ok = False\n    return ok\n\ndef any_refunded(orders):\n    found = False\n    for o in orders:\n        if o['refunded']:\n            found = True\n    return found",
+    "output": "def all_valid(rows):\n    return all(r['qty'] > 0 for r in rows)\n\ndef any_refunded(orders):\n    return any(o['refunded'] for o in orders)\n\nWhat changed: flag-mutating loops became all()/any() over generator expressions, which also short-circuit instead of scanning everything."
+  },
+  {
+    "instruction": "Refactor this code by using enumerate in a comprehension:\n\ndef numbered(items):\n    out = []\n    i = 0\n    for it in items:\n        out.append((i, it.upper()))\n        i += 1\n    return out",
+    "output": "def numbered(items):\n    return [(i, it.upper()) for i, it in enumerate(items)]\n\nWhat changed: the manual counter (and the risk of forgetting i += 1) was replaced by enumerate inside the comprehension."
+  },
+  {
+    "instruction": "Refactor this code by moving the conditional into the comprehension:\n\ndef evens_and_odds(nums):\n    out = []\n    for n in nums:\n        if n % 2 == 0:\n            out.append(str(n))\n        else:\n            out.append('-')\n    return out",
+    "output": "def evens_and_odds(nums):\n    return [str(n) if n % 2 == 0 else '-' for n in nums]\n\nWhat changed: if/else append pairs became a conditional expression inside one comprehension, keeping index alignment with the input."
+  },
+  {
+    "instruction": "Refactor this code by replacing the counting loop with a generator sum:\n\ndef count_active(users):\n    n = 0\n    for u in users:\n        if u.get('active'):\n            n += 1\n    return n",
+    "output": "def count_active(users):\n    return sum(1 for u in users if u.get('active'))\n\nWhat changed: counting became sum(1 for ... if ...), a standard idiom that removes the counter variable entirely."
+  },
+  {
+    "instruction": "Refactor this code by flattening the nested loop with a comprehension:\n\ndef flat(pairs):\n    out = []\n    for a, b in pairs:\n        out.append(a)\n        out.append(b)\n    return out",
+    "output": "def flat(pairs):\n    return [x for pair in pairs for x in pair]\n\nWhat changed: manual interleaved appends became the two-clause flatten comprehension, which reads left to right like the loops did."
+  },
+  {
+    "instruction": "Refactor this code by zipping inside a comprehension:\n\ndef diffs(a, b):\n    out = []\n    for i in range(len(a)):\n        out.append(a[i] - b[i])\n    return out",
+    "output": "def diffs(a, b):\n    return [x - y for x, y in zip(a, b)]\n\nWhat changed: index arithmetic and range(len(...)) vanished; zip pairs the elements directly and stops at the shorter input."
+  },
+  {
+    "instruction": "Refactor this code by replacing the string-building loop with join():\n\ndef table(rows):\n    html = ''\n    for r in rows:\n        html += '<tr><td>' + r['name'] + '</td></tr>\\n'\n    return html",
+    "output": "def table(rows):\n    return ''.join(f'<tr><td>{r[\"name\"]}</td></tr>\\n' for r in rows)\n\nWhat changed: quadratic += concatenation became a generator into str.join, which allocates the result once."
+  },
+  {
+    "instruction": "Refactor this code by combining the map/filter pair into one comprehension:\n\ndef labels(values):\n    kept = filter(lambda v: v is not None, values)\n    return list(map(lambda v: v.strip(), kept))",
+    "output": "def labels(values):\n    return [v.strip() for v in values if v is not None]\n\nWhat changed: two higher-order passes (and two lambdas) collapsed into one comprehension with the filter on the right and the mapping on the left."
+  },
+  {
+    "instruction": "Refactor this code by replacing the max-tracking loop:\n\ndef longest(words):\n    best = ''\n    for w in words:\n        if len(w) > len(best):\n            best = w\n    return best",
+    "output": "def longest(words):\n    return max(words, key=len)\n\nWhat changed: the tracking variable and comparison loop became max(key=len), which is the operation the code was really performing."
+  },
+  {
+    "instruction": "Refactor this code by moving the continue guard into the comprehension:\n\ndef names(rows):\n    out = []\n    for r in rows:\n        if r.get('deleted'):\n            continue\n        if 'name' not in r:\n            continue\n        out.append(r['name'])\n    return out",
+    "output": "def names(rows):\n    return [r['name'] for r in rows\n            if not r.get('deleted') and 'name' in r]\n\nWhat changed: two continue guards became filter conditions at the end of the comprehension, so the append is the only body."
+  },
+  {
+    "instruction": "Refactor this code by building the lookup dict with a comprehension:\n\ndef prices_by_sku(rows):\n    lookup = {}\n    for r in rows:\n        sku = r['sku']\n        if sku not in lookup:\n            lookup[sku] = []\n        lookup[sku].append(r['price'])\n    return lookup",
+    "output": "from collections import defaultdict\n\ndef prices_by_sku(rows):\n    grouped = defaultdict(list)\n    for r in rows:\n        grouped[r['sku']].append(r['price'])\n    return dict(grouped)\n\nWhat changed: the check-then-create boilerplate became defaultdict(list); a pure {r['sku']: r['price'] for r in rows} comprehension covers the unique-sku case."
+  },
+  {
+    "instruction": "Refactor this code by filtering with a comprehension instead of mutating while iterating:\n\ndef without_zeroes(nums):\n    out = []\n    i = 0\n    while i < len(nums):\n        if nums[i] == 0:\n            i += 1\n            continue\n        out.append(nums[i])\n        i += 1\n    return out",
+    "output": "def without_zeroes(nums):\n    return [n for n in nums if n != 0]\n\nWhat changed: the index-managed while loop became a filter comprehension; no mutation, no skips, no off-by-one."
+  },
+  {
+    "instruction": "Refactor this code by replacing the pair-building loop:\n\ndef zip_labels(values, labels):\n    out = []\n    i = 0\n    while i < len(values) and i < len(labels):\n        out.append((labels[i], values[i]))\n        i += 1\n    return out",
+    "output": "def zip_labels(values, labels):\n    return [(label, value) for value, label in zip(values, labels)]\n\nWhat changed: manual bounds-checked indexing became zip(); the truncation-to-shorter behavior is preserved and the index math is gone."
+  },
+  {
+    "instruction": "Refactor this code by converting the nested membership scan to comprehension work:\n\ndef unique_common(a, b):\n    out = []\n    for x in a:\n        seen = False\n        for y in b:\n            if x == y:\n                seen = True\n        if seen and x not in out:\n            out.append(x)\n    return out",
+    "output": "def unique_common(a, b):\n    b_set = set(b)\n    return list(dict.fromkeys(x for x in a if x in b_set))\n\nWhat changed: nested scans became a set-membership filter plus order-preserving dedupe; time drops from O(n*m) to O(n+m)."
+  },
+  {
+    "instruction": "Refactor this code by using a walrus inside the comprehension:\n\ndef valid_lines(lines):\n    out = []\n    for line in lines:\n        cleaned = line.strip()\n        if cleaned:\n            out.append(cleaned)\n    return out",
+    "output": "def valid_lines(lines):\n    return [cleaned for line in lines if (cleaned := line.strip())]\n\nWhat changed: the intermediate cleaned variable moved into the filter via :=, so the value tested and the value appended are the same expression once."
+  }
+]

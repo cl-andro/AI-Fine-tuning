@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: non-root app process applying its settings.\n\nTraceback (most recent call last):\n  File \"/app/config_writer.py\", line 33, in apply\n    with open(\"/etc/nginx/nginx.conf\", \"w\") as fh:\nPermissionError: [Errno 13] Permission denied: '/etc/nginx/nginx.conf'",
+    "output": "**Root cause:** the file is owned by root with mode 644, and the app runs as an unprivileged user, so opening it for write fails.\n**Fix:** Write to an app-owned path and have a root helper reload, or use `sudo`/a ConfigMap volume; never run the service as root."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: container writing output files into a read-only mount.\n\nTraceback (most recent call last):\n  File \"/app/export.py\", line 51, in save\n    with open(out_path, \"wb\") as fh:\nOSError: [Errno 30] Read-only file system: '/data/output.csv'",
+    "output": "**Root cause:** `/data` is mounted read-only (`:ro` / `readOnlyRootFilesystem: true`), so any write to that path returns EROFS.\n**Fix:** Mount a writable volume at the output path (or drop the read-only flag for that directory), and keep the root filesystem read-only for the rest."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: log writer running on a nearly full disk.\n\nTraceback (most recent call last):\n  File \"/app/logwriter.py\", line 19, in flush\n    self._fh.write(chunk)\nOSError: [Errno 28] No space left on device",
+    "output": "**Root cause:** the filesystem reached 100% capacity, so the write fails with ENOSPC (the inode/block pool is exhausted).\n**Fix:** Free space (truncate/rotate old logs), add disk monitoring, and configure log rotation before the volume fills."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: cache builder deriving a filename from a long URL.\n\nTraceback (most recent call last):\n  File \"/app/cache.py\", line 88, in write\n    with open(cache_path, \"w\") as fh:\nOSError: [Errno 36] File name too long: '/app/cache/https___example.com_api_v1_reports_2026_04_01_scope_all_..._very_long_query_string_here.json'",
+    "output": "**Root cause:** the generated path exceeds the filesystem limit (255 bytes per component on ext4) because the whole URL became one filename.\n**Fix:** Hash the key (`hashlib.sha256(url).hexdigest() + \".json\"`) instead of using the raw URL, and truncate defensively."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: data loader following a self-referential symlink in an archive.\n\nTraceback (most recent call last):\n  File \"/app/loader.py\", line 44, in open_entry\n    return open(target, \"rb\")\nOSError: [Errno 40] Too many levels of symbolic links: '/data/uploads/latest'",
+    "output": "**Root cause:** `latest` is a symlink pointing to itself (a loop), so path resolution gives ELOOP.\n**Fix:** Repair or delete the broken link, and create symlinks with relative targets that cannot cycle (`ln -s ../runs/123 latest`)."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: maintenance script updating an SQLite database file.\n\nsqlite3.OperationalError: attempt to write a readonly database",
+    "output": "**Root cause:** the database file (or its directory) is not writable by the process user - the file was restored as root-owned, so SQLite cannot journal/write.\n**Fix:** `chown` the file/directory to the service user (`chown app:app app.db`) and ensure the directory allows create/delete for temp journal files."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: uploader passing a directory path where a file was expected.\n\nTraceback (most recent call last):\n  File \"/app/upload.py\", line 27, in read\n    with open(path, \"rb\") as fh:\nIsADirectoryError: [Errno 21] Is a directory: '/data/uploads/invoices'",
+    "output": "**Root cause:** `/data/uploads/invoices` is a directory, and `open()` was given a path that points to a directory rather than a file.\n**Fix:** Validate `os.path.isfile(path)` before opening (or join a filename), and reject directory paths with a clear error."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: cleanup routine removing an old output folder.\n\nTraceback (most recent call last):\n  File \"/app/cleanup.py\", line 62, in purge\n    shutil.rmtree(target)\n  File \"/usr/lib/python3.11/shutil.py\", line 746, in rmtree\nOSError: [Errno 39] Directory not empty: '/app/tmp/report-2026-04'",
+    "output": "**Root cause:** the directory still contains entries (a concurrent writer recreated a file after the walk started), so removal fails.\n**Fix:** Retry with `shutil.rmtree(..., ignore_errors=False)` after quiescing writers, or use `onexc`/`onerror` handlers that continue past transient files."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: redeploy while the log writer still holds the file.\n\n$ rm -f /var/log/app/events.log\nrm: cannot remove '/var/log/app/events.log': Device or resource busy",
+    "output": "**Root cause:** the file is a bind mount target (or is held open by the running writer), so the mount table keeps it busy and unlink fails with EBUSY.\n**Fix:** Stop the container/process or unmount first (`umount /var/log/app`), then delete; rotate logs with rename+truncate while the writer holds the descriptor."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: security hardening script marking a config immutable.\n\n$ chattr +i /etc/app/secrets.env\nchattr: Operation not permitted while setting flag on /etc/app/secrets.env",
+    "output": "**Root cause:** setting `+i` requires the `CAP_LINUX_IMMUTABLE` capability/root, and the shell user has neither.\n**Fix:** Run the command through `sudo` (or as root with the capability granted), and re-apply the flag after any legitimate edit with `chattr -i`."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: deploy user trying to make a script executable.\n\n$ chmod +x /srv/release/deploy.sh\nchmod: changing permissions of '/srv/release/deploy.sh': Operation not permitted",
+    "output": "**Root cause:** the file is owned by another user (root) and the caller is not root, and the sticky/setgid bit on the directory prevents changing ownership/mode.\n**Fix:** Use `sudo chmod +x ...`, or have the build step produce the file with the right mode (`git update-index --chmod=+x` in the repo)."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: CI runner connecting to a production host.\n\nroot@build-01: Permission denied (publickey).\r\n",
+    "output": "**Root cause:** the server does not accept the client's key - the public key is missing from `authorized_keys`, wrong permissions, or the agent offered a different key.\n**Fix:** Install the public key in `~/.ssh/authorized_keys` (mode 600, home dir not group-writable) and confirm the agent has the private key (`ssh-add -l`)."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: operator escalating privileges on a hardened host.\n\n$ systemctl restart app\nuser is not in the sudoers file. This incident will be reported.\n",
+    "output": "**Root cause:** the account has no sudoers entry (or lacks the required `NOPASSWD` command), so privilege escalation is refused and logged.\n**Fix:** Grant a minimal sudoers drop-in for exactly that command (`user ALL=(root) /usr/bin/systemctl restart app`), or use an approved jump host/policy tool."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: developer running docker without membership in the docker group.\n\n$ docker ps\npermission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get \"http://%2Fvar%2Frun%2Fdocker.sock/v1.41/containers/json\": dial unix /var/run/docker.sock: connect: permission denied",
+    "output": "**Root cause:** the socket is owned by `root:docker` with mode 660, and the user is not in the `docker` group, so the connection is refused.\n**Fix:** Add the user to the `docker` group (`sudo usermod -aG docker $USER` and re-login), or use rootless Docker/podman with a user-owned socket."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: Kubernetes pod with runAsNonRoot set but an image built as root.\n\nEvents:\n  Warning  Failed   Pod  sandbox container \"...\" failed: container's runAsNonRoot breaks non-zero UID: container has runAsNonRoot and image will run as root",
+    "output": "**Root cause:** the pod enforces `runAsNonRoot: true`, but the image has no non-root USER, so the kubelet refuses to start it.\n**Fix:** Add `USER app` (and `chown` app-owned paths) in the Dockerfile, or run as a specific UID via `runAsUser` with files writable by that UID."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: upload job writing objects to S3 with its IAM role.\n\nAn error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:iam::123456789012:role/app-writer is not authorized to perform: s3:PutObject on resource: arn:aws:s3:::app-uploads/* because no identity-based policy allows the s3:PutObject action",
+    "output": "**Root cause:** the role's IAM policy does not grant `s3:PutObject` on `app-uploads/*` (bucket policy may also deny), so the call is denied.\n**Fix:** Attach a policy allowing `s3:PutObject` on that bucket prefix (least privilege), and confirm the object key matches the resource pattern."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: deploy key pushing a hotfix to a private repository.\n\nERROR: Permission to acme/widgets.git denied to deploy-key.\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights and the repository exists.",
+    "output": "**Root cause:** the deploy key is read-only (or not a collaborator on this repo), so `git push` is refused even though clone works.\n**Fix:** Register the key as a write-enabled deploy key (or add the account as a collaborator/Grant push rights), then retry the push."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: Windows build agent writing into a protected folder.\n\nPermissionError: [WinError 5] Access is denied: 'C:\\\\builds\\\\out\\\\report.html'\n",
+    "output": "**Root cause:** the destination is protected (ACL denies write for the build user, or the file is locked/immutable from a previous run), so `open(..., 'w')` fails with WinError 5.\n**Fix:** Grant the build user Modify rights on `C:\\builds\\out`, close handles holding the file, and write to a user-owned workspace instead of Program Files-like paths."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: installer linking a runtime library into a system directory.\n\n$ ln -s /opt/tool/lib/libfoo.so /usr/lib/libfoo.so\nln: failed to create symbolic link '/usr/lib/libfoo.so': Permission denied",
+    "output": "**Root cause:** `/usr/lib` is root-owned (mode 755) and the installer is not root, so creating the link is denied.\n**Fix:** Run the link step with `sudo`, or prefer `ldconfig` with a directory the user can write (e.g. `/etc/ld.so.conf.d/` entry pointing at `/opt/tool/lib`)."
+  },
+  {
+    "instruction": "Root cause this permissions/IO failure.\nContext: mounting a backup volume from a normal shell.\n\n$ mount /dev/sdb1 /mnt/backup\nmount: /mnt/backup: must be superuser to use mount.",
+    "output": "**Root cause:** the `mount` syscall requires `CAP_SYS_ADMIN`, which only root (or a granted capability) has.\n**Fix:** Perform the mount as root (`sudo mount ...`), add an `/etc/fstab` entry so unprivileged users can mount it via `udisksctl`, or grant the specific capability where appropriate."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Find the latest Amazon Linux 2023 AMI with a data source and launch an instance with it.",
+    "output": "data \"aws_ssm_parameter\" \"al2023\" {\n  name = \"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64\"\n}\n\nresource \"aws_instance\" \"al\" {\n  ami           = data.aws_ssm_parameter.al2023.value\n  instance_type = \"t3.micro\"\n\n  tags = {\n    Name = \"al2023-node\"\n  }\n}\n\noutput \"ami_id\" {\n  value = data.aws_ssm_parameter.al2023.value\n}"
+  },
+  {
+    "instruction": "List available availability zones and output the first three.",
+    "output": "data \"aws_availability_zones\" \"available\" {\n  state = \"available\"\n}\n\noutput \"az_names\" {\n  value = slice(data.aws_availability_zones.available.names, 0, 3)\n}"
+  },
+  {
+    "instruction": "Output the caller identity account and ARN for use in policies.",
+    "output": "data \"aws_caller_identity\" \"current\" {}\n\noutput \"account_id\" {\n  value = data.aws_caller_identity.current.account_id\n}\n\noutput \"caller_arn\" {\n  value = data.aws_caller_identity.current.arn\n}"
+  },
+  {
+    "instruction": "Output the current provider region.",
+    "output": "data \"aws_region\" \"current\" {}\n\noutput \"region\" {\n  value = data.aws_region.current.name\n}\n\noutput \"region_endpoint\" {\n  value = data.aws_region.current.endpoint\n}"
+  },
+  {
+    "instruction": "Look up an existing S3 bucket by name and output its ARN.",
+    "output": "data \"aws_s3_bucket\" \"existing\" {\n  bucket = var.existing_bucket_name\n}\n\noutput \"existing_bucket_arn\" {\n  value = data.aws_s3_bucket.existing.arn\n}\n\nvariable \"existing_bucket_name\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Find a Route53 hosted zone by domain name and output the zone id.",
+    "output": "data \"aws_route53_zone\" \"public\" {\n  name         = \"example.com\"\n  private_zone = false\n}\n\noutput \"zone_id\" {\n  value = data.aws_route53_zone.public.zone_id\n}"
+  },
+  {
+    "instruction": "Look up an EBS volume with a filter on tags and output its device name.",
+    "output": "data \"aws_ebs_volume\" \"data\" {\n  filter {\n    name   = \"tag:Name\"\n    values = [\"shared-data-volume\"]\n  }\n}\n\noutput \"volume_device\" {\n  value = data.aws_ebs_volume.data.device_name\n}"
+  },
+  {
+    "instruction": "Read the network stack's remote state and output its VPC id.",
+    "output": "data \"terraform_remote_state\" \"network\" {\n  backend = \"s3\"\n\n  config = {\n    bucket = \"acme-terraform-state\"\n    key    = \"network/terraform.tfstate\"\n    region = \"us-east-1\"\n  }\n}\n\noutput \"vpc_id\" {\n  value = data.terraform_remote_state.network.outputs.vpc_id\n}"
+  },
+  {
+    "instruction": "Fetch an EKS cluster's endpoint and certificate authority from its data source.",
+    "output": "data \"aws_eks_cluster\" \"this\" {\n  name = var.cluster_name\n}\n\noutput \"cluster_endpoint\" {\n  value = data.aws_eks_cluster.this.endpoint\n}\n\noutput \"cluster_ca\" {\n  value     = data.aws_eks_cluster.this.certificate_authority[0].data\n  sensitive = true\n}\n\nvariable \"cluster_name\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Output a variable as sensitive so it never appears in plan output.",
+    "output": "variable \"db_password\" {\n  type      = string\n  sensitive = true\n}\n\nresource \"aws_db_instance\" \"app\" {\n  identifier     = \"app-db\"\n  engine         = \"postgres\"\n  instance_class = \"db.t4g.micro\"\n  allocated_storage = 20\n  username       = \"app\"\n  password       = var.db_password\n  skip_final_snapshot = true\n}\n\noutput \"db_endpoint\" {\n  value = aws_db_instance.app.endpoint\n}"
+  },
+  {
+    "instruction": "Export the ARNs of several resources together in a single map output.",
+    "output": "resource \"aws_sqs_queue\" \"events\" {\n  name = \"events\"\n}\n\nresource \"aws_sns_topic\" \"alerts\" {\n  name = \"alerts\"\n}\n\noutput \"notification_arns\" {\n  value = {\n    events_queue = aws_sqs_queue.events.arn\n    alerts_topic = aws_sns_topic.alerts.arn\n  }\n}"
+  },
+  {
+    "instruction": "Look up the default VPC and one of its default subnets, then output both ids.",
+    "output": "data \"aws_vpc\" \"default\" {\n  default = true\n}\n\ndata \"aws_subnets\" \"default\" {\n  filter {\n    name   = \"vpc-id\"\n    values = [data.aws_vpc.default.id]\n  }\n}\n\noutput \"default_vpc_id\" {\n  value = data.aws_vpc.default.id\n}\n\noutput \"first_default_subnet\" {\n  value = tolist(data.aws_subnets.default.ids)[0]\n}"
+  },
+  {
+    "instruction": "Look up an ACM certificate by domain and use its ARN on an HTTPS listener.",
+    "output": "data \"aws_acm_certificate\" \"wildcard\" {\n  domain      = \"*.example.com\"\n  statuses    = [\"ISSUED\"]\n  most_recent = true\n}\n\nresource \"aws_lb_listener\" \"https\" {\n  load_balancer_arn = var.lb_arn\n  port              = 443\n  protocol          = \"HTTPS\"\n  certificate_arn   = data.aws_acm_certificate.wildcard.arn\n\n  default_action {\n    type             = \"forward\"\n    target_group_arn = var.target_group_arn\n  }\n}\n\nvariable \"lb_arn\" {\n  type = string\n}\n\nvariable \"target_group_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Use the aws_partition data source to build ARNs that work in any partition.",
+    "output": "data \"aws_partition\" \"current\" {}\n\ndata \"aws_caller_identity\" \"current\" {}\n\nlocals {\n  bucket_arn = \"arn:${data.aws_partition.current.partition}:s3:::acme-shared\"\n}\n\noutput \"shared_bucket_arn\" {\n  value = local.bucket_arn\n}"
+  },
+  {
+    "instruction": "Look up the S3 service prefix list and open HTTPS egress to it from a security group.",
+    "output": "data \"aws_prefix_list\" \"s3\" {\n  name = \"com.amazonaws.${var.region}.s3\"\n}\n\nresource \"aws_vpc_security_group_egress_rule\" \"s3\" {\n  security_group_id = var.security_group_id\n  prefix_list_id    = data.aws_prefix_list.s3.id\n  from_port         = 443\n  to_port           = 443\n  ip_protocol       = \"tcp\"\n}\n\nvariable \"region\" {\n  type = string\n}\n\nvariable \"security_group_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Read an existing Lambda function's configuration and output its runtime.",
+    "output": "data \"aws_lambda_function\" \"existing\" {\n  function_name = var.function_name\n}\n\noutput \"runtime\" {\n  value = data.aws_lambda_function.existing.runtime\n}\n\noutput \"last_modified\" {\n  value = data.aws_lambda_function.existing.last_modified\n}\n\nvariable \"function_name\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Combine several data sources into one structured output map.",
+    "output": "data \"aws_caller_identity\" \"current\" {}\ndata \"aws_region\" \"current\" {}\ndata \"aws_availability_zones\" \"available\" {\n  state = \"available\"\n}\n\noutput \"environment_info\" {\n  value = {\n    account_id      = data.aws_caller_identity.current.account_id\n    region          = data.aws_region.current.name\n    available_zones = data.aws_availability_zones.available.names\n  }\n}"
+  },
+  {
+    "instruction": "Look up a security group by name tag and output its id for use in another stack.",
+    "output": "data \"aws_security_group\" \"app\" {\n  filter {\n    name   = \"tag:Name\"\n    values = [\"app-tier\"]\n  }\n\n  filter {\n    name   = \"vpc-id\"\n    values = [var.vpc_id]\n  }\n}\n\noutput \"app_security_group_id\" {\n  value = data.aws_security_group.app.id\n}\n\nvariable \"vpc_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Output derived values with expressions, including a conditional label.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nresource \"aws_sns_topic\" \"events\" {\n  name = \"events-${var.environment}\"\n}\n\noutput \"topic_name\" {\n  value = aws_sns_topic.events.name\n}\n\noutput \"criticality\" {\n  value = var.environment == \"prod\" ? \"high\" : \"normal\"\n}"
+  },
+  {
+    "instruction": "Export a module's outputs plus local computations in one place.",
+    "output": "variable \"project\" {\n  type = string\n}\n\nlocals {\n  fqdn = \"${var.project}.internal.example.com\"\n}\n\nresource \"aws_route53_record\" \"app\" {\n  zone_id = var.zone_id\n  name    = local.fqdn\n  type    = \"A\"\n  ttl     = 300\n  records = [var.app_ip]\n}\n\noutput \"service_url\" {\n  value = \"https://${local.fqdn}\"\n}\n\nvariable \"zone_id\" {\n  type = string\n}\n\nvariable \"app_ip\" {\n  type = string\n}"
+  }
+]

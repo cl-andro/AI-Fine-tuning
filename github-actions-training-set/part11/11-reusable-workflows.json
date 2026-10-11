@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create a reusable workflow triggered by workflow_call and call it from another workflow in the same repo.",
+    "output": "name: caller-local\non: push\njobs:\n  ci:\n    uses: ./.github/workflows/reusable-ci.yml\n\n---\n# reusable-ci.yml\nname: reusable-ci\non:\n  workflow_call:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci && npm test"
+  },
+  {
+    "instruction": "Define a reusable workflow with a node-version input and a default value.",
+    "output": "name: reusable-input-default\non: push\njobs:\n  test:\n    uses: ./.github/workflows/node-test.yml\n    with:\n      node-version: 22\n\n---\n# node-test.yml\nname: node-test\non:\n  workflow_call:\n    inputs:\n      node-version:\n        description: Node.js version to test\n        required: false\n        type: number\n        default: 20\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ inputs.node-version }}\n      - run: npm ci && npm test"
+  },
+  {
+    "instruction": "Expose a job output from a reusable workflow and print it in the caller.",
+    "output": "name: reusable-outputs\non: push\njobs:\n  build:\n    uses: ./.github/workflows/build.yml\n  print:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Built artifact ${{ needs.build.outputs.artifact }}\"\n\n---\n# build.yml\nname: build\non:\n  workflow_call:\n    outputs:\n      artifact:\n        description: Name of the built artifact\n        value: ${{ jobs.compile.outputs.artifact }}\njobs:\n  compile:\n    runs-on: ubuntu-latest\n    outputs:\n      artifact: ${{ steps.build.outputs.name }}\n    steps:\n      - uses: actions/checkout@v4\n      - id: build\n        run: echo \"name=app-${{ github.sha }}\" >> \"$GITHUB_OUTPUT\""
+  },
+  {
+    "instruction": "Call a reusable workflow with secrets: inherit to forward all repository secrets.",
+    "output": "name: secrets-inherit\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    uses: ./.github/workflows/deploy.yml\n    secrets: inherit\n\n---\n# deploy.yml\nname: deploy\non:\n  workflow_call:\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - name: Deploy\n        env:\n          TOKEN: ${{ secrets.DEPLOY_TOKEN }}\n        run: ./scripts/deploy.sh"
+  },
+  {
+    "instruction": "Declare a required secret explicitly in a reusable workflow and pass it from the caller.",
+    "output": "name: explicit-secret\non: push\njobs:\n  publish:\n    uses: ./.github/workflows/publish.yml\n    secrets:\n      npm-token:\n        ${{ secrets.NPM_TOKEN }}\n\n---\n# publish.yml\nname: publish\non:\n  workflow_call:\n    secrets:\n      npm-token:\n        description: npm registry token\n        required: true\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          registry-url: https://registry.npmjs.org\n      - run: npm ci && npm publish\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}"
+  },
+  {
+    "instruction": "Call an organization-level reusable workflow stored in a shared repository.",
+    "output": "name: org-workflow\non: push\njobs:\n  lint:\n    uses: my-org/.github/.github/workflows/shared-lint.yml@main\n    with:\n      linter: eslint"
+  },
+  {
+    "instruction": "Write a reusable workflow that itself runs a matrix of Node versions.",
+    "output": "name: reusable-matrix\non: push\njobs:\n  test:\n    uses: ./.github/workflows/matrix-test.yml\n\n---\n# matrix-test.yml\nname: matrix-test\non:\n  workflow_call:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - run: npm ci && npm test"
+  },
+  {
+    "instruction": "Pass several typed inputs from the caller into the reusable workflow's steps.",
+    "output": "name: typed-reusable-inputs\non: workflow_dispatch\njobs:\n  build:\n    uses: ./.github/workflows/configurable-build.yml\n    with:\n      configuration: production\n      optimize: true\n      workers: 4\n\n---\n# configurable-build.yml\nname: configurable-build\non:\n  workflow_call:\n    inputs:\n      configuration:\n        type: string\n        required: true\n      optimize:\n        type: boolean\n        default: false\n      workers:\n        type: number\n        default: 1\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/build.sh --config ${{ inputs.configuration }} --workers ${{ inputs.workers }}\n        env:\n          OPTIMIZE: ${{ inputs.optimize }}"
+  },
+  {
+    "instruction": "Make a reusable workflow usable from both workflow_call and manual workflow_dispatch.",
+    "output": "name: dual-trigger-reusable\non:\n  workflow_call:\n    inputs:\n      target:\n        type: string\n        default: ci\n  workflow_dispatch:\n    inputs:\n      target:\n        type: string\n        default: ci\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/run-target.sh ${{ inputs.target }}"
+  },
+  {
+    "instruction": "Create a reusable deploy workflow that takes the environment name as an input.",
+    "output": "name: reusable-deploy-env\non: push\njobs:\n  deploy:\n    uses: ./.github/workflows/deploy-env.yml\n    with:\n      environment: staging\n\n---\n# deploy-env.yml\nname: deploy-env\non:\n  workflow_call:\n    inputs:\n      environment:\n        type: string\n        required: true\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: ${{ inputs.environment }}\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh ${{ inputs.environment }}"
+  },
+  {
+    "instruction": "Write a composite action with action.yml that installs dependencies for any project.",
+    "output": "name: composite-install\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: ./.github/actions/install-deps\n        with:\n          manager: npm\n\n---\n# .github/actions/install-deps/action.yml\nname: Install dependencies\ndescription: Install project dependencies with the chosen package manager\ninputs:\n  manager:\n    description: Package manager to use\n    required: true\nruns:\n  using: composite\n  steps:\n    - name: Install\n      shell: bash\n      run: |\n        case \"${{ inputs.manager }}\" in\n          npm) npm ci ;;\n          pnpm) pnpm install --frozen-lockfile ;;\n          yarn) yarn install --frozen-lockfile ;;\n        esac"
+  },
+  {
+    "instruction": "Create a composite action that exposes an output computed in a bash step.",
+    "output": "name: composite-output\non: push\njobs:\n  meta:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - id: gitmeta\n        uses: ./.github/actions/git-meta\n      - run: echo \"short sha is ${{ steps.gitmeta.outputs.short_sha }}\"\n\n---\n# .github/actions/git-meta/action.yml\nname: Git metadata\ndescription: Expose short commit information\noutputs:\n  short_sha:\n    description: Short commit SHA\n    value: ${{ steps.read.outputs.short_sha }}\nruns:\n  using: composite\n  steps:\n    - id: read\n      shell: bash\n      run: echo \"short_sha=$(git rev-parse --short HEAD)\" >> \"$GITHUB_OUTPUT\""
+  },
+  {
+    "instruction": "Call the same reusable workflow twice with different inputs in one caller workflow.",
+    "output": "name: call-twice\non: push\njobs:\n  test-dev:\n    uses: ./.github/workflows/suite.yml\n    with:\n      environment: dev\n  test-prod:\n    uses: ./.github/workflows/suite.yml\n    with:\n      environment: production\n\n---\n# suite.yml\nname: suite\non:\n  workflow_call:\n    inputs:\n      environment:\n        type: string\n        required: true\njobs:\n  suite:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/run-suite.sh ${{ inputs.environment }}"
+  },
+  {
+    "instruction": "Build a reusable workflow that notifies a channel, ignoring failures inside it.",
+    "output": "name: reusable-notify\non: push\njobs:\n  notify:\n    uses: ./.github/workflows/notify.yml\n\n---\n# notify.yml\nname: notify\non:\n  workflow_call:\n    inputs:\n      message:\n        type: string\n        required: true\njobs:\n  send:\n    runs-on: ubuntu-latest\n    continue-on-error: true\n    steps:\n      - name: Send message\n        env:\n          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}\n        run: |\n          curl -sS -X POST -H 'Content-type: application/json' --data \"{\\\"text\\\":\\\"${{ inputs.message }}\\\"}\" \"$SLACK_WEBHOOK\""
+  },
+  {
+    "instruction": "Provide both the inputs and secrets definitions for a reusable release workflow in one example.",
+    "output": "name: full-release-reusable\non: push\njobs:\n  release:\n    uses: ./.github/workflows/release.yml\n    with:\n      channel: stable\n      draft: false\n    secrets:\n      gh-token: ${{ secrets.GITHUB_TOKEN }}\n\n---\n# release.yml\nname: release\non:\n  workflow_call:\n    inputs:\n      channel:\n        type: string\n        required: true\n      draft:\n        type: boolean\n        default: false\n    secrets:\n      gh-token:\n        required: true\njobs:\n  release:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/release.sh --channel ${{ inputs.channel }} --draft ${{ inputs.draft }}\n        env:\n          GH_TOKEN: ${{ secrets.gh-token }}"
+  },
+  {
+    "instruction": "Chain reusable workflows so one called workflow invokes another.",
+    "output": "name: nested-reusable\non: push\njobs:\n  outer:\n    uses: ./.github/workflows/outer.yml\n\n---\n# outer.yml\nname: outer\non:\n  workflow_call:\njobs:\n  inner:\n    uses: ./.github/workflows/inner.yml\n\n---\n# inner.yml\nname: inner\non:\n  workflow_call:\njobs:\n  work:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"inner workflow executed\""
+  },
+  {
+    "instruction": "Write a reusable versioning workflow that computes and returns a semantic version.",
+    "output": "name: reusable-version\non: push\njobs:\n  version:\n    uses: ./.github/workflows/version.yml\n  use:\n    needs: version\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Next version is ${{ needs.version.outputs.version }}\"\n\n---\n# version.yml\nname: version\non:\n  workflow_call:\n    outputs:\n      version:\n        description: Computed semantic version\n        value: ${{ jobs.compute.outputs.version }}\njobs:\n  compute:\n    runs-on: ubuntu-latest\n    outputs:\n      version: ${{ steps.calc.outputs.version }}\n    steps:\n      - id: calc\n        run: echo \"version=1.${{ github.run_number }}.0\" >> \"$GITHUB_OUTPUT\""
+  },
+  {
+    "instruction": "Conditionally call a reusable workflow only when a repository variable enables it.",
+    "output": "name: conditional-reusable\non: push\njobs:\n  advanced:\n    if: vars.ENABLE_ADVANCED_CI == 'true'\n    uses: ./.github/workflows/advanced.yml\n  basic:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make ci"
+  },
+  {
+    "instruction": "Create a reusable test workflow that spins up a service container for the caller's tests.",
+    "output": "name: reusable-services\non: push\njobs:\n  integration:\n    uses: ./.github/workflows/integration.yml\n\n---\n# integration.yml\nname: integration\non:\n  workflow_call:\njobs:\n  integration:\n    runs-on: ubuntu-latest\n    services:\n      redis:\n        image: redis:7\n        ports:\n          - 6379:6379\n        options: >-\n          --health-cmd \"redis-cli ping\"\n          --health-interval 10s\n          --health-timeout 5s\n          --health-retries 5\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm run test:integration\n        env:\n          REDIS_URL: redis://localhost:6379"
+  },
+  {
+    "instruction": "Pass github.token into a reusable workflow job through the secrets mapping.",
+    "output": "name: token-to-reusable\non: push\njobs:\n  pages:\n    uses: ./.github/workflows/upload-pages.yml\n    secrets:\n      token: ${{ github.token }}\n\n---\n# upload-pages.yml\nname: upload-pages\non:\n  workflow_call:\n    secrets:\n      token:\n        required: true\njobs:\n  upload:\n    runs-on: ubuntu-latest\n    permissions:\n      pages: write\n      id-token: write\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: ./dist\n      - run: echo \"Artifact uploaded with ${{ secrets.token }}\""
+  }
+]

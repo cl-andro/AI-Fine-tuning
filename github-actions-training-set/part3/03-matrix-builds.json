@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Build and test against Node.js 18, 20, and 22 using a strategy matrix.",
+    "output": "name: node-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Run the test suite on Ubuntu, macOS, and Windows runners with an OS matrix.",
+    "output": "name: os-matrix\non: push\njobs:\n  test:\n    runs-on: ${{ matrix.os }}\n    strategy:\n      matrix:\n        os: [ubuntu-latest, macos-latest, windows-latest]\n    steps:\n      - uses: actions/checkout@v4\n      - name: Run tests\n        run: python -m pytest"
+  },
+  {
+    "instruction": "Test across Python 3.10, 3.11, and 3.12 with fail-fast disabled so all versions always run.",
+    "output": "name: python-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python: ['3.10', '3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python }}\n      - run: pip install -r requirements.txt && pytest"
+  },
+  {
+    "instruction": "Add an include entry to the Node matrix that marks Node 22 as experimental.",
+    "output": "name: matrix-include\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20]\n        include:\n          - node: 22\n            experimental: true\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - name: Test\n        continue-on-error: ${{ matrix.experimental == true }}\n        run: npm test"
+  },
+  {
+    "instruction": "Exclude the combination of Windows and Node 18 from an OS-by-Node matrix.",
+    "output": "name: matrix-exclude\non: push\njobs:\n  test:\n    runs-on: ${{ matrix.os }}\n    strategy:\n      matrix:\n        os: [ubuntu-latest, windows-latest]\n        node: [18, 20]\n        exclude:\n          - os: windows-latest\n            node: 18\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - run: npm test"
+  },
+  {
+    "instruction": "Limit a matrix build to at most two concurrent jobs with max-parallel.",
+    "output": "name: max-parallel\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      max-parallel: 2\n      matrix:\n        shard: [1, 2, 3, 4]\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/run-shard.sh ${{ matrix.shard }}"
+  },
+  {
+    "instruction": "Run coverage upload only on the Python 3.12 leg of a Python version matrix.",
+    "output": "name: coverage-one-version\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python: ['3.10', '3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python }}\n      - run: pip install -r requirements.txt && pytest --cov=src\n      - name: Upload coverage\n        if: matrix.python == '3.12'\n        run: bash <(curl -s https://codecov.io/bash)"
+  },
+  {
+    "instruction": "Test the service against Go 1.21 and 1.22 using a matrix with module caching.",
+    "output": "name: go-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        go: ['1.21', '1.22']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-go@v5\n        with:\n          go-version: ${{ matrix.go }}\n      - run: go build ./...\n      - run: go test ./..."
+  },
+  {
+    "instruction": "Run the Ruby test suite on Ruby 3.1, 3.2, and 3.3 in a matrix.",
+    "output": "name: ruby-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        ruby: ['3.1', '3.2', '3.3']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: ruby/setup-ruby@v1\n        with:\n          ruby-version: ${{ matrix.ruby }}\n          bundler-cache: true\n      - run: bundle exec rspec"
+  },
+  {
+    "instruction": "Compile and test the project on Java 17 and 21 with a Gradle matrix build.",
+    "output": "name: java-matrix\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        java: [17, 21]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: ${{ matrix.java }}\n          cache: gradle\n      - run: ./gradlew build"
+  },
+  {
+    "instruction": "Give each matrix job a readable name showing both the OS and Node version.",
+    "output": "name: named-matrix\non: push\njobs:\n  test:\n    name: Test on ${{ matrix.os }} with Node ${{ matrix.node }}\n    runs-on: ${{ matrix.os }}\n    strategy:\n      matrix:\n        os: [ubuntu-latest, macos-latest]\n        node: [20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - run: npm test"
+  },
+  {
+    "instruction": "Cache dependencies separately for each Node version in a matrix using setup-node caching.",
+    "output": "name: matrix-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n          cache: npm\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Run the suite inside container images for Node 18, 20, and 22 with a container matrix.",
+    "output": "name: container-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    container: node:${{ matrix.node }}\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Use include to assign a larger macOS runner to one specific matrix entry.",
+    "output": "name: matrix-runner-override\non: push\njobs:\n  test:\n    runs-on: ${{ matrix.os }}\n    strategy:\n      matrix:\n        os: [ubuntu-latest, macos-latest]\n        include:\n          - os: macos-latest\n            runs-on: macos-14\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test"
+  },
+  {
+    "instruction": "Build only on Ubuntu while running tests on other operating systems using a matrix include list.",
+    "output": "name: matrix-split-tasks\non: push\njobs:\n  matrix-job:\n    runs-on: ${{ matrix.os }}\n    strategy:\n      matrix:\n        include:\n          - os: ubuntu-latest\n            task: build\n          - os: macos-latest\n            task: test\n          - os: windows-latest\n            task: test\n    steps:\n      - uses: actions/checkout@v4\n      - run: make ${{ matrix.task }}"
+  },
+  {
+    "instruction": "Run an experimental job that is allowed to fail alongside the stable suite leg.",
+    "output": "name: experimental-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        include:\n          - suite: stable\n            allowed_failure: false\n          - suite: nightly\n            allowed_failure: true\n    steps:\n      - uses: actions/checkout@v4\n      - name: Run suite\n        continue-on-error: ${{ matrix.allowed_failure }}\n        run: ./scripts/run-suite.sh ${{ matrix.suite }}"
+  },
+  {
+    "instruction": "Validate the configuration against Terraform 1.5.7 and 1.6.6 with a version matrix.",
+    "output": "name: terraform-matrix\non: push\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        tf: ['1.5.7', '1.6.6']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: hashicorp/setup-terraform@v3\n        with:\n          terraform_version: ${{ matrix.tf }}\n      - run: terraform fmt -check -recursive\n      - run: terraform init -backend=false && terraform validate"
+  },
+  {
+    "instruction": "Start PostgreSQL 14, 15, and 16 service containers for a database matrix test.",
+    "output": "name: postgres-matrix\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        postgres: [14, 15, 16]\n    services:\n      postgres:\n        image: postgres:${{ matrix.postgres }}\n        env:\n          POSTGRES_PASSWORD: test\n        ports:\n          - 5432:5432\n        options: >-\n          --health-cmd pg_isready\n          --health-interval 10s\n          --health-timeout 5s\n          --health-retries 5\n    steps:\n      - uses: actions/checkout@v4\n      - run: pip install -r requirements.txt\n      - run: pytest --db-url postgresql://postgres:test@localhost:5432/postgres"
+  },
+  {
+    "instruction": "Publish the package from only the newest Node version of a matrix build.",
+    "output": "name: publish-one-matrix-leg\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [18, 20, 22]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node }}\n      - run: npm ci && npm run build\n      - name: Publish\n        if: matrix.node == 22\n        run: npm publish --access public\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}"
+  },
+  {
+    "instruction": "Run Playwright browser tests for Chromium, Firefox, and WebKit with a browser matrix.",
+    "output": "name: browser-matrix\non: push\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        browser: [chromium, firefox, webkit]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - run: npm ci\n      - run: npx playwright install --with-deps ${{ matrix.browser }}\n      - run: npx playwright test --project=${{ matrix.browser }}"
+  }
+]

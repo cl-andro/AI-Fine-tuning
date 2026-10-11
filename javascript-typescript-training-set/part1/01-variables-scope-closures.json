@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write JavaScript code that demonstrates the difference between var, let and const inside a for loop, printing the captured values after the loop ends.",
+    "output": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(\"var\", i), 0);\n}\nfor (let j = 0; j < 3; j++) {\n  setTimeout(() => console.log(\"let\", j), 0);\n}\nconst k = 1; // k = 2 would throw TypeError"
+  },
+  {
+    "instruction": "Write a JavaScript function makeCounter that returns an increment function using a closure so each counter keeps its own private count.",
+    "output": "function makeCounter() {\n  let count = 0;\n  return function () {\n    return ++count;\n  };\n}\n\nconst next = makeCounter();\nconsole.log(next()); // 1\nconsole.log(next()); // 2"
+  },
+  {
+    "instruction": "Write JavaScript code using an IIFE to create a module-scoped private variable that cannot be read from outside.",
+    "output": "const counter = (function () {\n  let total = 0;\n  return {\n    add(n) {\n      total += n;\n    },\n    get() {\n      return total;\n    },\n  };\n})();\n\nconsole.log(counter.get()); // 0\ncounter.add(5);\nconsole.log(counter.get()); // 5\nconsole.log(total); // ReferenceError"
+  },
+  {
+    "instruction": "Write JavaScript code that demonstrates function hoisting versus variable hoisting: call a function declaration before its line, and show what happens when reading a let variable before initialization.",
+    "output": "console.log(add(2, 3)); // works: function declarations hoist\n\nfunction add(a, b) {\n  return a + b;\n}\n\nconsole.log(x); // ReferenceError (TDZ)\nlet x = 10;\nconsole.log(typeof y); // \"undefined\" — var hoisting only"
+  },
+  {
+    "instruction": "Write JavaScript code that fixes the classic loop-callback problem so each callback logs its own iteration index, using let instead of var.",
+    "output": "const loggers = [];\nfor (let i = 0; i < 3; i++) {\n  loggers.push(() => console.log(i));\n}\nloggers.forEach((fn) => fn()); // 0, 1, 2"
+  },
+  {
+    "instruction": "Write a JavaScript once(fn) utility that uses a closure so fn is invoked at most one time, returning undefined on later calls.",
+    "output": "function once(fn) {\n  let called = false;\n  let result;\n  return function (...args) {\n    if (!called) {\n      called = true;\n      result = fn.apply(this, args);\n    }\n    return result;\n  };\n}\n\nconst init = once(() => console.log(\"side effect\"));\ninit();\ninit(); // no-op"
+  },
+  {
+    "instruction": "Write a JavaScript curry(fn) function that converts a 3-argument function into a curried version using closures.",
+    "output": "function curry(fn) {\n  return function curried(...args) {\n    if (args.length >= fn.length) {\n      return fn.apply(this, args);\n    }\n    return (...more) => curried(...args, ...more);\n  };\n}\n\nconst add3 = curry((a, b, c) => a + b + c);\nconsole.log(add3(1)(2)(3)); // 6\nconsole.log(add3(1, 2)(3)); // 6"
+  },
+  {
+    "instruction": "Write JavaScript code that creates a bank account with deposit/withdraw private state via a closure, throwing on overdraft.",
+    "output": "function createAccount(initial) {\n  let balance = initial;\n  return {\n    deposit(n) {\n      balance += n;\n      return balance;\n    },\n    withdraw(n) {\n      if (n > balance) throw new Error(\"insufficient funds\");\n      balance -= n;\n      return balance;\n    },\n    get balance() {\n      return balance;\n    },\n  };\n}\n\nconst acct = createAccount(100);\nacct.deposit(50);\nacct.withdraw(30);\nconsole.log(acct.balance); // 120"
+  },
+  {
+    "instruction": "Write JavaScript code that shows block scoping: declare let x inside an if block and try to access it outside.",
+    "output": "if (true) {\n  let x = 10;\n  const y = 20;\n  console.log(x + y); // 30\n}\nconsole.log(x); // ReferenceError: x is not defined\nconsole.log(y); // ReferenceError: y is not defined"
+  },
+  {
+    "instruction": "Write a JavaScript createMultiplier(multiplier) closure that returns a function multiplying its argument by the captured factor.",
+    "output": "function createMultiplier(multiplier) {\n  return (n) => n * multiplier;\n}\n\nconst double = createMultiplier(2);\nconst triple = createMultiplier(3);\nconsole.log(double(5)); // 10\nconsole.log(triple(5)); // 15"
+  },
+  {
+    "instruction": "Write JavaScript code demonstrating that primitives are copied by value while objects are shared by reference when assigned between variables.",
+    "output": "let a = 10;\nlet b = a;\nb = 20;\nconsole.log(a, b); // 10 20\n\nconst obj1 = { n: 1 };\nconst obj2 = obj1;\nobj2.n = 2;\nconsole.log(obj1.n); // 2 (same object)"
+  },
+  {
+    "instruction": "Write JavaScript code showing that const prevents rebinding but not mutation of object contents, then freezing the object to make it immutable.",
+    "output": "const config = { retries: 3 };\nconfig.retries = 5; // allowed\nObject.freeze(config);\nconfig.retries = 9; // silently ignored in sloppy mode, throws in strict mode\nconsole.log(config.retries); // 5"
+  },
+  {
+    "instruction": "Write JavaScript code where a closure captures a variable from an outer function and the captured value survives after the outer function returns.",
+    "output": "function outer() {\n  const secret = \"purple\";\n  return () => secret;\n}\n\nconst getter = outer();\nconsole.log(getter()); // \"purple\"\nconsole.log(secret); // ReferenceError"
+  },
+  {
+    "instruction": "Write a JavaScript makeBank() that returns methods shareBank(sibling) style privileged access: two account objects created inside one closure that can inspect each other's balances only through a provided method.",
+    "output": "function makeBank() {\n  const accounts = {};\n  function create(id, balance) {\n    accounts[id] = { balance };\n    return {\n      getBalance() {\n        return accounts[id].balance;\n      },\n      peekBalance(otherId) {\n        return accounts[otherId] ? accounts[otherId].balance : null;\n      },\n    };\n  }\n  return { create };\n}\n\nconst bank = makeBank();\nconst a = bank.create(\"a\", 100);\nconst b = bank.create(\"b\", 250);\nconsole.log(b.peekBalance(\"a\")); // 100"
+  },
+  {
+    "instruction": "Write a JavaScript memoize(fn) that caches results per-argument using a closure and a Map.",
+    "output": "function memoize(fn) {\n  const cache = new Map();\n  return function (...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) return cache.get(key);\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}\n\nconst slowSquare = memoize((n) => {\n  console.log(\"computing\");\n  return n * n;\n});\nslowSquare(4);\nslowSquare(4); // cached, no log"
+  },
+  {
+    "instruction": "Write JavaScript code that demonstrates accidental global variables in sloppy mode and how \"use strict\" turns the same assignment into a ReferenceError.",
+    "output": "function leak() {\n  \"use strict\";\n  leaked = 42; // ReferenceError: leaked is not defined\n}\nleak();"
+  },
+  {
+    "instruction": "Write JavaScript code that shadows an outer let variable with a block-scoped one and logs both values from their respective scopes.",
+    "output": "let value = \"outer\";\n{\n  let value = \"inner\";\n  console.log(value); // \"inner\"\n}\nconsole.log(value); // \"outer\""
+  },
+  {
+    "instruction": "Write a JavaScript adder() closure factory where the returned function accumulates its running total across calls.",
+    "output": "function adder() {\n  let total = 0;\n  return (n) => {\n    total += n;\n    return total;\n  };\n}\n\nconst add = adder();\nconsole.log(add(5)); // 5\nconsole.log(add(3)); // 8\nconsole.log(add(2)); // 10"
+  },
+  {
+    "instruction": "Write JavaScript code that demonstrates shared closure state: makeVault() returns inc and read methods both closing over the same private counter.\n\nfunction makeVault() {\n  let counter = 0;\n  return {\n    inc() {\n      return ++counter;\n    },\n    read() {\n      return counter;\n    },\n  };\n}",
+    "output": "function makeVault() {\n  let counter = 0;\n  return {\n    inc() {\n      return ++counter;\n    },\n    read() {\n      return counter;\n    },\n  };\n}\n\nconst vault = makeVault();\nvault.inc();\nvault.inc();\nconsole.log(vault.read()); // 2 — both methods share one binding"
+  },
+  {
+    "instruction": "Write JavaScript code where each call to makeLabeler(prefix) produces an independent closure that prefixes its argument, and prove the two labelers do not share state.",
+    "output": "function makeLabeler(prefix) {\n  return (text) => `${prefix}: ${text}`;\n}\n\nconst err = makeLabeler(\"ERR\");\nconst info = makeLabeler(\"INFO\");\nconsole.log(err(\"disk full\")); // \"ERR: disk full\"\nconsole.log(info(\"ready\")); // \"INFO: ready\""
+  }
+]

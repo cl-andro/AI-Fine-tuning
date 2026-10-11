@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a pytest test for fetch_username that mocks requests.get so no network call is made, asserting the parsed username.\n\nimport requests\n\ndef fetch_username(user_id):\n    resp = requests.get(f'https://api.example.com/users/{user_id}')\n    resp.raise_for_status()\n    return resp.json()['name']",
+    "output": "from unittest.mock import MagicMock, patch\nfrom users import fetch_username\n\n@patch('users.requests.get')\ndef test_fetch_username(mock_get):\n    mock_get.return_value.json.return_value = {'name': 'Ann'}\n    mock_get.return_value.raise_for_status.return_value = None\n    assert fetch_username(1) == 'Ann'\n    mock_get.assert_called_once_with('https://api.example.com/users/1')"
+  },
+  {
+    "instruction": "Write a pytest test that patches time.sleep inside a retry helper so the test runs instantly, verifying the retry loop succeeds on the third attempt.\n\nimport time\n\ndef retry_call(fn, attempts=3):\n    for i in range(attempts):\n        try:\n            return fn()\n        except ValueError:\n            if i == attempts - 1:\n                raise\n            time.sleep(0.1)",
+    "output": "from unittest.mock import MagicMock, patch\nfrom retry import retry_call\n\ndef test_retry_call_succeeds_after_failures():\n    flaky = MagicMock(side_effect=[ValueError('one'), ValueError('two'), 'ok'])\n    with patch('retry.time.sleep') as mock_sleep:\n        assert retry_call(flaky) == 'ok'\n    assert flaky.call_count == 3\n    assert mock_sleep.call_count == 2"
+  },
+  {
+    "instruction": "Write a pytest test that mocks builtins.open to read fake file content without touching the disk.\n\ndef read_config(path):\n    with open(path) as f:\n        return f.read().strip()",
+    "output": "from unittest.mock import mock_open, patch\nfrom config import read_config\n\n@patch('builtins.open', mock_open(read_data='debug = true\\n'))\ndef test_read_config():\n    assert read_config('app.cfg') == 'debug = true'\n\n@patch('builtins.open', mock_open(read_data='a\\nb\\n'))\ndef test_read_config_called_with_path(mock_file):\n    read_config('other.cfg')\n    mock_file.assert_called_once_with('other.cfg')"
+  },
+  {
+    "instruction": "Write a pytest test using MagicMock to simulate a payment gateway client with chained attribute access, asserting the charge call arguments.\n\nclass PaymentProcessor:\n    def __init__(self, gateway):\n        self.gateway = gateway\n    def charge(self, amount, currency='USD'):\n        result = self.gateway.client.transactions.create(amount=amount, currency=currency)\n        return result.id",
+    "output": "from unittest.mock import MagicMock\nfrom payments import PaymentProcessor\n\ndef test_charge_uses_gateway():\n    gateway = MagicMock()\n    gateway.client.transactions.create.return_value.id = 'tx-123'\n    processor = PaymentProcessor(gateway)\n    assert processor.charge(2500) == 'tx-123'\n    gateway.client.transactions.create.assert_called_once_with(amount=2500, currency='USD')"
+  },
+  {
+    "instruction": "Write a pytest test for notify that verifies a mock collaborator was called exactly once with the right args using assert_called_once_with.\n\nclass EmailSender:\n    def send(self, to, subject, body):\n        raise NotImplementedError\n\ndef notify(sender, user, message):\n    sender.send(user['email'], 'Notification', message)",
+    "output": "from unittest.mock import MagicMock\nfrom notifications import notify\n\ndef test_notify_calls_sender_once():\n    sender = MagicMock()\n    user = {'email': 'ann@example.com'}\n    notify(sender, user, 'Your order shipped')\n    sender.send.assert_called_once_with('ann@example.com', 'Notification', 'Your order shipped')\n    assert sender.send.call_count == 1"
+  },
+  {
+    "instruction": "Write a pytest test that patches a service class constructor so new instances created inside the code under test are fake objects.\n\nclass AuditLog:\n    def record(self, event):\n        raise NotImplementedError\n\ndef transfer(funds_service, amount):\n    log = AuditLog()\n    log.record('transfer')\n    return funds_service.debit(amount)",
+    "output": "from unittest.mock import MagicMock, patch\nfrom banking import transfer, AuditLog\n\ndef test_transfer_records_audit():\n    funds = MagicMock()\n    funds.debit.return_value = 100\n    with patch('banking.AuditLog') as MockLog:\n        assert transfer(funds, 50) == 100\n    MockLog.return_value.record.assert_called_once_with('transfer')"
+  },
+  {
+    "instruction": "Write a pytest test where a mock's side_effect is a list of sequential return values, simulating a sensor that fails twice then succeeds.\n\ndef read_sensor(device):\n    for _ in range(3):\n        try:\n            return device.read()\n        except IOError:\n            continue\n    raise RuntimeError('sensor unavailable')",
+    "output": "from unittest.mock import MagicMock\nfrom sensors import read_sensor\n\ndef test_read_sensor_retries_until_success():\n    device = MagicMock()\n    device.read.side_effect = [IOError('flaky'), IOError('flaky'), 21.5]\n    assert read_sensor(device) == 21.5\n    assert device.read.call_count == 3\n\ndef test_read_sensor_gives_up():\n    device = MagicMock()\n    device.read.side_effect = IOError('dead')\n    import pytest\n    with pytest.raises(RuntimeError):\n        read_sensor(device)"
+  },
+  {
+    "instruction": "Write a pytest test for a repository that mocks a database cursor: assert execute was called with the SQL and parameters, and fetchone returns a row.\n\nclass UserRepo:\n    def __init__(self, connection):\n        self.connection = connection\n    def find(self, user_id):\n        cursor = self.connection.cursor()\n        cursor.execute('SELECT name FROM users WHERE id = ?', (user_id,))\n        row = cursor.fetchone()\n        return row[0] if row else None",
+    "output": "from unittest.mock import MagicMock\nfrom repo import UserRepo\n\ndef test_find_user():\n    connection = MagicMock()\n    cursor = connection.cursor.return_value\n    cursor.fetchone.return_value = ('Ann',)\n    repo = UserRepo(connection)\n    assert repo.find(7) == 'Ann'\n    cursor.execute.assert_called_once_with('SELECT name FROM users WHERE id = ?', (7,))\n\ndef test_find_missing_user():\n    connection = MagicMock()\n    connection.cursor.return_value.fetchone.return_value = None\n    assert UserRepo(connection).find(99) is None"
+  },
+  {
+    "instruction": "Write a pytest test using autospec=True so that creating a mock of a class enforces its real method signatures.\n\ndef greet_all(people, greeting='Hi'):\n    return [f'{greeting}, {p}' for p in people]",
+    "output": "from unittest.mock import create_autospec\nfrom greeter import greet_all\n\ndef test_create_autospec_matches_signature():\n    mock = create_autospec(greet_all, return_value=['greeted'])\n    assert mock(['ann'], greeting='Yo') == ['greeted']\n    mock.assert_called_once_with(['ann'], greeting='Yo')\n\ndef test_create_autospec_rejects_bad_kwargs():\n    import pytest\n    mock = create_autospec(greet_all)\n    with pytest.raises(TypeError):\n        mock(['ann'], unknown_kwarg=1)"
+  },
+  {
+    "instruction": "Write a pytest test that patches datetime.datetime.now inside a billing module to produce a deterministic invoice date.\n\nfrom datetime import datetime\n\ndef invoice_date():\n    return datetime.now().strftime('%Y-%m-%d')",
+    "output": "from datetime import datetime\nfrom unittest.mock import patch\nfrom billing import invoice_date\n\ndef test_invoice_date_is_frozen():\n    class FakeDateTime(datetime):\n        @classmethod\n        def now(cls, tz=None):\n            return cls(2024, 2, 29, 12, 0, 0)\n    with patch('billing.datetime', FakeDateTime):\n        assert invoice_date() == '2024-02-29'"
+  },
+  {
+    "instruction": "Write a pytest test for run_command that mocks subprocess.run, asserting the command, check flag and captured output handling.\n\nimport subprocess\n\ndef run_command(args):\n    result = subprocess.run(args, capture_output=True, text=True, check=True)\n    return result.stdout.strip()",
+    "output": "from unittest.mock import MagicMock, patch\nfrom shell import run_command\n\ndef test_run_command_success():\n    fake = MagicMock(stdout='hello\\n', returncode=0)\n    with patch('shell.subprocess.run', return_value=fake) as mock_run:\n        assert run_command(['echo', 'hello']) == 'hello'\n    mock_run.assert_called_once_with(['echo', 'hello'], capture_output=True, text=True, check=True)"
+  },
+  {
+    "instruction": "Write a pytest test where the mocked dependency raises a specific exception, verifying the wrapper converts it into a friendly error string.\n\nfrom socket import timeout as SocketTimeout\n\ndef ping(host, client):\n    try:\n        client.connect(host)\n        return 'ok'\n    except SocketTimeout:\n        return 'timeout'",
+    "output": "from unittest.mock import MagicMock\nimport socket\nfrom health import ping\n\ndef test_ping_timeout_is_reported():\n    client = MagicMock()\n    client.connect.side_effect = socket.timeout('too slow')\n    assert ping('db.internal', client) == 'timeout'\n    client.connect.assert_called_once_with('db.internal')\n\ndef test_ping_success():\n    client = MagicMock()\n    assert ping('db.internal', client) == 'ok'"
+  },
+  {
+    "instruction": "Write a pytest test for a class that uses a logger, asserting debug and info calls via a mocked logger.\n\nimport logging\n\nlogger = logging.getLogger('metrics')\n\ndef record_metric(name, value):\n    logger.debug('preparing %s', name)\n    logger.info('%s=%s', name, value)\n    return value",
+    "output": "from unittest.mock import patch\nfrom metrics import record_metric\n\n@patch('metrics.logger')\ndef test_record_metric_logs(mock_logger):\n    assert record_metric('latency', 42) == 42\n    mock_logger.debug.assert_called_once_with('preparing %s', 'latency')\n    mock_logger.info.assert_called_once_with('%s=%s', 'latency', 42)"
+  },
+  {
+    "instruction": "Write a pytest test using patch as a context manager around only the risky section of a longer test, keeping the rest real.\n\ndef expensive_setup():\n    return {'balance': 100}\n\ndef withdraw(account, amount):\n    external = get_risk_service()\n    if external.is_blocked(account):\n        raise PermissionError('blocked')\n    account['balance'] -= amount\n    return account['balance']\n\ndef get_risk_service():\n    raise NotImplementedError",
+    "output": "from unittest.mock import MagicMock, patch\nimport banking\n\ndef test_withdraw_happy_path():\n    account = expensive_setup()\n    fake = MagicMock()\n    fake.is_blocked.return_value = False\n    with patch('banking.get_risk_service', return_value=fake):\n        assert withdraw(account, 30) == 70\n    fake.is_blocked.assert_called_once_with(account)\n\ndef expensive_setup():\n    return {'balance': 100}"
+  },
+  {
+    "instruction": "Write a pytest test that patches os.environ via patch.dict for a function that reads an API key from the environment.\n\nimport os\n\ndef get_api_key():\n    key = os.environ.get('API_KEY')\n    if not key:\n        raise KeyError('API_KEY is not set')\n    return key",
+    "output": "from unittest.mock import patch\nfrom settings import get_api_key\n\ndef test_get_api_key_from_env():\n    with patch.dict('os.environ', {'API_KEY': 'secret-123'}):\n        assert get_api_key() == 'secret-123'\n\ndef test_get_api_key_missing():\n    import pytest\n    with patch.dict('os.environ', {}, clear=True):\n        with pytest.raises(KeyError):\n            get_api_key()"
+  },
+  {
+    "instruction": "Write a pytest test verifying a mock was NOT called for a code path that should be skipped (a cache hit short-circuits the loader).\n\ndef load_with_cache(cache, loader, key):\n    hit = cache.get(key)\n    if hit is not None:\n        return hit\n    data = loader(key)\n    cache.set(key, data)\n    return data",
+    "output": "from unittest.mock import MagicMock\nfrom loader import load_with_cache\n\ndef test_cache_hit_skips_loader():\n    cache = MagicMock()\n    cache.get.return_value = {'cached': True}\n    loader = MagicMock()\n    result = load_with_cache(cache, loader, 'key1')\n    assert result == {'cached': True}\n    loader.assert_not_called()\n\ndef test_cache_miss_loads_and_stores():\n    cache = MagicMock()\n    cache.get.return_value = None\n    loader = MagicMock(return_value={'fresh': True})\n    assert load_with_cache(cache, loader, 'key2') == {'fresh': True}\n    loader.assert_called_once_with('key2')\n    cache.set.assert_called_once_with('key2', {'fresh': True})"
+  },
+  {
+    "instruction": "Write a pytest test for send_receipt that mocks an SMTP-like client, asserting the message envelope and that quit() was called at the end.\n\ndef send_receipt(smtp_client, to, order_id):\n    smtp_client.sendmail('shop@example.com', to, f'Receipt for order {order_id}')\n    smtp_client.quit()",
+    "output": "from unittest.mock import MagicMock\nfrom emailer import send_receipt\n\ndef test_send_receipt():\n    smtp = MagicMock()\n    send_receipt(smtp, 'ann@example.com', 42)\n    smtp.sendmail.assert_called_once_with(\n        'shop@example.com', 'ann@example.com', 'Receipt for order 42')\n    smtp.quit.assert_called_once_with()"
+  },
+  {
+    "instruction": "Write a pytest test using return_value chaining where one mock method returns another mock (e.g. a response whose json() returns a dict-like payload).\n\ndef fetch_status(client):\n    resp = client.get('/status')\n    return resp.json()['status']",
+    "output": "from unittest.mock import MagicMock\nfrom api import fetch_status\n\ndef test_fetch_status_chained_mocks():\n    resp = MagicMock()\n    resp.json.return_value = {'status': 'healthy', 'uptime': 12}\n    client = MagicMock()\n    client.get.return_value = resp\n    assert fetch_status(client) == 'healthy'\n    client.get.assert_called_once_with('/status')\n    resp.json.assert_called_once_with()"
+  },
+  {
+    "instruction": "Write a pytest test for a function that accepts a callback: mock the callback and assert it was invoked once per processed item.\n\ndef process_all(items, callback):\n    results = []\n    for item in items:\n        results.append(callback(item))\n    return results",
+    "output": "from unittest.mock import MagicMock, call\nfrom pipeline import process_all\n\ndef test_process_all_invokes_callback_per_item():\n    callback = MagicMock(side_effect=lambda x: x * 2)\n    assert process_all([1, 2, 3], callback) == [2, 4, 6]\n    assert callback.call_count == 3\n    callback.assert_any_call(2)\n    callback.assert_has_calls([call(1), call(2), call(3)])"
+  },
+  {
+    "instruction": "Write a pytest test for a cache decorator that mocks the underlying function and verifies it is called only once for repeated identical arguments.\n\nimport functools\n\ndef cached_call(fn):\n    store = {}\n    @functools.wraps(fn)\n    def wrapper(*args):\n        if args not in store:\n            store[args] = fn(*args)\n        return store[args]\n    return wrapper",
+    "output": "from unittest.mock import MagicMock\nfrom caching import cached_call\n\ndef test_underlying_called_once():\n    fn = MagicMock(return_value=42)\n    wrapped = cached_call(fn)\n    assert wrapped('a') == 42\n    assert wrapped('a') == 42\n    assert wrapped('b') == 42\n    fn.assert_any_call('a')\n    assert fn.call_count == 2"
+  }
+]

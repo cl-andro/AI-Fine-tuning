@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Google-style docstring for a function `retry(fn, attempts, backoff)` that retries a callable.",
+    "output": "```python\ndef retry(fn, attempts=3, backoff=0.5):\n    \"\"\"Call ``fn`` until it succeeds or the attempt budget is exhausted.\n\n    Retries are separated by an exponentially increasing delay so that a\n    flaky dependency has time to recover.\n\n    Args:\n        fn (Callable[[], T]): A zero-argument callable to invoke.\n        attempts (int): Total number of tries, including the first. Must be\n            >= 1. Defaults to 3.\n        backoff (float): Base delay in seconds. The delay before try *n* is\n            ``backoff * 2 ** (n - 1)``. Defaults to 0.5.\n\n    Returns:\n        T: Whatever ``fn`` returns on its first successful call.\n\n    Raises:\n        ValueError: If ``attempts`` is less than 1.\n        Exception: The last exception raised by ``fn`` after all attempts fail.\n\n    Example:\n        >>> retry(lambda: fetch(url), attempts=4)\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `chunk(iterable, size)` that splits an iterable into batches.",
+    "output": "```python\ndef chunk(iterable, size):\n    \"\"\"Yield successive fixed-size lists from ``iterable``.\n\n    Args:\n        iterable (Iterable[T]): Any iterable; it is consumed lazily.\n        size (int): Maximum length of each yielded list. Must be positive.\n\n    Yields:\n        list[T]: A list of at most ``size`` items. The final chunk may be\n            shorter. No chunk is ever empty.\n\n    Raises:\n        ValueError: If ``size`` is not positive.\n\n    Notes:\n        This is a generator, so the source must stay valid for the duration\n        of iteration. Materialize with ``list()`` if you need eager results.\n\n    Example:\n        >>> list(chunk(range(5), 2))\n        [[0, 1], [2, 3], [4]]\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a NumPy-style docstring for a function `normalize(arr, axis)`.",
+    "output": "```python\ndef normalize(arr, axis=-1):\n    \"\"\"Scale an array so that slices along ``axis`` sum to one.\n\n    Parameters\n    ----------\n    arr : numpy.ndarray\n        Input array of floating point values.\n    axis : int, optional\n        Axis whose slices are normalized. Defaults to the last axis.\n\n    Returns\n    -------\n    numpy.ndarray\n        A new array of the same shape as ``arr``.\n\n    Raises\n    ------\n    ValueError\n        If a slice along ``axis`` sums to zero, making the result undefined.\n\n    Examples\n    --------\n    >>> normalize(np.array([1.0, 3.0]))\n    array([0.25, 0.75])\n\n    See Also\n    --------\n    softmax : A smooth alternative that never divides by zero.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a context manager `timed(name)` that records elapsed time.",
+    "output": "```python\n@contextmanager\ndef timed(name):\n    \"\"\"Time a block and log the elapsed wall-clock duration.\n\n    Args:\n        name (str): Label included in the log line, e.g. ``\"db_migration\"``.\n\n    Yields:\n        callable: A function returning elapsed seconds so far, allowing you\n            to record intermediate splits.\n\n    Example:\n        >>> with timed(\"load\") as elapsed:\n        ...     do_work()\n        ...     print(elapsed())\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `paginate(query, page, per_page)`.",
+    "output": "```python\ndef paginate(query, page=1, per_page=20):\n    \"\"\"Execute ``query`` with LIMIT/OFFSET and return a page of results.\n\n    Args:\n        query (str): A SQL SELECT statement without LIMIT or OFFSET.\n        page (int): 1-based page number. Defaults to 1.\n        per_page (int): Rows per page, capped at 100. Defaults to 20.\n\n    Returns:\n        dict: With keys ``items`` (list of rows), ``page``, ``per_page``,\n            ``total`` (row count), and ``pages`` (total page count).\n\n    Raises:\n        ValueError: If ``page`` < 1 or ``per_page`` is not in 1..100.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a class `ConnectionPool`.",
+    "output": "```python\nclass ConnectionPool:\n    \"\"\"A bounded pool of reusable database connections.\n\n    Connections are created lazily and returned to the pool on context exit.\n    If all connections are busy and the pool is full, ``acquire`` blocks until\n    one is released or the timeout expires.\n\n    Args:\n        dsn (str): Database connection string.\n        size (int): Maximum number of live connections. Defaults to 10.\n        timeout (float): Seconds to wait for a free connection. Defaults to 5.\n\n    Attributes:\n        size (int): The configured maximum.\n        in_use (int): Connections currently checked out.\n\n    Example:\n        >>> pool = ConnectionPool(\"postgres://localhost/app\", size=5)\n        >>> with pool.acquire() as conn:\n        ...     conn.execute(\"SELECT 1\")\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `parse_duration(text)`.",
+    "output": "```python\ndef parse_duration(text):\n    \"\"\"Parse a human duration such as ``\"1h30m\"`` into seconds.\n\n    Args:\n        text (str): A duration composed of numeric value/unit pairs. Supported\n            units are ``s``, ``m``, ``h``, and ``d``. Units may repeat and\n            appear in any order.\n\n    Returns:\n        int: The total duration in whole seconds.\n\n    Raises:\n        ValueError: If ``text`` is empty or contains an unknown unit.\n\n    Examples:\n        >>> parse_duration(\"90s\")\n        90\n        >>> parse_duration(\"1h30m\")\n        5400\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a NumPy-style docstring for a function `merge_intervals(intervals)`.",
+    "output": "```python\ndef merge_intervals(intervals):\n    \"\"\"Merge overlapping half-open ``[start, end)`` intervals.\n\n    Parameters\n    ----------\n    intervals : list[tuple[float, float]]\n        Input intervals. The list is not modified.\n\n    Returns\n    -------\n    list[tuple[float, float]]\n        A new list, sorted by start, with all overlaps merged. Touching\n        intervals (``end == start``) are merged.\n\n    Raises\n    ------\n    ValueError\n        If any interval has ``end < start``.\n\n    Examples\n    --------\n    >>> merge_intervals([(1, 3), (2, 5), (7, 9)])\n    [(1, 5), (7, 9)]\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a decorator `cache(ttl)`.",
+    "output": "```python\ndef cache(ttl):\n    \"\"\"Memoize a function's return value for ``ttl`` seconds.\n\n    Args:\n        ttl (float): Time-to-live in seconds. Use ``0`` to cache forever.\n\n    Returns:\n        Callable: A decorator that wraps the target function.\n\n    Notes:\n        Cache keys are built from the positional and keyword arguments, which\n        must therefore be hashable. Unhashable arguments bypass the cache.\n\n    Example:\n        >>> @cache(ttl=60)\n        ... def price(sku):\n        ...     return lookup(sku)\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `read_config(path, env)` that merges YAML with environment overrides.",
+    "output": "```python\ndef read_config(path, env=\"prod\"):\n    \"\"\"Load and validate application configuration.\n\n    Reads the YAML file at ``path``, overlays values from environment\n    variables prefixed with ``APP_``, and returns the merged mapping.\n\n    Args:\n        path (str | os.PathLike): Path to the base YAML file.\n        env (str): Environment name used to select the ``<env>:`` section.\n            Defaults to ``\"prod\"``.\n\n    Returns:\n        dict: The merged, validated configuration.\n\n    Raises:\n        FileNotFoundError: If ``path`` does not exist.\n        ConfigError: If a required key is missing or fails its type check.\n\n    Notes:\n        Environment variables win over file values. Nested keys use double\n        underscores, e.g. ``APP_DB__HOST`` sets ``db.host``.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `safe_divide(a, b, default)`.",
+    "output": "```python\ndef safe_divide(a, b, default=None):\n    \"\"\"Divide ``a`` by ``b``, returning ``default`` instead of raising.\n\n    Args:\n        a (float): Numerator.\n        b (float): Denominator.\n        default (float | None): Value returned when ``b`` is zero. Defaults\n            to ``None``.\n\n    Returns:\n        float | None: ``a / b`` or ``default``.\n\n    Notes:\n        Only division by zero is caught. ``TypeError`` from non-numeric\n        inputs propagates so programming errors stay visible.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a NumPy-style docstring for a function `find_peaks(signal, distance)`.",
+    "output": "```python\ndef find_peaks(signal, distance=1):\n    \"\"\"Locate local maxima separated by at least ``distance`` samples.\n\n    Parameters\n    ----------\n    signal : array_like\n        1-D sequence of comparable numeric values.\n    distance : int, optional\n        Minimum number of samples between accepted peaks. Defaults to 1.\n\n    Returns\n    -------\n    numpy.ndarray\n        Indices of the peaks, in ascending order.\n\n    Raises\n    ------\n    ValueError\n        If ``signal`` is not one-dimensional or ``distance`` < 1.\n\n    Notes\n    -----\n    When two maxima are closer than ``distance``, the higher one wins; ties\n    are broken by the lower index.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `slugify(text)`.",
+    "output": "```python\ndef slugify(text, max_len=80):\n    \"\"\"Convert arbitrary text into a URL-safe slug.\n\n    Lowercases the input, transliterates accented characters to ASCII,\n    replaces runs of non-alphanumeric characters with a single hyphen, and\n    trims leading/trailing hyphens.\n\n    Args:\n        text (str): Source text, may be empty.\n        max_len (int): Maximum length of the result. Defaults to 80.\n\n    Returns:\n        str: The slug. May be the empty string if ``text`` has no usable\n            characters.\n\n    Examples:\n        >>> slugify(\"Héllo, World!\")\n        'hello-world'\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a class `RateLimiter` using a token bucket.",
+    "output": "```python\nclass RateLimiter:\n    \"\"\"A token-bucket rate limiter.\n\n    Each call to :meth:`allow` consumes one token. Tokens refill at ``rate``\n    per second up to ``capacity``. This permits short bursts while enforcing\n    an average rate.\n\n    Args:\n        rate (float): Tokens added per second.\n        capacity (int): Maximum bucket size. Defaults to ``int(rate)``.\n\n    Example:\n        >>> limiter = RateLimiter(rate=5, capacity=10)\n        >>> if limiter.allow():\n        ...     handle()\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `flatten(nested)`.",
+    "output": "```python\ndef flatten(nested):\n    \"\"\"Yield atoms from arbitrarily nested lists and tuples.\n\n    Args:\n        nested (Iterable): A structure containing lists, tuples, and leaf\n            values.\n\n    Yields:\n        object: Each non-list, non-tuple leaf, in depth-first order.\n\n    Notes:\n        Strings are treated as leaves, not as iterables, so ``flatten([\"ab\"])``\n        yields ``\"ab\"`` rather than ``\"a\"`` and ``\"b\"``.\n\n    Example:\n        >>> list(flatten([1, [2, [3, 4]], 5]))\n        [1, 2, 3, 4, 5]\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `send_email(to, subject, body)`.",
+    "output": "```python\ndef send_email(to, subject, body, html=False):\n    \"\"\"Queue a transactional email for delivery.\n\n    Args:\n        to (str | list[str]): One recipient or a list of recipients. At most\n            50 are allowed per call.\n        subject (str): Subject line; newlines are stripped.\n        body (str): Message body.\n        html (bool): When True, ``body`` is sent as ``text/html``; otherwise\n            it is sent as plain text. Defaults to False.\n\n    Returns:\n        str: The provider message ID.\n\n    Raises:\n        ValueError: If ``to`` contains more than 50 recipients or is empty.\n        EmailError: If the provider rejects the message.\n\n    Notes:\n        Delivery is asynchronous; a returned ID means accepted, not delivered.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a NumPy-style docstring for a function `gini(values)`.",
+    "output": "```python\ndef gini(values):\n    \"\"\"Compute the Gini coefficient of a distribution.\n\n    Parameters\n    ----------\n    values : array_like\n        Non-negative numeric values. Negative entries raise.\n\n    Returns\n    -------\n    float\n        The Gini coefficient in ``[0, 1]``, where 0 is perfect equality and\n        1 is maximal inequality.\n\n    Raises\n    ------\n    ValueError\n        If ``values`` is empty, contains negatives, or sums to zero.\n\n    References\n    ----------\n    .. [1] Gini, C. (1912). *Variabilità e mutabilità*.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `migrate(schema_from, schema_to)`.",
+    "output": "```python\ndef migrate(schema_from, schema_to):\n    \"\"\"Transform a record from one schema version to another.\n\n    Applies each migration step between the two versions in order, so\n    ``migrate(v1, v4)`` runs the v1->v2, v2->v3, and v3->v4 steps.\n\n    Args:\n        schema_from (str): Current schema version, e.g. ``\"v1\"``.\n        schema_to (str): Target schema version, e.g. ``\"v4\"``.\n\n    Returns:\n        callable: A function mapping one record (``dict``) to the migrated\n            record.\n\n    Raises:\n        ValueError: If either version is unknown or ``schema_to`` precedes\n            ``schema_from`` (downgrades are unsupported).\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `hmac_sign(payload, secret)`.",
+    "output": "```python\ndef hmac_sign(payload, secret):\n    \"\"\"Compute a hexadecimal HMAC-SHA256 signature.\n\n    Args:\n        payload (bytes): The exact bytes to sign. Encode text before calling,\n            as newline or whitespace changes alter the signature.\n        secret (bytes): Shared signing key.\n\n    Returns:\n        str: Lowercase hexadecimal digest.\n\n    Example:\n        >>> hmac_sign(b'{\"id\":1}', b'key')\n        '9f2c...'\n\n    Warning:\n        Always compare signatures with ``hmac.compare_digest`` to avoid\n        timing attacks.\n    \"\"\"\n```"
+  },
+  {
+    "instruction": "Write a Google-style docstring for a function `load_plugin(path)`.",
+    "output": "```python\ndef load_plugin(path):\n    \"\"\"Import a plugin module from a filesystem path.\n\n    The module is executed in an isolated namespace and registered by its\n    declared ``NAME`` attribute. Loading the same path twice is a no-op.\n\n    Args:\n        path (str): Path to a ``.py`` file.\n\n    Returns:\n        ModuleType: The imported module.\n\n    Raises:\n        FileNotFoundError: If ``path`` does not exist.\n        PluginError: If the module lacks a ``NAME`` or defines no ``register``\n            function.\n\n    Security:\n        Plugins run with full process privileges. Only load trusted code.\n    \"\"\"\n```"
+  }
+]

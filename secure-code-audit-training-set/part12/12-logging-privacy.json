@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nlogger.info('User login: %s / %s', username, password)",
+    "output": "**Vulnerability:** Logging credentials\n**Severity:** High\n**Why:** Passwords in logs expose accounts to anyone with log access; logs are widely replicated.\n**Exploit:** Read the password from log storage and reuse it.\n**Fix:**\nlogger.info('User login: %s', username)  # never log the password"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nlog.info('payment card %s', card_number)",
+    "output": "**Vulnerability:** Logging PII / PCI data\n**Severity:** Critical\n**Why:** Full card numbers are regulated (PCI DSS) and a breach liability.\n**Exploit:** Harvest card numbers from logs.\n**Fix:**\nlog.info('payment card %s', mask_card(card_number))  # e.g. **** **** **** 1234"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nlogger.debug('Authorization: %s', request.headers['Authorization'])",
+    "output": "**Vulnerability:** Logging bearer tokens\n**Severity:** High\n**Why:** Tokens in logs grant impersonation until expiry.\n**Exploit:** Reuse the token from logs.\n**Fix:**\nlogger.debug('Authorization header present: %s', bool(request.headers.get('Authorization')))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nprint('SSN:', user.ssn, 'DOB:', user.dob)",
+    "output": "**Vulnerability:** Logging sensitive PII\n**Severity:** High\n**Why:** SSN/DOB in logs enable identity theft and violate privacy rules (GDPR/CCPA).\n**Exploit:** Exfiltrate PII from logs.\n**Fix:**\nprint('user_id:', user.id)  # log identifiers, not PII; mask if needed"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nlogging.info('token=%s secret=%s', access_token, client_secret)",
+    "output": "**Vulnerability:** Logging secrets\n**Severity:** Critical\n**Why:** Two long-lived secrets are written to logs.\n**Exploit:** Use them to authenticate as the service.\n**Fix:**\nlogging.info('authenticated with client_id=%s', client_id)\n# Log the identifier, never the secret."
+  },
+  {
+    "instruction": "Audit this code for security issues (full request logging):\n\nlogger.info('request %s body=%s', request.path, request.get_data())",
+    "output": "**Vulnerability:** Logging full request bodies (may contain credentials/PII)\n**Severity:** High\n**Why:** Bodies often include passwords, tokens, and personal data.\n**Exploit:** Harvest secrets/PII from logs.\n**Fix:**\nlogger.info('request %s len=%d', request.path, len(request.get_data()))\n# Or redact sensitive fields before logging."
+  },
+  {
+    "instruction": "Audit this code for security issues (unmasked query params):\n\nlogger.info('GET %s', request.url)  # includes ?token=...",
+    "output": "**Vulnerability:** Secrets/PII in logged URLs\n**Severity:** Medium\n**Why:** Query strings may contain tokens, emails, or reset codes.\n**Exploit:** Read tokens from access logs.\n**Fix:**\nlogger.info('GET %s', strip_query_secrets(request.url))\n# Move secrets out of the query string."
+  },
+  {
+    "instruction": "Audit this code for security issues (exception dump):\n\nexcept Exception:\n    logger.exception('failed for payload: %s', payload)",
+    "output": "**Vulnerability:** Sensitive data in error logs\n**Severity:** Medium\n**Why:** Payloads can contain PII/secrets; tracebacks may embed data.\n**Exploit:** Harvest data from error logs.\n**Fix:**\nlogger.exception('request failed')\n# Log a request id and non-sensitive context; scrub the payload."
+  },
+  {
+    "instruction": "Audit this code for security issues (log injection):\n\nlogger.info('user input: ' + user_input)",
+    "output": "**Vulnerability:** Log injection / forged log entries\n**Severity:** Medium\n**Why:** Newlines/control chars in input create fake log lines, confusing audits/alerting.\n**Exploit:** Input `x\\nERROR login admin succeeded` injects fake records.\n**Fix:**\nlogger.info('user input: %r', user_input)  # repr escapes control chars"
+  },
+  {
+    "instruction": "Audit this code for security issues (level too verbose):\n\nlogger.debug('env=%s', dict(os.environ))",
+    "output": "**Vulnerability:** Sensitive data at debug level\n**Severity:** High\n**Why:** Debug logs are often enabled in prod and contain env secrets.\n**Exploit:** Enable/debug logs leak credentials.\n**Fix:**\n# Never log the environment. Keep debug logs free of secrets/PII and\n# disable debug in production."
+  },
+  {
+    "instruction": "Audit this code for security issues (missing access control on logs):\n\n@app.get('/logs/<file>')\ndef logs(file):\n    return send_file(f'/var/log/app/{file}')",
+    "output": "**Vulnerability:** Unauthenticated log exposure (path traversal too)\n**Severity:** High\n**Why:** Logs may contain PII/secrets and the endpoint lacks auth.\n**Exploit:** Read logs directly, and traverse with `../`.\n**Fix:**\n@app.get('/logs/<name>')\n@require_admin\ndef logs(name):\n    if not re.fullmatch(r'[A-Za-z0-9_.-]+', name):\n        abort(400)\n    return send_file(os.path.join('/var/log/app', name))"
+  },
+  {
+    "instruction": "Audit this code for security issues (retention):\n\n# logs kept forever with no retention policy",
+    "output": "**Vulnerability:** Unlimited log retention (privacy/compliance)\n**Severity:** Medium\n**Why:** Excessive retention increases breach impact and may violate data-minimization rules.\n**Exploit:** Historical PII/secrets remain recoverable indefinitely.\n**Fix:**\n# Define retention (e.g., 30-90 days), rotate and purge automatically,\n# and store only what is needed."
+  },
+  {
+    "instruction": "Audit this code for security issues (third-party sink):\n\nsentry.init(dsn=DSN, send_default_pii=True)",
+    "output": "**Vulnerability:** PII sent to a third party\n**Severity:** High\n**Why:** `send_default_pii=True` ships personal data to an external service without consent/controls.\n**Exploit:** Data leaks via the vendor or its breach.\n**Fix:**\nsentry.init(dsn=DSN)  # default PII off\n# Scrub sensitive fields with before_send; get consent/Dpa in place."
+  },
+  {
+    "instruction": "Audit this code for security issues (log injection into structured logs):\n\nlogger.info('{\"user\":\"%s\"}' % username)",
+    "output": "**Vulnerability:** JSON log injection\n**Severity:** Medium\n**Why:** Unescaped values break JSON structure or inject fields.\n**Exploit:** `username = '\",\"admin\":true'` forges an admin field.\n**Fix:**\nimport json\nlogger.info(json.dumps({'user': username}))  # proper escaping"
+  },
+  {
+    "instruction": "Audit this code for security issues (health endpoint leak):\n\n@app.get('/health')\ndef health():\n    return {'config': app.config}",
+    "output": "**Vulnerability:** Config/secrets exposed via health endpoint\n**Severity:** High\n**Why:** `app.config` may include SECRET_KEY, DB creds, API keys.\n**Exploit:** Read secrets from the unauthenticated endpoint.\n**Fix:**\n@app.get('/health')\ndef health():\n    return {'status': 'ok'}  # no sensitive config"
+  },
+  {
+    "instruction": "Audit this code for security issues (PII in metrics labels):\n\nmetrics.counter('logins', email=user.email).inc()",
+    "output": "**Vulnerability:** PII as a metric label (high cardinality + privacy)\n**Severity:** High\n**Why:** Emails become permanent, widely replicated time-series labels.\n**Exploit:** Enumerate user emails from the metrics backend.\n**Fix:**\nmetrics.counter('logins', tenant=user.tenant_id).inc()\n# Use low-cardinality, non-identifying labels."
+  },
+  {
+    "instruction": "Audit this code for security issues (console.log of tokens):\n\nconsole.log('token', process.env.JWT_SECRET);",
+    "output": "**Vulnerability:** Secret logging to stdout\n**Severity:** High\n**Why:** stdout is captured by log aggregators and visible to operators.\n**Exploit:** Read the JWT secret and forge tokens.\n**Fix:**\n// Never log secrets. If debugging, log a boolean:\nconsole.log('jwt secret configured:', Boolean(process.env.JWT_SECRET));"
+  },
+  {
+    "instruction": "Audit this code for security issues (audit log tampering):\n\n# app can UPDATE and DELETE its own audit rows",
+    "output": "**Vulnerability:** Mutable audit logs\n**Severity:** High\n**Why:** If the app can modify audit records, attackers can cover their tracks.\n**Exploit:** Delete rows after a malicious action.\n**Fix:**\n# Append-only audit log with restricted DB permissions (INSERT only),\n# tamper-evident hashing, or shipping to an external immutable store."
+  },
+  {
+    "instruction": "Audit this code for security issues (missing security logging):\n\ndef login(user, pw):\n    if bad: return False   # no log of the failure",
+    "output": "**Vulnerability:** Missing security event logging\n**Severity:** Medium\n**Why:** Failed logins and lockouts aren't recorded, so attacks go undetected.\n**Exploit:** Brute-force/credential-stuffing proceeds unnoticed.\n**Fix:**\nif bad:\n    logger.warning('login_failed user=%s ip=%s', user, req.remote_addr)\n    return False\n# Also log lockouts, password changes, and privilege changes (without secrets)."
+  },
+  {
+    "instruction": "Audit this code for security issues (stack trace to client):\n\n@app.errorhandler(Exception)\ndef err(e):\n    return str(traceback.format_exc()), 500",
+    "output": "**Vulnerability:** Verbose errors to clients\n**Severity:** Medium\n**Why:** Stack traces reveal paths, versions, and sometimes data, aiding attackers.\n**Exploit:** Trigger errors to map the app and find secrets in the output.\n**Fix:**\n@app.errorhandler(Exception)\ndef err(e):\n    logger.exception('unhandled error')\n    return 'internal error', 500  # details go only to logs"
+  }
+]

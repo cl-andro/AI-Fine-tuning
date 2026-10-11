@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this PostgreSQL log line into JSON with timestamp, pid, level and statement:\n2023-10-12 14:05:07 UTC [8123] LOG:  statement: SELECT id, email FROM users WHERE active = true",
+    "output": "{\"timestamp\": \"2023-10-12 14:05:07 UTC\", \"pid\": 8123, \"level\": \"LOG\", \"statement\": \"SELECT id, email FROM users WHERE active = true\"}"
+  },
+  {
+    "instruction": "Extract the duration in milliseconds as a number from this PostgreSQL log line and return JSON:\n2023-10-12 14:05:08 UTC [8124] LOG:  duration: 1542.378 ms  statement: SELECT count(*) FROM orders",
+    "output": "{\"duration_ms\": 1542.378, \"pid\": 8124, \"level\": \"LOG\", \"statement\": \"SELECT count(*) FROM orders\"}"
+  },
+  {
+    "instruction": "Parse this MySQL slow query log entry into JSON with query_time, lock_time, rows_sent, rows_examined and the query text:\n2023-10-12T14:05:07.123456Z 8 Query SELECT id, name FROM customers WHERE created_at > NOW() - INTERVAL 1 DAY\n\t# Query_time: 2.345678  Lock_time: 0.000123 Rows_sent: 1500  Rows_examined: 45000",
+    "output": "{\"timestamp\": \"2023-10-12T14:05:07.123456Z\", \"thread\": 8, \"query_time\": 2.345678, \"lock_time\": 0.000123, \"rows_sent\": 1500, \"rows_examined\": 45000, \"query\": \"SELECT id, name FROM customers WHERE created_at > NOW() - INTERVAL 1 DAY\"}"
+  },
+  {
+    "instruction": "Parse this MySQL error log line into JSON with timestamp, severity, code and message:\n2023-10-12T14:05:09.123456Z 0 [ERROR] [MY-010197] [Server] Too many connections",
+    "output": "{\"timestamp\": \"2023-10-12T14:05:09.123456Z\", \"severity\": \"ERROR\", \"code\": \"MY-010197\", \"subsystem\": \"Server\", \"message\": \"Too many connections\"}"
+  },
+  {
+    "instruction": "Parse this structured MongoDB log record into JSON with time, severity, component, id, msg and the duration and namespace attributes:\n{\"t\": {\"$date\": \"2023-10-12T14:05:07.123+00:00\"}, \"s\": \"I\", \"c\": \"COMMAND\", \"id\": 5180100, \"msg\": \"Slow query\", \"attr\": {\"durationMillis\": 2145, \"ns\": \"app.orders\", \"command\": \"find\"}}",
+    "output": "{\"time\": \"2023-10-12T14:05:07.123+00:00\", \"severity\": \"info\", \"component\": \"COMMAND\", \"id\": 5180100, \"msg\": \"Slow query\", \"durationMillis\": 2145, \"ns\": \"app.orders\"}"
+  },
+  {
+    "instruction": "Parse this Redis server log line into JSON with pid, type, timestamp and message. The asterisk means verbose level:\n12345:M 12 Oct 2023 14:05:07.123 * Background saving started by pid 4321",
+    "output": "{\"pid\": 12345, \"type\": \"M\", \"timestamp\": \"12 Oct 2023 14:05:07.123\", \"level\": \"verbose\", \"message\": \"Background saving started by pid 4321\"}"
+  },
+  {
+    "instruction": "Extract only the SQL statement from this PostgreSQL log line as a JSON string:\n2023-10-12 14:05:10 UTC [9000] LOG:  statement: UPDATE accounts SET balance = balance - 10 WHERE id = 42",
+    "output": "{\"statement\": \"UPDATE accounts SET balance = balance - 10 WHERE id = 42\"}"
+  },
+  {
+    "instruction": "Parse this PostgreSQL connection log line into JSON with host, port and pid:\n2023-10-12 14:05:11 UTC [8125] LOG:  connection received: host=10.0.0.5 port=51234",
+    "output": "{\"timestamp\": \"2023-10-12 14:05:11 UTC\", \"pid\": 8125, \"level\": \"LOG\", \"host\": \"10.0.0.5\", \"port\": 51234}"
+  },
+  {
+    "instruction": "Parse this PostgreSQL deadlock error into JSON with timestamp, pid, severity and message:\n2023-10-12 14:05:12 UTC [9001] ERROR:  deadlock detected\n2023-10-12 14:05:12 UTC [9001] HINT:  See the query wait events section in the server logs.",
+    "output": "{\"timestamp\": \"2023-10-12 14:05:12 UTC\", \"pid\": 9001, \"severity\": \"ERROR\", \"message\": \"deadlock detected\"}"
+  },
+  {
+    "instruction": "Write a regex with named groups that parses a PostgreSQL log line into timestamp, pid, level and message",
+    "output": "^(?P<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?: UTC)?) \\[(?P<pid>\\d+)\\] (?P<level>[A-Z]+):\\s+(?P<message>.*)$"
+  },
+  {
+    "instruction": "Parse this MySQL general query log line into JSON with timestamp, thread, action and details:\n2023-10-12T14:05:13.654321Z     10 Connect\troot@localhost on  using TCP/IP",
+    "output": "{\"timestamp\": \"2023-10-12T14:05:13.654321Z\", \"thread\": 10, \"action\": \"Connect\", \"user\": \"root\", \"host\": \"localhost\", \"protocol\": \"TCP/IP\"}"
+  },
+  {
+    "instruction": "Parse this SQL Server log line into JSON with timestamp, source, error_number, severity and state:\n2023-10-12 14:05:14.123 Error: 18456, Severity: 14, State: 1.",
+    "output": "{\"timestamp\": \"2023-10-12 14:05:14.123\", \"error_number\": 18456, \"severity\": 14, \"state\": 1}"
+  },
+  {
+    "instruction": "Parse this Oracle alert log entry into JSON with timestamp, error code and arguments:\nThu Oct 12 14:05:15 2023\nORA-00600: internal error occurred, arguments: [kkslgbv0], [], [], [], [], [], [], []",
+    "output": "{\"timestamp\": \"Thu Oct 12 14:05:15 2023\", \"error\": \"ORA-00600\", \"message\": \"internal error occurred\", \"arguments\": [\"kkslgbv0\", \"\", \"\", \"\", \"\", \"\", \"\", \"\"]}"
+  },
+  {
+    "instruction": "From these PostgreSQL duration log lines return JSON with max_duration_ms and the statement that was slowest:\n2023-10-12 14:06:00 UTC [100] LOG:  duration: 250.500 ms  statement: SELECT * FROM a\n2023-10-12 14:06:01 UTC [101] LOG:  duration: 3120.750 ms  statement: SELECT * FROM b\n2023-10-12 14:06:02 UTC [102] LOG:  duration: 89.100 ms  statement: SELECT * FROM c",
+    "output": "{\"max_duration_ms\": 3120.75, \"statement\": \"SELECT * FROM b\"}"
+  },
+  {
+    "instruction": "Classify each of these database log lines as error, slow or info and return a JSON array of objects with line_index and class:\n2023-10-12 14:07:00 UTC [1] ERROR:  relation does not exist\n2023-10-12 14:07:01 UTC [2] LOG:  duration: 4000.000 ms  statement: SELECT 1\n2023-10-12 14:07:02 UTC [3] LOG:  checkpoint starting\n2023-10-12 14:07:03 UTC [4] FATAL:  password authentication failed",
+    "output": "[{\"line_index\": 1, \"class\": \"error\"}, {\"line_index\": 2, \"class\": \"slow\"}, {\"line_index\": 3, \"class\": \"info\"}, {\"line_index\": 4, \"class\": \"error\"}]"
+  },
+  {
+    "instruction": "Write a Python function that parses a MySQL slow query log entry and returns query_time and the query text",
+    "output": "import re\n\nPATTERN = re.compile(\n    r\"^(?P<ts>\\S+)\\s+(?P<thread>\\d+)\\s+Query\\s+(?P<query>.+)$\", re.MULTILINE)\nMETA = re.compile(\n    r\"# Query_time:\\s+(?P<query_time>[\\d.]+)\\s+Lock_time:\\s+(?P<lock_time>[\\d.]+)\\s+Rows_sent:\\s+(?P<rows_sent>\\d+)\\s+Rows_examined:\\s+(?P<rows_examined>\\d+)\")\n\ndef parse_slow_query(text):\n    q = PATTERN.search(text)\n    m = META.search(text)\n    if not q:\n        return {}\n    out = {\"query\": q.group(\"query\").strip()}\n    if m:\n        out[\"query_time\"] = float(m.group(\"query_time\"))\n        out[\"lock_time\"] = float(m.group(\"lock_time\"))\n        out[\"rows_sent\"] = int(m.group(\"rows_sent\"))\n        out[\"rows_examined\"] = int(m.group(\"rows_examined\"))\n    return out"
+  },
+  {
+    "instruction": "Write a grok pattern that parses a PostgreSQL log line into timestamp, pid, level and message",
+    "output": "%{TIMESTAMP_ISO8601:timestamp} \\[%{NUMBER:pid}\\] %{LOGLEVEL:level}:\\s+%{GREEDYDATA:message}"
+  },
+  {
+    "instruction": "Parse this PostgreSQL checkpoint log line into JSON with buffers_written and write_time:\n2023-10-12 14:08:00 UTC [700] LOG:  checkpoint complete: wrote 1521 buffers (9.3%); sync=0.042 s, total=1.180 s; files=3",
+    "output": "{\"timestamp\": \"2023-10-12 14:08:00 UTC\", \"pid\": 700, \"buffers_written\": 1521, \"buffers_percent\": 9.3, \"sync_seconds\": 0.042, \"total_seconds\": 1.18, \"files\": 3}"
+  },
+  {
+    "instruction": "Parse this older plain text MongoDB log line into JSON with timestamp, severity, component, connection and message:\n2023-10-12T14:05:07.123+0000 I NETWORK  [conn12] connection accepted from 10.0.0.5:51234 #12 (2 connections now open)",
+    "output": "{\"timestamp\": \"2023-10-12T14:05:07.123+0000\", \"severity\": \"I\", \"component\": \"NETWORK\", \"connection\": \"conn12\", \"message\": \"connection accepted from 10.0.0.5:51234 #12 (2 connections now open)\"}"
+  },
+  {
+    "instruction": "These five database log lines mix severities. Return JSON with total_lines and error_lines counts:\n2023-10-12 14:09:00 UTC [1] LOG:  connection received\n2023-10-12 14:09:01 UTC [2] ERROR:  could not connect\n2023-10-12 14:09:02 UTC [3] LOG:  statement: SELECT 1\n2023-10-12 14:09:03 UTC [4] FATAL:  no database configured\n2023-10-12 14:09:04 UTC [5] LOG:  checkpoint starting",
+    "output": "{\"total_lines\": 5, \"error_lines\": 2}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Train a logistic regression that automatically balances class weights.",
+    "output": "from sklearn.linear_model import LogisticRegression\nclf = LogisticRegression(class_weight='balanced', max_iter=1000).fit(X_train, y_train)"
+  },
+  {
+    "instruction": "Compute the class weights that compensate for class frequencies.",
+    "output": "import numpy as np\nfrom sklearn.utils.class_weight import compute_class_weight\nweights = compute_class_weight('balanced', classes=np.unique(y), y=y)\nprint(weights)"
+  },
+  {
+    "instruction": "Oversample the minority class with SMOTE before training.",
+    "output": "from imblearn.over_sampling import SMOTE\nX_res, y_res = SMOTE(random_state=0).fit_resample(X_train, y_train)"
+  },
+  {
+    "instruction": "Randomly duplicate minority samples to even out the classes.",
+    "output": "from imblearn.over_sampling import RandomOverSampler\nX_res, y_res = RandomOverSampler(random_state=0).fit_resample(X_train, y_train)"
+  },
+  {
+    "instruction": "Randomly drop majority samples to shrink the imbalance.",
+    "output": "from imblearn.under_sampling import RandomUnderSampler\nX_res, y_res = RandomUnderSampler(random_state=0).fit_resample(X_train, y_train)"
+  },
+  {
+    "instruction": "Keep resampling inside the cross-validation loop with an imbalanced-learn pipeline.",
+    "output": "from imblearn.pipeline import Pipeline as ImbPipeline\nfrom imblearn.over_sampling import SMOTE\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\npipe = ImbPipeline([('scale', StandardScaler()), ('smote', SMOTE(random_state=0)), ('clf', LogisticRegression(max_iter=1000))])\npipe.fit(X_train, y_train)"
+  },
+  {
+    "instruction": "Split the data so that every split preserves the class proportions.",
+    "output": "from sklearn.model_selection import train_test_split\nXtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=0, stratify=y)"
+  },
+  {
+    "instruction": "Report balanced accuracy instead of raw accuracy on an imbalanced test set.",
+    "output": "from sklearn.metrics import balanced_accuracy_score\nprint(balanced_accuracy_score(y_test, y_pred))"
+  },
+  {
+    "instruction": "Score an imbalanced classifier with macro-averaged F1.",
+    "output": "from sklearn.metrics import f1_score\nprint(f1_score(y_test, y_pred, average='macro'))"
+  },
+  {
+    "instruction": "Normalize the confusion matrix so each row sums to 1 to reveal neglected classes.",
+    "output": "from sklearn.metrics import confusion_matrix\nprint(confusion_matrix(y_test, y_pred, normalize='true'))"
+  },
+  {
+    "instruction": "Reduce a multiclass problem to one binary problem per class with OneVsRest.",
+    "output": "from sklearn.multiclass import OneVsRestClassifier\nfrom sklearn.linear_model import LogisticRegression\nclf = OneVsRestClassifier(LogisticRegression(max_iter=1000)).fit(X_train, y_train)"
+  },
+  {
+    "instruction": "Give a random forest explicit per-class weights for an uneven target.",
+    "output": "from sklearn.ensemble import RandomForestClassifier\nclf = RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=0).fit(X_train, y_train)"
+  },
+  {
+    "instruction": "Pass per-sample weights to fit so rare rows count more.",
+    "output": "from sklearn.linear_model import LogisticRegression\nclf = LogisticRegression(max_iter=1000).fit(X_train, y_train, sample_weight=sample_weight)"
+  },
+  {
+    "instruction": "Choose the decision threshold that maximizes F1 on a precision-recall curve.",
+    "output": "import numpy as np\nfrom sklearn.metrics import precision_recall_curve\nprecision, recall, thresholds = precision_recall_curve(y_test, scores)\ni = np.argmax(2 * precision * recall / (precision + recall + 1e-9))\nbest_threshold = thresholds[min(i, len(thresholds) - 1)]"
+  },
+  {
+    "instruction": "Use stratified cross-validation so rare classes appear in every validation fold.",
+    "output": "from sklearn.model_selection import StratifiedKFold, cross_val_score\nfrom sklearn.ensemble import RandomForestClassifier\nprint(cross_val_score(RandomForestClassifier(n_estimators=100, random_state=0), X, y, cv=StratifiedKFold(5, shuffle=True, random_state=0)))"
+  },
+  {
+    "instruction": "Establish a stratified dummy baseline before trusting a real model.",
+    "output": "from sklearn.dummy import DummyClassifier\nfrom sklearn.metrics import balanced_accuracy_score\nbase = DummyClassifier(strategy='stratified', random_state=0).fit(X_train, y_train)\nprint(balanced_accuracy_score(y_test, base.predict(X_test)))"
+  },
+  {
+    "instruction": "Binarize a multilabel target and evaluate with micro averaging.",
+    "output": "from sklearn.preprocessing import label_binarize\nfrom sklearn.metrics import f1_score\nY = label_binarize(y, classes=[0, 1, 2])\nprint(f1_score(Y, Y_pred, average='micro'))"
+  },
+  {
+    "instruction": "Report one-vs-rest average precision for each class of a multiclass target.",
+    "output": "from sklearn.metrics import average_precision_score\nfor c in range(n_classes):\n    print(c, average_precision_score(y_onehot[:, c], proba[:, c]))"
+  },
+  {
+    "instruction": "Print per-class recall to find out which class the model ignores most.",
+    "output": "from sklearn.metrics import recall_score\nprint(recall_score(y_test, y_pred, average=None))"
+  },
+  {
+    "instruction": "Impute, scale, oversample and classify in a single fitted pipeline.",
+    "output": "from imblearn.pipeline import Pipeline as ImbPipeline\nfrom imblearn.over_sampling import SMOTE\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.ensemble import RandomForestClassifier\npipe = ImbPipeline([('impute', SimpleImputer(strategy='median')), ('scale', StandardScaler()), ('smote', SMOTE(random_state=0)), ('clf', RandomForestClassifier(n_estimators=200, random_state=0))])\npipe.fit(X_train, y_train)\nprint(pipe.score(X_test, y_test))"
+  }
+]

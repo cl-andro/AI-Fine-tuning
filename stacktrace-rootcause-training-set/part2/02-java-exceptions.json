@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this Java exception.\nContext: order service totalling line items fetched from a request payload.\n\nException in thread \"main\" java.lang.NullPointerException\n\tat com.acme.orders.OrderService.total(OrderService.java:57)\n\tat com.acme.orders.OrderApp.main(OrderApp.java:12)",
+    "output": "**Root cause:** the `Order` object (or its `lineItems` list) is null because the payload had no items field and the parser never initialised it.\n**Fix:** Default `lineItems = new ArrayList<>()` in the constructor and null-check the order before totalling."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: loop over a fixed-size array of sensor readings.\n\nException in thread \"main\" java.lang.ArrayIndexOutOfBoundsException: 8\n\tat com.acme.sensors.ReadingReader.readAll(ReadingReader.java:33)",
+    "output": "**Root cause:** the loop condition is `i <= readings.length`, so on the last iteration `i` equals the length and is out of bounds (valid indices stop at length-1).\n**Fix:** Change the condition to `i < readings.length`."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: cache layer casting map entries loaded from JSON.\n\nException in thread \"main\" java.lang.ClassCastException: class java.util.LinkedHashMap cannot be cast to class com.acme.model.User\n\tat com.acme.cache.UserCache.get(UserCache.java:41)\n\tat com.acme.api UserController.load(UserController.java:88)",
+    "output": "**Root cause:** a generic `Map` deserialised from JSON is a `LinkedHashMap`, not a `User`, so the hard cast fails.\n**Fix:** Deserialize into the concrete type (e.g. `mapper.readValue(node, User.class)`) instead of casting a raw map."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: parsing a request parameter into an identifier.\n\nException in thread \"main\" java.lang.NumberFormatException: For input string: \"abc\"\n\tat java.base/java.lang.NumberFormatException.forInput(NumberFormatException.java:65)\n\tat java.base/java.lang.Integer.parseInt(Integer.java:647)\n\tat com.acme.api.PathParser.parseId(PathParser.java:19)",
+    "output": "**Root cause:** `Integer.parseInt` was given the literal text `abc`, which is not a numeric string.\n**Fix:** Validate with a regex (or `NumberUtils.isCreatable`) before parsing and return a 400 response for bad ids."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: averaging a batch of measurements.\n\nException in thread \"main\" java.lang.ArithmeticException: / by zero\n\tat com.acme.stats.Averager.mean(Averager.java:24)\n\tat com.acme.stats.Averager.report(Averager.java:11)",
+    "output": "**Root cause:** the batch list is empty, so `batch.size()` is 0 and the division throws.\n**Fix:** Return 0 (or throw a domain exception) when `batch.isEmpty()` before dividing."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: pipeline reusing a parallel stream after it was already consumed.\n\nException in thread \"main\" java.lang.IllegalStateException: stream has already been operated upon or closed\n\tat java.base/java.util.stream.AbstractPipeline.sourceStage(AbstractPipeline.java:217)\n\tat com.acme.etl.Pipeline.run(Pipeline.java:56)",
+    "output": "**Root cause:** streams are single-use; the same `Stream` instance was consumed twice (a terminal operation already ran).\n**Fix:** Build the stream again inside a method that returns a new pipeline each time, rather than storing it as a field."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: plugin loader reflecting a class shipped in an optional jar.\n\nException in thread \"main\" java.lang.ClassNotFoundException: com.acme.plugins.ZipPlugin\n\tat java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)\n\tat com.acme.plugins.PluginLoader.load(PluginLoader.java:27)",
+    "output": "**Root cause:** the jar containing `com.acme.plugins.ZipPlugin` is not on the classpath (it was never added to the `Class-Path`/`-cp` list).\n**Fix:** Include the plugin jar in the launch classpath or load it with a dedicated `URLClassLoader`."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: extracting a fixed-length token from a short input string.\n\nException in thread \"main\" java.lang.StringIndexOutOfBoundsException: begin 5, end 12, length 8\n\tat java.base/java.lang.String.checkBoundsBeginEnd(String.java:4165)\n\tat java.base/java.lang.String.substring(String.java:2874)\n\tat com.acme.tokens.Tokenizer.slice(TokenReader.java:14)",
+    "output": "**Root cause:** `substring(5, 12)` is called on a string of length 8, and the requested end index exceeds the length.\n**Fix:** Clamp the end index (`Math.min(12, s.length())`) or validate the length before slicing."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: pre-populating an immutable list returned by Arrays.asList.\n\nException in thread \"main\" java.lang.UnsupportedOperationException\n\tat java.base/java.util.AbstractList.add(AbstractList.java:432)\n\tat com.acme.config.Choices.register(Choices.java:31)",
+    "output": "**Root cause:** `Arrays.asList` returns a fixed-size list whose `add` method always throws `UnsupportedOperationException`.\n**Fix:** Wrap it with `new ArrayList<>(Arrays.asList(...))` when mutation is required."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: recursive parent lookup over a directory tree imported from a legacy system.\n\nException in thread \"main\" java.lang.StackOverflowError\n\tat com.acme.tree.Node.parent(Node.java:64)\n\tat com.acme.tree.Node.parent(Node.java:66)\n\tat com.acme.tree.Node.parent(Node.java:66)",
+    "output": "**Root cause:** the tree contains a cycle (a node lists itself as its parent), so `parent()` recurses forever until the stack overflows.\n**Fix:** Track visited node ids in a `Set` and bail out when a cycle is detected; also add a depth limit."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: report job opening a template file by relative path.\n\nException in thread \"main\" java.io.FileNotFoundException: templates/report.jtx (No such file or directory)\n\tat java.base/java.io.FileInputStream.open0(Native Method)\n\tat com.acme.reporting.ReportWriter.open(ReportWriter.java:44)",
+    "output": "**Root cause:** the relative path is resolved against the JVM working directory (which differs when launched as a service), so the template is not found.\n**Fix:** Load templates from the classpath (`getResourceAsStream`) or resolve against a configured absolute base directory."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: consuming all documents from a cursor without checking availability.\n\nException in thread \"main\" java.util.NoSuchElementException\n\tat java.base/java.util.Scanner.next(Scanner.java:947)\n\tat com.acme.ingest.RowReader.nextRow(RowReader.java:52)",
+    "output": "**Root cause:** `scanner.next()` was called after the input was exhausted; there is no element to return.\n**Fix:** Guard with `while (scanner.hasNext())` (or `Optional`) before reading the next token."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: parsing a client-supplied identifier.\n\nException in thread \"main\" java.lang.IllegalArgumentException: Invalid UUID string: 550e8400-e29b-41d4-a716-44665544\n\tat java.base/java.util.UUID.fromString(UUID.java:273)\n\tat com.acme.api.UuidParam.decode(UuidParam.java:22)",
+    "output": "**Root cause:** the value has the right shape but is 31 hex characters instead of the 32 required by the canonical UUID format.\n**Fix:** Validate length/charset before calling `UUID.fromString` and return a 400 for malformed ids."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: allocating a buffer using a size parsed from a config file.\n\nException in thread \"main\" java.lang.NegativeArraySizeException: -1\n\tat com.acme.codec.FrameBuffer.allocate(FrameBuffer.java:38)\n\tat com.acme.codec.Decoder.decode(Decoder.java:77)",
+    "output": "**Root cause:** the size read from config (`buffer.size=-1`) is negative, and arrays cannot have a negative length.\n**Fix:** Reject non-positive sizes during config validation (`if (size <= 0) throw ...`) and fall back to a default."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: class loading during startup of a Spring service.\n\nException in thread \"main\" java.lang.ExceptionInInitializerError\n\tat com.acme.audit.AuditTrail.<clinit>(AuditTrail.java:18)\nCaused by: java.lang.IllegalStateException: audit.properties not found\n\tat com.acme.audit.AuditTrail.<clinit>(AuditTrail.java:25)",
+    "output": "**Root cause:** the static initialiser of `AuditTrail` threw, so the class fails to initialise and every later reference fails with `ExceptionInInitializerError`/`NoClassDefFoundError`.\n**Fix:** Make static init defensive (lazy load with defaults, or fail with an actionable message naming the missing file)."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: a unit test asserting that a discount rule applies.\n\nException in thread \"main\" java.lang.AssertionError: expected true\n\tat com.acme.pricing.DiscountTest.appliesToVip(DiscountTest.java:44)",
+    "output": "**Root cause:** the `assert appliesToVip(customer)` guard evaluated to false, meaning the rule did not accept a VIP customer (likely a broken eligibility check).\n**Fix:** Inspect the rule's condition for the failing branch and fix the eligibility logic rather than weakening the assertion."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: plugin invoked through reflection from a generic dispatcher.\n\nException in thread \"main\" java.lang.reflect.InvocationTargetException\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat com.acme.plugin.Dispatcher.call(Dispatcher.java:63)\nCaused by: java.lang.NullReference: invoice currency is null\n\tat com.acme.plugin.TaxPlugin.apply(TaxPlugin.java:47)",
+    "output": "**Root cause:** reflection wraps the real failure; the `Caused by` shows `TaxPlugin.apply` was handed a null currency, which is the actual bug.\n**Fix:** Unwrap with `e.getCause()` for logging, and validate/normalise the currency before invoking the plugin."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: parsing a user-supplied timestamp with a strict format.\n\nException in thread \"main\" java.text.ParseException: Unparseable date: \"2024-13-45\"\n\tat java.base/java.text.DateFormat.parse(DateFormat.java:394)\n\tat com.acme.dates.ReportRange.parse(ReportRange.java:29)",
+    "output": "**Root cause:** `2024-13-45` has month 13 and day 45, and parsing was run with leniency disabled, so the date is rejected.\n**Fix:** Validate month/day ranges before parsing (or keep `setLenient(false)` and surface a friendly 400 error)."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: batch job writing rows into a pre-sized Object array.\n\nException in thread \"main\" java.lang.ArrayStoreException: java.lang.String\n\tat java.base/java.lang.System.arraycopy(Native Method)\n\tat com.acme.batch.RowWriter.flush(RowWriter.java:96)",
+    "output": "**Root cause:** the destination array is declared as `Integer[]` (erased to `Object[]` at runtime), so storing a `String` element fails the array store check.\n**Fix:** Use a correctly typed array or a generic `List<Integer>` for the buffer."
+  },
+  {
+    "instruction": "Root cause this Java exception.\nContext: undo stack of a text editor after the user pressed redo too many times.\n\nException in thread \"main\" java.util.EmptyStackException\n\tat java.base/java.util.Stack.pop(Stack.java:164)\n\tat com.acme.editor.UndoManager.undo(UndoManager.java:71)",
+    "output": "**Root cause:** `pop()` was called on an empty `Stack`, meaning undo was invoked with no recorded actions left.\n**Fix:** Check `stack.isEmpty()` first and make `undo()` a no-op (return `false`) when there is nothing to undo."
+  }
+]

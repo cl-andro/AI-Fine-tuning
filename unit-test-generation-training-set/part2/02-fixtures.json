@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write pytest tests for this function using a fixture that provides a sample user dict.\n\ndef welcome_message(user):\n    return f\"Hello, {user['name']} ({user['role']})!\"",
+    "output": "import pytest\nfrom greeting import welcome_message\n\n@pytest.fixture\ndef sample_user():\n    return {'name': 'Ann', 'role': 'admin'}\n\ndef test_welcome_message(sample_user):\n    assert welcome_message(sample_user) == 'Hello, Ann (admin)!'"
+  },
+  {
+    "instruction": "Write pytest tests for parse_inventory that adds an item, using a tmp_path fixture to write and load a JSON inventory file.\n\nimport json, os\n\ndef load_inventory(path):\n    with open(path) as f:\n        return json.load(f)",
+    "output": "import json, pytest\nfrom inventory import load_inventory\n\n@pytest.fixture\ndef inventory_file(tmp_path):\n    data = {'items': [{'sku': 'A1', 'qty': 3}]}\n    path = tmp_path / 'inventory.json'\n    path.write_text(json.dumps(data))\n    return path\n\ndef test_load_inventory(inventory_file):\n    result = load_inventory(inventory_file)\n    assert result['items'][0]['sku'] == 'A1'\n    assert result['items'][0]['qty'] == 3"
+  },
+  {
+    "instruction": "Write pytest tests for a function that appends to a log, using a fixture with yield so the temp log file is created before and removed after the test.\n\ndef append_line(path, text):\n    with open(path, 'a') as f:\n        f.write(text + '\\n')",
+    "output": "import os, pytest\nfrom logutil import append_line\n\n@pytest.fixture\ndef log_file(tmp_path):\n    path = tmp_path / 'app.log'\n    path.write_text('')\n    yield path\n    if path.exists():\n        os.remove(path)\n\ndef test_append_line(log_file):\n    append_line(str(log_file), 'started')\n    append_line(str(log_file), 'done')\n    lines = log_file.read_text().splitlines()\n    assert lines == ['started', 'done']"
+  },
+  {
+    "instruction": "Write pytest tests for this formatter using two composable fixtures: one for a config object and one built on top of it for a user profile.\n\ndef format_profile(profile, config):\n    sep = config['separator']\n    return sep.join([profile['first'], profile['last'], profile['city']])",
+    "output": "import pytest\nfrom profiles import format_profile\n\n@pytest.fixture\ndef config():\n    return {'separator': ' | '}\n\n@pytest.fixture\ndef profile(config):\n    return {'first': 'Ada', 'last': 'Lovelace', 'city': 'London'}\n\ndef test_format_profile(profile, config):\n    assert format_profile(profile, config) == 'Ada | Lovelace | London'"
+  },
+  {
+    "instruction": "Write pytest tests for a cache get function using a module-scoped fixture so the expensive seeded cache is built once.\n\nclass Cache:\n    def __init__(self, data):\n        self.data = data\n    def get(self, key, default=None):\n        return self.data.get(key, default)",
+    "output": "import pytest\nfrom cache import Cache\n\n@pytest.fixture(scope='module')\ndef seeded_cache():\n    return Cache({f'key{i}': i * 10 for i in range(1000)})\n\ndef test_cache_hit(seeded_cache):\n    assert seeded_cache.get('key5') == 50\n\ndef test_cache_miss_returns_default(seeded_cache):\n    assert seeded_cache.get('missing', -1) == -1\n\ndef test_cache_other_key(seeded_cache):\n    assert seeded_cache.get('key999') == 9990"
+  },
+  {
+    "instruction": "Write pytest tests for upload_file that creates a directory structure under tmp_path in a fixture and verifies the helper writes into it.\n\nimport os\n\ndef write_upload(root, filename, content):\n    path = os.path.join(root, filename)\n    os.makedirs(os.path.dirname(path), exist_ok=True)\n    with open(path, 'w') as f:\n        f.write(content)\n    return path",
+    "output": "import os, pytest\nfrom upload import write_upload\n\n@pytest.fixture\ndef upload_dir(tmp_path):\n    target = tmp_path / 'uploads' / '2024'\n    target.mkdir(parents=True)\n    return str(target)\n\ndef test_write_upload(upload_dir):\n    path = write_upload(upload_dir, 'photo.txt', 'pixels')\n    assert os.path.exists(path)\n    with open(path) as f:\n        assert f.read() == 'pixels'\n\ndef test_write_upload_does_not_escape_dir(upload_dir):\n    path = write_upload(upload_dir, 'other.txt', 'x')\n    assert path.startswith(upload_dir)"
+  },
+  {
+    "instruction": "Write pytest tests for a Checkout service that depends on an authenticated client object, provided by a fixture using a simple stub class.\n\nclass Checkout:\n    def __init__(self, client):\n        self.client = client\n    def cart_total(self):\n        return self.client.get_cart_total()",
+    "output": "import pytest\nfrom checkout import Checkout\n\nclass FakeClient:\n    def __init__(self, total=0, user='guest'):\n        self.total = total\n        self.user = user\n    def get_cart_total(self):\n        return self.total\n\n@pytest.fixture\ndef checkout():\n    return Checkout(FakeClient(total=42, user='ann'))\n\ndef test_cart_total(checkout):\n    assert checkout.cart_total() == 42\n\ndef test_client_user_is_authenticated(checkout):\n    assert checkout.client.user == 'ann'"
+  },
+  {
+    "instruction": "Write pytest tests for a settings loader using an autouse fixture that sets environment variables before every test and cleans them up afterwards.\n\nimport os\n\ndef get_setting(name, default=None):\n    return os.environ.get(name, default)",
+    "output": "import os, pytest\nfrom settings import get_setting\n\n@pytest.fixture(autouse=True)\ndef clean_env(monkeypatch):\n    monkeypatch.setenv('APP_DEBUG', 'true')\n    monkeypatch.setenv('APP_PORT', '8080')\n\ndef test_get_setting_present():\n    assert get_setting('APP_DEBUG') == 'true'\n\ndef test_get_setting_default():\n    assert get_setting('APP_TIMEOUT', '30') == '30'\n\ndef test_env_is_isolated():\n    assert os.environ['APP_PORT'] == '8080'"
+  },
+  {
+    "instruction": "Write pytest tests for a clock-based scheduler using a fixture that returns a fake clock object the tests can control.\n\nclass Scheduler:\n    def __init__(self, clock):\n        self.clock = clock\n        self.scheduled = []\n    def schedule(self, delay):\n        self.scheduled.append(self.clock.now() + delay)",
+    "output": "import pytest\nfrom scheduler import Scheduler\n\nclass FakeClock:\n    def __init__(self, start=1000):\n        self.value = start\n    def now(self):\n        return self.value\n    def advance(self, seconds):\n        self.value += seconds\n\n@pytest.fixture\ndef clock():\n    return FakeClock()\n\ndef test_schedule_uses_current_time(clock):\n    scheduler = Scheduler(clock)\n    scheduler.schedule(30)\n    assert scheduler.scheduled == [1030]\n\ndef test_schedule_after_advance(clock):\n    scheduler = Scheduler(clock)\n    clock.advance(50)\n    scheduler.schedule(10)\n    assert scheduler.scheduled == [1060]"
+  },
+  {
+    "instruction": "Write pytest tests for a transaction total function using a parametrized fixture (request.param) that supplies carts of different sizes.\n\ndef cart_total(prices):\n    return round(sum(prices), 2)",
+    "output": "import pytest\nfrom cart import cart_total\n\n@pytest.fixture(params=[[], [1.5], [1.5, 2.25], [9.99, 0.01]])\ndef cart(request):\n    return request.param\n\ndef test_cart_total(cart):\n    expected = round(sum(cart), 2)\n    assert cart_total(cart) == expected\n\ndef test_cart_total_is_float(cart):\n    assert isinstance(cart_total(cart), float)"
+  },
+  {
+    "instruction": "Write tests for process_order that should be shared via conftest.py: write both the conftest fixture and the test module for an order processing function that applies a discount.\n\ndef process_order(subtotal, discount_percent=0):\n    return round(subtotal * (1 - discount_percent / 100), 2)",
+    "output": "# conftest.py\nimport pytest\n\n@pytest.fixture\ndef order():\n    return {'subtotal': 100.0, 'discount_percent': 10}\n\n# test_orders.py\nfrom orders import process_order\n\ndef test_process_order_uses_fixture(order):\n    assert process_order(order['subtotal'], order['discount_percent']) == 90.0\n\ndef test_process_order_no_discount(order):\n    assert process_order(order['subtotal']) == 100.0"
+  },
+  {
+    "instruction": "Write pytest tests for a Report class using a class-scoped fixture that builds the report once for every test in the class.\n\nclass Report:\n    def __init__(self, rows):\n        self.rows = rows\n    def count(self):\n        return len(self.rows)\n    def total(self):\n        return sum(r['amount'] for r in self.rows)",
+    "output": "import pytest\nfrom report import Report\n\n@pytest.fixture(scope='class')\ndef report():\n    return Report([{'amount': 10}, {'amount': 25}, {'amount': 5}])\n\nclass TestReport:\n    def test_count(self, report):\n        assert report.count() == 3\n    def test_total(self, report):\n        assert report.total() == 40\n    def test_rows_are_shared(self, report):\n        assert report.rows[0] == {'amount': 10}"
+  },
+  {
+    "instruction": "Write pytest tests for a logger that captures output, using a fixture wrapping caplog to assert on emitted records.\n\nimport logging\n\ndef log_event(logger, message):\n    logger.info(message)\n    return message",
+    "output": "import logging, pytest\nfrom events import log_event\n\n@pytest.fixture\ndef info_logger(caplog):\n    logger = logging.getLogger('test.events')\n    logger.setLevel(logging.INFO)\n    with caplog.at_level(logging.INFO, logger='test.events'):\n        yield logger\n\ndef test_log_event_records_message(info_logger, caplog):\n    result = log_event(info_logger, 'order placed')\n    assert result == 'order placed'\n    assert caplog.messages == ['order placed']"
+  },
+  {
+    "instruction": "Write pytest tests for load_users that reads a CSV, using a fixture that writes the CSV content with the tmp_path fixture and returns the path.\n\nimport csv\n\ndef load_users(path):\n    with open(path, newline='') as f:\n        return list(csv.DictReader(f))",
+    "output": "import pytest\nfrom users import load_users\n\n@pytest.fixture\ndef users_csv(tmp_path):\n    path = tmp_path / 'users.csv'\n    path.write_text('name,age\\nAnn,31\\nBob,25\\n')\n    return path\n\ndef test_load_users(users_csv):\n    rows = load_users(users_csv)\n    assert len(rows) == 2\n    assert rows[0] == {'name': 'Ann', 'age': '31'}\n    assert rows[1]['name'] == 'Bob'"
+  },
+  {
+    "instruction": "Write pytest tests for a stack fixture used across multiple tests: push items in the fixture and verify pop/peek behavior, including empty-stack errors.\n\nclass Stack:\n    def __init__(self):\n        self.items = []\n    def push(self, x):\n        self.items.append(x)\n    def pop(self):\n        return self.items.pop()",
+    "output": "import pytest\nfrom stack import Stack\n\n@pytest.fixture\ndef stack():\n    s = Stack()\n    for v in [1, 2, 3]:\n        s.push(v)\n    return s\n\ndef test_pop_returns_last_pushed(stack):\n    assert stack.pop() == 3\n\ndef test_peek_semantics_via_pop_order(stack):\n    assert [stack.pop() for _ in range(3)] == [3, 2, 1]\n\ndef test_empty_stack_raises(stack):\n    for _ in range(3):\n        stack.pop()\n    with pytest.raises(IndexError):\n        stack.pop()"
+  },
+  {
+    "instruction": "Write pytest tests for get_temperature using a fixture that supplies a frozen sample sensor reading dict and a default fallback.\n\ndef get_temperature(readings, sensor_id, default=float('nan')):\n    return readings.get(sensor_id, default)",
+    "output": "import math, pytest\nfrom sensors import get_temperature\n\n@pytest.fixture\ndef readings():\n    return {'s1': 21.5, 's2': 18.0, 's3': 30.25}\n\ndef test_get_existing_sensor(readings):\n    assert get_temperature(readings, 's2') == 18.0\n\ndef test_get_missing_sensor_returns_default(readings):\n    value = get_temperature(readings, 'missing')\n    assert math.isnan(value)\n\ndef test_get_missing_sensor_with_custom_default(readings):\n    assert get_temperature(readings, 'missing', default=-1) == -1"
+  },
+  {
+    "instruction": "Write pytest tests for save_config that writes a dict to disk, using a fixture that sets up a temporary config directory and verifies cleanup semantics with yield.\n\nimport json\n\ndef save_config(directory, config):\n    path = directory / 'config.json'\n    path.write_text(json.dumps(config, indent=2))\n    return path",
+    "output": "import json, pytest\nfrom config import save_config\n\n@pytest.fixture\ndef config_dir(tmp_path):\n    directory = tmp_path / 'etc'\n    directory.mkdir()\n    yield directory\n    for leftover in directory.iterdir():\n        leftover.unlink()\n    directory.rmdir()\n\ndef test_save_config(config_dir):\n    path = save_config(config_dir, {'debug': False, 'workers': 4})\n    saved = json.loads(path.read_text())\n    assert saved == {'debug': False, 'workers': 4}\n\ndef test_config_dir_is_empty_before_test(config_dir):\n    assert list(config_dir.iterdir()) == []"
+  },
+  {
+    "instruction": "Write pytest tests for a Database stub class used via a fixture: insert two rows, query them and verify count behavior.\n\nclass Database:\n    def __init__(self):\n        self.rows = {}\n        self.next_id = 1\n    def insert(self, name):\n        self.rows[self.next_id] = name\n        self.next_id += 1\n    def count(self):\n        return len(self.rows)",
+    "output": "import pytest\nfrom db import Database\n\n@pytest.fixture\ndef db():\n    database = Database()\n    database.insert('ann')\n    database.insert('bob')\n    return database\n\ndef test_insert_and_count(db):\n    assert db.count() == 2\n\ndef test_insert_assigns_incrementing_ids(db):\n    db.insert('cat')\n    assert db.count() == 3\n    assert db.rows[3] == 'cat'\n\ndef test_rows_visible_across_tests(db):\n    assert 1 in db.rows and db.rows[1] == 'ann'"
+  },
+  {
+    "instruction": "Write pytest tests for an in-memory key-value store that uses a fixture to reset state between tests via another autouse fixture.\n\nSTORE = {}\n\ndef put(key, value):\n    STORE[key] = value\n\ndef get(key, default=None):\n    return STORE.get(key, default)",
+    "output": "import pytest\nimport kvstore\n\n@pytest.fixture(autouse=True)\ndef reset_store():\n    kvstore.STORE.clear()\n    yield\n    kvstore.STORE.clear()\n\ndef test_put_then_get():\n    kvstore.put('a', 1)\n    assert kvstore.get('a') == 1\n\ndef test_get_missing_returns_default():\n    assert kvstore.get('nope', 'fallback') == 'fallback'\n\ndef test_state_is_fresh_each_test():\n    assert kvstore.STORE == {}"
+  },
+  {
+    "instruction": "Write pytest tests for a build_session fixture pattern: a fixture that depends on other fixtures (base_url + auth_token) to construct a session object, tested against a RequestSession-like class.\n\nclass RequestSession:\n    def __init__(self, base_url, token):\n        self.base_url = base_url\n        self.headers = {'Authorization': f'Bearer {token}'}\n    def url_for(self, path):\n        return self.base_url.rstrip('/') + '/' + path.lstrip('/')",
+    "output": "import pytest\nfrom http_session import RequestSession\n\n@pytest.fixture\ndef base_url():\n    return 'https://api.example.com'\n\n@pytest.fixture\ndef auth_token():\n    return 'tok-123'\n\n@pytest.fixture\ndef session(base_url, auth_token):\n    return RequestSession(base_url, auth_token)\n\ndef test_session_base_url(session):\n    assert session.url_for('/v1/users') == 'https://api.example.com/v1/users'\n\ndef test_session_auth_header(session):\n    assert session.headers['Authorization'] == 'Bearer tok-123'"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that counts the occurrences of each word in a text and returns a dict of word to count.",
+    "output": "import re\n\ndef word_count(text):\n    counts = {}\n    for word in re.findall(r'[a-z0-9]+', text.lower()):\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n\nprint(word_count('the cat and the dog and the bird'))"
+  },
+  {
+    "instruction": "Write a Python function that merges several counter dicts by summing the counts for every shared key.",
+    "output": "from collections import Counter\n\ndef merge_counters(*dicts):\n    total = Counter()\n    for d in dicts:\n        total.update(d)\n    return dict(total)\n\nprint(merge_counters({'a': 2, 'b': 1}, {'b': 3, 'c': 4}))"
+  },
+  {
+    "instruction": "Write a Python function that groups a list of records (dicts) by the value of a given key, returning a dict of key value to list of records.",
+    "output": "def group_by(records, key):\n    groups = {}\n    for rec in records:\n        groups.setdefault(rec[key], []).append(rec)\n    return groups\n\ndata = [{'name': 'ann', 'team': 'red'}, {'name': 'bob', 'team': 'blue'}, {'name': 'cat', 'team': 'red'}]\nprint(group_by(data, 'team'))"
+  },
+  {
+    "instruction": "Write a Python function that inverts a dict, mapping values to lists of keys that produced them (multiple keys may share a value).",
+    "output": "def invert_dict(d):\n    inverted = {}\n    for key, value in d.items():\n        inverted.setdefault(value, []).append(key)\n    return inverted\n\nprint(invert_dict({'a': 1, 'b': 2, 'c': 1}))"
+  },
+  {
+    "instruction": "Write a Python function that safely reads a nested dict value using a dotted path like 'user.address.city', returning None when the path is missing.",
+    "output": "def get_by_path(d, path, default=None):\n    node = d\n    for part in path.split('.'):\n        if not isinstance(node, dict) or part not in node:\n            return default\n        node = node[part]\n    return node\n\nprint(get_by_path({'user': {'address': {'city': 'Lyon'}}}, 'user.address.city'))"
+  },
+  {
+    "instruction": "Write a Python function that compares two dicts and reports which keys were added, removed and changed.",
+    "output": "def diff_dicts(old, new):\n    added = set(new) - set(old)\n    removed = set(old) - set(new)\n    changed = {k for k in set(old) & set(new) if old[k] != new[k]}\n    return {'added': sorted(added), 'removed': sorted(removed), 'changed': sorted(changed)}\n\nprint(diff_dicts({'a': 1, 'b': 2}, {'b': 3, 'c': 4}))"
+  },
+  {
+    "instruction": "Write a Python function that returns the n most common keys of a frequency dict, ordered by descending count.",
+    "output": "def most_common(d, n=3):\n    return sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[:n]\n\nprint(most_common({'x': 5, 'y': 9, 'z': 2, 'w': 9}, 2))"
+  },
+  {
+    "instruction": "Write a Python function that flattens a nested dict into dot-notation keys, e.g. {'a': {'b': 1}} becomes {'a.b': 1}.",
+    "output": "def flatten_dict(d, prefix=''):\n    flat = {}\n    for key, value in d.items():\n        full = f'{prefix}.{key}' if prefix else key\n        if isinstance(value, dict):\n            flat.update(flatten_dict(value, full))\n        else:\n            flat[full] = value\n    return flat\n\nprint(flatten_dict({'server': {'port': 8080, 'host': 'localhost'}}))"
+  },
+  {
+    "instruction": "Write a Python function that indexes a list of dicts by a field name, returning a dict of field value to record.",
+    "output": "def index_by(records, key):\n    return {rec[key]: rec for rec in records}\n\nprint(index_by([{'id': 1, 'n': 'a'}, {'id': 2, 'n': 'b'}], 'id'))"
+  },
+  {
+    "instruction": "Write a Python function that accumulates values from a list of (key, amount) tuples into a running total dict using setdefault.",
+    "output": "def accumulate(pairs):\n    totals = {}\n    for key, amount in pairs:\n        totals.setdefault(key, 0)\n        totals[key] += amount\n    return totals\n\nprint(accumulate([('rent', 1200), ('food', 300), ('rent', 150)]))"
+  },
+  {
+    "instruction": "Write a Python function that groups items using collections.defaultdict so the caller does not have to initialize inner lists.",
+    "output": "from collections import defaultdict\n\ndef group_default(items, key_fn):\n    groups = defaultdict(list)\n    for item in items:\n        groups[key_fn(item)].append(item)\n    return dict(groups)\n\nprint(group_default(['ant', 'bee', 'ape'], lambda w: w[0]))"
+  },
+  {
+    "instruction": "Write a Python function that normalizes a dict of weights into probabilities that sum to 1.0, raising an error on a zero or negative total.",
+    "output": "def normalize_weights(weights):\n    total = sum(weights.values())\n    if total <= 0:\n        raise ValueError('weights must sum to a positive number')\n    return {k: v / total for k, v in weights.items()}\n\nprint(normalize_weights({'a': 1, 'b': 3}))"
+  },
+  {
+    "instruction": "Write a small TTL cache class backed by a dict that stores values with timestamps and expires them after a given number of seconds.",
+    "output": "import time\n\nclass TTLCache:\n    def __init__(self, ttl=60.0):\n        self.ttl = ttl\n        self._data = {}\n\n    def set(self, key, value):\n        self._data[key] = (value, time.monotonic())\n\n    def get(self, key, default=None):\n        if key not in self._data:\n            return default\n        value, ts = self._data[key]\n        if time.monotonic() - ts > self.ttl:\n            del self._data[key]\n            return default\n        return value\n\ncache = TTLCache(ttl=10)\ncache.set('token', 'abc')\nprint(cache.get('token'))"
+  },
+  {
+    "instruction": "Write a Python function that returns the keys whose values appear in both dicts (same key present in both with equal values).",
+    "output": "def common_equal_keys(a, b):\n    return [k for k in a if k in b and a[k] == b[k]]\n\nprint(common_equal_keys({'x': 1, 'y': 2}, {'x': 1, 'y': 3, 'z': 4}))"
+  },
+  {
+    "instruction": "Write a Python function that recursively merges two dicts, combining nested dicts and letting the second dict win on scalar conflicts.",
+    "output": "def deep_merge(base, override):\n    result = dict(base)\n    for key, value in override.items():\n        if key in result and isinstance(result[key], dict) and isinstance(value, dict):\n            result[key] = deep_merge(result[key], value)\n        else:\n            result[key] = value\n    return result\n\nprint(deep_merge({'a': {'x': 1}}, {'a': {'y': 2}, 'b': 3}))"
+  },
+  {
+    "instruction": "Write a Python function that counts word bigrams (pairs of consecutive words) in a text and returns a dict of the pair to its count.",
+    "output": "def bigram_counts(text):\n    words = text.lower().split()\n    counts = {}\n    for i in range(len(words) - 1):\n        pair = (words[i], words[i + 1])\n        counts[pair] = counts.get(pair, 0) + 1\n    return counts\n\nprint(bigram_counts('to be or not to be'))"
+  },
+  {
+    "instruction": "Write a Python function that deeply compares two dicts/lists for equality, treating dicts with different key order as equal.",
+    "output": "def deep_equal(a, b):\n    if isinstance(a, dict) and isinstance(b, dict):\n        if set(a) != set(b):\n            return False\n        return all(deep_equal(a[k], b[k]) for k in a)\n    if isinstance(a, list) and isinstance(b, list):\n        return len(a) == len(b) and all(deep_equal(x, y) for x, y in zip(a, b))\n    return a == b\n\nprint(deep_equal({'k': [1, {'n': 2}]}, {'k': [1, {'n': 2}]}))"
+  },
+  {
+    "instruction": "Write a Python function that picks only the requested keys from a dict, using a default when the key is missing.",
+    "output": "def pick(d, keys, default=None):\n    return {k: d.get(k, default) for k in keys}\n\nprint(pick({'name': 'sam', 'age': 30}, ['name', 'email'], default='n/a'))"
+  },
+  {
+    "instruction": "Write a Python function that converts a list of row dicts into a dict of column name to list of values (columnar form).",
+    "output": "def rows_to_columns(rows):\n    columns = {}\n    for row in rows:\n        for name, value in row.items():\n            columns.setdefault(name, []).append(value)\n    return columns\n\nprint(rows_to_columns([{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]))"
+  },
+  {
+    "instruction": "Write a Python function that counts the frequency of elements in a list without importing Counter, using dict.get for lookups.",
+    "output": "def frequency(items):\n    counts = {}\n    for item in items:\n        counts[item] = counts.get(item, 0) + 1\n    return counts\n\nprint(frequency(['red', 'blue', 'red', 'green', 'blue', 'red']))"
+  }
+]

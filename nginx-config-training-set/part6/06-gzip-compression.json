@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Turn on gzip for HTML, CSS, JavaScript, JSON and SVG responses with a vary header for caches.",
+    "output": "http {\n    gzip on;\n    gzip_vary on;\n    gzip_types text/html text/css application/javascript application/json image/svg+xml;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  },
+  {
+    "instruction": "Set a gzip minimum length of 1 KB, compression level 6 and a 4x16k buffer for text-heavy pages.",
+    "output": "http {\n    gzip on;\n    gzip_min_length 1024;\n    gzip_comp_level 6;\n    gzip_buffers 4 16k;\n    gzip_types text/html text/css application/javascript;\n}"
+  },
+  {
+    "instruction": "Compress JSON responses from the REST API behind a CDN, varying on accept-encoding.",
+    "output": "server {\n    listen 80;\n    server_name api.example.com;\n    gzip on;\n    gzip_vary on;\n    gzip_min_length 512;\n    gzip_types application/json;\n    location / {\n        proxy_pass http://127.0.0.1:8080;\n        proxy_set_header Host $host;\n    }\n}"
+  },
+  {
+    "instruction": "Enable gzip but skip the ancient Internet Explorer 6 user agent.",
+    "output": "http {\n    gzip on;\n    gzip_disable \"msie6\";\n    gzip_types text/html text/css application/javascript application/json;\n    gzip_vary on;\n}"
+  },
+  {
+    "instruction": "Compress proxied responses only when the client sent no-cache, no-store or private directives.",
+    "output": "http {\n    gzip on;\n    gzip_proxied no-cache no-store private;\n    gzip_vary on;\n    gzip_types text/html text/css application/json;\n}"
+  },
+  {
+    "instruction": "Serve precompressed .gz files next to the originals for the static marketing site.",
+    "output": "server {\n    listen 80;\n    server_name www.marketing-site.example;\n    root /var/www/marketing-site;\n    gzip_static on;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Use the maximum gzip compression level 9 for the text-only knowledge base site.",
+    "output": "server {\n    listen 80;\n    server_name kb.example.com;\n    root /var/www/kb;\n    gzip on;\n    gzip_comp_level 9;\n    gzip_types text/html;\n    gzip_min_length 256;\n}"
+  },
+  {
+    "instruction": "Use gzip compression level 1 with a 4 KB minimum size on the low-CPU edge server that serves many concurrent users.",
+    "output": "http {\n    gzip on;\n    gzip_comp_level 1;\n    gzip_min_length 4096;\n    gzip_types text/html text/css;\n    gzip_vary on;\n}"
+  },
+  {
+    "instruction": "Compress only the classic trio of HTML, CSS and JavaScript on the company brochure site.",
+    "output": "server {\n    listen 80;\n    server_name www.corp.example;\n    root /var/www/corp;\n    gzip on;\n    gzip_types text/html text/css application/javascript;\n    gzip_vary on;\n}"
+  },
+  {
+    "instruction": "Enable gzip globally for one virtual host only, leaving other server blocks uncompressed.",
+    "output": "server {\n    listen 80;\n    server_name legacy-app.example.com;\n    root /var/www/legacy-app;\n    gzip on;\n    gzip_comp_level 5;\n    gzip_types text/html text/css application/javascript;\n}"
+  },
+  {
+    "instruction": "Compress everything served from the /assets/ directory of the storefront.",
+    "output": "location /assets/ {\n    root /var/www/storefront;\n    gzip on;\n    gzip_min_length 512;\n    gzip_types text/css application/javascript image/svg+xml;\n    gzip_vary on;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Only gzip for HTTP/1.1 clients and advertise the compressed variant to caches.",
+    "output": "http {\n    gzip on;\n    gzip_http_version 1.1;\n    gzip_vary on;\n    gzip_types text/html text/css application/javascript application/json;\n}"
+  },
+  {
+    "instruction": "Compress proxied responses from the microservice fleet with a generous buffer size.",
+    "output": "location / {\n    proxy_pass http://127.0.0.1:8100;\n    gzip on;\n    gzip_buffers 4 32k;\n    gzip_types application/json text/html;\n    gzip_vary on;\n    proxy_set_header Host $host;\n}"
+  },
+  {
+    "instruction": "Keep gzip enabled for the HTTPS vhost of the news portal so CDNs store one compressed variant.",
+    "output": "server {\n    listen 443 ssl;\n    server_name news.example.com;\n    ssl_certificate /etc/nginx/tls/news.pem;\n    ssl_certificate_key /etc/nginx/tls/news.key;\n    root /var/www/news;\n    gzip on;\n    gzip_vary on;\n    gzip_min_length 1000;\n    gzip_types text/html text/css application/javascript application/json;\n}"
+  },
+  {
+    "instruction": "Disable gzip for the /downloads/ location that already stores compressed archives.",
+    "output": "location /downloads/ {\n    root /var/www;\n    gzip off;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Compress RSS and Atom feeds along with plain HTML for the blog.",
+    "output": "server {\n    listen 80;\n    server_name blog.example.com;\n    root /var/www/blog;\n    gzip on;\n    gzip_types text/html text/xml application/rss+xml application/atom+xml;\n    gzip_vary on;\n}"
+  },
+  {
+    "instruction": "Compress SVG illustrations and the web app manifest for the design system site.",
+    "output": "server {\n    listen 80;\n    server_name ds.example.com;\n    root /var/www/design-system;\n    gzip on;\n    gzip_types image/svg+xml application/manifest+json text/css;\n    gzip_min_length 256;\n}"
+  },
+  {
+    "instruction": "Compress CSV and TSV report exports served by the analytics dashboard.",
+    "output": "location /reports/ {\n    root /var/www/analytics;\n    gzip on;\n    gzip_types text/csv text/plain text/tab-separated-values;\n    gzip_min_length 2048;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Compress JavaScript source maps and worker scripts for the developer portal.",
+    "output": "location /dist/ {\n    root /var/www/devportal;\n    gzip on;\n    gzip_comp_level 6;\n    gzip_types application/javascript application/json;\n    gzip_min_length 128;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Configure a complete production gzip profile in the http block: on, level 6, 256 byte minimum, vary, proxied and IE6 excluded.",
+    "output": "http {\n    gzip on;\n    gzip_comp_level 6;\n    gzip_min_length 256;\n    gzip_vary on;\n    gzip_proxied any;\n    gzip_disable \"msie6\";\n    gzip_types text/html text/css application/javascript application/json image/svg+xml;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  }
+]

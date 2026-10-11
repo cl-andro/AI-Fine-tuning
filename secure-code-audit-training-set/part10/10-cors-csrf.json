@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues (CORS):\n\nresp.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')\nresp.headers['Access-Control-Allow-Credentials'] = 'true'",
+    "output": "**Vulnerability:** Overly permissive CORS\n**Severity:** High\n**Why:** Reflecting any Origin together with credentials lets any site read authenticated responses.\n**Exploit:** evil.example sends credentialed requests and reads the user's data.\n**Fix:**\nALLOWED = {'https://app.example.com'}\norigin = request.headers.get('Origin')\nif origin in ALLOWED:\n    resp.headers['Access-Control-Allow-Origin'] = origin\n    resp.headers['Access-Control-Allow-Credentials'] = 'true'\n    resp.headers['Vary'] = 'Origin'"
+  },
+  {
+    "instruction": "Audit this code for security issues (CORS):\n\n@app.after_request\ndef cors(r):\n    r.headers['Access-Control-Allow-Origin'] = '*'\n    r.headers['Access-Control-Allow-Credentials'] = 'true'\n    return r",
+    "output": "**Vulnerability:** Invalid/unsafe CORS combination\n**Severity:** High\n**Why:** `*` with credentials is rejected by browsers, but reflecting it (or misconfig) plus credentials is dangerous; the intent is unsafe.\n**Exploit:** Cross-origin credentialed reads.\n**Fix:**\n# Use an explicit origin allow-list; never combine '*' with credentials."
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF):\n\n@app.post('/email/change')\ndef change_email():\n    user.email = request.form['email']; user.save()",
+    "output": "**Vulnerability:** Missing CSRF protection\n**Severity:** High\n**Why:** A state-changing POST relies on cookies with no anti-CSRF token.\n**Exploit:** A malicious page auto-submits the form to change the victim's email.\n**Fix:**\n@app.post('/email/change')\n@csrf_protect\ndef change_email():\n    user.email = request.form['email']; user.save()"
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF token):\n\nif request.form['csrf'] == session['csrf']:\n    process()",
+    "output": "**Vulnerability:** Weak CSRF (timing + reuse)\n**Severity:** Medium\n**Why:** Plain `==` leaks timing, and a single static token can be reused; should be per-request and constant-time.\n**Exploit:** Timing analysis or token reuse.\n**Fix:**\nimport hmac\nif hmac.compare_digest(request.form['csrf'], session['csrf']):\n    process()\n# Rotate the token per form/session and validate on every state change."
+  },
+  {
+    "instruction": "Audit this code for security issues (CORS origin regex):\n\nif re.match(r'https://.*\\.example\\.com', origin):\n    allow(origin)",
+    "output": "**Vulnerability:** CORS bypass via regex\n**Severity:** High\n**Why:** An unanchored/loose regex matches `https://evil.com/x.example.com` or `https://attacker.example.com@evil.com`.\n**Exploit:** `Origin: https://evil.com/foo.example.com`.\n**Fix:**\nfrom urllib.parse import urlparse\nhost = urlparse(origin).hostname or ''\nif host == 'app.example.com' or host.endswith('.example.com'):\n    allow(origin)"
+  },
+  {
+    "instruction": "Audit this code for security issues (GET side effects):\n\n@app.get('/delete/<id>')\ndef delete(id):\n    Item.objects.get(id=id).delete()",
+    "output": "**Vulnerability:** State change via GET (CSRF-friendly)\n**Severity:** High\n**Why:** GET requests can be triggered cross-site (images/links), so a destructive action is CSRF-able without tokens.\n**Exploit:** `<img src=\"/delete/5\">` deletes item 5.\n**Fix:**\n@app.post('/delete/<id>')\n@csrf_protect\ndef delete(id):\n    Item.objects.get(id=id).delete()"
+  },
+  {
+    "instruction": "Audit this code for security issues (SameSite):\n\nresponse.set_cookie('session', sid, samesite=None)",
+    "output": "**Vulnerability:** CSRF exposure from cookies\n**Severity:** Medium\n**Why:** Without SameSite, cookies are sent on cross-site requests, enabling CSRF.\n**Exploit:** Cross-site form posts carry the session cookie.\n**Fix:**\nresponse.set_cookie('session', sid, samesite='Lax', secure=True, httponly=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF token not bound):\n\ncsrf = user.id  # token predictable",
+    "output": "**Vulnerability:** Predictable CSRF token\n**Severity:** High\n**Why:** A guessable token (the user id) offers no protection.\n**Exploit:** Forge requests with a valid-looking token.\n**Fix:**\nimport secrets\nsession['csrf'] = secrets.token_urlsafe(32)  # random per session"
+  },
+  {
+    "instruction": "Audit this code for security issues (JSON CSRF):\n\n@app.post('/api/action')\n@csrf_exempt\ndef action():\n    do(request.json)",
+    "output": "**Vulnerability:** CSRF via JSON endpoint\n**Severity:** High\n**Why:** `csrf_exempt` removes protection; some setups accept cross-site JSON/text posts.\n**Exploit:** A cross-site fetch posts to the endpoint.\n**Fix:**\n# Don't exempt CSRF. If the client is same-site, send the CSRF header and\n# validate it; also require a custom header or token for JSON APIs."
+  },
+  {
+    "instruction": "Audit this code for security issues (CORS preflight):\n\nr.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE'\nr.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers')",
+    "output": "**Vulnerability:** Over-broad CORS methods/headers\n**Severity:** Medium\n**Why:** Reflecting requested headers and allowing all methods widens the attack surface; combined with a loose origin this is exploitable.\n**Exploit:** Cross-origin DELETE with custom auth headers.\n**Fix:**\n# Allow only the methods/headers you need, and only for allow-listed origins."
+  },
+  {
+    "instruction": "Audit this code for security issues (subdomain CORS):\n\nif origin.endswith('.example.com'):\n    allow(origin)",
+    "output": "**Vulnerability:** CORS trust of untrusted subdomains\n**Severity:** Medium\n**Why:** Any subdomain (including user-content or takeover-prone ones) is trusted.\n**Exploit:** A compromised/attacker-controlled subdomain reads credentialed data.\n**Fix:**\n# Maintain an explicit allow-list of specific origins, not the whole suffix."
+  },
+  {
+    "instruction": "Audit this code for security issues (double-submit):\n\n# token in cookie only; body not checked\nif request.cookies.get('csrf'):\n    process()",
+    "output": "**Vulnerability:** Broken double-submit CSRF\n**Severity:** High\n**Why:** Checking only the cookie (which the browser sends automatically) defeats the double-submit pattern.\n**Exploit:** Cross-site request includes the cookie but no matching header/body value; still passes.\n**Fix:**\nimport hmac\ncookie = request.cookies.get('csrf', '')\nheader = request.headers.get('X-CSRF-Token', '')\nif not hmac.compare_digest(cookie, header):\n    abort(403)"
+  },
+  {
+    "instruction": "Audit this code for security issues (null origin):\n\nif origin in ('null', 'https://app.example.com'):\n    allow(origin)",
+    "output": "**Vulnerability:** CORS trust of `null` origin\n**Severity:** High\n**Why:** `null` origins come from sandboxed iframes/data URLs, which attackers can create.\n**Exploit:** A sandboxed iframe sends `Origin: null` and reads responses.\n**Fix:**\n# Never allow 'null'. Use an explicit list of real origins."
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF only on some routes):\n\n@app.post('/settings')\n@csrf_protect\ndef settings(): ...\n\n@app.post('/transfer')\ndef transfer(): ...",
+    "output": "**Vulnerability:** Inconsistent CSRF coverage\n**Severity:** High\n**Why:** One state-changing route lacks protection, leaving a gap.\n**Exploit:** Exploit the unprotected `/transfer` route cross-site.\n**Fix:**\n# Enable CSRF globally (middleware) and only exempt documented, token-\n# authenticated, non-cookie APIs."
+  },
+  {
+    "instruction": "Audit this code for security issues (CORS caching):\n\nr.headers['Access-Control-Allow-Origin'] = origin\n# no Vary header",
+    "output": "**Vulnerability:** CORS response cache poisoning\n**Severity:** Medium\n**Why:** Without `Vary: Origin`, a shared cache may serve one origin's CORS headers to another.\n**Exploit:** An attacker origin's response is cached and reused for a trusted origin.\n**Fix:**\nr.headers['Access-Control-Allow-Origin'] = origin\nr.headers['Vary'] = 'Origin'"
+  },
+  {
+    "instruction": "Audit this code for security issues (state-changing GET with token in URL):\n\n@app.get('/api/reset?token=...')\ndef reset():\n    do_reset()",
+    "output": "**Vulnerability:** CSRF via GET + token in URL\n**Severity:** High\n**Why:** GET actions can be triggered by third-party content; tokens in URLs leak via logs/Referer.\n**Exploit:** Auto-load an image pointing at the reset URL.\n**Fix:**\n# Use POST with a CSRF token in the body/header; keep secrets out of URLs."
+  },
+  {
+    "instruction": "Audit this code for security issues (websocket origin):\n\nwss.on('connection', (ws) => { /* no origin check */ });",
+    "output": "**Vulnerability:** Cross-Site WebSocket Hijacking\n**Severity:** High\n**Why:** WebSockets don't enforce same-origin and cookies are sent, so any site can open a socket.\n**Exploit:** A malicious page opens a WS to your server using the victim's cookies.\n**Fix:**\nwss.on('connection', (ws, req) => {\n  const origin = req.headers.origin;\n  if (origin !== 'https://app.example.com') return ws.close();\n  // also require a CSRF token as the first message\n});"
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF bypass via content type):\n\n# only validates token for form-encoded bodies",
+    "output": "**Vulnerability:** CSRF bypass with JSON/plain-text body\n**Severity:** Medium\n**Why:** Some frameworks skip CSRF for non-form content types, which can be sent cross-site.\n**Exploit:** Send `text/plain` JSON to bypass the form-only check.\n**Fix:**\n# Enforce CSRF for all state-changing requests regardless of content type,\n# or require a non-simple custom header (e.g., X-Requested-With) plus a token."
+  },
+  {
+    "instruction": "Audit this code for security issues (logout via GET):\n\n@app.get('/logout')\ndef logout():\n    session.clear()",
+    "output": "**Vulnerability:** CSRF logout / forced logout\n**Severity:** Low\n**Why:** A third-party page can log users out (denial of service).\n**Exploit:** `<img src=\"/logout\">`.\n**Fix:**\n@app.post('/logout')\n@csrf_protect\ndef logout():\n    session.clear()"
+  },
+  {
+    "instruction": "Audit this code for security issues (CORS on error responses):\n\n# 500 handler omits CORS headers",
+    "output": "**Vulnerability:** CORS misconfiguration on errors\n**Severity:** Low\n**Why:** Inconsistent headers can break intended behavior and, if errors include reflected origins, widen exposure.\n**Exploit:** Error responses with permissive reflected origins.\n**Fix:**\n# Apply CORS consistently via middleware, including error handlers,\n# with the same explicit allow-list."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this database error.\nContext: psql session running the reporting query after switching databases.\n\napp=> SELECT id, total FROM orders WHERE status = 'open';\nERROR:  relation \"orders\" does not exist\nLINE 1: SELECT id, total FROM orders WHERE status = 'open';\n                            ^",
+    "output": "**Root cause:** the table lives in a different schema than the one on `search_path` (it is `reporting.orders`), so unqualified `orders` cannot be resolved.\n**Fix:** Qualify the name (`reporting.orders`) or `SET search_path TO reporting, public;` for the session."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: ORM-generated query executed against PostgreSQL.\n\nERROR:  column \"emial\" of relation \"users\" does not exist\nLINE 2:        emial,\n               ^",
+    "output": "**Root cause:** the column was misspelled as `emial` (the actual column is `email`), so the planner cannot find it.\n**Fix:** Correct the spelling in the query/migration, and rename the column once via an `ALTER TABLE ... RENAME COLUMN` if the schema itself is wrong."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: signup endpoint inserting a new account on PostgreSQL.\n\nERROR:  duplicate key value violates unique constraint \"users_email_key\"\nDETAIL:  Key (email)=(dana@example.com) already exists.",
+    "output": "**Root cause:** a row with that email already exists, and the unique constraint correctly rejects the second insert.\n**Fix:** Catch the unique violation (`23505`) and return 409 \"email already registered\", or `ON CONFLICT (email) DO NOTHING` after a pre-check."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: hand-edited query run in a psql shell.\n\napp=> SELECT FROM users WHERE active = true;\nERROR:  syntax error at or near \"FROM\"\nLINE 1: SELECT FROM users WHERE active = true;\n              ^",
+    "output": "**Root cause:** the select list is empty - `SELECT` needs at least one column (or `*`) before `FROM`.\n**Fix:** Write `SELECT * FROM users ...` or list the columns explicitly."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: API applying an `id` filter taken straight from a query string.\n\nERROR:  invalid input syntax for type integer: \"abc\"\nLINE 1: SELECT * FROM products WHERE id = 'abc';\n                                         ^",
+    "output": "**Root cause:** the client passed `id=abc`, and PostgreSQL cannot cast the text literal `abc` to integer.\n**Fix:** Validate/cast the parameter in the app (`int(id)` with a 400 on failure) or use a typed bind parameter."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: bulk upsert job running against PostgreSQL.\n\nERROR:  there is no unique or exclusion constraint matching the ON CONFLICT specification\nHINT:  Consider adding an ON CONFLICT clause with arbitrary index expression to the INSERT statement.",
+    "output": "**Root cause:** `ON CONFLICT (user_id)` names a column that has no unique index (the table's unique key is on `email` instead).\n**Fix:** Match the conflict target to an actual unique index, e.g. `ON CONFLICT (email) DO UPDATE ...`, or add the missing unique index."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: migration runner executing the init script for a second time.\n\nERROR:  relation \"public.orders\" already exists",
+    "output": "**Root cause:** the migration is not idempotent - the table was created on a previous run, and `CREATE TABLE` without `IF NOT EXISTS` fails.\n**Fix:** Use `CREATE TABLE IF NOT EXISTS`, or track applied migrations in a schema-version table and skip completed ones."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: MySQL client running an analytics query.\n\nERROR 1146 (42S02): Table 'shopc.cart' doesn't exist",
+    "output": "**Root cause:** the connection string points at database `shopc`, while the table lives in `shop` (the schema name in the DSN is wrong).\n**Fix:** Correct the database name in the connection string or fully qualify `shop.cart`."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: MySQL query built by concatenating user input.\n\nERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'name FROM users WHERE active = 1' at line 1",
+    "output": "**Root cause:** the column list is missing a comma (`SELECT id name FROM ...`), so `name FROM` is parsed as an invalid token sequence.\n**Fix:** Separate the columns with commas: `SELECT id, name FROM users WHERE active = 1`; better, use a parameterised query builder."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: cleanup job deleting customers that no longer have orders.\n\nERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`shop`.`order_items`, CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`))",
+    "output": "**Root cause:** child rows in `order_items` still reference the order, and the FK forbids removing the parent first.\n**Fix:** Delete children first, declare `ON DELETE CASCADE` on the FK, or set the parent column to NULL with `ON DELETE SET NULL`."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: application pod restarted with new credentials in Kubernetes.\n\nERROR 1045 (28000): Access denied for user 'app'@'db-host' (using password: YES)",
+    "output": "**Root cause:** the account exists but the password (or the allowed host) does not match what the server has stored for that user.\n**Fix:** Rotate the secret to match MySQL's grant (`ALTER USER 'app'@'db-host' IDENTIFIED BY ...`), and confirm the connecting host matches the grant entry."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: local tool querying a SQLite database file.\n\nsqlite3 reports:\nError: no such table: inventory",
+    "output": "**Root cause:** the `inventory` table was never created in this database file (the CREATE ran against another file, or migrations were not applied).\n**Fix:** Run the schema migration against the same path the tool opens, and verify the file path rather than relying on the default."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: upserting a user profile in a SQLite-backed service.\n\nError: SQLITE_CONSTRAINT: UNIQUE constraint failed: users.email",
+    "output": "**Root cause:** a row with the same `users.email` value already exists, violating the unique index.\n**Fix:** Use `INSERT ... ON CONFLICT(email) DO UPDATE SET ...`, and map the constraint error to a \"duplicate email\" response."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: deleting a project that still has builds in a SQLite database.\n\nError: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed",
+    "output": "**Root cause:** `builds.project_id` still references the project, and the FK prevents the delete (foreign_keys pragma is ON).\n**Fix:** Delete dependent rows first, or declare `ON DELETE CASCADE` when creating the foreign key."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: SQL Server stored procedure call from a reporting app.\n\nMsg 208, Level 16, State 1, Procedure GetSales, Line 6\nInvalid object name 'dbo.Orders'.",
+    "output": "**Root cause:** the object exists as `sales.Orders`, not `dbo.Orders`, so the two-part name resolves in the wrong schema.\n**Fix:** Use the correct schema (`sales.Orders`) or set the default schema of the login/user."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: SQL Server nightly job removing completed orders.\n\nMsg 547, Level 16, State 0, Line 1\nThe DELETE statement conflicted with the REFERENCE constraint \"FK_OrderDetail_Order\". The conflict occurred in database \"shop\", table \"dbo.OrderDetail\".",
+    "output": "**Root cause:** `dbo.OrderDetail` rows still reference the orders being deleted, and the FK blocks the delete.\n**Fix:** Delete detail rows first, add `ON DELETE CASCADE` to the FK, or filter out orders that still have details."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: Oracle SQL*Plus session run by a new developer.\n\nORA-00942: table or view does not exist",
+    "output": "**Root cause:** either the table name/schema is wrong, or the account has no SELECT privilege on it (Oracle reports both cases identically).\n**Fix:** Verify `SELECT table_name FROM user_tables` (and granted synonyms) and grant `SELECT` if the object exists but is not visible."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: Oracle ETL converting a legacy column into a numeric column.\n\nORA-01722: invalid number",
+    "output": "**Root cause:** the source column contains a non-numeric value (e.g. `N/A`), and implicit conversion to NUMBER fails during the insert/select.\n**Fix:** Clean the data first with a validated `CASE`/`TO_NUMBER(..., 'TM9', 'NLS_NUMERIC_CHARACTERS=.,')` and quarantine bad rows."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: psycopg2-backed service running two statements in one transaction.\n\nERROR:  current transaction is aborted, commands ignored until end of transaction block\nSQLSTATE: 25P02",
+    "output": "**Root cause:** an earlier statement in the transaction failed, leaving it aborted; every following statement is rejected until rollback.\n**Fix:** Call `connection.rollback()` (or start a savepoint per statement) as soon as an error is handled, instead of continuing to execute."
+  },
+  {
+    "instruction": "Root cause this database error.\nContext: MongoDB session store inserting a login token.\n\nWriteError: E11000 duplicate key error collection: app.sessions index: token_1 dup key: { token: \"8f3c...\" }\n\t/app/node_modules/mongodb/lib/operations/insert.js:46:1",
+    "output": "**Root cause:** the unique index on `token` rejects the insert because a document with that token already exists (a retried request reused the token).\n**Fix:** Make token generation collision-free (`crypto.randomUUID()`), retry on 11000, or upsert with `replaceOne({token}, doc, {upsert: true})`."
+  }
+]

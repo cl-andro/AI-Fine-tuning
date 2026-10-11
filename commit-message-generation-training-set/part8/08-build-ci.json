@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -12,6 +12,9 @@ jobs:\n       - uses: actions/setup-python@v5\n         with:\n           python-version: \"3.12\"\n+          cache: pip\n+      - run: python -m pip install -r requirements-dev.txt\n+      - run: ruff check src tests\n       - run: pytest -q -m \"not slow\"",
+    "output": "ci: cache pip and run lint before tests\n\nsetup-python's pip cache removes the per-run reinstall of pinned\ndeps, and ruff now gates the workflow on every push."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/Dockerfile b/Dockerfile\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,14 +1,18 @@\n-FROM python:3.12\n+FROM python:3.12-slim AS runtime\n \n-RUN apt-get update && apt-get install -y curl\n COPY requirements.txt /app/requirements.txt\n-RUN pip install -r /app/requirements.txt\n+RUN pip install --no-cache-dir -r /app/requirements.txt\n \n COPY . /app\n WORKDIR /app\n-CMD [\"python\", \"src/app.py\"]\n+RUN useradd -r -u 10001 appuser\n+USER appuser\n+\n+EXPOSE 8080\n+CMD [\"python\", \"-m\", \"src.app\"]",
+    "output": "build(docker): switch to slim base and run as non-root\n\nDrops the curl install (the healthcheck uses wget), installs with\n--no-cache-dir, adds an unprivileged user, and declares the port;\nimage size falls from 1.2GB to 158MB."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/Makefile b/Makefile\n--- a/Makefile\n+++ b/Makefile\n@@ -1,3 +1,10 @@\n+.PHONY: build\n+\n+build:\n+\tpython -m build\n+\n+twine-check: build\n+\ttwine check dist/*\n+\n test:\n \tpython -m pytest -q -m \"not slow\"",
+    "output": "build: add packaging and twine check targets\n\n`make build` produces sdist + wheel via python -m build and\n`make twine-check` validates metadata before any upload."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/setup.py b/setup.py\ndeleted file mode 100644\n--- a/setup.py\n+++ /dev/null\n@@ -1,20 +0,0 @@\n-from setuptools import setup\n-\n-setup(\n-    name=\"app\",\n-    version=\"2.2.1\",\n-    packages=find_packages(),\n-    install_requires=...,\n-)",
+    "output": "build: drop setup.py in favour of pyproject.toml\n\nAll metadata already lives in [project]; keeping a second source of\ntruth caused the 2.2.1 version skew between files."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/release.yml b/.github/workflows/release.yml\n--- a/.github/workflows/release.yml\n+++ b/.github/workflows/release.yml\n@@ -0,0 +1,22 @@\n+name: release\n+on:\n+  push:\n+    tags: [\"v*\"]\n+\n+jobs:\n+  pypi:\n+    runs-on: ubuntu-latest\n+    environment: pypi\n+    permissions:\n+      id-token: write\n+    steps:\n+      - uses: actions/checkout@v4\n+      - uses: actions/setup-python@v5\n+        with:\n+          python-version: \"3.12\"\n+      - run: pip install build\n+      - run: python -m build\n+      - uses: pypa/gh-action-pypi-publish@release/v1",
+    "output": "ci: publish to PyPI on version tags\n\nTrusted publishing (OIDC, no stored token) builds and uploads the\nwheel whenever a v* tag is pushed."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/tox.ini b/tox.ini\n--- /dev/null\n+++ b/tox.ini\n@@ -0,0 +1,9 @@\n+[tox]\n+envlist = py311, py312, lint\n+\n+[testenv]\n+deps = -rrequirements-dev.txt\n+commands = pytest -q -m \"not slow\"\n+\n+[testenv:lint]\n+commands = ruff check src tests",
+    "output": "build(tox): add py311/py312 and lint environments\n\nLocal multi-version testing now mirrors the CI matrix without\nduplicating commands."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -18,6 +18,14 @@ jobs:\n       - run: ruff check src tests\n-      - run: pytest -q -m \"not slow\"\n+      - run: pytest -q -m \"not slow\" --cov=src --cov-report=xml\n+      - uses: codecov/codecov-action@v4\n+        with:\n+          files: coverage.xml\n+          fail_ci_if_error: false\n+\n+  integration:\n+    runs-on: ubuntu-latest\n+    steps:\n+      - uses: actions/checkout@v4\n+      - run: docker compose up -d db\n+      - run: pytest -q -m integration",
+    "output": "ci: upload coverage and add an integration job\n\nUnit coverage reports to Codecov on every push, while integration\ntests move to a dedicated job that boots Postgres via compose."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.pre-commit-config.yaml b/.pre-commit-config.yaml\n--- /dev/null\n+++ b/.pre-commit-config.yaml\n@@ -0,0 +1,10 @@\n+repos:\n+  - repo: https://github.com/astral-sh/ruff-pre-commit\n+    rev: v0.6.9\n+    hooks:\n+      - id: ruff\n+        args: [--fix]\n+      - id: ruff-format\n+  - repo: https://github.com/pre-commit/pre-commit-hooks\n+    rev: v4.6.0\n+    hooks:\n+      - id: end-of-file-fixer\n+      - id: trailing-whitespace",
+    "output": "ci: add pre-commit hooks for ruff and file hygiene\n\nContributors get the same lint/format fixes locally before CI ever\nruns; end-of-file and trailing whitespace are auto-corrected."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/requirements.txt b/requirements.txt\n--- a/requirements.txt\n+++ b/requirements.txt\n@@ -1,4 +1,6 @@\n flask==3.0.3\n+gunicorn==22.0.0\n+psycopg[binary]==3.2.1\n requests==2.32.3\n sqlalchemy==2.0.35",
+    "output": "build(deps): add gunicorn and psycopg runtime dependencies\n\nProduction previously relied on whatever happened to be installed\nin the image; the WSGI server and Postgres driver are now pinned."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -4,7 +4,7 @@ on:\n   push:\n-    branches: [main]\n+    branches: [main, \"release/**\"]\n   pull_request:\n+    branches: [main]\n   schedule:\n+    - cron: \"0 6 * * 1\"",
+    "output": "ci: run checks on release branches and weekly\n\nRelease branches were unvalidated before tagging, and a weekly cron\nnow catches dependency drift even when no PRs are open."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/babel.cfg b/babel.cfg\n--- /dev/null\n+++ b/babel.cfg\n@@ -0,0 +1,4 @@\n+[python: **.py]\njinja2: **.html\nignore: tests/**\n+[javascript: **.js]",
+    "output": "build(i18n): configure babel message extraction\n\nDeclares which files xgettext should scan so `pybabel extract`\npicks up Python and template strings but skips tests."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -20,7 +20,10 @@ jobs:\n       - run: pytest -q -m \"not slow\"\n+\n+  typecheck:\n+    runs-on: ubuntu-latest\n+    steps:\n+      - uses: actions/checkout@v4\n+      - run: pip install mypy\n+      - run: mypy src --strict",
+    "output": "ci: add a mypy strict typecheck job\n\nType errors now block merges alongside lint and tests; the job is\nseparate so failures are attributable at a glance."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/Justfile b/Justfile\n--- /dev/null\n+++ b/Justfile\n@@ -0,0 +1,9 @@\n+default:\n+    @just --list\n+\n+test:\n+    pytest -q -m \"not slow\"\n+\n+serve:\n+    python -m src.app\n+\n+ci: test",
+    "output": "build: add a Justfile for common dev commands\n\ndiscovers test/serve targets in one place; `just ci` chains the\nsame steps the pipeline runs, so pre-push matches green builds."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -1,5 +1,7 @@\n on:\n   pull_request:\n+    types: [opened, synchronize, reopened, labeled]\n+\n+concurrency:\n+  group: ci-${{ github.ref }}\n+  cancel-in-progress: true",
+    "output": "ci: cancel superseded runs on the same PR\n\nNew pushes now cancel the in-flight workflow instead of queuing,\ncutting runner minutes roughly in half on busy PRs."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docker-compose.yml b/docker-compose.yml\n--- a/docker-compose.yml\n+++ b/docker-compose.yml\n@@ -1,3 +1,14 @@\n services:\n   app:\n     build: .\n+\n+  db:\n+    image: postgres:16\n+    environment:\n+      POSTGRES_USER: app\n+      POSTGRES_PASSWORD: app\n+      POSTGRES_DB: app\n+    ports:\n+      - \"5432:5432\"\n+    healthcheck:\n+      test: [\"CMD-SHELL\", \"pg_isready -U app\"]\n+      interval: 2s",
+    "output": "build(compose): add a local Postgres service\n\nDevelopers get a one-command database with a healthcheck for\ndependent services and standard local credentials."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/pyproject.toml b/pyproject.toml\n--- a/pyproject.toml\n+++ b/pyproject.toml\n@@ -1,8 +1,20 @@\n [project]\n name = \"app\"\n-version = \"2.2.1\"\n+version = \"2.3.0\"\n+requires-python = \">=3.11\"\n+dependencies = [\n+  \"flask>=3.0,<4\",\n+  \"sqlalchemy>=2.0,<3\",\n+  \"requests>=2.32,<3\",\n+]\n+\n+[project.scripts]\n+appctl = \"app.cli.main:main\"\n+\n+[build-system]\n+requires = [\"hatchling\"]\n+build-backend = \"hatchling.build\"",
+    "output": "build(pyproject): declare runtime deps and the appctl entry point\n\npip install . now pulls the real dependency ranges and installs the\nappctl console script; version is bumped to 2.3.0 alongside."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -8,6 +8,8 @@ jobs:\n     strategy:\n       matrix:\n-        python-version: [\"3.12\"]\n+        python-version: [\"3.11\", \"3.12\"]\n+        os: [ubuntu-latest, windows-latest]\n+    runs-on: ${{ matrix.os }}",
+    "output": "ci: test the 3.11/3.12 matrix on Linux and Windows\n\nWindows was never exercised despite users running the CLI there;\nthe matrix catches path and newline issues before release."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/dependabot.yml b/.github/dependabot.yml\n--- /dev/null\n+++ b/.github/dependabot.yml\n@@ -0,0 +1,9 @@\n+version: 2\n+updates:\n+  - package-ecosystem: pip\n+    directory: \"/\"\n+    schedule:\n+      interval: weekly\n+    groups:\n+      dev-deps:\n+        dependency-type: development",
+    "output": "ci: enable weekly grouped Dependabot updates for pip\n\nGroups development dependencies into a single weekly PR to cut\nreview noise while still surfacing security bumps."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/package.json b/package.json\n--- a/package.json\n+++ b/package.json\n@@ -3,7 +3,9 @@\n   \"private\": true,\n   \"scripts\": {\n-    \"build\": \"webpack\",\n-    \"test\": \"jest\"\n+    \"build\": \"vite build\",\n+    \"test\": \"vitest run\",\n+    \"lint\": \"eslint src --max-warnings 0\"\n   },",
+    "output": "build(frontend): migrate bundler scripts to vite and vitest\n\nwebpack and jest were replaced in code last month; the scripts now\npoint at the new tools and expose a lint entry point."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml\n--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -30,6 +30,10 @@ jobs:\n       - run: pytest -q -m integration\n+      - if: failure()\n+        uses: actions/upload-artifact@v4\n+        with:\n+          name: db-logs\n+          path: /tmp/db-logs/",
+    "output": "ci: upload Postgres logs when integration tests fail\n\nFailed runs previously left no server-side evidence; the artifact\nmakes connection and migration errors diagnosable from the run."
+  }
+]

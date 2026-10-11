@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Restart a service always, with a 5 second delay.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=always\nRestartSec=5"
+  },
+  {
+    "instruction": "Restart on failure only and cap the attempts.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-failure\nStartLimitBurst=5\nStartLimitIntervalSec=60"
+  },
+  {
+    "instruction": "Do not restart a oneshot job.",
+    "output": "[Service]\nType=oneshot\nExecStart=/usr/local/bin/job\nRestart=no"
+  },
+  {
+    "instruction": "Add exponential backoff to restarts.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-failure\nRestartSec=2\n# systemd applies a backoff up to StartLimitIntervalSec when flapping."
+  },
+  {
+    "instruction": "Restart on abnormal termination and signal.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-abnormal"
+  },
+  {
+    "instruction": "Treat a specific exit code as success (e.g., 143 from SIGTERM).",
+    "output": "[Service]\nExecStart=/usr/bin/java -jar app.jar\nSuccessExitStatus=143\nRestart=on-failure"
+  },
+  {
+    "instruction": "Restart the service but not when it was cleanly stopped.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-failure\nRestartPreventExitStatus=0"
+  },
+  {
+    "instruction": "Delay the very first restart more than subsequent ones.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=always\nRestartSec=10"
+  },
+  {
+    "instruction": "Rate-limit restarts to prevent a crash loop.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=always\nRestartSec=1\nStartLimitIntervalSec=30\nStartLimitBurst=3"
+  },
+  {
+    "instruction": "Restart only on a clean signal termination.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-success"
+  },
+  {
+    "instruction": "Configure a watchdog to restart a hung service.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nWatchdogSec=30\nRestart=on-failure"
+  },
+  {
+    "instruction": "Notify systemd of readiness and use Type=notify with restart.",
+    "output": "[Service]\nType=notify\nExecStart=/usr/local/bin/app\nRestart=on-failure\nNotifyAccess=main"
+  },
+  {
+    "instruction": "Restart a forking service without losing the PID file.",
+    "output": "[Service]\nType=forking\nPIDFile=/run/app.pid\nRestart=on-failure\nExecStart=/usr/local/bin/app --daemon"
+  },
+  {
+    "instruction": "Set a per-start timeout and restart after it expires.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nTimeoutStartSec=90\nRestart=on-failure"
+  },
+  {
+    "instruction": "Avoid restart storms with a long cooldown.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=always\nRestartSec=60\nStartLimitIntervalSec=300"
+  },
+  {
+    "instruction": "Restart only when the process exits with a failure but not SIGKILL.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-failure\nRestartPreventExitStatus=137"
+  },
+  {
+    "instruction": "Configure no auto-restart but keep the service loaded.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=no\n# Typically for debugging; service stays failed until manual start."
+  },
+  {
+    "instruction": "Restart a socket-activated service on failure.",
+    "output": "[Service]\nExecStart=/usr/local/bin/svc\nRestart=on-failure\nRestartSec=3"
+  },
+  {
+    "instruction": "Apply restart limits globally via a drop-in.",
+    "output": "# /etc/systemd/system/myapp.service.d/limits.conf\n[Unit]\nStartLimitIntervalSec=120\nStartLimitBurst=10"
+  },
+  {
+    "instruction": "Reset the failure counter after a successful restart.",
+    "output": "[Unit]\nStartLimitIntervalSec=300\nStartLimitBurst=5\n\n[Service]\nRestart=on-failure\nRestartSec=5\n# A successful run clears the rate-limit window."
+  }
+]

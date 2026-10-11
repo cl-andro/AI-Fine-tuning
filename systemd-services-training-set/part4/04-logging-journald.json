@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Send service output to the journal with a custom syslog identifier.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nStandardOutput=journal\nStandardError=journal\nSyslogIdentifier=myapp"
+  },
+  {
+    "instruction": "Prefix each log line with a priority level.",
+    "output": "[Service]\nSyslogLevelPrefix=true\nSyslogIdentifier=api\nExecStart=/usr/local/bin/api"
+  },
+  {
+    "instruction": "Write output to a file with append semantics.",
+    "output": "[Service]\nStandardOutput=append:/var/log/myapp/app.log\nStandardError=append:/var/log/myapp/error.log\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Discard standard output but keep stderr in the journal.",
+    "output": "[Service]\nStandardOutput=null\nStandardError=journal\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Set the log level of the service's journal entries.",
+    "output": "[Service]\nLogLevelMax=info\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Add structured metadata to journal entries with SyslogFacility.",
+    "output": "[Service]\nSyslogFacility=daemon\nSyslogIdentifier=worker\nExecStart=/usr/local/bin/worker"
+  },
+  {
+    "instruction": "Configure rate limiting for a noisy service to avoid journald throttling.",
+    "output": "[Service]\nLogRateLimitIntervalSec=30s\nLogRateLimitBurst=10000\nExecStart=/usr/local/bin/noisy"
+  },
+  {
+    "instruction": "Send logs to syslog instead of the journal.",
+    "output": "[Service]\nStandardOutput=syslog\nStandardError=syslog\nSyslogIdentifier=legacy\nExecStart=/usr/local/bin/legacy"
+  },
+  {
+    "instruction": "Read logs for a unit from the command line.",
+    "output": "# Show recent logs:\njournalctl -u myapp.service -n 100 --no-pager\n\n# Follow live logs:\njournalctl -u myapp.service -f"
+  },
+  {
+    "instruction": "Filter logs by priority and time window.",
+    "output": "journalctl -u api.service --since '1 hour ago' -p warning"
+  },
+  {
+    "instruction": "Persist journal logs across reboots.",
+    "output": "# /etc/systemd/journald.conf\n[Journal]\nStorage=persistent\nSystemMaxUse=1G"
+  },
+  {
+    "instruction": "Limit the journal's total disk usage.",
+    "output": "[Journal]\nSystemMaxUse=500M\nSystemKeepFree=1G\nMaxRetentionSec=1month"
+  },
+  {
+    "instruction": "Tag logs with a unit-specific field for later queries.",
+    "output": "[Service]\nSyslogIdentifier=checkout\nExecStart=/usr/local/bin/checkout\n# Query: journalctl -t checkout"
+  },
+  {
+    "instruction": "Rotate and vacuum old journal entries.",
+    "output": "# Keep only the last 2 weeks\njournalctl --vacuum-time=2weeks\n\n# Or cap total size\njournalctl --vacuum-size=200M"
+  },
+  {
+    "instruction": "Show logs for a service since the last boot only.",
+    "output": "journalctl -u myapp.service -b"
+  },
+  {
+    "instruction": "Forward only error-level messages to an external syslog.",
+    "output": "[Service]\nStandardError=syslog\nLogLevelMax=err\nSyslogIdentifier=app-errors\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Include the PID in each log line from a forking service.",
+    "output": "[Service]\nType=forking\nPIDFile=/run/app.pid\nSyslogIdentifier=app\nExecStart=/usr/local/bin/app --daemon"
+  },
+  {
+    "instruction": "Buffer logs line by line to the journal for a streaming service.",
+    "output": "[Service]\nStandardOutput=journal\nExecStart=/usr/bin/stdbuf -oL /usr/local/bin/streamer"
+  },
+  {
+    "instruction": "Show the journal's disk usage and per-unit breakdown.",
+    "output": "journalctl --disk-usage\njournalctl --disk-usage --user"
+  },
+  {
+    "instruction": "Set a different logging driver for a container-run service.",
+    "output": "[Service]\nExecStart=/usr/bin/podman run --log-driver=journald myapp:latest"
+  }
+]

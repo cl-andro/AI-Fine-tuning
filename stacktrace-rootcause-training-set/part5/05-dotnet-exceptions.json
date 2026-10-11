@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this .NET exception.\nContext: order service totalling an order deserialised from a JSON request.\n\nSystem.NullReferenceException: Object reference not set to an instance of an object\n   at Orders.OrderService.CalculateTotal(Order order) in /src/Orders/OrderService.cs:line 42\n   at Program.<Main>$(String[] args) in /src/Program.cs:line 15",
+    "output": "**Root cause:** `order.Items` is null (the JSON had no `items` array, and the property was never initialised), so enumerating it dereferences null.\n**Fix:** Initialise `Items = new List<OrderItem>()` in the order model, or reject requests missing the required `items` field."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: LINQ query over a CSV column that contains blanks.\n\nSystem.ArgumentNullException: Value cannot be null. (Parameter 'source')\n   at System.Linq.Enumerable.Count[TSource](IEnumerable`1 source)\n   at Import.CsvImporter.CountRows(String[] lines) in /src/Import/CsvImporter.cs:line 27",
+    "output": "**Root cause:** `lines` is null rather than empty, and LINQ throws when its `source` parameter is null.\n**Fix:** Guard with `if (lines is null) return 0;` (or `lines ?? Array.Empty<string>()`) before querying, and find who passed null."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: paging through rows with a page size taken from settings.\n\nSystem.IndexOutOfRangeException: Index was outside the bounds of the array.\n   at Batch.RowBuffer.TakePage(Int32 page) in /src/Batch/RowBuffer.cs:line 55\n   at Batch.Runner.Process() in /src/Batch/Runner.cs:line 33",
+    "output": "**Root cause:** `page * pageSize` runs past the end of `rows` because the caller requested a page beyond the last one.\n**Fix:** Validate `start < rows.Length` (return an empty page or clamp) before indexing the buffer."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: session cache built from a cookie that points at an expired session.\n\nSystem.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.\n   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)\n   at Web.SessionStore.Get(String sessionId) in /src/Web/SessionStore.cs:line 19\n   at Web.Middleware.SessionMiddleware.Invoke(HttpContext context) in /src/Web/SessionMiddleware.cs:line 44",
+    "output": "**Root cause:** the dictionary indexer throws for missing keys, and the session id from the cookie no longer exists in the cache.\n**Fix:** Use `TryGetValue` and treat a miss as \"not authenticated\" (redirect to login), clearing the stale cookie."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: reporting tool parsing a decimal total produced by an older client.\n\nSystem.FormatException: Input string was not in a correct format.\n   at System.Number.ParseDecimal(ReadOnlySpan`1 value, NumberStyles style, NumberFormatInfo info)\n   at System.Decimal.Parse(String s)\n   at Reports.TotalReader.Read(String raw) in /src/Reports/TotalReader.cs:line 12",
+    "output": "**Root cause:** `raw` is something like `1,234.56` (or `12.34,56` from a locale) and plain `Decimal.Parse` cannot interpret it.\n**Fix:** Parse with an explicit culture/invariant format: `decimal.Parse(raw, CultureInfo.InvariantCulture)`, or strip grouping separators first."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: dashboard calling First() on a query that returned no matches.\n\nSystem.InvalidOperationException: Sequence contains no elements\n   at System.Linq.ThrowHelper.ThrowNoElementsException()\n   at System.Linq.Enumerable.First[TSource](IEnumerable`1 source)\n   at Dashboard.LatestReadings.Query() in /src/Dashboard/LatestReadings.cs:line 61",
+    "output": "**Root cause:** the filtered query matched zero rows, and `First()` throws on an empty sequence.\n**Fix:** Use `FirstOrDefault()` and handle null, or `Single()`/count checks with an explicit \"no readings\" response."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: shared converter casting a boxed value read from a generic cell.\n\nSystem.InvalidCastException: Specified cast is not valid.\n   at CellGrid.Converters.ValueConverter.Convert(Object value)\n   at CellGrid.RowView.Render(Cell cell) in /src/CellGrid/RowView.cs:line 88",
+    "output": "**Root cause:** the cell contains a boxed `string`, but the code casts it directly to `int`, which the CLR forbids.\n**Fix:** Parse explicitly (`Convert.ToInt32(value)`) or switch on `value.GetType()` / use a typed cell model."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: allocation routine dividing a budget by the number of recipients.\n\nSystem.DivideByZeroException: Attempted to divide by zero.\n   at Budget.Splitter.Allocate(Int32 total, Int32 count) in /src/Budget/Splitter.cs:line 24\n   at Budget.Program.Run() in /src/Budget/Program.cs:line 17",
+    "output": "**Root cause:** `count` is 0 (no recipients), so the integer division throws.\n**Fix:** Return early or throw a domain exception when `count == 0`, and validate input at the boundary."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: importing a counter value stored as a 64-bit integer into a 32-bit field with checks enabled.\n\nSystem.OverflowException: Arithmetic operation resulted in an overflow.\n   at Import.CounterImporter.Import(String value) in /src/Import/CounterImporter.cs:line 31\n   at Import.Program.Main(String[] args) in /src/Import/Program.cs:line 12",
+    "output": "**Root cause:** the parsed value exceeds `int.MaxValue` (or is negative) and checked conversion raises an overflow.\n**Fix:** Use `long` end-to-end, or guard with `if (v > int.MaxValue) ...` and clamp/reject bad values."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: calling a stubbed integration endpoint during a demo run.\n\nSystem.NotImplementedException: The method or operation is not implemented.\n   at Integrations.Payments.Charge(String token) in /src/Integrations/Payments/Charge.cs:line 15\n   at Orders.Checkout.PlaceOrder(Order order) in /src/Orders/Checkout.cs:line 73",
+    "output": "**Root cause:** `Charge` is still a stub that throws `NotImplementedException`, so every checkout path fails.\n**Fix:** Implement the payment call, or route to a sandbox provider and keep the exception only in development builds."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: export job disposing a stream that a connection pool still owns.\n\nSystem.ObjectDisposedException: Cannot access a disposed object. Object name: 'System.Net.Sockets.Socket'.\n   at System.Net.Sockets.Socket.ThrowIfDisposed()\n   at System.Net.Sockets.NetworkStream.Write(ReadOnlySpan`1 buffer)\n   at Export.SftpWriter.Write(Byte[] data) in /src/Export/SftpWriter.cs:line 49",
+    "output": "**Root cause:** the `HttpClient`/socket was disposed (an earlier `using` block or a singleton that a scoped service disposed) and is then written to.\n**Fix:** Keep ownership in one place - inject `IHttpClientFactory`-managed clients and do not dispose shared instances."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: indexer used on a result list with a page number supplied by the caller.\n\nSystem.ArgumentOutOfRangeException: Specified argument was out of the range of valid values. (Parameter 'index')\n   at System.Collections.Generic.List`1.get_Item(Int32 index)\n   at Api.Results.get_Item(Int32 i) in /src/Api/Results.cs:line 21",
+    "output": "**Root cause:** `index` is negative or >= `Count` (the caller passed `page=0` while the code uses 1-based pages directly as indices).\n**Fix:** Validate `index` against `Count` and convert 1-based pages to zero-based indices before indexing."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: client parsing an API response that was an HTML error page.\n\nSystem.Text.Json.JsonException: '\"' is an invalid start of a value. Path: $ | LineNumber: 0 | BytePositionInLine: 0.\n   at System.Text.Json.Serialization.JsonSerializer.ReadTElement(Utf8JsonReader& reader, JsonSerializerOptions options)\n   at Api.Client.GetResponse[T](HttpResponseMessage response) in /src/Api/Client.cs:line 87",
+    "output": "**Root cause:** the body starts with `<` (an HTML error page from a gateway), not valid JSON, so the reader fails at position 0.\n**Fix:** Check `Content-Type`/status before deserialising, and surface a clear error when the gateway returns HTML."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: seeding reference data on every application start.\n\nSystem.ArgumentException: An item with the same key has already been added. Key: admin\n   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)\n   at Seed.ReferenceData.Load() in /src/Seed/ReferenceData.cs:line 29\n   at Program.<Main>$(String[] args) in /src/Program.cs:line 24",
+    "output": "**Root cause:** the seeder runs twice (restart without a migration guard) and `Dictionary.Add` throws on duplicate keys.\n**Fix:** Use upsert semantics (`dict[key] = value`), or check `if (!dict.ContainsKey(key))` / run seeding only once per deploy."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: legacy plugin normalising a Windows path coming from a Linux host.\n\nSystem.NotSupportedException: The given path's format is not supported.\n   at System.IO.Path.NewNormalizePath(String path)\n   at Plugin.IO.Location.Open(String path) in /src/Plugin/IO/Location.cs:line 36",
+    "output": "**Root cause:** the path uses a format the runtime rejects (e.g. a relative `..\\..` style path with an invalid drive or embedded null character).\n**Fix:** Build paths with `Path.Combine`/`Path.GetFullPath` on the target OS and validate before opening."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: reporting query reading a nullable SQL column into a non-nullable context.\n\nSystem.Data.SqlTypes.SqlNullValueException: SqlString NULL is not valid in this context.\n   at System.Data.SqlTypes.SqlString.get_Value()\n   at Reports.OrderRow.ReadNotes(SqlDataReader reader) in /src/Reports/OrderRow.cs:line 47",
+    "output": "**Root cause:** the `notes` column contains SQL NULL and the code reads it with `GetString`/`SqlString.Value`, which throws on NULL.\n**Fix:** Use `reader.IsDBNull(i) ? null : reader.GetString(i)` (or `reader.GetValue` with a null check)."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: document importer reading a cached XML export that was cut short.\n\nSystem.Xml.XmlException: Root element is missing.\n   at System.Xml.XmlTextReaderImpl.ThrowWithoutLineInfo(String res)\n   at System.Xml.Serialization.XmlSerializer.Deserialize(XmlReader xmlReader)\n   at Import.XmlFeed.Load(Stream stream) in /src/Import/XmlFeed.cs:line 22",
+    "output": "**Root cause:** the stream is empty (zero bytes), so there is no root element for the serializer to read.\n**Fix:** Check `stream.Length == 0` before deserialising, and treat an empty feed as \"no data\" rather than an error."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: plugin host reflecting a renamed service type from a stale build output.\n\nSystem.TypeLoadException: Could not load type 'App.Services.ReportGenerator' from assembly 'App'.\n   at System.Reflection.RuntimeAssembly.GetType(RuntimeAssembly assembly, String typeName, Boolean throwOnError, Boolean ignoreCase, ObjectHandleOnStack type)\n   at App.Plugins.Host.Create(String typeName) in /src/App/Plugins/Host.cs:line 58",
+    "output": "**Root cause:** the assembly on disk still contains the old type name (the caller asks for a type that was renamed or the DLL was not rebuilt).\n**Fix:** Rebuild/clean the output directory and align the type name the plugin requests with the current class name."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: config validator invoking a rule method through reflection.\n\nSystem.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor)\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)\n   at App.Validation.RuleRunner.Run(Object rule) in /src/App/Validation/RuleRunner.cs:line 40\n ---> System.InvalidOperationException: rule 'MaxRetries' must be between 1 and 10",
+    "output": "**Root cause:** reflection wraps the real exception; the inner `InvalidOperationException` shows the rule rejected the configured value.\n**Fix:** Inspect `ex.InnerException`, and validate configuration values against their allowed ranges before running rules."
+  },
+  {
+    "instruction": "Root cause this .NET exception.\nContext: EF Core unit of work attaching the same entity twice in one request.\n\nSystem.InvalidOperationException: The instance of entity type 'Customer' cannot be tracked because another instance with the same key value for {'Id'} is already being tracked.\n   at Microsoft.EntityFrameworkCore.ChangeTracking.IdentityResolutionManager.ResolveIdentity(IUpdateEntry entry)\n   at Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.TrackGraph(Object entity, Action`1 handleNode)\n   at App.Data.CustomerRepository.Save(Customer customer) in /src/App/Data/CustomerRepository.cs:line 71",
+    "output": "**Root cause:** the context already tracks a different instance with the same primary key (the entity was loaded and then re-attached or created elsewhere in the scope).\n**Fix:** Reuse the tracked instance (`context.Entry(existing).CurrentValues.SetValues(customer)`) or create a fresh DbContext per operation instead of sharing one."
+  }
+]

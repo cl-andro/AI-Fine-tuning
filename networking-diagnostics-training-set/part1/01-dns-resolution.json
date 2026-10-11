@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Users intermittently get 'name or service not known' for api.example.com. How do you diagnose and fix it?",
+    "output": "**Diagnose:**\ndig api.example.com\nnslookup api.example.com\ndig +trace api.example.com\ncat /etc/resolv.conf\nresolvectl status 2>/dev/null || systemd-resolve --status\n**Interpretation:** If dig against 8.8.8.8 succeeds but the local resolver fails, the configured nameserver is the problem. SERVFAIL points to DNSSEC or upstream failure; NXDOMAIN means the record is genuinely absent; timeouts mean the resolver is unreachable. Check the TTL to see if the record is flapping.\n**Fix:** Point /etc/resolv.conf at a reliable resolver, e.g. `nameserver 1.1.1.1`, and restart the resolver: `systemctl restart systemd-resolved`. If DHCP-supplied, fix DHCP option 6 on the router."
+  },
+  {
+    "instruction": "Every lookup takes exactly 5 seconds before resolving. What causes this and how do you fix it?",
+    "output": "**Diagnose:**\ncat /etc/resolv.conf\nstrace -T -e trace=connect,sendto,recvfrom dig example.com\ntcpdump -ni eth0 port 53\n**Interpretation:** A 5-second pause is the classic duplicate-nameserver timeout. The first nameserver in resolv.conf is dead, so glibc waits its timeout then fails over to the second entry. strace shows a connect that hangs before the working socket is tried.\n**Fix:** Remove or reorder the dead nameserver in /etc/resolv.conf, keeping only reachable resolvers. If using systemd-resolved, set `DNS=1.1.1.1 8.8.8.8` in /etc/systemd/resolved.conf and `systemctl restart systemd-resolved`. Add `options timeout:1 attempts:2` to fail over faster."
+  },
+  {
+    "instruction": "Internal hostnames like db.internal resolve on some hosts but not others. Diagnose the split DNS issue.",
+    "output": "**Diagnose:**\ndig db.internal\ndig @10.0.0.53 db.internal\ncat /etc/nsswitch.conf\ncat /etc/hosts\ngetent hosts db.internal\nresolvectl query db.internal\n**Interpretation:** If the query works against the internal resolver 10.0.0.53 but not against the default resolver, clients are using split-horizon DNS incorrectly. Check nsswitch.conf ordering: if a stale /etc/hosts entry shadows the real record, answers diverge.\n**Fix:** Configure explicit split DNS so the .internal domain routes to 10.0.0.53: with systemd-resolved use a per-link `~internal` route, or add `search internal` plus the internal nameserver. Remove conflicting /etc/hosts entries."
+  },
+  {
+    "instruction": "A newly created A record for app.example.com is not visible anywhere. How do you troubleshoot propagation?",
+    "output": "**Diagnose:**\ndig app.example.com @ns1.example.com\ndig app.example.com @8.8.8.8\ndig +trace app.example.com\ndig app.example.com @a.gtld-servers.net\n**Interpretation:** Query the authoritative nameserver first. If it returns the record but public resolvers do not, the change has not propagated or the zone was not reloaded. If the authoritative server returns NXDOMAIN, the record was never committed. Trace shows where resolution breaks.\n**Fix:** Reload the zone on the authoritative server (`rndc reload example.com` or `systemctl reload bind9`). Confirm the SOA serial increased. Then wait for TTL expiry at caches, or flush local caches (`resolvectl flush-caches`)."
+  },
+  {
+    "instruction": "`dig` returns NOERROR with an empty ANSWER section for www.example.com. What is happening?",
+    "output": "**Diagnose:**\ndig www.example.com\ndig www.example.com AAAA\ndig www.example.com CNAME\n**Interpretation:** NOERROR with zero answers usually means the name exists but not for the query type: you asked for A but only AAAA or a CNAME chain broken mid-way exists, or the name is a DNAME/NODATA case. Check the authority section for a valid SOA confirming NODATA.\n**Fix:** Query the record type that actually exists: `dig www.example.com AAAA`. If a CNAME points to another name, resolve that target. If www should have an A record, create it at the authoritative zone."
+  },
+  {
+    "instruction": "DNS queries to example.com return SERVFAIL from the internal resolver. Diagnose.",
+    "output": "**Diagnose:**\ndig example.com\ndig example.com @8.8.8.8\ndig +dnssec example.com\nsudo journalctl -u named -n 50\nsudo named-checkzone example.com /etc/bind/db.example.com\n**Interpretation:** SERVFAIL from your resolver while 8.8.8.8 answers usually means the resolver cannot validate DNSSEC (expired RRSIG, missing DS, or broken trust anchor) or has a zone-load error. Logs will say 'no valid RRSIG' or 'validation failure'.\n**Fix:** If DNSSEC is misconfigured, either fix the signatures (re-sign the zone with a valid key) or temporarily disable validation in named.conf (`dnssec-validation no`) while repairing the trust chain. Restart named and re-test with `dig +dnssec`."
+  },
+  {
+    "instruction": "Resolv.conf keeps getting overwritten after every reboot. How do you make DNS settings persistent?",
+    "output": "**Diagnose:**\nls -l /etc/resolv.conf\ncat /etc/resolv.conf\nsystemctl status systemd-resolved\nls -l /etc/systemd/resolved.conf.d/ 2>/dev/null\nnetplan get 2>/dev/null\n**Interpretation:** If /etc/resolv.conf is a symlink to /run/systemd/resolve/stub-resolv.conf, systemd-resolved or NetworkManager regenerates it from higher-level config, so hand edits vanish.\n**Fix:** Set DNS at the right layer. With netplan: add `nameservers: {addresses: [1.1.1.1]}` to the interface and `netplan apply`. With NetworkManager: edit the connection (`nmcli con mod eth0 ipv4.dns 1.1.1.1 ipv4.ignore-auto-dns yes`) and reactivate. Then restart systemd-resolved."
+  },
+  {
+    "instruction": "A CNAME record points to an external name that fails to resolve for internal clients. Diagnose.",
+    "output": "**Diagnose:**\ndig www.example.com CNAME\ndig internal.example.com CNAME\ndig cdn.external.net\nresolvectl query www.example.com\n**Interpretation:** Internal clients can resolve www to a CNAME target like cdn.external.net, but if an internal forward-only zone intercepts the external name and returns NXDOMAIN, the chain breaks even though the CNAME is correct.\n**Fix:** On the internal resolver, add a forward zone for the external domain pointing to public resolvers (`forwarders { 8.8.8.8; 1.1.1.1; }; forward only;`). Alternatively, point the internal record directly at the external target's IP if the provider permits it."
+  },
+  {
+    "instruction": "`getent hosts hostname` returns nothing but `dig hostname` works. Why?",
+    "output": "**Diagnose:**\ngetent hosts hostname\ndig hostname\ncat /etc/nsswitch.conf | grep hosts\ngetent ahosts hostname\n**Interpretation:** getent uses nsswitch.conf, not just DNS. If the `hosts:` line lacks `dns` (e.g a temporary `hosts: files myhostname`), getent never consults DNS even though dig does. This is common in minimal containers.\n**Fix:** Add `dns` to the hosts line: `hosts: files dns`. On systems with systemd-resolved use `hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns`. Re-test with getent."
+  },
+  {
+    "instruction": "Reverse DNS lookups for 10.0.0.0/8 take many seconds or time out. Diagnose.",
+    "output": "**Diagnose:**\ndig -x 10.0.0.25\ndig -x 8.8.8.8\ndig 25.0.0.10.in-addr.arpa\ncat /etc/nsswitch.conf\n**Interpretation:** Private RFC1918 addresses are not delegated in the public in-addr.arpa tree, so a resolver that forwards them to the internet waits for a timeout and returns SERVFAIL. Any app that does reverse lookups (logs, sshd, mail) stalls.\n**Fix:** Either add an internal reverse zone (0.0.10.in-addr.arpa) to your resolver, or tell the resolver not to forward RFC1918 reverse zones. Add a `zone \"10.in-addr.arpa\" { type master; file \"...\"; };` stub, or disable reverse lookups in the app (sshd `UseDNS no`)."
+  },
+  {
+    "instruction": "DNSSEC validation fails for a specific domain but works for others. Diagnose.",
+    "output": "**Diagnose:**\ndig +dnssec dnssec-failed.org\ndig dnssec-failed.org @8.8.8.8\ndig +cd dnssec-failed.org\ndig DS dnssec-failed.org\n**Interpretation:** With +cd (checking disabled) the answer returns, proving the record exists but signature validation fails. If DS is published but RRSIG is expired or signed with wrong keys, the domain is genuinely broken. This isolates a domain-side DNSSEC problem from your resolver.\n**Fix:** If it is a third-party domain you cannot fix it; contact the domain owner or use a validating resolver that logs the exact failure. If it is your zone, re-sign with `dnssec-signzone` using a valid, non-expired ZSK/KSK and republish the DS with the parent."
+  },
+  {
+    "instruction": "Adding a search domain in /etc/resolv.conf breaks short-name resolution. Diagnose.",
+    "output": "**Diagnose:**\ncat /etc/resolv.conf\ndig +search db\ndig db\ndig db.internal\ndig db.example.com\n**Interpretation:** With `search internal example.com`, short names are tried against each search domain with `ndots` rules. If the search list has a dead domain first, every short lookup waits for that domain to fail. Also, if the name has fewer than `ndots` dots, the resolver tries search domains before the name as-is.\n**Fix:** Put the most reliable search domain first, keep the list short, and lower `ndots` if needed: `options ndots:1`. For A records on generic names, use fully-qualified names with a trailing dot (`db.internal.`) to skip the search list."
+  },
+  {
+    "instruction": "A wildcard DNS record started answering for names that should be NXDOMAIN. Diagnose.",
+    "output": "**Diagnose:**\ndig random-nonexistent-12345.example.com\ndig realhost.example.com\ndig example.com SOA\ndig example.com AXFR @ns1.example.com\n**Interpretation:** If random names return an A record, a `*.example.com` wildcard exists. Wildcards legitimately catch all unlisted names, but if it was added for one subdomain it can hijack mail (MX), API subdomains, and security controls that rely on NXDOMAIN.\n**Fix:** Narrow the wildcard to the specific label pattern it needs (e.g intermediate-cdn.example.com) instead of the apex, or replace it with explicit records. Verify with `dig random-nonexistent.example.com` returning NXDOMAIN afterward."
+  },
+  {
+    "instruction": "DNS answers are correct from Linux but an application resolves stale IPs. Diagnose caching.",
+    "output": "**Diagnose:**\ndig api.example.com\ngetent hosts api.example.com\nresolvectl statistics\nss -tunp | grep <app-pid>\nlsof -p <app-pid> | grep -i resolv\n**Interpretation:** The OS resolver returns fresh answers, but the application has its own DNS cache (JVM, Go, nscd, or a language runtime) honoring JVM `networkaddress.cache.ttl` or Go's default. nscd may also serve stale entries.\n**Fix:** Flush the app-level cache: `nscd -i hosts` or restart the service. For the JVM set `-Dsun.net.inetaddr.ttl=30`. For Go, use a custom resolver or lower TTL. Reduce record TTLs where possible so caches expire sooner."
+  },
+  {
+    "instruction": "`dig` to the local resolver returns REFUSED. What does this mean and how do you fix it?",
+    "output": "**Diagnose:**\ndig example.com @127.0.0.1\ndig example.com @8.8.8.8\nsudo ss -lunp | grep :53\ncat /etc/bind/named.conf.options\nresolvectl status\n**Interpretation:** REFUSED means the nameserver is reachable but its ACL does not allow your client to query it, or recursion is disabled and you asked for a recursive query the server will not perform. It is not a network failure.\n**Fix:** In named.conf add your client subnet to `allow-query` and, for a resolver, `allow-recursion`, e.g `allow-recursion { 127.0.0.1; 10.0.0.0/8; };`. Reload named (`rndc reload`). Confirm the client is querying the intended server and not a stub that refuses recursion."
+  },
+  {
+    "instruction": "A domain resolves on one ISP but not another. Diagnose upstream resolver differences.",
+    "output": "**Diagnose:**\ndig example.com @1.1.1.1\ndig example.com @8.8.8.8\ndig example.com @<isp-dns>\ndig +trace example.com\ndig example.com @ns1.example.com\n**Interpretation:** If authoritative and public resolvers answer but one ISP resolver returns NXDOMAIN or a parked IP, that resolver has a stale negative cache or broken policy. DNSPoxy filtering or a hijacked record at the ISP is the usual cause.\n**Fix:** Change the client to a public resolver (`1.1.1.1`/`8.8.8.8`) or enable DNS-over-HTTPS/TLS so the ISP cannot intercept: `dig +https @cloudflare-dns.com example.com`. For system-wide DoT configure systemd-resolved with `DNSOverTLS=yes` and a DoT resolver."
+  },
+  {
+    "instruction": "`nslookup` returns 'connection timed out; no servers could be reached'. Diagnose reachability.",
+    "output": "**Diagnose:**\ncat /etc/resolv.conf\nnc -vuz <nameserver> 53\nping -c 3 <nameserver>\nip route\ntraceroute -n -U -p 53 <nameserver>\n**Interpretation:** If ping works but UDP/53 is blocked, a firewall or security group is dropping DNS. If the route is missing, the host cannot reach the nameserver at all. ICMP success with UDP failure pinpoints a filtered port.\n**Fix:** Open UDP and TCP 53 to the resolver in iptables/nft or the cloud security group. If the resolver is off-subnet with no route, add the correct route/gateway. As a intermediate test use `dig @<nameserver>` from a host that can reach it."
+  },
+  {
+    "instruction": "A container gets its own /etc/resolv.conf with 127.0.0.11 but DNS fails. Diagnose.",
+    "output": "**Diagnose:**\ndocker exec -it ctr cat /etc/resolv.conf\ndocker exec -it ctr dig example.com\ndocker exec -it ctr ss -lunp | grep 53\ncat /etc/docker/daemon.json\n**Interpretation:** Docker's embedded DNS 127.0.0.11 forwards to the host's resolvers; if the host's /etc/resolv.conf has 127.0.0.53 (systemd-resolved stub), the container cannot reach the loopback stub and DNS breaks.\n**Fix:** Set explicit upstream DNS for Docker: add `{\"dns\": [\"1.1.1.1\", \"8.8.8.8\"]}` to /etc/docker/daemon.json and `systemctl restart docker`. Then recreate the container so it picks up the new resolv.conf."
+  },
+  {
+    "instruction": "Bulk DNS change: some zones update instantly, others lag for a day. Diagnose TTL behavior.",
+    "output": "**Diagnose:**\ndig old.example.com\ndig new.example.com\ndig example.com SOA\ndig old.example.com @8.8.8.8\ndig old.example.com @1.1.1.1\n**Interpretation:** Resolvers cache each record for its TTL. Zones just queried before the change hold stale records for the full old TTL; low-TTL records update fast. SOA `minimum` TTL also governs negative caching, so NXDOMAIN linger for that period.\n**Fix:** Before planned changes, lower the TTL well in advance (e.g to 60s rev 24h), wait one old-TTL period, make the change, then restore the TTL. Flush your own caches (`resolvectl flush-caches`, `rndc flush`) and verify from multiple public resolvers."
+  },
+  {
+    "instruction": "`dig MX example.com` returns no MX but mail is delivered anyway. Diagnose.",
+    "output": "**Diagnose:**\ndig MX example.com\ndig MX example.com @ns1.example.com\ndig example.com A\ndig example.com AAAA\n**Interpretation:** When no MX exists, SMTP senders fall back to the domain's A/AAAA record per RFC 5321 (implicit MX). So mail works despite the empty MX answer. This is often unintended and fragile.\n**Fix:** Add an explicit MX record: `example.com. 3600 IN MX 10 mail.example.com.` and ensure the target has an A/AAAA. Validate with `dig MX example.com` and an external mail tester."
+  }
+]

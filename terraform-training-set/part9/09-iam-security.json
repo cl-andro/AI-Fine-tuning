@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create an IAM role that EC2 instances can assume, with a name variable.",
+    "output": "variable \"role_name\" {\n  type    = string\n  default = \"app-ec2-role\"\n}\n\nresource \"aws_iam_role\" \"ec2\" {\n  name = var.role_name\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = {\n          Service = \"ec2.amazonaws.com\"\n        }\n        Action = \"sts:AssumeRole\"\n      }\n    ]\n  })\n\n  tags = {\n    ManagedBy = \"terraform\"\n  }\n}"
+  },
+  {
+    "instruction": "Attach two AWS managed policies to an IAM role.",
+    "output": "resource \"aws_iam_role\" \"app\" {\n  name = \"app-role\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"ec2.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"ssm\" {\n  role       = aws_iam_role.app.name\n  policy_arn = \"arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore\"\n}\n\nresource \"aws_iam_role_policy_attachment\" \"cw\" {\n  role       = aws_iam_role.app.name\n  policy_arn = \"arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy\"\n}"
+  },
+  {
+    "instruction": "Give a role a least-privilege inline policy limited to one S3 bucket.",
+    "output": "resource \"aws_iam_role\" \"writer\" {\n  name = \"bucket-writer\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"ec2.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy\" \"bucket_write\" {\n  name = \"bucket-write\"\n  role = aws_iam_role.writer.id\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Action = [\n          \"s3:PutObject\",\n          \"s3:GetObject\",\n        ]\n        Resource = \"${var.bucket_arn}/*\"\n      }\n    ]\n  })\n}\n\nvariable \"bucket_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create an IAM user with programmatic access credentials.",
+    "output": "resource \"aws_iam_user\" \"ci\" {\n  name = \"ci-deployer\"\n\n  tags = {\n    Team = \"release\"\n  }\n}\n\nresource \"aws_iam_access_key\" \"ci\" {\n  user = aws_iam_user.ci.name\n}\n\noutput \"ci_access_key_id\" {\n  value = aws_iam_access_key.ci.id\n}\n\noutput \"ci_secret_access_key\" {\n  value     = aws_iam_access_key.ci.secret\n  sensitive = true\n}"
+  },
+  {
+    "instruction": "Create an instance profile and role so EC2 instances can read objects from a bucket.",
+    "output": "resource \"aws_iam_role\" \"reader\" {\n  name = \"s3-reader\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"ec2.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy\" \"read\" {\n  name = \"s3-read\"\n  role = aws_iam_role.reader.id\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect   = \"Allow\"\n        Action   = [\"s3:GetObject\", \"s3:ListBucket\"]\n        Resource = [var.bucket_arn, \"${var.bucket_arn}/*\"]\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_instance_profile\" \"reader\" {\n  name = \"s3-reader-profile\"\n  role = aws_iam_role.reader.name\n}\n\nvariable \"bucket_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Allow the Lambda service to assume a role for executing functions.",
+    "output": "resource \"aws_lambda_function\" \"worker\" {\n  function_name = \"worker\"\n  filename      = \"worker.zip\"\n  role          = aws_iam_role.lambda.arn\n  handler       = \"index.handler\"\n  runtime       = \"python3.12\"\n}\n\nresource \"aws_iam_role\" \"lambda\" {\n  name = \"lambda-exec-role\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"lambda.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"lambda_logs\" {\n  role       = aws_iam_role.lambda.name\n  policy_arn = \"arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole\"\n}"
+  },
+  {
+    "instruction": "Create an execution role for ECS Fargate tasks.",
+    "output": "resource \"aws_iam_role\" \"ecs_execution\" {\n  name = \"ecs-task-execution\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"ecs-tasks.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"ecs_execution\" {\n  role       = aws_iam_role.ecs_execution.name\n  policy_arn = \"arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy\"\n}"
+  },
+  {
+    "instruction": "Create an IAM group, add users to it, and grant the group a policy.",
+    "output": "resource \"aws_iam_group\" \"developers\" {\n  name = \"developers\"\n}\n\nresource \"aws_iam_group_membership\" \"developers\" {\n  name  = \"developers\"\n  group = aws_iam_group.developers.name\n  users = var.developer_users\n}\n\nresource \"aws_iam_group_policy\" \"readonly\" {\n  name  = \"dev-readonly\"\n  group = aws_iam_group.developers.name\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect   = \"Allow\"\n        Action   = [\"s3:ListAllMyBuckets\", \"s3:GetObject\"]\n        Resource = \"*\"\n      }\n    ]\n  })\n}\n\nvariable \"developer_users\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Register a GitHub OIDC provider and a role that only the main branch can assume.",
+    "output": "resource \"aws_iam_openid_connect_provider\" \"github\" {\n  url             = \"https://token.actions.githubusercontent.com\"\n  client_id_list  = [\"sts.amazonaws.com\"]\n  thumbprint_list = [\"6938fd4d98bab03faadb97b34396831e3780aea1\"]\n}\n\nresource \"aws_iam_role\" \"github_actions\" {\n  name = \"github-oidc-deploy\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = {\n          Federated = aws_iam_openid_connect_provider.github.arn\n        }\n        Action = \"sts:AssumeRoleWithWebIdentity\"\n        Condition = {\n          StringEquals = {\n            \"token.actions.githubusercontent.com:aud\" = \"sts.amazonaws.com\"\n          }\n          StringLike = {\n            \"token.actions.githubusercontent.com:sub\" = \"repo:acme-corp/*:ref:refs/heads/main\"\n          }\n        }\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"github_deploy\" {\n  role       = aws_iam_role.github_actions.name\n  policy_arn = \"arn:aws:iam::aws:policy/AmazonS3FullAccess\"\n}"
+  },
+  {
+    "instruction": "Create a customer managed KMS key with an alias and a key policy allowing use by the account root.",
+    "output": "resource \"aws_kms_key\" \"app\" {\n  description             = \"Key for encrypting application data\"\n  deletion_window_in_days = 14\n  enable_key_rotation     = true\n\n  tags = {\n    Name = \"acme-app-key\"\n  }\n}\n\nresource \"aws_kms_alias\" \"app\" {\n  name          = \"alias/acme-app\"\n  target_key_id = aws_kms_key.app.key_id\n}\n\nresource \"aws_kms_key_policy\" \"app\" {\n  key_id = aws_kms_key.app.id\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Id      = \"key-default\"\n    Statement = [\n      {\n        Sid    = \"EnableRoot\"\n        Effect = \"Allow\"\n        Principal = { AWS = \"arn:aws:iam::${data.aws_caller_identity.current.account_id}:root\" }\n        Action   = \"kms:*\"\n        Resource = \"*\"\n      }\n    ]\n  })\n}\n\ndata \"aws_caller_identity\" \"current\" {}"
+  },
+  {
+    "instruction": "Store a sensitive string in Secrets Manager with a recovery window.",
+    "output": "variable \"api_secret_value\" {\n  type      = string\n  sensitive = true\n}\n\nresource \"aws_secretsmanager_secret\" \"api\" {\n  name                    = \"acme/api-key\"\n  description             = \"Third party API key\"\n  recovery_window_in_days = 30\n}\n\nresource \"aws_secretsmanager_secret_version\" \"api\" {\n  secret_id     = aws_secretsmanager_secret.api.id\n  secret_string = var.api_secret_value\n}"
+  },
+  {
+    "instruction": "Create a role with a permissions boundary and a session duration limit.",
+    "output": "variable \"boundary_arn\" {\n  type = string\n}\n\nresource \"aws_iam_role\" \"sandbox\" {\n  name                 = \"sandbox-role\"\n  max_session_duration = 3600\n  permissions_boundary = var.boundary_arn\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { AWS = var.caller_arn }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nvariable \"caller_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Set the account password policy for IAM users.",
+    "output": "resource \"aws_iam_account_password_policy\" \"strict\" {\n  minimum_password_length      = 14\n  require_symbols              = true\n  require_numbers              = true\n  require_uppercase_characters = true\n  require_lowercase_characters = true\n  max_password_age            = 90\n  password_reuse_prevention   = 24\n  allow_users_to_change_password = true\n}"
+  },
+  {
+    "instruction": "Enable IAM Access Analyzer for the account.",
+    "output": "resource \"aws_accessanalyzer_analyzer\" \"account\" {\n  analyzer_name = \"account-analyzer\"\n  type          = \"ACCOUNT\"\n\n  tags = {\n    Name = \"account-analyzer\"\n  }\n}"
+  },
+  {
+    "instruction": "Record account activity with a trail that logs to a bucket.",
+    "output": "resource \"aws_cloudtrail\" \"account\" {\n  name                          = \"account-trail\"\n  s3_bucket_name                = var.trail_bucket\n  include_global_service_events = true\n  is_multi_region_trail         = true\n  enable_log_file_validation    = true\n\n  event_selector {\n    read_write_type           = \"All\"\n    include_management_events = true\n  }\n\n  tags = {\n    Name = \"account-trail\"\n  }\n}\n\nvariable \"trail_bucket\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Turn on AWS Config recording for all regions in the account.",
+    "output": "resource \"aws_config_configuration_recorder\" \"main\" {\n  name     = \"main-recorder\"\n  role_arn = aws_iam_role.config.arn\n\n  recording_group {\n    all_supported                 = true\n    include_global_resource_types = true\n  }\n}\n\nresource \"aws_iam_role\" \"config\" {\n  name = \"config-recorder-role\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"config.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"config\" {\n  role       = aws_iam_role.config.name\n  policy_arn = \"arn:aws:iam::aws:policy/service-role/AWS_ConfigRole\"\n}"
+  },
+  {
+    "instruction": "Enable GuardDuty in the account with a detector resource.",
+    "output": "resource \"aws_guardduty_detector\" \"main\" {\n  enable = true\n\n  datasources {\n    s3_logs {\n      enable = true\n    }\n  }\n\n  tags = {\n    Name = \"primary-detector\"\n  }\n}"
+  },
+  {
+    "instruction": "Create a role for GitHub Actions OIDC that can assume a second role in a deploy account.",
+    "output": "resource \"aws_iam_openid_connect_provider\" \"github\" {\n  url             = \"https://token.actions.githubusercontent.com\"\n  client_id_list  = [\"sts.amazonaws.com\"]\n  thumbprint_list = [\"6938fd4d98bab03faadb97b34396831e3780aea1\"]\n}\n\nresource \"aws_iam_role\" \"ci\" {\n  name = \"ci-cross-account\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = {\n          Federated = aws_iam_openid_connect_provider.github.arn\n        }\n        Action = \"sts:AssumeRoleWithWebIdentity\"\n        Condition = {\n          StringEquals = {\n            \"token.actions.githubusercontent.com:aud\" = \"sts.amazonaws.com\"\n          }\n          StringLike = {\n            \"token.actions.githubusercontent.com:sub\" = \"repo:acme-corp/webapp:*\"\n          }\n        }\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy\" \"assume_deploy\" {\n  name = \"assume-deploy\"\n  role = aws_iam_role.ci.id\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect   = \"Allow\"\n        Action   = \"sts:AssumeRole\"\n        Resource = var.deploy_role_arn\n      }\n    ]\n  })\n}\n\nvariable \"deploy_role_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Allow an application role to decrypt with a specific KMS key only.",
+    "output": "resource \"aws_iam_role\" \"decryptor\" {\n  name = \"kms-decryptor\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"ecs-tasks.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy\" \"decrypt\" {\n  name = \"kms-decrypt\"\n  role = aws_iam_role.decryptor.id\n\n  policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Action = [\n          \"kms:Decrypt\",\n          \"kms:DescribeKey\",\n        ]\n        Resource = var.kms_key_arn\n      }\n    ]\n  })\n}\n\nvariable \"kms_key_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create an IAM policy attachment module-style loop for multiple managed policies on one role.",
+    "output": "resource \"aws_iam_role\" \"analyst\" {\n  name = \"analyst-role\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { AWS = var.analyst_root_arn }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}\n\nresource \"aws_iam_role_policy_attachment\" \"analyst\" {\n  for_each = toset(var.managed_policy_arns)\n\n  role       = aws_iam_role.analyst.name\n  policy_arn = each.value\n}\n\nvariable \"analyst_root_arn\" {\n  type = string\n}\n\nvariable \"managed_policy_arns\" {\n  type = list(string)\n  default = [\n    \"arn:aws:iam::aws:policy/AmazonAthenaFullAccess\",\n    \"arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess\",\n  ]\n}"
+  }
+]

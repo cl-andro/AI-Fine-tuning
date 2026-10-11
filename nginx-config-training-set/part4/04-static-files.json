@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Serve the static site in /var/www/site, returning 404 for missing files instead of redirecting or proxying.",
+    "output": "server {\n    listen 80;\n    server_name www.static.example;\n    root /var/www/site;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Configure a React single-page app so any unknown client-side route falls back to /index.html.",
+    "output": "location / {\n    root /var/www/react-app;\n    try_files $uri $uri/ /index.html;\n}"
+  },
+  {
+    "instruction": "Configure a Vue application with history-mode routing so unknown paths under /app fall back to /app/index.html.",
+    "output": "location /app {\n    root /var/www;\n    try_files $uri $uri/ /app/index.html;\n}"
+  },
+  {
+    "instruction": "Cache fingerprinted bundles under /assets for one year with an immutable Cache-Control header.",
+    "output": "location /assets/ {\n    root /var/www/site;\n    expires 1y;\n    add_header Cache-Control \"public, max-age=31536000, immutable\";\n}"
+  },
+  {
+    "instruction": "Serve images from /images with a 7 day browser cache.",
+    "output": "location /images/ {\n    root /var/www/site;\n    expires 7d;\n    add_header Cache-Control \"public, max-age=604800\";\n}"
+  },
+  {
+    "instruction": "Prevent browsers from mangling binaries such as zip, gz and exe downloads by disabling charset processing for them.",
+    "output": "location ~* \\.(zip|gz|tgz|exe)$ {\n    root /var/www;\n    charset off;\n}"
+  },
+  {
+    "instruction": "Enable human-readable directory listing for /pub/ftp/ with local timestamps.",
+    "output": "location /pub/ftp/ {\n    alias /srv/ftp/;\n    autoindex on;\n    autoindex_exact_size off;\n    autoindex_localtime on;\n    charset utf-8;\n}"
+  },
+  {
+    "instruction": "Keep directory listing disabled everywhere on files.example.com while still serving files from /var/www/files.",
+    "output": "server {\n    listen 80;\n    server_name files.example.com;\n    root /var/www/files;\n    autoindex off;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Serve favicon.ico and robots.txt from /var/www/seo without writing access log entries for them.",
+    "output": "location = /favicon.ico {\n    root /var/www/seo;\n    access_log off;\n    log_not_found off;\n}\nlocation = /robots.txt {\n    root /var/www/seo;\n    access_log off;\n}"
+  },
+  {
+    "instruction": "Enable progressive MP4 playback from /videos using the mp4 module with a 1 MB start buffer.",
+    "output": "location /videos/ {\n    root /var/www;\n    mp4;\n    mp4_buffer_size 1m;\n    mp4_max_buffer_size 5m;\n}"
+  },
+  {
+    "instruction": "Force the browser to download the report file /dl/latest-report.csv by sending a Content-Disposition attachment header with an explicit filename.",
+    "output": "location = /dl/latest-report.csv {\n    root /var/www;\n    add_header Content-Disposition 'attachment; filename=\"latest-report.csv\"' always;\n}"
+  },
+  {
+    "instruction": "Block access to dotfiles such as .git and .env everywhere while still allowing ACME challenges under /.well-known/acme-challenge/.",
+    "output": "location ~ /\\.(?!well-known) {\n    deny all;\n}\nlocation ^~ /.well-known/acme-challenge/ {\n    root /var/www/certbot;\n}"
+  },
+  {
+    "instruction": "Use a named location fallback so any missing file on brand.example.com returns a branded 404 page.",
+    "output": "location / {\n    root /var/www/brand;\n    try_files $uri $uri/ @notfound;\n}\nlocation @notfound {\n    root /var/www/brand;\n    try_files /404.html =404;\n}"
+  },
+  {
+    "instruction": "Serve the admin SPA under /admin with a fallback to its own index.html for client-side routes.",
+    "output": "location /admin {\n    root /var/www/html;\n    try_files $uri $uri/ /admin/index.html;\n}"
+  },
+  {
+    "instruction": "Register correct content types for WebAssembly and ES module files served from the /modules/ directory.",
+    "output": "location /modules/ {\n    root /var/www;\n    types {\n        text/javascript mjs js;\n        application/json json;\n        text/css css;\n        application/wasm wasm;\n        text/html html;\n    }\n}"
+  },
+  {
+    "instruction": "Serve large video files from /media/ using sendfile, thread-based aio and directio to keep big files out of the page cache.",
+    "output": "location /media/ {\n    root /var/www;\n    sendfile on;\n    tcp_nodelay on;\n    aio threads;\n    directio 8m;\n    output_buffers 2 1m;\n}"
+  },
+  {
+    "instruction": "Show a custom 404 page on the legacy documentation site without breaking requests for missing subdirectory paths.",
+    "output": "server {\n    listen 80;\n    server_name docs-old.example.com;\n    root /var/www/docs-old;\n    error_page 404 /404.html;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n    location = /404.html {\n        internal;\n    }\n}"
+  },
+  {
+    "instruction": "Expose /data/ as a downloadable file repository with directory listing enabled and charset utf-8.",
+    "output": "location /data/ {\n    alias /srv/repository/;\n    autoindex on;\n    charset utf-8;\n}"
+  },
+  {
+    "instruction": "Deny access to backup and database files with the extensions .bak, .conf, .sql, .old and .orig anywhere under the web root.",
+    "output": "location ~* \\.(bak|conf|sql|old|orig)$ {\n    deny all;\n}"
+  },
+  {
+    "instruction": "Apply the classic deploy caching policy: never cache the HTML shell but cache everything under /static/ forever.",
+    "output": "location = /index.html {\n    root /var/www/app;\n    add_header Cache-Control \"no-store, no-cache, must-revalidate\";\n    expires -1;\n}\nlocation /static/ {\n    root /var/www/app;\n    expires 1y;\n    add_header Cache-Control \"public, immutable\";\n}"
+  }
+]

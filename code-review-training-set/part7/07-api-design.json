@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef export(data, as_csv=False, as_json=False, pretty=False, raw=False):\n    if as_csv:\n        return to_csv(data)\n    if as_json:\n        return to_json(data, pretty)\n    if raw:\n        return data\n    return str(data)",
+    "output": "**Issue:** Flag arguments control four mutually exclusive behaviors.\n**Why:** Callers write export(d, True, False, True) and no one can tell which flag does what; adding a format means touching every call site.\n**Fix:**\ndef export(data, fmt='text', pretty=False):\n    renderers = {'csv': to_csv, 'json': lambda d: to_json(d, pretty), 'raw': lambda d: d, 'text': str}\n    return renderers[fmt](data)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef find_orders(uid):\n    rows = db.query('SELECT ...', uid)\n    if rows:\n        return [dict(r) for r in rows]\n    return None",
+    "output": "**Issue:** Return type alternates between list and None.\n**Why:** Callers must check `is None` before iterating, and forget once -> TypeError; an empty list is the natural 'not found' for a collection.\n**Fix:**\ndef find_orders(uid):\n    rows = db.query('SELECT ...', uid)\n    return [dict(r) for r in rows]  # always a list; empty means not found"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Cart:\n    def __init__(self):\n        self._items = []\n    def items(self):\n        return self._items\n\nbasket = Cart().items()\nbasket.append('free-item')",
+    "output": "**Issue:** Internal list is handed out directly, breaking encapsulation.\n**Why:** Any caller can append/remove behind the Cart's back, violating its invariants (e.g. price totals become stale).\n**Fix:**\nclass Cart:\n    def __init__(self):\n        self._items = []\n    def items(self):\n        return tuple(self._items)   # immutable view\n    def add(self, item):\n        self._items.append(item)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef handle(**kwargs):\n    store[kwargs['key']] = kwargs['value']\n\nhandle(keye='name', value='bob')   # typo: silently stored under 'keye'",
+    "output": "**Issue:** **kwargs makes the signature self-documenting-free and typo-proofing-free.\n**Why:** A misspelled keyword raises KeyError (or is ignored), and editors cannot autocomplete the API.\n**Fix:**\ndef handle(*, key, value):\n    store[key] = value\n# callers get a TypeError immediately on a misspelled keyword"
+  },
+  {
+    "instruction": "Review this code:\n\ndef charge(user, plan, method, timing):\n    if plan == 'annual':\n        amount = 99\n    ...\n\ncharge(bob, 'annaul', 'card', 'now')",
+    "output": "**Issue:** Behavior selected with magic strings, including an uncaught typo at the call site.\n**Why:** 'annaul' typos compile fine, there is no autocomplete, and adding a plan means grepping every string literal.\n**Fix:**\nfrom enum import Enum\n\nclass Plan(Enum):\n    ANNUAL = 'annual'\n    MONTHLY = 'monthly'\n\nclass Timing(Enum):\n    NOW = 'now'\n    LATER = 'later'\n\ndef charge(user, plan, method, timing):\n    ..."
+  },
+  {
+    "instruction": "Review this code:\n\ndef create_user(name, email, age, city, country, plan, referrer, active):\n    ...",
+    "output": "**Issue:** Eight required positional parameters.\n**Why:** Every call site is a positional-argument minefield (swapping city/country is invisible) and defaults are impossible.\n**Fix:**\ndef create_user(name, email, *, age=None, city=None, country=None, plan='free', referrer=None, active=True):\n    ...\n# required args stay positional, everything else becomes keyword-only"
+  },
+  {
+    "instruction": "Review this code:\n\ndef get_weather(city):\n    data = requests.get(f'https://weather.api/{city}').json()\n    print('fetched', city)\n    with open('cache.json', 'w') as f:\n        json.dump(data, f)\n    return data['temp']",
+    "output": "**Issue:** One function fetches, caches to disk, prints and returns.\n**Why:** The printing breaks library use, the disk write makes it untestable and non-reentrant, and callers cannot fetch without side effects.\n**Fix:**\ndef get_weather(city, session=None):\n    resp = (session or requests).get(f'https://weather.api/{city}', timeout=10)\n    resp.raise_for_status()\n    return resp.json()['temp']\n# caching and logging belong to the caller or a wrapper"
+  },
+  {
+    "instruction": "Review this code:\n\ndef max_pool():\n    return CONFIG['db']['pool']['max']\n\ndef pool_timeout():\n    return CONFIG['db']['pool']['timeout']",
+    "output": "**Issue:** Callers reach through four levels of nested dict on every access.\n**Why:** Typos fail at runtime, there is no IDE navigation, and the config shape cannot be refactored without touching every consumer.\n**Fix:**\nfrom dataclasses import dataclass\n\n@dataclass(frozen=True)\nclass PoolConfig:\n    max: int\n    timeout: float\n\n@dataclass(frozen=True)\nclass DbConfig:\n    pool: PoolConfig"
+  },
+  {
+    "instruction": "Review this code:\n\nCONFIG = {}\n\ndef set_debug(flag):\n    CONFIG['debug'] = flag\n\ndef handler():\n    if CONFIG.get('debug'):\n        dump_state()",
+    "output": "**Issue:** Module-level mutable global used as configuration.\n**Why:** Tests leak state between cases, import order changes behavior, and the function is impossible to reason about locally.\n**Fix:**\nfrom dataclasses import dataclass\n\n@dataclass\nclass Settings:\n    debug: bool = False\n\ndef handler(settings):\n    if settings.debug:\n        dump_state()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef sort_users(users):\n    users.sort(key=lambda u: u['name'])\n\ndef filter_active(users):\n    return [u for u in users if u['active']]",
+    "output": "**Issue:** One API function mutates its argument, another returns a new list.\n**Why:** Callers cannot tell which functions modify inputs; sort_users silently changes the caller's list while filter_active does not.\n**Fix:**\ndef sort_users(users):\n    return sorted(users, key=lambda u: u['name'])\n# keep a single convention: pure functions that return new data\n# or make mutation explicit: sort_users_inplace(users)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef parse_row(line):\n    try:\n        return line.split(',')\n    except Exception:\n        raise Exception('bad row')",
+    "output": "**Issue:** A library raising bare Exception gives callers nothing to catch.\n**Why:** Users must write `except Exception`, which swallows unrelated failures; error hierarchies are the point of a library API.\n**Fix:**\nclass ParseError(ValueError):\n    def __init__(self, line, reason):\n        self.line = line\n        super().__init__(f'bad row: {reason}')\n\ndef parse_row(line):\n    parts = line.split(',')\n    if len(parts) != 3:\n        raise ParseError(line, f'expected 3 fields, got {len(parts)}')\n    return parts"
+  },
+  {
+    "instruction": "Review this code:\n\nclass UserService:\n    def __init__(self, api_key):\n        self.session = requests.Session()\n        self.session.headers['Authorization'] = f'Bearer {api_key}'\n        self.me = self.session.get('https://api.example.com/me').json()",
+    "output": "**Issue:** Constructor performs network I/O.\n**Why:** Instantiating the object can hang, raise, or be impossible offline; unit tests cannot even build the object without a mock server.\n**Fix:**\nclass UserService:\n    def __init__(self, api_key):\n        self.session = requests.Session()\n        self.session.headers['Authorization'] = f'Bearer {api_key}'\n    @classmethod\n    def create(cls, api_key):\n        svc = cls(api_key)\n        svc.me = svc.session.get('https://api.example.com/me', timeout=10).json()\n        return svc"
+  },
+  {
+    "instruction": "Review this code:\n\nresult = render(report, True, False, True)",
+    "output": "**Issue:** Three positional booleans with no names at the call site.\n**Why:** Nobody can tell which True means 'include header' vs 'verbose'; the classic boolean-trap API.\n**Fix:**\nresult = render(report, include_header=True, verbose=False, pretty=True)\n\ndef render(report, *, include_header=False, verbose=False, pretty=False):\n    ..."
+  },
+  {
+    "instruction": "Review this code:\n\ndef get_or_create_order(cart):\n    order = db.find_order(cart.id)\n    if not order:\n        order = db.insert_order(cart)\n    return order\n\n# docstring says 'get the order'",
+    "output": "**Issue:** A `get_*` method that also writes to the database.\n**Why:** The name violates least surprise; read-only call sites (reports, caches) accidentally create rows.\n**Fix:**\ndef find_order(cart):\n    return db.find_order(cart.id)   # pure read\n\ndef get_or_create_order(cart):     # side effect is in the name\n    return db.find_order(cart.id) or db.insert_order(cart)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef delete_user(uid):\n    if db.delete(uid):\n        return 1\n    return -1\n\nif delete_user(5) == -1:\n    print('failed')",
+    "output": "**Issue:** Magic sentinel -1 as an error signal.\n**Why:** -1 is a plausible real value elsewhere, and every caller must remember the sentinel; failures are silently comparable to valid results.\n**Fix:**\ndef delete_user(uid):\n    if not db.delete(uid):\n        raise UserNotFound(uid)\n    return True"
+  },
+  {
+    "instruction": "Review this code:\n\nfunction onDone(err, result) {\n  console.log(result);\n}\nfunction onFail(result, err) {\n  console.log(err);\n}\napi.get(url, onDone);\napi.del(url, onFail);",
+    "output": "**Issue:** Callback signatures are inconsistent across methods.\n**Why:** Consumers swap arguments and log `undefined`; the error-first convention exists precisely to avoid this.\n**Fix:**\nfunction onDone(err, result) {\n  if (err) throw err;\n  console.log(result);\n}\napi.get(url, onDone);\napi.del(url, onDone);   // same (err, result) contract everywhere"
+  },
+  {
+    "instruction": "Review this code:\n\ndef search(term, limit=None, offset=None, fields=None, sort=None):\n    if fields is None:\n        fields = ALL_FIELDS\n    if sort is None:\n        sort = 'relevance'\n    ...",
+    "output": "**Issue:** None is overloaded to mean 'use default', 'no filter' and 'not applicable'.\n**Why:** Callers cannot pass a real None value (e.g. sort by NULL column) because it is stolen as the default sentinel.\n**Fix:**\nDEFAULT = object()   # unique sentinel\n\ndef search(term, *, fields=DEFAULT, sort=DEFAULT):\n    if fields is DEFAULT:\n        fields = ALL_FIELDS\n    if sort is DEFAULT:\n        sort = 'relevance'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef summarize(stats):\n    return _helper(stats, _INTERNAL_THRESHOLD)\n\n_INTERNAL_THRESHOLD = 0.5\n\ndef _helper(x, t):\n    return x > t",
+    "output": "**Issue:** Public API is implemented in terms of a private module global.\n**Why:** Renaming or moving _INTERNAL_THRESHOLD breaks external callers who monkeypatch it, freezing the private name forever.\n**Fix:**\ndef summarize(stats, threshold=0.5):\n    return stats > threshold\n# expose the knob as a parameter instead of leaking a private global"
+  },
+  {
+    "instruction": "Review this code:\n\ndef normalize(users):\n    users.sort(key=lambda u: u['name'])\n    for u in users:\n        u.setdefault('active', True)\n        u['name'] = u['name'].strip().title()\n    return users",
+    "output": "**Issue:** A function that claims to normalize silently reorders and mutates the caller's list of dicts.\n**Why:** The caller's original order is destroyed and nested dicts are edited in place, surprising every consumer.\n**Fix:**\ndef normalize(users):\n    out = []\n    for u in users:\n        copy = dict(u)\n        copy.setdefault('active', True)\n        copy['name'] = copy['name'].strip().title()\n        out.append(copy)\n    return sorted(out, key=lambda u: u['name'])"
+  },
+  {
+    "instruction": "Review this code:\n\ndef render_invoice(order):\n    conn = get_connection()\n    cur = conn.cursor()\n    cur.execute('SELECT tax_rate FROM regions WHERE code = %s', (order.region,))\n    rate = cur.fetchone()[0]\n    cur.close()\n    return compute_total(order, rate)",
+    "output": "**Issue:** The function returns and manipulates raw DB objects instead of a domain-level API.\n**Why:** Callers are coupled to the driver (cursor, tuple rows), so swapping to an ORM or REST backend breaks every consumer.\n**Fix:**\ndef render_invoice(order, tax_lookup):\n    rate = tax_lookup(order.region)   # a narrow, swappable port\n    return compute_total(order, rate)\n# the DB detail lives behind tax_lookup, not inside render_invoice"
+  }
+]

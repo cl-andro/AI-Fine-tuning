@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a pytest test for an argparse-based CLI that greets a user, asserting the exit code and stdout when run via main(args).\n\nimport argparse\n\ndef main(args=None):\n    parser = argparse.ArgumentParser(prog='greet')\n    parser.add_argument('--name', required=True)\n    ns = parser.parse_args(args)\n    print(f'Hello, {ns.name}!')\n    return 0",
+    "output": "import io\nfrom contextlib import redirect_stdout\nfrom cli import main\n\ndef test_greet_cli_prints_message(capsys):\n    code = main(['--name', 'Ann'])\n    captured = capsys.readouterr()\n    assert code == 0\n    assert captured.out == 'Hello, Ann!\\n'\n\ndef test_greet_cli_requires_name():\n    import pytest\n    with pytest.raises(SystemExit) as exc_info:\n        main([])\n    assert exc_info.value.code == 2"
+  },
+  {
+    "instruction": "Write a pytest test that runs a script with subprocess.run and asserts its successful exit code and stripped stdout.\n\n# greet.py\n# import sys\n# print(f'hi {sys.argv[1]}')",
+    "output": "import subprocess, sys\nimport pytest\n\ndef test_script_success(tmp_path):\n    script = tmp_path / 'greet.py'\n    script.write_text(\"import sys\\nprint(f'hi {sys.argv[1]}')\\n\")\n    result = subprocess.run(\n        [sys.executable, str(script), 'Ann'],\n        capture_output=True, text=True, check=False)\n    assert result.returncode == 0\n    assert result.stdout.strip() == 'hi Ann'\n\ndef test_script_failure_exit_code(tmp_path):\n    script = tmp_path / 'fail.py'\n    script.write_text('import sys\\nsys.exit(3)\\n')\n    result = subprocess.run([sys.executable, str(script)], capture_output=True)\n    assert result.returncode == 3"
+  },
+  {
+    "instruction": "Write a pytest test for a CLI that fails with a non-zero exit code and an error message on stderr when the input file is missing.\n\nimport argparse, os, sys\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('path')\n    ns = parser.parse_args(args)\n    if not os.path.exists(ns.path):\n        print(f'error: file not found: {ns.path}', file=sys.stderr)\n        return 1\n    print('ok')\n    return 0",
+    "output": "import pytest\nfrom filecli import main\n\ndef test_missing_file_returns_error(tmp_path, capsys):\n    code = main([str(tmp_path / 'nope.txt')])\n    captured = capsys.readouterr()\n    assert code == 1\n    assert 'file not found' in captured.err\n\ndef test_existing_file_ok(tmp_path, capsys):\n    path = tmp_path / 'data.txt'\n    path.write_text('x')\n    assert main([str(path)]) == 0\n    assert capsys.readouterr().out == 'ok\\n'"
+  },
+  {
+    "instruction": "Write a pytest test for a CLI that reads piped stdin, verifying content piped via subprocess input= is processed.\n\nimport sys\n\ndef main():\n    data = sys.stdin.read().strip()\n    print(len(data.split()))\n    return 0",
+    "output": "import subprocess, sys\n\ndef test_cli_counts_words_from_stdin(tmp_path):\n    script = tmp_path / 'count.py'\n    script.write_text('import sys\\nprint(len(sys.stdin.read().split()))\\n')\n    result = subprocess.run(\n        [sys.executable, str(script)],\n        input='one two three', text=True, capture_output=True)\n    assert result.returncode == 0\n    assert result.stdout.strip() == '3'"
+  },
+  {
+    "instruction": "Write a pytest test that verifies argparse rejects an unknown flag by raising SystemExit with code 2.\n\nimport argparse\n\ndef build_parser():\n    parser = argparse.ArgumentParser(prog='tool')\n    parser.add_argument('--verbose', action='store_true')\n    return parser",
+    "output": "import pytest\nfrom cli import build_parser\n\ndef test_unknown_flag_exits_with_code_2():\n    parser = build_parser()\n    with pytest.raises(SystemExit) as exc_info:\n        parser.parse_args(['--unknown-flag'])\n    assert exc_info.value.code == 2\n\ndef test_known_flag_parses():\n    ns = build_parser().parse_args(['--verbose'])\n    assert ns.verbose is True"
+  },
+  {
+    "instruction": "Write a pytest test that patches sys.argv and calls a CLI main() directly, avoiding subprocess overhead.\n\nimport sys\n\ndef main():\n    mode = sys.argv[1] if len(sys.argv) > 1 else 'default'\n    print(f'mode={mode}')\n    return 0",
+    "output": "import sys\nfrom unittest.mock import patch\nimport cli\n\ndef test_main_reads_argv(capsys):\n    with patch.object(sys, 'argv', ['cli.py', 'fast']):\n        assert cli.main() == 0\n    assert capsys.readouterr().out == 'mode=fast\\n'\n\ndef test_main_default_mode(capsys):\n    with patch.object(sys, 'argv', ['cli.py']):\n        assert cli.main() == 0\n    assert capsys.readouterr().out == 'mode=default\\n'"
+  },
+  {
+    "instruction": "Write a pytest test asserting subprocess.TimeoutExpired when a script sleeps longer than the allowed timeout.\n\nimport time\n\ndef main():\n    time.sleep(5)\n    print('done')",
+    "output": "import subprocess, sys\nimport pytest\n\ndef test_slow_script_times_out(tmp_path):\n    script = tmp_path / 'slow.py'\n    script.write_text('import time\\ntime.sleep(5)\\n')\n    with pytest.raises(subprocess.TimeoutExpired):\n        subprocess.run(\n            [sys.executable, str(script)],\n            capture_output=True, timeout=0.2)"
+  },
+  {
+    "instruction": "Write a pytest test for a CLI that writes an output file: run main() and then verify the file contents on disk.\n\nimport argparse\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('text')\n    parser.add_argument('-o', '--output', required=True)\n    ns = parser.parse_args(args)\n    with open(ns.output, 'w') as f:\n        f.write(ns.text.upper())\n    return 0",
+    "output": "from wordcli import main\n\ndef test_cli_writes_output_file(tmp_path):\n    out = tmp_path / 'out.txt'\n    code = main(['hello world', '-o', str(out)])\n    assert code == 0\n    assert out.read_text() == 'HELLO WORLD'\n\ndef test_cli_overwrites_existing_file(tmp_path):\n    out = tmp_path / 'out.txt'\n    out.write_text('stale')\n    main(['fresh', '-o', str(out)])\n    assert out.read_text() == 'FRESH'"
+  },
+  {
+    "instruction": "Write a pytest test that runs a subprocess with a custom environment variable and asserts the script picked it up.\n\nimport os\n\nprint(os.environ.get('MY_APP_TOKEN', 'unset'))",
+    "output": "import os, subprocess, sys\n\ndef test_subprocess_env_var(tmp_path):\n    script = tmp_path / 'envcheck.py'\n    script.write_text(\"import os\\nprint(os.environ.get('MY_APP_TOKEN', 'unset'))\\n\")\n    env = dict(os.environ, MY_APP_TOKEN='tok-42')\n    result = subprocess.run(\n        [sys.executable, str(script)],\n        capture_output=True, text=True, env=env)\n    assert result.stdout.strip() == 'tok-42'\n\ndef test_subprocess_env_var_missing(tmp_path):\n    script = tmp_path / 'envcheck.py'\n    script.write_text(\"import os\\nprint(os.environ.get('MY_APP_TOKEN', 'unset'))\\n\")\n    env = {k: v for k, v in os.environ.items() if k != 'MY_APP_TOKEN'}\n    result = subprocess.run(\n        [sys.executable, str(script)],\n        capture_output=True, text=True, env=env)\n    assert result.stdout.strip() == 'unset'"
+  },
+  {
+    "instruction": "Write a pytest test for a subprocess that outputs bytes (e.g. binary-safe output), decoding and asserting the payload.\n\nimport sys\n\nsys.stdout.buffer.write(b'\\x00\\xff\\x10END')",
+    "output": "import subprocess, sys\n\ndef test_binary_stdout(tmp_path):\n    script = tmp_path / 'binary.py'\n    script.write_text(\"import sys\\nsys.stdout.buffer.write(b'\\\\x00\\\\xff\\\\x10END')\\n\")\n    result = subprocess.run([sys.executable, str(script)], capture_output=True)\n    assert result.returncode == 0\n    assert result.stdout == b'\\x00\\xff\\x10END'\n\ndef test_binary_stdout_decoded_as_latin1(tmp_path):\n    script = tmp_path / 'binary.py'\n    script.write_text(\"import sys\\nsys.stdout.buffer.write(b'\\\\x00\\\\xff\\\\x10END')\\n\")\n    result = subprocess.run([sys.executable, str(script)], capture_output=True)\n    assert result.stdout.decode('latin-1').endswith('END')"
+  },
+  {
+    "instruction": "Write a pytest test that captures stderr from a subprocess and asserts an error warning appears there rather than on stdout.\n\nimport sys\n\nprint('progress', file=sys.stderr)\nprint('result: ok')",
+    "output": "import subprocess, sys\n\ndef test_stderr_and_stdout_streams_separated(tmp_path):\n    script = tmp_path / 'streams.py'\n    script.write_text(\"import sys\\nprint('progress', file=sys.stderr)\\nprint('result: ok')\\n\")\n    result = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)\n    assert result.stdout.strip() == 'result: ok'\n    assert result.stderr.strip() == 'progress'"
+  },
+  {
+    "instruction": "Write a pytest test for a --help output of an argparse CLI, asserting usage text and the program name appear.\n\nimport argparse\n\ndef main(args=None):\n    parser = argparse.ArgumentParser(prog='mytool')\n    parser.add_argument('--version', action='version', version='mytool 1.0')\n    parser.parse_args(args)\n    return 0",
+    "output": "import pytest\nfrom mytool import main\n\ndef test_help_output(capsys):\n    with pytest.raises(SystemExit) as exc_info:\n        main(['--help'])\n    assert exc_info.value.code == 0\n    out = capsys.readouterr().out\n    assert 'usage: mytool' in out\n\ndef test_version_output(capsys):\n    with pytest.raises(SystemExit) as exc_info:\n        main(['--version'])\n    assert capsys.readouterr().out.strip() == 'mytool 1.0'"
+  },
+  {
+    "instruction": "Write a pytest test for a CLI with two subcommands (build and clean), asserting each subcommand runs its own logic.\n\nimport argparse\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    sub = parser.add_subparsers(dest='command', required=True)\n    sub.add_parser('build')\n    sub.add_parser('clean')\n    ns = parser.parse_args(args)\n    if ns.command == 'build':\n        print('building')\n    else:\n        print('cleaning')\n    return 0",
+    "output": "import pytest\nfrom multitool import main\n\ndef test_build_subcommand(capsys):\n    assert main(['build']) == 0\n    assert capsys.readouterr().out == 'building\\n'\n\ndef test_clean_subcommand(capsys):\n    assert main(['clean']) == 0\n    assert capsys.readouterr().out == 'cleaning\\n'\n\ndef test_missing_subcommand_fails():\n    with pytest.raises(SystemExit):\n        main([])"
+  },
+  {
+    "instruction": "Write a pytest test for an interactive CLI that prompts for input using input(), verifying the prompt via monkeypatched stdin.\n\nimport sys\n\ndef main():\n    name = input('Your name? ')\n    print(f'Hello {name}')\n    return 0",
+    "output": "from unittest.mock import patch\nimport builtins\nimport promptcli\n\ndef test_prompt_cli_reads_input(capsys):\n    with patch.object(builtins, 'input', return_value='Ada'):\n        assert promptcli.main() == 0\n    captured = capsys.readouterr()\n    assert captured.out == 'Hello Ada\\n'\n\ndef test_prompt_cli_passes_answer_to_input():\n    from unittest.mock import MagicMock\n    mock_input = MagicMock(return_value='Grace')\n    with patch.object(builtins, 'input', mock_input):\n        promptcli.main()\n    mock_input.assert_called_once_with('Your name? ')"
+  },
+  {
+    "instruction": "Write a pytest test asserting that launching a non-existent command via subprocess raises FileNotFoundError.\n\nimport subprocess\n\ndef run(cmd):\n    return subprocess.run(cmd, capture_output=True)",
+    "output": "import pytest\nfrom shell import run\n\ndef test_missing_command_raises():\n    with pytest.raises(FileNotFoundError):\n        run(['definitely-not-a-real-command-xyz'])\n\ndef test_real_command_runs():\n    import sys\n    result = run([sys.executable, '--version'])\n    assert result.returncode == 0"
+  },
+  {
+    "instruction": "Write a pytest test for a CSV-reporting CLI: run it in a tmp working directory and verify the generated report file.\n\nimport argparse, csv, os\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('input')\n    ns = parser.parse_args(args)\n    with open(ns.input, newline='') as f:\n        rows = list(csv.DictReader(f))\n    report = ns.input + '.report.txt'\n    with open(report, 'w') as f:\n        f.write(f'{len(rows)} rows\\n')\n    return 0",
+    "output": "import csv\nfrom reportcli import main\n\ndef test_csv_report_cli(tmp_path):\n    data = tmp_path / 'data.csv'\n    data.write_text('name,score\\nann,90\\nbob,80\\n')\n    assert main([str(data)]) == 0\n    report = tmp_path / 'data.csv.report.txt'\n    assert report.read_text() == '2 rows\\n'\n\ndef test_csv_report_empty(tmp_path):\n    data = tmp_path / 'empty.csv'\n    data.write_text('name,score\\n')\n    main([str(data)])\n    assert (tmp_path / 'empty.csv.report.txt').read_text() == '0 rows\\n'"
+  },
+  {
+    "instruction": "Write a pytest test that asserts both a non-zero exit code and the presence of an error message when a CLI validates bad input.\n\nimport argparse, sys\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--age', type=int, required=True)\n    ns = parser.parse_args(args)\n    if ns.age < 0:\n        print('age must be non-negative', file=sys.stderr)\n        return 2\n    return 0",
+    "output": "import pytest\nfrom agecli import main\n\ndef test_negative_age_fails_with_message(capsys):\n    code = main(['--age', '-5'])\n    captured = capsys.readouterr()\n    assert code == 2\n    assert 'non-negative' in captured.err\n\ndef test_valid_age_succeeds():\n    assert main(['--age', '30']) == 0\n\ndef test_non_integer_age_exits_via_argparse():\n    with pytest.raises(SystemExit) as exc_info:\n        main(['--age', 'abc'])\n    assert exc_info.value.code == 2"
+  },
+  {
+    "instruction": "Write a pytest test running a CLI with cwd set to a temp directory via monkeypatch.chdir, verifying it operates on relative paths there.\n\nimport argparse\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('path', nargs='?', default='data.txt')\n    ns = parser.parse_args(args)\n    with open(ns.path) as f:\n        print(f.read().strip().upper())\n    return 0",
+    "output": "import pytest\nfrom uppercli import main\n\ndef test_cli_uses_relative_path_in_cwd(tmp_path, monkeypatch, capsys):\n    (tmp_path / 'data.txt').write_text('hello')\n    monkeypatch.chdir(tmp_path)\n    assert main([]) == 0\n    assert capsys.readouterr().out == 'HELLO\\n'\n\ndef test_cli_missing_file_in_cwd(tmp_path, monkeypatch):\n    monkeypatch.chdir(tmp_path)\n    with pytest.raises(FileNotFoundError):\n        main([])"
+  },
+  {
+    "instruction": "Write a pytest test that runs a subprocess with --json output flag and asserts stdout parses as JSON with the expected shape.\n\nimport argparse, json\n\ndef main(args=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--json', action='store_true')\n    parser.add_argument('items', nargs='*', type=int)\n    ns = parser.parse_args(args)\n    payload = {'count': len(ns.items), 'sum': sum(ns.items)}\n    print(json.dumps(payload))\n    return 0",
+    "output": "import json\nfrom jsoncli import main\n\ndef test_json_output_parses(capsys):\n    assert main(['1', '2', '3']) == 0\n    payload = json.loads(capsys.readouterr().out)\n    assert payload == {'count': 3, 'sum': 6}\n\ndef test_json_output_empty(capsys):\n    main([])\n    assert json.loads(capsys.readouterr().out) == {'count': 0, 'sum': 0}"
+  },
+  {
+    "instruction": "Write a pytest test that submits input to a subprocess and reads its JSON response on stdout, like calling a batch-processing CLI.\n\nimport json, sys\n\ndef main():\n    payload = json.load(sys.stdin)\n    print(json.dumps({'doubled': [x * 2 for x in payload['nums']]}))\n    return 0",
+    "output": "import json, subprocess, sys\n\ndef test_batch_cli_json_roundtrip(tmp_path):\n    script = tmp_path / 'batch.py'\n    script.write_text(\n        \"import json, sys\\n\"\n        \"payload = json.load(sys.stdin)\\n\"\n        \"print(json.dumps({'doubled': [x * 2 for x in payload['nums']]}))\\n\")\n    result = subprocess.run(\n        [sys.executable, str(script)],\n        input=json.dumps({'nums': [1, 2, 3]}),\n        text=True, capture_output=True)\n    assert result.returncode == 0\n    assert json.loads(result.stdout) == {'doubled': [2, 4, 6]}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by memoizing the exponential recursion:\n\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nWhat changed: memoization turns exponential recomputation into O(n); the recursion is unchanged, only the decorator was added."
+  },
+  {
+    "instruction": "Refactor this code by caching the repeated file read in the loop:\n\ndef render(items):\n    out = []\n    for it in items:\n        with open('template.html') as f:\n            tpl = f.read()\n        out.append(tpl.replace('{{name}}', it['name']))\n    return out",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=1)\ndef template():\n    with open('template.html') as f:\n        return f.read()\n\ndef render(items):\n    tpl = template()\n    return [tpl.replace('{{name}}', it['name']) for it in items]\n\nWhat changed: the template is read once and memoized by a zero-argument cache; the loop only does substitution."
+  },
+  {
+    "instruction": "Refactor this code by memoizing the per-request role lookup:\n\ndef can_edit(user_id, doc):\n    role = db.query('SELECT role FROM members WHERE user_id = %s', user_id)\n    return role in ('editor', 'admin') and doc['owner'] != user_id\n\ndef can_delete(user_id, doc):\n    role = db.query('SELECT role FROM members WHERE user_id = %s', user_id)\n    return role == 'admin'",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=1024)\ndef role_of(user_id):\n    return db.query('SELECT role FROM members WHERE user_id = %s', user_id)\n\ndef can_edit(user_id, doc):\n    return role_of(user_id) in ('editor', 'admin') and doc['owner'] != user_id\n\ndef can_delete(user_id, doc):\n    return role_of(user_id) == 'admin'\n\nWhat changed: one cached role_of() serves every permission check in the request; invalidation happens by clearing role_of.cache_clear() on membership change."
+  },
+  {
+    "instruction": "Refactor this code by replacing the hand-written dict memo with functools.cache:\n\ndef longest_subseq(a, b):\n    memo = {}\n    def solve(i, j):\n        if (i, j) in memo:\n            return memo[(i, j)]\n        if i == len(a) or j == len(b):\n            return 0\n        if a[i] == b[j]:\n            memo[(i, j)] = 1 + solve(i + 1, j + 1)\n        else:\n            memo[(i, j)] = max(solve(i + 1, j), solve(i, j + 1))\n        return memo[(i, j)]\n    return solve(0, 0)",
+    "output": "from functools import cache\n\ndef longest_subseq(a, b):\n    @cache\n    def solve(i, j):\n        if i == len(a) or j == len(b):\n            return 0\n        if a[i] == b[j]:\n            return 1 + solve(i + 1, j + 1)\n        return max(solve(i + 1, j), solve(i, j + 1))\n    return solve(0, 0)\n\nWhat changed: manual memo dict plumbing (lookup, insert, base cases mixed together) became @cache; solve() now reads as pure recurrence."
+  },
+  {
+    "instruction": "Refactor this code by caching the expensive parse performed on every access:\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n    @property\n    def data(self):\n        return json.load(open(self.path))\n    def get(self, key):\n        return self.data.get(key)",
+    "output": "import json\nfrom functools import cached_property\n\nclass Config:\n    def __init__(self, path):\n        self.path = path\n    @cached_property\n    def data(self):\n        with open(self.path) as f:\n            return json.load(f)\n    def get(self, key):\n        return self.data.get(key)\n\nWhat changed: cached_property parses once per instance instead of on every attribute access; assign `del config.data` (or config.__dict__.pop('data')) to invalidate."
+  },
+  {
+    "instruction": "Refactor this code by memoizing the slow scoring function called with repeated inputs:\n\ndef score(pair):\n    time.sleep(0.2)\n    return model.similarity(pair[0], pair[1])\n\ndef rank(pairs):\n    return sorted(pairs, key=score)",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef score(left, right):\n    time.sleep(0.2)\n    return model.similarity(left, right)\n\ndef rank(pairs):\n    return sorted(pairs, key=lambda p: score(*p))\n\nWhat changed: score now takes hashable arguments so the cache key works; duplicate pairs across sorts hit the cache instead of sleeping again."
+  },
+  {
+    "instruction": "Refactor this code by caching the JSON decode done repeatedly:\n\ndef field(raw, key):\n    return json.loads(raw).get(key)\n\ndef summarize(raw):\n    data = json.loads(raw)\n    return sum(data.values())",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=2048)\ndef decode(raw):\n    return json.loads(raw)\n\ndef field(raw, key):\n    return decode(raw).get(key)\n\ndef summarize(raw):\n    return sum(decode(raw).values())\n\nWhat changed: parsing is keyed by the raw string, so repeated calls over identical payloads decode once; each helper keeps its own expression."
+  },
+  {
+    "instruction": "Refactor this code by memoizing the recursive path counter:\n\ndef paths(grid, r, c, memo=None):\n    if memo is None:\n        memo = {}\n    if (r, c) in memo:\n        return memo[(r, c)]\n    if grid[r][c] == 1:\n        return 0\n    if r == len(grid) - 1 and c == len(grid[0]) - 1:\n        return 1\n    down = paths(grid, r + 1, c, memo) if r + 1 < len(grid) else 0\n    right = paths(grid, r, c + 1, memo) if c + 1 < len(grid[0]) else 0\n    memo[(r, c)] = down + right\n    return memo[(r, c)]",
+    "output": "from functools import lru_cache\n\ndef paths(grid):\n    @lru_cache(maxsize=None)\n    def walk(r, c):\n        if grid[r][c] == 1:\n            return 0\n        if r == len(grid) - 1 and c == len(grid[0]) - 1:\n            return 1\n        down = walk(r + 1, c) if r + 1 < len(grid) else 0\n        right = walk(r, c + 1) if c + 1 < len(grid[0]) else 0\n        return down + right\n    return walk(0, 0)\n\nWhat changed: the memo parameter and manual key management were replaced by @lru_cache on an inner helper; grid is captured by closure, so only (r, c) keys the cache."
+  },
+  {
+    "instruction": "Refactor this code by turning the recomputed derived property into a cached_property:\n\nclass Invoice:\n    def __init__(self, lines):\n        self.lines = lines\n    @property\n    def total(self):\n        return sum(l['qty'] * l['price'] for l in self.lines)\n    @property\n    def tax(self):\n        return self.total * 0.2\n\n# invoice.total is recomputed on every access inside tax() and templates",
+    "output": "from functools import cached_property\n\nclass Invoice:\n    def __init__(self, lines):\n        self.lines = lines\n    @cached_property\n    def total(self):\n        return sum(l['qty'] * l['price'] for l in self.lines)\n    @cached_property\n    def tax(self):\n        return self.total * 0.2\n\nWhat changed: derived values compute once per instance and are stored in __dict__; note they go stale if lines is mutated in place (reassign self.lines to refresh)."
+  },
+  {
+    "instruction": "Refactor this code by compiling and caching the pattern work per category:\n\ndef classify(text):\n    rules = {'email': r'[\\w.]+@[\\w.]+', 'phone': r'\\d{3}-\\d{4}', 'zip': r'\\d{5}'}\n    for name, pat in rules.items():\n        if re.search(pat, text):\n            return name\n    return 'unknown'",
+    "output": "import re\nfrom functools import lru_cache\n\nPATTERNS = {'email': r'[\\w.]+@[\\w.]+', 'phone': r'\\d{3}-\\d{4}', 'zip': r'\\d{5}'}\n\n@lru_cache(maxsize=None)\ndef compiled():\n    return {name: re.compile(pat) for name, pat in PATTERNS.items()}\n\ndef classify(text):\n    for name, pattern in compiled().items():\n        if pattern.search(text):\n            return name\n    return 'unknown'\n\nWhat changed: rules stay data, but compiled regex objects are built and cached once instead of recompiled per call."
+  },
+  {
+    "instruction": "Refactor this code by replacing the unbounded manual cache with a bounded LRU:\n\ncache = {}\n\ndef lookup(key):\n    if key in cache:\n        return cache[key]\n    value = slow_fetch(key)\n    cache[key] = value\n    return value",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=4096)\ndef lookup(key):\n    return slow_fetch(key)\n\n# cache_info() shows hits/misses; cache_clear() resets\n\nWhat changed: the dict grew forever (a memory leak for high-cardinality keys); lru_cache bounds memory, tracks hit stats and exposes cache_clear()."
+  },
+  {
+    "instruction": "Refactor this code by caching the expensive network call with an explicit TTL:\n\ndef rate(currency):\n    return requests.get(f'https://fx.example/{currency}').json()['rate']\n\ndef convert(amount, currency):\n    return amount * rate(currency)",
+    "output": "import time\n\n_cache = {}\nTTL = 300\n\ndef rate(currency, now=time.time):\n    entry = _cache.get(currency)\n    if entry and now() - entry[0] < TTL:\n        return entry[1]\n    value = requests.get(f'https://fx.example/{currency}', timeout=5).json()['rate']\n    _cache[currency] = (now(), value)\n    return value\n\ndef convert(amount, currency):\n    return amount * rate(currency)\n\nWhat changed: an unbounded-lifetime cache gained a TTL timestamp; fx rates now refresh every 5 minutes instead of sticking forever or hitting the API per call."
+  },
+  {
+    "instruction": "Refactor this code by keying the cache correctly instead of using a mutable default:\n\ndef query(params, store={}):\n    if str(params) not in store:\n        store[str(params)] = db.run(params)\n    return store[str(params)]",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=1024)\ndef query(sql, params):\n    return db.run(sql, params)\n\n# call as query(sql, params) where params is a hashable tuple\n\nWhat changed: the shared mutable default dict (which never expires and can leak across tests) became a proper @lru_cache keyed by the hashable arguments."
+  },
+  {
+    "instruction": "Refactor this code by avoiding @lru_cache on a method that holds a mutable self:\n\nclass PriceBook:\n    @lru_cache(maxsize=None)\n    def price(self, sku):\n        return db.lookup_price(sku)",
+    "output": "from functools import lru_cache\n\nclass PriceBook:\n    def __init__(self, db):\n        self._db = db\n        self._prices = lru_cache(maxsize=None)(self._lookup)\n    def _lookup(self, sku):\n        return self._db.lookup_price(sku)\n    def price(self, sku):\n        return self._prices(sku)\n\nWhat changed: decorating a method with @lru_cache keys on `self`, pinning instances in memory forever; holding the cache on the instance keeps lifetimes tied to the object."
+  },
+  {
+    "instruction": "Refactor this code by memoizing the repeated aggregate per report run:\n\ndef report(orders):\n    out = []\n    for o in orders:\n        out.append(customer_segment(o['customer_id']))\n    return out\n\ndef customer_segment(cid):\n    # heavy SQL aggregation, called once per order\n    return db.query('SELECT segment FROM seg WHERE id = %s', cid)[0]",
+    "output": "from functools import lru_cache\n\n@lru_cache(maxsize=4096)\ndef customer_segment(cid):\n    return db.query('SELECT segment FROM seg WHERE id = %s', cid)[0]\n\ndef report(orders):\n    return [customer_segment(o['customer_id']) for o in orders]\n\nWhat changed: orders frequently repeat customers; the cache collapses one query per order into one query per distinct customer per run (call customer_segment.cache_clear() between runs if segments change)."
+  },
+  {
+    "instruction": "Refactor this code by hoisting the repeated computation into a local variable:\n\ndef normalize(rows):\n    out = []\n    for r in rows:\n        out.append(r['value'] / sum(x['value'] for x in rows))\n    return out",
+    "output": "def normalize(rows):\n    total = sum(x['value'] for x in rows)\n    return [r['value'] / total for r in rows]\n\nWhat changed: the invariant sum is computed once (a simple memoization of the loop-invariant); O(n) work per row became O(n) total."
+  },
+  {
+    "instruction": "Refactor this code by caching the sorted view used by several functions:\n\ndef first_record(rows):\n    s = sorted(rows, key=lambda r: r['ts'])\n    return s[0]\n\ndef last_record(rows):\n    s = sorted(rows, key=lambda r: r['ts'])\n    return s[-1]\n\ndef window(rows, n):\n    s = sorted(rows, key=lambda r: r['ts'])\n    return s[:n]",
+    "output": "from functools import lru_cache\n\n# rows must be hashable (e.g. tuple of tuples) for this form:\n@lru_cache(maxsize=8)\ndef by_timestamp(rows):\n    return sorted(rows, key=lambda r: r['ts'])\n\ndef first_record(rows):\n    return by_timestamp(rows)[0]\n\ndef last_record(rows):\n    return by_timestamp(rows)[-1]\n\ndef window(rows, n):\n    return by_timestamp(rows)[:n]\n\nWhat changed: the identical sort ran three times; caching it (keyed by the immutable row tuple) makes subsequent views free within a run."
+  },
+  {
+    "instruction": "Refactor this code by adding a caching decorator with logging instead of inline ifs:\n\ndef fib(n):\n    if n in MEMO:\n        return MEMO[n]\n    if n < 2:\n        return n\n    v = fib(n - 1) + fib(n - 2)\n    MEMO[n] = v\n    return v\n\nMEMO = {}",
+    "output": "from functools import wraps\n\ndef memoize(fn):\n    store = {}\n    @wraps(fn)\n    def wrapper(n):\n        if n not in store:\n            store[n] = fn(n)\n            logger.debug('miss %s(%s)', fn.__name__, n)\n        return store[n]\n    return wrapper\n\n@memoize\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nWhat changed: the global MEMO dict and inline hit/miss branch became a reusable decorator; caching policy is defined once per function."
+  },
+  {
+    "instruction": "Refactor this code by caching the expensive conversion at the boundary:\n\ndef render(items):\n    out = []\n    for it in items:\n        data = decimal.Decimal(str(it['amount']))\n        out.append(data * Decimal('1.08'))\n    return out",
+    "output": "from decimal import Decimal\nfrom functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef as_decimal(raw):\n    return Decimal(raw)\n\ndef render(items):\n    return [as_decimal(str(it['amount'])) * Decimal('1.08') for it in items]\n\nWhat changed: Decimal(str(x)) parsing repeats for the same raw strings; keying a cache by the string makes repeated amounts convert once."
+  },
+  {
+    "instruction": "Refactor this code by protecting the cache fill so concurrent readers do not stampede:\n\ncache = {}\n\ndef compute(key):\n    if key in cache:\n        return cache[key]\n    value = slow(key)\n    cache[key] = value\n    return value",
+    "output": "import threading\n\ncache = {}\nlock = threading.Lock()\n\ndef compute(key):\n    value = cache.get(key)\n    if value is not None:\n        return value\n    with lock:\n        value = cache.get(key)          # double-checked under the lock\n        if value is None:\n            value = slow(key)\n            cache[key] = value\n    return value\n\nWhat changed: the unlocked check-then-fill let every racing thread miss and call slow() at once; the lock plus re-check guarantees a single fill while keeping the fast path lock-free."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Launch an Ubuntu EC2 instance from an AMI variable with a Name tag.",
+    "output": "variable \"ami_id\" {\n  type = string\n}\n\nvariable \"instance_type\" {\n  type    = string\n  default = \"t3.micro\"\n}\n\nresource \"aws_instance\" \"web\" {\n  ami           = var.ami_id\n  instance_type = var.instance_type\n\n  tags = {\n    Name = \"web-1\"\n    OS   = \"Ubuntu\"\n  }\n}"
+  },
+  {
+    "instruction": "Start an EC2 instance that installs nginx from a cloud-init user_data script.",
+    "output": "resource \"aws_instance\" \"nginx\" {\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  user_data = <<-EOF\n    #!/bin/bash\n    apt-get update\n    apt-get install -y nginx\n    systemctl enable --now nginx\n  EOF\n\n  tags = {\n    Name = \"nginx-server\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create a launch template and an autoscaling group spanning two private subnets.",
+    "output": "resource \"aws_launch_template\" \"app\" {\n  name_prefix   = \"app-\"\n  image_id      = var.ami_id\n  instance_type = \"t3.small\"\n\n  tag_specifications {\n    resource_type = \"instance\"\n\n    tags = {\n      Name = \"asg-app\"\n    }\n  }\n}\n\nresource \"aws_autoscaling_group\" \"app\" {\n  name                = \"app-asg\"\n  desired_capacity    = 2\n  max_size            = 4\n  min_size            = 1\n  vpc_zone_identifier = var.private_subnet_ids\n\n  launch_template {\n    id      = aws_launch_template.app.id\n    version = \"$Latest\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Add a target-tracking scaling policy that keeps CPU utilization near 50 percent.",
+    "output": "resource \"aws_autoscaling_policy\" \"cpu\" {\n  name                   = \"cpu-target-tracking\"\n  autoscaling_group_name = aws_autoscaling_group.app.name\n  policy_type            = \"TargetTrackingScaling\"\n\n  target_tracking_configuration {\n    predefined_metric_specification {\n      predefined_metric_type = \"ASGAverageCPUUtilization\"\n    }\n    target_value = 50.0\n  }\n}\n\nresource \"aws_autoscaling_group\" \"app\" {\n  name             = \"app-asg\"\n  desired_capacity = 2\n  max_size         = 4\n  min_size         = 1\n  vpc_zone_identifier = var.private_subnet_ids\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Package a Python Lambda function with archive_file and define it in Terraform.",
+    "output": "terraform {\n  required_providers {\n    archive = {\n      source = \"hashicorp/archive\"\n    }\n  }\n}\n\nresource \"archive_file\" \"lambda\" {\n  type        = \"zip\"\n  source_dir  = \"${path.module}/lambda\"\n  output_path = \"${path.module}/lambda.zip\"\n}\n\nresource \"aws_lambda_function\" \"processor\" {\n  function_name = \"order-processor\"\n  role          = var.lambda_role_arn\n  handler       = \"index.handler\"\n  runtime       = \"python3.12\"\n\n  filename         = archive_file.lambda.output_path\n  source_code_hash = archive_file.lambda.output_base64sha256\n}\n\nvariable \"lambda_role_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Define a Lambda function with environment variables and a 30 second timeout.",
+    "output": "resource \"aws_lambda_function\" \"worker\" {\n  function_name = \"background-worker\"\n  filename      = \"worker.zip\"\n  role          = var.lambda_role_arn\n  handler       = \"worker.main\"\n  runtime       = \"nodejs20.x\"\n  timeout       = 30\n\n  environment {\n    variables = {\n      QUEUE_URL  = var.queue_url\n      LOG_LEVEL  = \"info\"\n    }\n  }\n\n  tags = {\n    Component = \"worker\"\n  }\n}\n\nvariable \"lambda_role_arn\" {\n  type = string\n}\n\nvariable \"queue_url\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Request a Spot instance for a batch processing worker.",
+    "output": "resource \"aws_spot_instance_request\" \"batch\" {\n  ami                    = var.ami_id\n  instance_type          = \"c6i.large\"\n  spot_type              = \"one-time\"\n  wait_for_fulfillment   = true\n\n  tags = {\n    Name = \"batch-worker\"\n    Mode = \"spot\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Import an SSH public key so instances can be accessed during bring-up.",
+    "output": "variable \"ssh_public_key\" {\n  type = string\n}\n\nresource \"aws_key_pair\" \"deployer\" {\n  key_name   = \"deployer-key\"\n  public_key = var.ssh_public_key\n}\n\nresource \"aws_instance\" \"bastion\" {\n  ami                    = var.ami_id\n  instance_type          = \"t3.micro\"\n  key_name               = aws_key_pair.deployer.key_name\n  subnet_id              = var.public_subnet_id\n  vpc_security_group_ids = [var.bastion_sg_id]\n\n  tags = {\n    Name = \"bastion\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"public_subnet_id\" {\n  type = string\n}\n\nvariable \"bastion_sg_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Launch an instance with a larger encrypted root volume and detailed monitoring enabled.",
+    "output": "resource \"aws_instance\" \"db_bastion\" {\n  ami                    = var.ami_id\n  instance_type          = \"t3.small\"\n  monitoring             = true\n  ebs_optimized          = true\n\n  root_block_device {\n    volume_size = 40\n    volume_type = \"gp3\"\n    encrypted   = true\n  }\n\n  tags = {\n    Name = \"ops-node\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create an ECS cluster with a Fargate task definition and service.",
+    "output": "resource \"aws_ecs_cluster\" \"main\" {\n  name = \"acme-cluster\"\n}\n\nresource \"aws_ecs_task_definition\" \"app\" {\n  family                   = \"webapp\"\n  requires_compatibilities = [\"FARGATE\"]\n  network_mode             = \"awsvpc\"\n  cpu                      = \"256\"\n  memory                   = \"512\"\n  execution_role_arn       = var.task_execution_role_arn\n  task_role_arn            = var.task_role_arn\n\n  container_definitions = jsonencode([\n    {\n      name      = \"webapp\"\n      image     = var.image_uri\n      essential = true\n      portMappings = [\n        {\n          containerPort = 8080\n          protocol      = \"tcp\"\n        }\n      ]\n    }\n  ])\n}\n\nresource \"aws_ecs_service\" \"app\" {\n  name            = \"webapp\"\n  cluster         = aws_ecs_cluster.main.id\n  task_definition = aws_ecs_task_definition.app.arn\n  desired_count   = 2\n  launch_type     = \"FARGATE\"\n\n  network_configuration {\n    subnets          = var.private_subnet_ids\n    security_groups  = [var.service_sg_id]\n    assign_public_ip = false\n  }\n}\n\nvariable \"image_uri\" {\n  type = string\n}\n\nvariable \"task_execution_role_arn\" {\n  type = string\n}\n\nvariable \"task_role_arn\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}\n\nvariable \"service_sg_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Enable instance refresh on the autoscaling group so new template versions roll out safely.",
+    "output": "resource \"aws_autoscaling_group\" \"app\" {\n  name             = \"app-asg\"\n  desired_capacity = 2\n  max_size         = 6\n  min_size         = 2\n  vpc_zone_identifier = var.private_subnet_ids\n\n  launch_template {\n    id      = aws_launch_template.app.id\n    version = \"$Latest\"\n  }\n\n  instance_refresh {\n    strategy = \"Rolling\"\n\n    preferences {\n      min_healthy_percentage = 80\n    }\n  }\n}\n\nresource \"aws_launch_template\" \"app\" {\n  name_prefix   = \"app-\"\n  image_id      = var.ami_id\n  instance_type = \"t3.small\"\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Render instance user data from a templatefile with environment parameters.",
+    "output": "resource \"aws_instance\" \"rendered\" {\n  ami           = var.ami_id\n  instance_type = \"t3.micro\"\n\n  user_data = templatefile(\"${path.module}/user_data.sh.tftpl\", {\n    app_env  = \"staging\"\n    log_url  = var.log_endpoint\n  })\n\n  tags = {\n    Name = \"rendered-userdata\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"log_endpoint\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create an autoscaling group with a mixed instances policy favoring Spot capacity.",
+    "output": "resource \"aws_launch_template\" \"mixed\" {\n  name_prefix   = \"mixed-\"\n  image_id      = var.ami_id\n  instance_type = \"c6i.large\"\n}\n\nresource \"aws_autoscaling_group\" \"mixed\" {\n  name             = \"mixed-asg\"\n  desired_capacity = 3\n  max_size         = 6\n  min_size         = 1\n  vpc_zone_identifier = var.private_subnet_ids\n\n  mixed_instances_policy {\n    instances_distribution {\n      on_demand_base_capacity                  = 1\n      on_demand_percentage_above_base_capacity = 25\n      spot_allocation_strategy                 = \"capacity-optimized\"\n    }\n\n    launch_template {\n      launch_template_specification {\n        launch_template_id = aws_launch_template.mixed.id\n        version            = \"$Latest\"\n      }\n    }\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Publish a new Lambda version and route alias traffic to it.",
+    "output": "resource \"aws_lambda_function\" \"api\" {\n  function_name = \"versioned-api\"\n  filename      = \"api.zip\"\n  role          = var.lambda_role_arn\n  handler       = \"index.handler\"\n  runtime       = \"python3.12\"\n  publish       = true\n}\n\nresource \"aws_lambda_alias\" \"live\" {\n  name             = \"live\"\n  description      = \"Live alias for the API function\"\n  function_name    = aws_lambda_function.api.function_name\n  function_version = aws_lambda_function.api.version\n}\n\nvariable \"lambda_role_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Schedule an autoscaling group to scale down to one instance every night.",
+    "output": "resource \"aws_autoscaling_schedule\" \"scale_down_night\" {\n  scheduled_action_name  = \"scale-down-nights\"\n  autoscaling_group_name = aws_autoscaling_group.workers.name\n  min_size               = 1\n  max_size               = 2\n  desired_capacity       = 1\n  recurrence             = \"0 22 * * *\"\n}\n\nresource \"aws_autoscaling_schedule\" \"scale_up_morning\" {\n  scheduled_action_name  = \"scale-up-mornings\"\n  autoscaling_group_name = aws_autoscaling_group.workers.name\n  min_size               = 2\n  max_size               = 6\n  desired_capacity       = 3\n  recurrence             = \"0 6 * * *\"\n}\n\nresource \"aws_autoscaling_group\" \"workers\" {\n  name             = \"workers-asg\"\n  desired_capacity = 3\n  max_size         = 6\n  min_size         = 2\n  vpc_zone_identifier = var.private_subnet_ids\n\n  launch_template {\n    id      = aws_launch_template.app.id\n    version = \"$Latest\"\n  }\n}\n\nresource \"aws_launch_template\" \"app\" {\n  name_prefix   = \"workers-\"\n  image_id      = var.ami_id\n  instance_type = \"t3.medium\"\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Create a Beanstalk application and environment running a supplied solution stack.",
+    "output": "variable \"solution_stack\" {\n  type    = string\n  default = \"64bit Amazon Linux 2023 v4.2.0 running Corretto 17\"\n}\n\nresource \"aws_elastic_beanstalk_application\" \"app\" {\n  name = \"acme-batch\"\n}\n\nresource \"aws_elastic_beanstalk_environment\" \"staging\" {\n  name                = \"acme-batch-staging\"\n  application         = aws_elastic_beanstalk_application.app.name\n  solution_stack_name = var.solution_stack\n  tier                = \"WebServer\"\n\n  setting {\n    namespace = \"aws:autoscaling:asg\"\n    name      = \"MinSize\"\n    value     = \"1\"\n  }\n\n  setting {\n    namespace = \"aws:autoscaling:asg\"\n    name      = \"MaxSize\"\n    value     = \"3\"\n  }\n}"
+  },
+  {
+    "instruction": "Create an EKS node group attached to an existing cluster and VPC.",
+    "output": "resource \"aws_eks_node_group\" \"default\" {\n  cluster_name    = var.cluster_name\n  node_group_name = \"default\"\n  node_role_arn   = var.node_role_arn\n  subnet_ids      = var.private_subnet_ids\n\n  instance_types = [\"m5.large\"]\n  capacity_type  = \"ON_DEMAND\"\n\n  scaling_config {\n    desired_size = 2\n    max_size     = 4\n    min_size     = 1\n  }\n\n  tags = {\n    \"k8s.io/cluster-autoscaler/enabled\" = \"true\"\n  }\n}\n\nvariable \"cluster_name\" {\n  type = string\n}\n\nvariable \"node_role_arn\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Run a Lambda function on a fixed schedule with an EventBridge rule.",
+    "output": "resource \"aws_cloudwatch_event_rule\" \"nightly\" {\n  name        = \"nightly-etl\"\n  description = \"Trigger the ETL Lambda every night\"\n\n  schedule_expression = \"cron(0 3 * * ? *)\"\n}\n\nresource \"aws_cloudwatch_event_target\" \"etl\" {\n  rule      = aws_cloudwatch_event_rule.nightly.name\n  target_id = \"etl-lambda\"\n  arn       = aws_lambda_function.etl.arn\n}\n\nresource \"aws_lambda_permission\" \"events\" {\n  statement_id  = \"AllowEventBridge\"\n  action        = \"lambda:InvokeFunction\"\n  function_name = aws_lambda_function.etl.function_name\n  principal     = \"events.amazonaws.com\"\n  source_arn    = aws_cloudwatch_event_rule.nightly.arn\n}\n\nresource \"aws_lambda_function\" \"etl\" {\n  function_name = \"nightly-etl\"\n  filename      = \"etl.zip\"\n  role          = var.lambda_role_arn\n  handler       = \"etl.handler\"\n  runtime       = \"python3.12\"\n}\n\nvariable \"lambda_role_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Attach an autoscaling group to an existing target group.",
+    "output": "resource \"aws_autoscaling_attachment\" \"app\" {\n  autoscaling_group_name = aws_autoscaling_group.app.id\n  lb_target_group_arn    = var.target_group_arn\n}\n\nresource \"aws_autoscaling_group\" \"app\" {\n  name             = \"app-asg\"\n  desired_capacity = 2\n  max_size         = 4\n  min_size         = 1\n  vpc_zone_identifier = var.private_subnet_ids\n\n  launch_template {\n    id      = aws_launch_template.app.id\n    version = \"$Latest\"\n  }\n}\n\nresource \"aws_launch_template\" \"app\" {\n  name_prefix   = \"app-\"\n  image_id      = var.ami_id\n  instance_type = \"t3.small\"\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"private_subnet_ids\" {\n  type = list(string)\n}\n\nvariable \"target_group_arn\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Build a launch template that uses the latest Amazon Linux 2023 AMI from SSM parameters.",
+    "output": "data \"aws_ssm_parameter\" \"al2023\" {\n  name = \"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64\"\n}\n\nresource \"aws_launch_template\" \"al2023\" {\n  name_prefix   = \"al2023-\"\n  image_id      = data.aws_ssm_parameter.al2023.value\n  instance_type = \"t3.micro\"\n\n  tags = {\n    Name = \"al2023-node\"\n  }\n}"
+  }
+]

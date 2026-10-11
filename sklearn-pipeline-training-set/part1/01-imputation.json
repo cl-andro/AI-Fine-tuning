@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Fill the missing values of a table with the mean of each column.",
+    "output": "from sklearn.impute import SimpleImputer\nimp = SimpleImputer(strategy='mean')\nX = imp.fit_transform(df)"
+  },
+  {
+    "instruction": "Impute missing numbers with the median so that outliers do not skew the fill value.",
+    "output": "from sklearn.impute import SimpleImputer\nX = SimpleImputer(strategy='median').fit_transform(df)"
+  },
+  {
+    "instruction": "Fill missing categorical entries with the most frequent value of each column.",
+    "output": "from sklearn.impute import SimpleImputer\nX = SimpleImputer(strategy='most_frequent').fit_transform(df)"
+  },
+  {
+    "instruction": "Replace every missing value with the constant 0.",
+    "output": "from sklearn.impute import SimpleImputer\nX = SimpleImputer(strategy='constant', fill_value=0).fit_transform(df)"
+  },
+  {
+    "instruction": "Impute and get the result back as a DataFrame with the original column names.",
+    "output": "import pandas as pd\nfrom sklearn.impute import SimpleImputer\narr = SimpleImputer(strategy='mean').fit_transform(df)\nX = pd.DataFrame(arr, columns=df.columns)"
+  },
+  {
+    "instruction": "Impute only the columns named age and income, leaving the others untouched.",
+    "output": "from sklearn.impute import SimpleImputer\nimp = SimpleImputer(strategy='mean')\ndf[['age', 'income']] = imp.fit_transform(df[['age', 'income']])"
+  },
+  {
+    "instruction": "Add a companion feature that flags which entries were originally missing.",
+    "output": "from sklearn.impute import SimpleImputer\nX = SimpleImputer(strategy='mean', indicator=True).fit_transform(df)"
+  },
+  {
+    "instruction": "Impute missing values with a model-based iterative regression imputer.",
+    "output": "from sklearn.experimental import enable_iterative_imputer\nfrom sklearn.impute import IterativeImputer\nX = IterativeImputer(max_iter=10, random_state=0).fit_transform(df)"
+  },
+  {
+    "instruction": "Impute by predicting each missing cell from its k nearest observed neighbours.",
+    "output": "from sklearn.impute import KNNImputer\nX = KNNImputer(n_neighbors=5).fit_transform(df)"
+  },
+  {
+    "instruction": "Drop every row that contains at least one missing value.",
+    "output": "df = df.dropna()"
+  },
+  {
+    "instruction": "Drop columns that are more than half missing.",
+    "output": "frac = df.isna().mean()\ndf = df.drop(columns=frac[frac > 0.5].index)"
+  },
+  {
+    "instruction": "Fill missing values with the previous observation in each column.",
+    "output": "df = df.ffill()"
+  },
+  {
+    "instruction": "Fill different columns with different defaults in a single fillna call.",
+    "output": "df = df.fillna({'age': 0, 'city': 'Unknown'})"
+  },
+  {
+    "instruction": "Fit an imputer on training data and reuse it on the test set.",
+    "output": "from sklearn.impute import SimpleImputer\nimp = SimpleImputer(strategy='median')\nX_train = imp.fit_transform(train_df)\nX_test = imp.transform(test_df)"
+  },
+  {
+    "instruction": "Report the number of missing values per column before and after imputation.",
+    "output": "from sklearn.impute import SimpleImputer\nprint(df.isna().sum())\nX = SimpleImputer(strategy='mean').fit_transform(df)\nprint((X != X).sum())"
+  },
+  {
+    "instruction": "Impute with a constant while still keeping columns that were entirely empty.",
+    "output": "from sklearn.impute import SimpleImputer\nX = SimpleImputer(strategy='constant', fill_value=-1, keep_empty_features=True).fit_transform(df)"
+  },
+  {
+    "instruction": "Impute the numeric columns and cast the result back to a float DataFrame.",
+    "output": "import pandas as pd\nfrom sklearn.impute import SimpleImputer\narr = SimpleImputer(strategy='mean').fit_transform(df.select_dtypes('number'))\nnum = pd.DataFrame(arr, columns=df.select_dtypes('number').columns, dtype=float)"
+  },
+  {
+    "instruction": "Bundle imputation and scaling into one pipeline so preprocessing is a single step.",
+    "output": "from sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler\npipe = Pipeline([('impute', SimpleImputer(strategy='median')), ('scale', StandardScaler())])\nX = pipe.fit_transform(df)"
+  },
+  {
+    "instruction": "Print the per-column fill values that a fitted SimpleImputer will use.",
+    "output": "from sklearn.impute import SimpleImputer\nimp = SimpleImputer(strategy='mean').fit(df)\nprint(imp.statistics_)"
+  },
+  {
+    "instruction": "Train a classifier on imputed data, imputing the test set with transform only.",
+    "output": "from sklearn.impute import SimpleImputer\nfrom sklearn.linear_model import LogisticRegression\nimp = SimpleImputer(strategy='mean')\nXtr = imp.fit_transform(X_train)\nXte = imp.transform(X_test)\nclf = LogisticRegression().fit(Xtr, y_train)\nprint(clf.score(Xte, y_test))"
+  }
+]

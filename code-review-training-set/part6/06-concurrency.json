@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ncounter = 0\n\ndef worker():\n    global counter\n    for _ in range(100000):\n        counter += 1\n\n# 4 threads run worker()",
+    "output": "**Issue:** Non-atomic read-modify-write on shared state.\n**Why:** `counter += 1` is load, add, store; threads interleave and lost updates make the final count much lower than 400000.\n**Fix:**\nimport threading\nlock = threading.Lock()\ncounter = 0\n\ndef worker():\n    global counter\n    for _ in range(100000):\n        with lock:\n            counter += 1\n# or use itertools.count / an atomic wrapper"
+  },
+  {
+    "instruction": "Review this code:\n\ndef reserve(room):\n    if room.booked_by is None:\n        time.sleep(0.1)\n        room.booked_by = current_user\n        db.commit()",
+    "output": "**Issue:** Check-then-act race (TOCTOU) on the booking flag.\n**Why:** Two threads can both observe booked_by is None and both 'reserve' the same room.\n**Fix:**\nfrom sqlalchemy import update\n\ndef reserve(room_id, user):\n    result = db.execute(\n        update(Room)\n        .where(Room.id == room_id, Room.booked_by.is_(None))\n        .values(booked_by=user)\n    )\n    db.commit()\n    if result.rowcount != 1:\n        raise AlreadyBooked(room_id)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef process():\n    t = threading.Thread(target=sync_remote)\n    t.start()\n    return db.close()\n\nprocess()  # program exits immediately",
+    "output": "**Issue:** Background thread is never joined before shutdown.\n**Why:** The main thread returns and the interpreter exits, killing sync_remote mid-write and losing data.\n**Fix:**\ndef process():\n    t = threading.Thread(target=sync_remote)\n    t.start()\n    try:\n        do_other_work()\n    finally:\n        t.join()\n    db.close()"
+  },
+  {
+    "instruction": "Review this code:\n\nresults = []\n\ndef fetch(url):\n    r = requests.get(url, timeout=5)\n    results.append(r.text)\n\nthreads = [threading.Thread(target=fetch, args=(u,)) for u in urls]\n[t.start() for t in threads]\nprint(len(results))",
+    "output": "**Issue:** Threads append to a shared list and are read before they finish.\n**Why:** list.append is atomic under the GIL, but printing immediately reads a partial list because no join happened.\n**Fix:**\nresults = []\nthreads = [threading.Thread(target=fetch, args=(u,)) for u in urls]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\nprint(len(results))"
+  },
+  {
+    "instruction": "Review this code:\n\ndef worker_a():\n    with lock1:\n        time.sleep(0.01)\n        with lock2:\n            pass\n\ndef worker_b():\n    with lock2:\n        time.sleep(0.01)\n        with lock1:\n            pass",
+    "output": "**Issue:** Two locks acquired in opposite orders in different threads.\n**Why:** Thread A holds lock1 waiting for lock2 while B holds lock2 waiting for lock1 - classic deadlock, both hang forever.\n**Fix:**\n# enforce a global acquisition order everywhere\ndef worker_b():\n    with lock1:\n        with lock2:\n            pass\n# or acquire both atomically with a single lock"
+  },
+  {
+    "instruction": "Review this code:\n\ndef transfer():\n    lock.acquire()\n    balance -= 10\n    if balance < 0:\n        lock.release()\n        raise InsufficientFunds()\n    ledger.append(-10)\n    lock.release()",
+    "output": "**Issue:** Manual lock.release() scattered across branches.\n**Why:** Any exception between acquire and release (e.g. inside ledger.append) leaves the lock held forever.\n**Fix:**\ndef transfer():\n    with lock:\n        balance -= 10\n        if balance < 0:\n            raise InsufficientFunds()\n        ledger.append(-10)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef bulk_compute(items):\n    results = []\n    def work(chunk):\n        results.extend(expensive(c) for c in chunk)\n    threads = [threading.Thread(target=work, args=(c,)) for c in chunks(items)]\n    [t.start() for t in threads]\n    [t.join() for t in threads]\n    return results",
+    "output": "**Issue:** CPU-bound work parallelized with threads under the GIL.\n**Why:** Python threads cannot execute bytecode concurrently, so 4 threads take ~4x the wall time of one due to contention, not less.\n**Fix:**\nfrom concurrent.futures import ProcessPoolExecutor\n\nwith ProcessPoolExecutor(max_workers=4) as ex:\n    results = list(ex.map(expensive, items))"
+  },
+  {
+    "instruction": "Review this code:\n\nwith ThreadPoolExecutor(max_workers=8) as ex:\n    futures = [ex.submit(handle, job) for job in jobs]\nprint('all done')",
+    "output": "**Issue:** futures are never inspected.\n**Why:** Exceptions raised inside handle are stored in the Future and never retrieved, so every job can fail silently while the code reports success.\n**Fix:**\nfrom concurrent.futures import as_completed\n\nwith ThreadPoolExecutor(max_workers=8) as ex:\n    futures = [ex.submit(handle, job) for job in jobs]\n    for f in as_completed(futures):\n        f.result()  # re-raises the first failure"
+  },
+  {
+    "instruction": "Review this code:\n\ndef start():\n    t = threading.Thread(target=flush_loop, daemon=True)\n    t.start()\n    return t\n\n# later: process calls sys.exit() while flush_loop is writing a file",
+    "output": "**Issue:** Daemon thread killed abruptly at interpreter exit.\n**Why:** daemon=True means no join at shutdown; the writer can be cut off mid-block, corrupting the output file.\n**Fix:**\nflush_thread = threading.Thread(target=flush_loop)\nflush_thread.start()\n...\nflush_stop.set()      # signal the loop to finish\nflush_thread.join(timeout=10)"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Config:\n    _instance = None\n    def get(cls):\n        if cls._instance is None:\n            time.sleep(0.01)\n            cls._instance = Config()\n        return cls._instance",
+    "output": "**Issue:** Lazy singleton initialization without synchronization.\n**Why:** Two threads can both see _instance is None and create two instances, breaking the singleton contract.\n**Fix:**\nimport threading\n\nclass Config:\n    _instance = None\n    _lock = threading.Lock()\n    @classmethod\n    def get(cls):\n        if cls._instance is None:\n            with cls._lock:\n                if cls._instance is None:\n                    cls._instance = Config()\n        return cls._instance"
+  },
+  {
+    "instruction": "Review this code:\n\ndef print_cache(cache):\n    for k in cache:\n        print(k, cache[k])\n\n# another thread does cache.clear() in the background",
+    "output": "**Issue:** Iterating a dict while another thread mutates it.\n**Why:** CPython raises RuntimeError: dictionary changed size during iteration, and the check is not atomic so it can still slip through.\n**Fix:**\ndef print_cache(cache):\n    with cache_lock:\n        snapshot = dict(cache)\n    for k, v in snapshot.items():\n        print(k, v)"
+  },
+  {
+    "instruction": "Review this code:\n\nfutures = [ex.submit(job, j) for j in jobs]\nfor f in futures:\n    print(f.result())",
+    "output": "**Issue:** result() with no timeout can block indefinitely.\n**Why:** One hung job blocks the whole loop forever; there is no way to cancel or degrade gracefully.\n**Fix:**\nfrom concurrent.futures import TimeoutError as FTimeout\n\nfor f in futures:\n    try:\n        print(f.result(timeout=30))\n    except FTimeout:\n        f.cancel()\n        logger.warning('job timed out')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef wait_for_flag():\n    while not flag:\n        pass\n    do_work()",
+    "output": "**Issue:** Busy-wait spin loop with no sleep or event.\n**Why:** It burns 100% of a core, starves other threads under the GIL, and may never observe the flag if it lives in another core's cache.\n**Fix:**\nimport threading\n\nevent = threading.Event()\n\ndef wait_for_flag():\n    event.wait(timeout=30)   # blocks, releases the GIL\n    do_work()"
+  },
+  {
+    "instruction": "Review this code:\n\nretries = 3\n\ndef worker():\n    global retries\n    retries -= 1\n    send_request()\n\n# 4 processes run worker()",
+    "output": "**Issue:** Shared global assumed to be shared across processes.\n**Why:** Each forked process gets its own copy, so retries goes 3, 3, 3, 3 instead of counting down - multiprocessing does not share module globals.\n**Fix:**\nimport multiprocessing\n\nretries = multiprocessing.Value('i', 3)\n\ndef worker():\n    with retries.get_lock():\n        retries.value -= 1\n    send_request()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef producer(q):\n    for item in items:\n        q.put(item)   # queue is full, put() blocks\n\ndef consumer(q):\n    while True:\n        process(q.get())\n        time.sleep(10)",
+    "output": "**Issue:** Bounded queue filled while the producer blocks and no consumer slot frees up.\n**Why:** If the consumer itself waits on the producer (e.g. joins it) you get a circular wait deadlock; even alone, put() has no timeout so shutdown hangs.\n**Fix:**\ndef producer(q):\n    for item in items:\n        try:\n            q.put(item, timeout=5)\n        except queue.Full:\n            logger.warning('dropping %r', item)\n            break"
+  },
+  {
+    "instruction": "Review this code:\n\ndef update_settings(changes):\n    with open('settings.json') as f:\n        data = json.load(f)\n    data.update(changes)\n    with open('settings.json', 'w') as f:\n        json.dump(data, f)",
+    "output": "**Issue:** Read-modify-write of a shared file with no locking or atomic rename.\n**Why:** Two workers interleave and one overwrites the other's changes; a crash mid-write leaves a truncated JSON file.\n**Fix:**\nimport os, json\n\ndef update_settings(changes):\n    with file_lock:\n        with open('settings.json') as f:\n            data = json.load(f)\n        data.update(changes)\n        tmp = 'settings.json.tmp'\n        with open(tmp, 'w') as f:\n            json.dump(data, f)\n        os.replace(tmp, 'settings.json')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef crawl(urls):\n    session = requests.Session()\n    def worker(u):\n        return session.get(u, timeout=5).text\n    with ThreadPoolExecutor(max_workers=8) as ex:\n        return list(ex.map(worker, urls))",
+    "output": "**Issue:** A single requests.Session is shared across worker threads.\n**Why:** Session/connection-pool internals are not documented as thread-safe; concurrent use can corrupt pool state or return mismatched responses.\n**Fix:**\nimport threading\nlocal = threading.local()\n\ndef get_session():\n    if not hasattr(local, 'session'):\n        local.session = requests.Session()\n    return local.session\n\ndef worker(u):\n    return get_session().get(u, timeout=5).text"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Safe:\n    def __init__(self):\n        self.lock = threading.Lock()\n    def enter(self):\n        self.lock.acquire()\n    def exit(self):\n        self.lock.release()\n    def read(self):\n        self.enter()\n        self.enter()\n        return self.data",
+    "output": "**Issue:** Non-reentrant Lock acquired twice by the same thread.\n**Why:** The second acquire blocks forever because only one thread can hold it - self-deadlock.\n**Fix:**\nclass Safe:\n    def __init__(self):\n        self.lock = threading.RLock()  # reentrant lock allows nested acquire"
+  },
+  {
+    "instruction": "Review this code:\n\ndef consume(cond, items):\n    with cond:\n        while not items:\n            cond.wait()\n        process(items.pop())",
+    "output": "**Issue:** Condition.wait() without re-checking in a loop in some call sites (the pattern below omits the loop).\n**Why:** Spurious wakeups or notify_all before wait returns can make the thread proceed with an empty list, raising IndexError.\n**Fix:**\ndef consume(cond, items):\n    with cond:\n        while not items:            # always re-check the predicate\n            cond.wait()\n        process(items.pop())"
+  },
+  {
+    "instruction": "Review this code:\n\ndef save(report):\n    f = open('report.txt', 'w')\n    for chunk in render(report):\n        f.write(chunk + '\\n')\n    f.close()\n\n# two worker threads call save() with different reports",
+    "output": "**Issue:** Two threads write the same file through separate handles.\n**Why:** Offsets are independent per descriptor, so chunks interleave and the file is corrupted even though each call 'succeeds'.\n**Fix:**\nfile_lock = threading.Lock()\n\ndef save(report):\n    with file_lock, open('report.txt', 'w') as f:\n        for chunk in render(report):\n            f.write(chunk + '\\n')"
+  }
+]

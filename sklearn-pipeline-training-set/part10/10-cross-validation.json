@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Cross-validate a classifier and print the score of every fold.",
+    "output": "from sklearn.model_selection import cross_val_score\nfrom sklearn.linear_model import LogisticRegression\nscores = cross_val_score(LogisticRegression(max_iter=1000), X, y, cv=5)\nprint(scores)"
+  },
+  {
+    "instruction": "Cross-validate and request several metrics at once.",
+    "output": "from sklearn.model_selection import cross_validate\nres = cross_validate(LogisticRegression(max_iter=1000), X, y, cv=5, scoring=['accuracy', 'f1_macro'])\nprint(res['test_accuracy'], res['test_f1_macro'])"
+  },
+  {
+    "instruction": "Use stratified k-fold so every fold keeps the class balance.",
+    "output": "from sklearn.model_selection import StratifiedKFold, cross_val_score\nfrom sklearn.linear_model import LogisticRegression\ncv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)\nprint(cross_val_score(LogisticRegression(max_iter=1000), X, y, cv=cv))"
+  },
+  {
+    "instruction": "Shuffle folds randomly before splitting so order in the data does not matter.",
+    "output": "from sklearn.model_selection import KFold\nkf = KFold(n_splits=5, shuffle=True, random_state=0)"
+  },
+  {
+    "instruction": "Repeat stratified cross-validation several times to reduce variance.",
+    "output": "from sklearn.model_selection import RepeatedStratifiedKFold, cross_val_score\nfrom sklearn.linear_model import LogisticRegression\ncv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=0)\nprint(cross_val_score(LogisticRegression(max_iter=1000), X, y, cv=cv))"
+  },
+  {
+    "instruction": "Keep all rows of one group inside the same fold with GroupKFold.",
+    "output": "from sklearn.model_selection import GroupKFold\nfrom sklearn.model_selection import cross_val_score\nfrom sklearn.linear_model import LogisticRegression\ncv = GroupKFold(n_splits=4)\nprint(cross_val_score(LogisticRegression(max_iter=1000), X, y, groups=groups, cv=cv))"
+  },
+  {
+    "instruction": "Leave exactly one sample out per fold on a tiny dataset.",
+    "output": "from sklearn.model_selection import LeaveOneOut, cross_val_score\nfrom sklearn.linear_model import LogisticRegression\nprint(cross_val_score(LogisticRegression(max_iter=1000), X, y, cv=LeaveOneOut()))"
+  },
+  {
+    "instruction": "Collect out-of-fold predictions for every sample with cross_val_predict.",
+    "output": "from sklearn.model_selection import cross_val_predict\nfrom sklearn.linear_model import LogisticRegression\noof = cross_val_predict(LogisticRegression(max_iter=1000), X, y, cv=5, method='predict_proba')"
+  },
+  {
+    "instruction": "Cross-validate a whole pipeline so preprocessing never sees the validation fold.",
+    "output": "from sklearn.model_selection import cross_val_score\nfrom sklearn.pipeline import make_pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\npipe = make_pipeline(SimpleImputer(strategy='median'), StandardScaler(), LogisticRegression(max_iter=1000))\nprint(cross_val_score(pipe, X, y, cv=5))"
+  },
+  {
+    "instruction": "Report the mean and standard deviation of cross-validation scores.",
+    "output": "from sklearn.model_selection import cross_val_score\nfrom sklearn.ensemble import RandomForestClassifier\nscores = cross_val_score(RandomForestClassifier(n_estimators=100, random_state=0), X, y, cv=5)\nprint(f'{scores.mean():.3f} +/- {scores.std():.3f}')"
+  },
+  {
+    "instruction": "Validate on past data only with time series splitting.",
+    "output": "from sklearn.model_selection import TimeSeriesSplit, cross_val_score\nfrom sklearn.linear_model import Ridge\nprint(cross_val_score(Ridge(), X, y, cv=TimeSeriesSplit(n_splits=5)))"
+  },
+  {
+    "instruction": "Evaluate with random shuffled holdout splits instead of contiguous folds.",
+    "output": "from sklearn.model_selection import ShuffleSplit, cross_val_score\nfrom sklearn.linear_model import Ridge\nprint(cross_val_score(Ridge(), X, y, cv=ShuffleSplit(n_splits=5, test_size=0.2, random_state=0)))"
+  },
+  {
+    "instruction": "Split by group for both training and validation with GroupShuffleSplit.",
+    "output": "from sklearn.model_selection import GroupShuffleSplit\ngss = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=0)\ntrain_idx, test_idx = next(gss.split(X, y, groups=groups))"
+  },
+  {
+    "instruction": "Walk through the folds manually to train on one and evaluate on the other.",
+    "output": "from sklearn.model_selection import StratifiedKFold\nfrom sklearn.linear_model import LogisticRegression\nskf = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)\nfor i, (tr, te) in enumerate(skf.split(X, y)):\n    clf = LogisticRegression(max_iter=1000).fit(X[tr], y[tr])\n    print(i, clf.score(X[te], y[te]))"
+  },
+  {
+    "instruction": "Let cross_val_score use plain integer cross-validation with its defaults.",
+    "output": "from sklearn.model_selection import cross_val_score\nfrom sklearn.tree import DecisionTreeClassifier\nprint(cross_val_score(DecisionTreeClassifier(random_state=0), X, y, cv=3))"
+  },
+  {
+    "instruction": "Pass a list of scorers through the scoring parameter.",
+    "output": "from sklearn.model_selection import cross_validate\nfrom sklearn.ensemble import RandomForestClassifier\nres = cross_validate(RandomForestClassifier(n_estimators=100, random_state=0), X, y, cv=5, scoring=['accuracy', 'precision_macro', 'recall_macro'])\nprint(res['test_accuracy'])"
+  },
+  {
+    "instruction": "Score regression cross-validation with negative mean squared error.",
+    "output": "from sklearn.model_selection import cross_val_score\nfrom sklearn.linear_model import Ridge\nprint(cross_val_score(Ridge(), X, y, cv=5, scoring='neg_mean_squared_error'))"
+  },
+  {
+    "instruction": "Retrieve the fitted estimator of each fold for later inspection.",
+    "output": "from sklearn.model_selection import cross_validate\nfrom sklearn.ensemble import RandomForestClassifier\nres = cross_validate(RandomForestClassifier(n_estimators=100, random_state=0), X, y, cv=5, return_estimator=True)\nfirst_fold_model = res['estimator'][0]"
+  },
+  {
+    "instruction": "Repeat ordinary k-fold with shuffling several times.",
+    "output": "from sklearn.model_selection import RepeatedKFold, cross_val_score\nfrom sklearn.linear_model import Ridge\nprint(cross_val_score(Ridge(), X, y, cv=RepeatedKFold(n_splits=4, n_repeats=2, random_state=0)))"
+  },
+  {
+    "instruction": "Check whether cross-validated performance beats a permuted-label baseline.",
+    "output": "from sklearn.model_selection import permutation_test_score\nfrom sklearn.linear_model import LogisticRegression\nscore, perm_scores, pvalue = permutation_test_score(LogisticRegression(max_iter=1000), X, y, cv=5, n_permutations=100, random_state=0)\nprint(score, pvalue)"
+  }
+]

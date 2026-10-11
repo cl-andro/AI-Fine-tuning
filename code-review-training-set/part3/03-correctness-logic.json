@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef add_item(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nprint(add_item('a'))\nprint(add_item('b'))",
+    "output": "**Issue:** Mutable default argument shared across calls.\n**Why:** The default list is created once at function definition, so the second call returns ['a', 'b'] instead of ['b'].\n**Fix:**\ndef add_item(item, bucket=None):\n    if bucket is None:\n        bucket = []\n    bucket.append(item)\n    return bucket"
+  },
+  {
+    "instruction": "Review this code:\n\ndef make_printers(names):\n    fns = []\n    for n in names:\n        fns.append(lambda: print(n))\n    return fns\n\nfor f in make_printers(['a', 'b', 'c']):\n    f()",
+    "output": "**Issue:** Late binding of the loop variable in closures.\n**Why:** All three lambdas capture the same n cell, which ends as 'c', so they all print 'c'.\n**Fix:**\ndef make_printers(names):\n    return [lambda n=n: print(n) for n in names]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef charge(amount_cents, rate):\n    total = 0\n    for line in order_lines:\n        total += line * rate\n    return round(total, 2) == amount_cents / 100",
+    "output": "**Issue:** Exact comparison of floating point money values.\n**Why:** 0.1 + 0.2 == 0.30000000000000004, so valid charges are rejected as mismatches.\n**Fix:**\nfrom decimal import Decimal\n\ndef charge(amount_cents, rate):\n    total = Decimal('0')\n    for line in order_lines:\n        total += Decimal(str(line)) * Decimal(str(rate))\n    return total == Decimal(amount_cents) / 100"
+  },
+  {
+    "instruction": "Review this code:\n\ndef bump_scores(report):\n    summary = report.copy()\n    for row in summary['rows']:\n        row['score'] += 1\n    return summary\n\noriginal = {'rows': [{'score': 1}]}\nbump_scores(original)\nprint(original)",
+    "output": "**Issue:** dict.copy() is shallow; nested structures are still shared.\n**Why:** Mutating summary['rows'] items mutates the caller's data, so the 'original' report is silently changed.\n**Fix:**\nimport copy\n\ndef bump_scores(report):\n    summary = copy.deepcopy(report)\n    for row in summary['rows']:\n        row['score'] += 1\n    return summary"
+  },
+  {
+    "instruction": "Review this code:\n\ndef delete_stale(cfg):\n    for key in cfg:\n        if cfg[key] < 0:\n            del cfg[key]",
+    "output": "**Issue:** Deleting keys while iterating the same dict.\n**Why:** Python raises RuntimeError: dictionary changed size during iteration, and entries after the deleted one get skipped.\n**Fix:**\ndef delete_stale(cfg):\n    for key in [k for k, v in cfg.items() if v < 0]:\n        del cfg[key]\n# or: for key in [k for k in list(cfg) if cfg[k] < 0]:"
+  },
+  {
+    "instruction": "Review this code:\n\ndef pages_needed(total, page_size):\n    return total / page_size",
+    "output": "**Issue:** True division used where integer division is meant.\n**Why:** In Python 3, 10 / 3 returns 3.333..., and passing that to range() raises TypeError.\n**Fix:**\ndef pages_needed(total, page_size):\n    return -(-total // page_size)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef last_three(items):\n    return items[0:len(items) - 3]",
+    "output": "**Issue:** Off-by-one: this returns everything except the last three, not the last three.\n**Why:** Slice end is exclusive, so len-3 cuts the tail instead of the head.\n**Fix:**\ndef last_three(items):\n    return items[-3:]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef is_admin(role):\n    if role is 'admin':\n        return True\n    return False",
+    "output": "**Issue:** Identity comparison (is) used instead of equality (==).\n**Why:** `is` tests object identity; interned short strings may accidentally pass, but dynamically built role strings will fail unpredictably.\n**Fix:**\ndef is_admin(role):\n    return role == 'admin'"
+  },
+  {
+    "instruction": "Review this code:\n\nfrom datetime import datetime\n\ndef minutes_since(ts):\n    return (datetime.now() - datetime.now().replace.fromisoformat(ts)).seconds / 60",
+    "output": "**Issue:** Mixing naive and timezone-aware datetimes (and using .seconds instead of total_seconds()).\n**Why:** Aware vs naive subtraction raises TypeError, and .seconds wraps at 24h so a 25-hour gap reports 60 minutes.\n**Fix:**\nfrom datetime import datetime\n\ndef minutes_since(ts):\n    then = datetime.fromisoformat(ts)\n    if then.tzinfo is None:\n        then = then.replace(tzinfo=datetime.now().astimezone().tzinfo)\n    return (datetime.now(then.tzinfo) - then).total_seconds() / 60"
+  },
+  {
+    "instruction": "Review this code:\n\nfunction pickName(first, last) {\n  return first || last || 'unknown';\n}\n\nconsole.log(pickName(0, 'Smith'));",
+    "output": "**Issue:** JavaScript || treats 0, '' and false as falsy.\n**Why:** A legitimately falsy first value is silently discarded, so the wrong branch runs.\n**Fix:**\nfunction pickName(first, last) {\n  return first ?? last ?? 'unknown';\n}"
+  },
+  {
+    "instruction": "Review this code:\n\ndef get_default_cache():\n    cache = []\n    return cache\n\ndef remember(item, cache=get_default_cache()):\n    cache.append(item)\n    return cache",
+    "output": "**Issue:** A shared mutable list is returned once and reused by every caller.\n**Why:** Even though the default is computed at call time here, all callers receive the same list object produced at definition time, so caches bleed between callers.\n**Fix:**\ndef remember(item, cache=None):\n    if cache is None:\n        cache = []\n    cache.append(item)\n    return cache"
+  },
+  {
+    "instruction": "Review this code:\n\ndef classify(temp):\n    if temp > 30:\n        return 'hot'\n    elif temp > 20:\n        return 'warm'\n    elif temp > 10:\n        return 'cool'",
+    "output": "**Issue:** No final else; values <= 10 fall through and return None implicitly.\n**Why:** Callers cannot distinguish 'cold' from a bug, and later edits to the chain silently change behavior for unhandled inputs.\n**Fix:**\ndef classify(temp):\n    if temp > 30:\n        return 'hot'\n    elif temp > 20:\n        return 'warm'\n    elif temp > 10:\n        return 'cool'\n    return 'cold'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef is_missing(value):\n    if not value:\n        return True\n    return False\n\nprint(is_missing(0))\nprint(is_missing(0.0))\nprint(is_missing(False))",
+    "output": "**Issue:** `not value` conflates None/'' with other falsy values.\n**Why:** 0, 0.0 and False are meaningful data but are reported as missing, silently dropping valid rows.\n**Fix:**\ndef is_missing(value):\n    return value is None or value == ''"
+  },
+  {
+    "instruction": "Review this code:\n\nconst nums = ['1', '2', '3'];\nconsole.log(nums == 1);\nconsole.log(nums[0] == 1);",
+    "output": "**Issue:** Loose equality (==) triggers type coercion.\n**Why:** The string array coerces to '123', which is not 1, while nums[0] == 1 is true only because of coercion; the mixed results hide real type errors.\n**Fix:**\nconst nums = ['1', '2', '3'];\nconsole.log(nums === '1,2,3');\nconsole.log(Number(nums[0]) === 1);"
+  },
+  {
+    "instruction": "Review this code:\n\ndef keep_even(nums):\n    for i, n in enumerate(nums):\n        if n % 2:\n            nums.remove(n)\n    return nums",
+    "output": "**Issue:** Removing elements while iterating over the same list.\n**Why:** Indices shift after each removal, so consecutive odds are skipped (e.g. [1, 3, 5] returns [3, 5]).\n**Fix:**\ndef keep_even(nums):\n    return [n for n in nums if n % 2 == 0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef add_tag(d, key, tag):\n    d.setdefault(key, []).append(tag)\n\ndef new_bag():\n    return {}\n\nbag = {}\nadd_tag(bag, 'shared', 'x')\ninner = bag['shared']\ninner.append('y')\nprint(bag)",
+    "output": "**Issue:** setdefault stores a mutable default that callers can keep referencing.\n**Why:** Aliasing means later appends through the returned reference bypass your API and the invariant you thought you enforced.\n**Fix:**\ndef add_tag(d, key, tag):\n    d.setdefault(key, []).append(tag)\n# never hand out the inner list; return a copy or wrap it in an immutable type\ndef get_tags(d, key):\n    return tuple(d.get(key, ()))"
+  },
+  {
+    "instruction": "Review this code:\n\nimport time\n\ndef elapsed(start):\n    return time.time() - start",
+    "output": "**Issue:** Wall-clock time used to measure durations.\n**Why:** NTP adjustments or a suspended laptop make time.time() jump backwards/forwards, producing negative or huge elapsed values.\n**Fix:**\nimport time\n\ndef elapsed(start):\n    return time.monotonic() - start"
+  },
+  {
+    "instruction": "Review this code:\n\ndef zip_prices(sku, price):\n    return {s: p for s, p in zip(sku, price)}",
+    "output": "**Issue:** zip silently truncates to the shortest input.\n**Why:** If one list is longer by even one element, the mismatch is invisible and products get wrong or missing prices.\n**Fix:**\ndef zip_prices(sku, price):\n    if len(sku) != len(price):\n        raise ValueError('sku and price lengths differ')\n    return dict(zip(sku, price))"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Counter:\n    count = 0\n    def __init__(self):\n        Counter.count += 1\n\na = Counter()\nb = Counter()\nprint(Counter.count)",
+    "output": "**Issue:** Class attribute used where an instance attribute was intended.\n**Why:** count is shared by every instance, so it behaves like a global rather than a per-object counter.\n**Fix:**\nclass Counter:\n    def __init__(self):\n        self.count = 0\n        Counter.count = 0\n        type(self).count = getattr(type(self), 'count', 0) + 1\n        self.count = type(self).count"
+  },
+  {
+    "instruction": "Review this code:\n\nusers = [{'name': 'a', 'age': 30}, {'name': 'b', 'age': None}]\nusers.sort(key=lambda u: u['age'])",
+    "output": "**Issue:** Sorting keys contain None mixed with ints.\n**Why:** Python 3 refuses to compare None with int, so this raises TypeError at runtime.\n**Fix:**\nusers.sort(key=lambda u: (u['age'] is None, u['age'] or 0))\n# or filter: users = [u for u in users if u['age'] is not None]"
+  }
+]

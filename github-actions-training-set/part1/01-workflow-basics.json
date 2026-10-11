@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a minimal GitHub Actions workflow named hello that runs on every push to main and prints a greeting.",
+    "output": "name: hello\non:\n  push:\n    branches: [main]\njobs:\n  greet:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Greet\n        run: echo \"Hello from GitHub Actions\""
+  },
+  {
+    "instruction": "Create a workflow that checks out the repository and runs the project test suite with make test on every push.",
+    "output": "name: tests\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Run tests\n        run: make test"
+  },
+  {
+    "instruction": "Write a workflow that prints the versions of Python, Node.js, and Docker that ship with the GitHub-hosted runner.",
+    "output": "name: tool-versions\non:\n  push:\n    branches: [main]\njobs:\n  versions:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Show tool versions\n        run: |\n          python3 --version\n          node --version\n          docker --version"
+  },
+  {
+    "instruction": "Build a workflow that checks out the code, sets up Python, installs requirements, and runs the build script.",
+    "output": "name: build\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - name: Install dependencies\n        run: pip install -r requirements.txt\n      - name: Build\n        run: python scripts/build.py"
+  },
+  {
+    "instruction": "Define workflow-level environment variables APP_ENV and LOG_LEVEL and reference them from a run step.",
+    "output": "name: env-demo\non: push\nenv:\n  APP_ENV: staging\n  LOG_LEVEL: debug\njobs:\n  show:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Print environment\n        run: echo \"env=$APP_ENV level=$LOG_LEVEL\""
+  },
+  {
+    "instruction": "Write a workflow where the job runs all steps inside the ./app subdirectory using working-directory.",
+    "output": "name: app-ci\non: push\njobs:\n  app:\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: ./app\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Create a workflow that sets a default shell and working directory for all run steps via the defaults keyword.",
+    "output": "name: defaults-demo\non: push\ndefaults:\n  run:\n    shell: bash\n    working-directory: scripts\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./check.sh"
+  },
+  {
+    "instruction": "Write a workflow with a step that only executes when a lockfile exists in the repository.",
+    "output": "name: conditional-step\non: push\njobs:\n  maybe-install:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Install dependencies\n        if: ${{ hashFiles('package-lock.json') != '' }}\n        run: npm ci"
+  },
+  {
+    "instruction": "Add a non-critical lint step with continue-on-error so the rest of the job still succeeds when it fails.",
+    "output": "name: tolerant-lint\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Experimental lint\n        continue-on-error: true\n        run: ./tools/experimental-lint.sh\n      - name: Build\n        run: make build"
+  },
+  {
+    "instruction": "Set a job-level timeout of 15 minutes so long-running steps are cancelled automatically.",
+    "output": "name: timed-build\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build"
+  },
+  {
+    "instruction": "Write a workflow with top-level permissions restricted to read-only repository contents.",
+    "output": "name: read-only\non: push\npermissions:\n  contents: read\njobs:\n  inspect:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: git log -1 --oneline"
+  },
+  {
+    "instruction": "Pin the workflow to the ubuntu-24.04 runner image instead of ubuntu-latest and run a quick sanity check.",
+    "output": "name: pinned-runner\non: push\njobs:\n  check:\n    runs-on: ubuntu-24.04\n    steps:\n      - name: Sanity check\n        run: cat /etc/os-release"
+  },
+  {
+    "instruction": "Create a run step with a multi-line script that enables strict bash mode with set -euo pipefail.",
+    "output": "name: strict-bash\non: push\njobs:\n  script:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Strict script\n        shell: bash\n        run: |\n          set -euo pipefail\n          echo \"step one\"\n          ./scripts/verify.sh"
+  },
+  {
+    "instruction": "Add a concurrency group named ci with cancel-in-progress so superseded runs are cancelled.",
+    "output": "name: concurrency-ci\non:\n  push:\n    branches: [main]\nconcurrency:\n  group: ci\n  cancel-in-progress: true\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make ci"
+  },
+  {
+    "instruction": "Write a workflow that exports a value to GITHUB_ENV in one step and reads it in a later step.",
+    "output": "name: github-env\non: push\njobs:\n  env-chain:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Set variable\n        run: echo \"BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)\" >> \"$GITHUB_ENV\"\n      - name: Use variable\n        run: echo \"built at $BUILD_TIME\""
+  },
+  {
+    "instruction": "Create a step that writes an output with GITHUB_OUTPUT and a following step that consumes it.",
+    "output": "name: step-outputs\non: push\njobs:\n  outputs:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Produce output\n        id: meta\n        run: echo \"version=1.4.2\" >> \"$GITHUB_OUTPUT\"\n      - name: Consume output\n        run: echo \"The version is ${{ steps.meta.outputs.version }}\""
+  },
+  {
+    "instruction": "Check out the repository without persisting the GITHUB_TOKEN in the local git config.",
+    "output": "name: no-credentials\non: push\njobs:\n  checkout:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          persist-credentials: false\n      - run: git status"
+  },
+  {
+    "instruction": "Write a workflow that executes a project shell script located at scripts/ci.sh with bash.",
+    "output": "name: run-project-script\non: push\njobs:\n  ci:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Run CI script\n        run: bash scripts/ci.sh"
+  },
+  {
+    "instruction": "Append build metrics to the job summary using the GITHUB_STEP_SUMMARY environment file.",
+    "output": "name: step-summary\non: push\njobs:\n  report:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Write summary\n        run: |\n          echo \"## Build report\" >> \"$GITHUB_STEP_SUMMARY\"\n          echo \"- status: passed\" >> \"$GITHUB_STEP_SUMMARY\"\n          echo \"- duration: 42s\" >> \"$GITHUB_STEP_SUMMARY\""
+  },
+  {
+    "instruction": "Upload the dist directory as a build artifact with actions/upload-artifact after running the build.",
+    "output": "name: upload-dist\non: push\njobs:\n  package:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: dist\n          path: dist/"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Convert this MySQL query to SQL Server:\n\nSELECT * FROM orders ORDER BY created_at DESC LIMIT 10;",
+    "output": "SELECT TOP 10 * FROM orders ORDER BY created_at DESC;"
+  },
+  {
+    "instruction": "Convert this MySQL table definition to PostgreSQL:\n\nCREATE TABLE users (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  email VARCHAR(255) NOT NULL\n);",
+    "output": "CREATE TABLE users (\n  id SERIAL PRIMARY KEY,\n  email VARCHAR(255) NOT NULL\n);"
+  },
+  {
+    "instruction": "Convert this MySQL aggregation to PostgreSQL:\n\nSELECT user_id, GROUP_CONCAT(item ORDER BY item SEPARATOR \", \") AS items\nFROM cart_items GROUP BY user_id;",
+    "output": "SELECT user_id, STRING_AGG(item, ', ' ORDER BY item) AS items\nFROM cart_items GROUP BY user_id;"
+  },
+  {
+    "instruction": "Convert this PostgreSQL insert to MySQL (no RETURNING clause):\n\nINSERT INTO accounts (name) VALUES ('ada')\nRETURNING id;",
+    "output": "INSERT INTO accounts (name) VALUES ('ada');\nSELECT LAST_INSERT_ID() AS id;"
+  },
+  {
+    "instruction": "Convert this SQL Server query to PostgreSQL:\n\nSELECT GETDATE() AS now_utc, DATEDIFF(day, started, GETDATE()) AS age_days\nFROM jobs;",
+    "output": "SELECT NOW() AS now_utc, CURRENT_DATE - started::date AS age_days\nFROM jobs;"
+  },
+  {
+    "instruction": "Convert this SQLite timestamp query to PostgreSQL:\n\nSELECT id, strftime('%Y-%m-%d', created) AS day\nFROM events;",
+    "output": "SELECT id, to_char(created, 'YYYY-MM-DD') AS day\nFROM events;"
+  },
+  {
+    "instruction": "Convert this PostgreSQL case-insensitive match to MySQL:\n\nSELECT * FROM users WHERE email ILIKE '%@example.com';",
+    "output": "SELECT * FROM users WHERE LOWER(email) LIKE '%@example.com';"
+  },
+  {
+    "instruction": "Convert this MySQL null handling to SQL Server:\n\nSELECT IFNULL(nickname, username) AS display FROM users;",
+    "output": "SELECT ISNULL(nickname, username) AS display FROM users;"
+  },
+  {
+    "instruction": "Convert this Oracle pagination to PostgreSQL:\n\nSELECT * FROM (\n  SELECT * FROM products ORDER BY price\n) WHERE ROWNUM <= 5;",
+    "output": "SELECT * FROM products ORDER BY price LIMIT 5;"
+  },
+  {
+    "instruction": "Convert this PostgreSQL upsert to MySQL:\n\nINSERT INTO settings (key, value) VALUES ('theme', 'dark')\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;",
+    "output": "INSERT INTO settings (`key`, value) VALUES ('theme', 'dark')\nON DUPLICATE KEY UPDATE value = VALUES(value);"
+  },
+  {
+    "instruction": "Convert this SQL Server null handling to PostgreSQL:\n\nSELECT ISNULL(price, 0) AS price FROM products;",
+    "output": "SELECT COALESCE(price, 0) AS price FROM products;"
+  },
+  {
+    "instruction": "Convert this PostgreSQL unnest query to MySQL 8:\n\nSELECT u.name, t\nFROM users u, unnest(u.tags) AS t;",
+    "output": "SELECT u.name, jt.t\nFROM users u\nJOIN JSON_TABLE(u.tags, '$[*]' COLUMNS (t VARCHAR(50) PATH '$')) AS jt;"
+  },
+  {
+    "instruction": "Convert this MySQL date extraction to SQL Server:\n\nSELECT EXTRACT(YEAR FROM ordered_at) AS yr, COUNT(*) AS n\nFROM orders GROUP BY EXTRACT(YEAR FROM ordered_at);",
+    "output": "SELECT DATEPART(year, ordered_at) AS yr, COUNT(*) AS n\nFROM orders GROUP BY DATEPART(year, ordered_at);"
+  },
+  {
+    "instruction": "Convert this SQLite concatenation to MySQL:\n\nSELECT first || ' ' || last AS full_name FROM customers;",
+    "output": "SELECT CONCAT(first, ' ', last) AS full_name FROM customers;"
+  },
+  {
+    "instruction": "Convert this PostgreSQL DISTINCT ON query to SQL Server:\n\nSELECT DISTINCT ON (user_id) user_id, created_at, amount\nFROM payments ORDER BY user_id, created_at DESC;",
+    "output": "SELECT user_id, created_at, amount FROM (\n  SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC) AS rn\n  FROM payments\n) t WHERE rn = 1;"
+  },
+  {
+    "instruction": "Convert this MySQL identifier quoting to PostgreSQL standard quoting:\n\nSELECT `order`.`total`, `order`.`qty` FROM `order`;",
+    "output": "SELECT \"order\".\"total\", \"order\".\"qty\" FROM \"order\";"
+  },
+  {
+    "instruction": "Convert this PostgreSQL cast syntax to standard ANSI SQL:\n\nSELECT id::text, qty::int * 2 FROM inventory;",
+    "output": "SELECT CAST(id AS TEXT), CAST(qty AS INTEGER) * 2 FROM inventory;"
+  },
+  {
+    "instruction": "Convert this SQLite boolean query to PostgreSQL:\n\nSELECT * FROM flags WHERE active = 1 AND archived = 0;",
+    "output": "SELECT * FROM flags WHERE active = TRUE AND archived = FALSE;"
+  },
+  {
+    "instruction": "Convert this Oracle query to PostgreSQL:\n\nSELECT NVL(region, 'GLOBAL') AS region, TRUNC(SYSDATE) AS today\nFROM stores;",
+    "output": "SELECT COALESCE(region, 'GLOBAL') AS region, CURRENT_DATE AS today\nFROM stores;"
+  },
+  {
+    "instruction": "Convert this SQL Server conditional expression to PostgreSQL:\n\nSELECT IIF(score >= 50, 'pass', 'fail') AS result FROM exams;",
+    "output": "SELECT CASE WHEN score >= 50 THEN 'pass' ELSE 'fail' END AS result FROM exams;"
+  }
+]

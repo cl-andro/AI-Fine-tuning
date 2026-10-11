@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nimport pickle\ndata = pickle.loads(request.data)\nreturn process(data)",
+    "output": "**Vulnerability:** Insecure deserialization (RCE)\n**Severity:** Critical\n**Why:** `pickle` can execute arbitrary code during unpickling via `__reduce__`.\n**Exploit:** A crafted pickle that runs `os.system('rm -rf /')` on load.\n**Fix:**\nimport json\ndata = json.loads(request.data)  # data-only format\nreturn process(data)"
+  },
+  {
+    "instruction": "Audit this code for security issues (YAML):\n\nimport yaml\ncfg = yaml.load(request.data)",
+    "output": "**Vulnerability:** YAML deserialization RCE\n**Severity:** Critical\n**Why:** `yaml.load` with the default loader instantiates arbitrary Python objects (`!!python/object/apply`).\n**Exploit:** A payload executing `subprocess.check_output` during load.\n**Fix:**\ncfg = yaml.safe_load(request.data)  # only basic types"
+  },
+  {
+    "instruction": "Audit this code for security issues (Java):\n\nObjectInputStream in = new ObjectInputStream(socket.getInputStream());\nObject obj = in.readObject();",
+    "output": "**Vulnerability:** Java deserialization (RCE)\n**Severity:** Critical\n**Why:** Untrusted Java serialized data can trigger gadget chains in the classpath.\n**Exploit:** A CommonsCollections gadget runs commands on deserialize.\n**Fix:**\n// Avoid Java serialization for untrusted data. Use JSON with a schema and\n// an ObjectInputFilter if deserialization is unavoidable."
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\n$data = unserialize($_COOKIE['state']);",
+    "output": "**Vulnerability:** PHP object injection\n**Severity:** Critical\n**Why:** `unserialize` on user data can instantiate arbitrary classes and trigger magic methods.\n**Exploit:** A crafted serialized object invokes `__destruct`/`__wakeup` gadgets.\n**Fix:**\n$data = json_decode($_COOKIE['state'], true);  // data-only, no objects"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\nimport marshal\ncode = marshal.loads(payload)\nexec(code)",
+    "output": "**Vulnerability:** Dynamic code execution\n**Severity:** Critical\n**Why:** `marshal.loads` + `exec` runs attacker-supplied bytecode.\n**Exploit:** Arbitrary code execution.\n**Fix:**\n# Do not run untrusted code. Use a data format (JSON) and interpret it\n# with a strict schema; if you must run code, sandbox it in a separate process."
+  },
+  {
+    "instruction": "Audit this code for security issues (Node):\n\nconst obj = require('serialize-javascript')(data);\neval('(' + obj + ')');",
+    "output": "**Vulnerability:** eval of serialized data (RCE)\n**Severity:** Critical\n**Why:** `eval` executes any JavaScript embedded in the data.\n**Exploit:** Payload with `require('child_process').execSync('id')`.\n**Fix:**\nconst obj = JSON.parse(data);  // data-only parsing"
+  },
+  {
+    "instruction": "Audit this code for security issues (Ruby):\n\nobj = Marshal.load(params[:data])",
+    "output": "**Vulnerability:** Ruby Marshal deserialization RCE\n**Severity:** Critical\n**Why:** `Marshal.load` instantiates arbitrary objects, enabling gadget exploitation.\n**Exploit:** Crafted Marshal stream invoking system commands.\n**Fix:**\nobj = JSON.parse(params[:data])"
+  },
+  {
+    "instruction": "Audit this code for security issues (YAML tags):\n\nyaml.load(stream, Loader=yaml.Loader)",
+    "output": "**Vulnerability:** YAML RCE via explicit Loader\n**Severity:** Critical\n**Why:** `yaml.Loader` supports arbitrary Python object construction.\n**Exploit:** `!!python/object/apply:os.system [\"id\"]`.\n**Fix:**\nyaml.safe_load(stream)  # or yaml.load(stream, Loader=yaml.SafeLoader)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python, torch):\n\nmodel = torch.load(uploaded_file)",
+    "output": "**Vulnerability:** Pickle RCE via model file\n**Severity:** Critical\n**Why:** `torch.load` uses pickle by default and can execute code.\n**Exploit:** A malicious `.pt` file runs code on load.\n**Fix:**\nmodel = torch.load(uploaded_file, weights_only=True)  # data-only in modern PyTorch"
+  },
+  {
+    "instruction": "Audit this code for security issues (cookies):\n\nimport base64, pickle\nstate = pickle.loads(base64.b64decode(cookie))",
+    "output": "**Vulnerability:** Deserialization of client-controlled cookie\n**Severity:** Critical\n**Why:** The cookie is attacker-controlled and unpickled server-side.\n**Exploit:** Send a pickle cookie that executes code.\n**Fix:**\nimport json, hmac\nraw = base64.b64decode(cookie)\n# verify an HMAC signature before parsing, and parse as JSON:\nstate = json.loads(raw)"
+  },
+  {
+    "instruction": "Audit this code for security issues (XML):\n\nfrom xml.etree import ElementTree\nroot = ElementTree.fromstring(user_xml)",
+    "output": "**Vulnerability:** XML External Entity (XXE) / billion laughs\n**Severity:** High\n**Why:** `ElementTree` in older runtimes can expand entities, enabling file read or DoS.\n**Exploit:** An XXE payload reading `/etc/passwd` or a billion-laughs bomb.\n**Fix:**\nimport defusedxml.ElementTree as ET\nroot = ET.fromstring(user_xml)  # disables entities and DTDs"
+  },
+  {
+    "instruction": "Audit this code for security issues (Java XML):\n\nDocumentBuilderFactory f = DocumentBuilderFactory.newInstance();\nDocument doc = f.newDocumentBuilder().parse(input);",
+    "output": "**Vulnerability:** XXE\n**Severity:** High\n**Why:** The default parser resolves external entities.\n**Exploit:** XXE payload that exfiltrates local files.\n**Fix:**\nf.setFeature(\"http://apache.org/xml/features/disallow-doctype-decl\", true);\nf.setFeature(\"http://xml.org/sax/features/external-general-entities\", false);\nf.setFeature(\"http://xml.org/sax/features/external-parameter-entities\", false);"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python, eval):\n\nvalue = eval(request.args['expr'])",
+    "output": "**Vulnerability:** Arbitrary code execution via eval\n**Severity:** Critical\n**Why:** `eval` runs any Python expression/statement supplied by the user.\n**Exploit:** `expr=__import__('os').system('id')`.\n**Fix:**\nimport ast\n# For arithmetic, use ast.literal_eval or a whitelist evaluator:\nvalue = ast.literal_eval(request.args['expr'])  # literals only"
+  },
+  {
+    "instruction": "Audit this code for security issues (Node, vm):\n\nconst vm = require('vm');\nvm.runInNewContext(req.body.code);",
+    "output": "**Vulnerability:** Sandbox escape / RCE\n**Severity:** High\n**Why:** `vm` contexts are not a security boundary; escapes are well known.\n**Exploit:** Break out of the context to run in the host process.\n**Fix:**\n// Run untrusted code in a separate, isolated process/container with no\n// network/filesystem access and strict resource limits."
+  },
+  {
+    "instruction": "Audit this code for security issues (messagepack/pickle hybrid):\n\ndata = msgpack.unpackb(payload, raw=False)\nobj = pickle.loads(data['blob'])",
+    "output": "**Vulnerability:** Hidden deserialization sink\n**Severity:** Critical\n**Why:** Even though the outer format is safe, a nested field is unpickled.\n**Exploit:** Embed a malicious pickle in `blob`.\n**Fix:**\n# Never unpickle untrusted bytes. Store data as JSON and validate the schema."
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP phar):\n\nfile_exists($_GET['file']);",
+    "output": "**Vulnerability:** PHAR deserialization\n**Severity:** High\n**Why:** Operations on a `phar://` path can trigger object deserialization via metadata.\n**Exploit:** `?file=phar://uploaded.phar/x` runs gadgets.\n**Fix:**\n# Reject phar:// (and other stream wrappers) in user paths; validate with\n# realpath and an allow-list of locations."
+  },
+  {
+    "instruction": "Audit this code for security issues (Jackson):\n\nobjectMapper.enableDefaultTyping();\nMyType t = objectMapper.readValue(userJson, MyType.class);",
+    "output": "**Vulnerability:** Jackson polyglot deserialization RCE\n**Severity:** Critical\n**Why:** Default typing allows constructing arbitrary classes from JSON, forming gadget chains.\n**Exploit:** `[\"com.sun.rowset.JdbcRowSetImpl\", {...}]` triggers JNDI lookup.\n**Fix:**\n// Do not enable default typing. Bind to concrete DTOs with no\n// polymorphic types, and validate allowed subtypes if needed."
+  },
+  {
+    "instruction": "Audit this code for security issues (Python, django session):\n\n# SESSION_SERIALIZER remains default but SECRET_KEY is weak/leaked",
+    "output": "**Vulnerability:** Forged serialized session (deserialization + auth bypass)\n**Severity:** High\n**Why:** With a leaked signing key and pickle-backed sessions, an attacker can craft a session object.\n**Exploit:** Sign a malicious session payload with the known key.\n**Fix:**\n# Rotate SECRET_KEY, and prefer JSONSerializer:\nSESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python, shelve/dbm):\n\ndb = shelve.open('cache')\nreturn db[key]",
+    "output": "**Vulnerability:** Pickle-based cache store\n**Severity:** High\n**Why:** `shelve` uses pickle; a poisoned cache file executes code on read.\n**Exploit:** Write a malicious cache file (via another bug) and trigger a read.\n**Fix:**\n# Use a data-only cache backend (JSON, msgpack, or a key-value store)\n# and validate/serialize with a safe schema."
+  },
+  {
+    "instruction": "Audit this code for security issues (Spring/Kryo):\n\nKryo kryo = new Kryo();\nObject obj = kryo.readClassAndObject(input);",
+    "output": "**Vulnerability:** Kryo deserialization RCE\n**Severity:** Critical\n**Why:** Kryo can instantiate arbitrary classes from the stream (gadget chains).\n**Exploit:** Crafted stream invokes dangerous classes on the classpath.\n**Fix:**\n# Register an explicit allow-list of classes, or serialize to JSON with a\n# fixed schema. Never deserialize untrusted Kryo data blindly."
+  }
+]

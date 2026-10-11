@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a pytest asyncio test for this coroutine.\n\nasync def get_message():\n    return 'hello async'",
+    "output": "import pytest\nfrom app import get_message\n\n@pytest.mark.asyncio\nasync def test_get_message():\n    assert await get_message() == 'hello async'"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for delayed_echo that sleeps and returns the message, verifying the coroutine still resolves correctly.\n\nimport asyncio\n\nasync def delayed_echo(message, delay=0.01):\n    await asyncio.sleep(delay)\n    return message",
+    "output": "import pytest\nfrom asyncutil import delayed_echo\n\n@pytest.mark.asyncio\nasync def test_delayed_echo():\n    assert await delayed_echo('ping') == 'ping'\n\ndef test_delayed_echo_is_coroutine():\n    import inspect\n    from asyncutil import delayed_echo\n    assert inspect.iscoroutinefunction(delayed_echo)"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async context manager that opens and closes a resource, asserting both enter and exit ran.\n\nclass AsyncResource:\n    async def __aenter__(self):\n        self.open = True\n        return self\n    async def __aexit__(self, *exc):\n        self.open = False\n        return False",
+    "output": "import pytest\nfrom resources import AsyncResource\n\n@pytest.mark.asyncio\nasync def test_async_resource_lifecycle():\n    async with AsyncResource() as resource:\n        assert resource.open is True\n    assert resource.open is False"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async generator that yields three values.\n\nasync def countdown(n):\n    for i in range(n, 0, -1):\n        yield i",
+    "output": "import pytest\nfrom streams import countdown\n\n@pytest.mark.asyncio\nasync def test_countdown_yields_values():\n    results = [x async for x in countdown(3)]\n    assert results == [3, 2, 1]\n\n@pytest.mark.asyncio\nasync def test_countdown_zero():\n    results = [x async for x in countdown(0)]\n    assert results == []"
+  },
+  {
+    "instruction": "Write a pytest asyncio test that gathers two concurrent coroutines and asserts both results.\n\nimport asyncio\n\nasync def square(n):\n    await asyncio.sleep(0.001)\n    return n * n",
+    "output": "import asyncio, pytest\nfrom tasks import square\n\n@pytest.mark.asyncio\nasync def test_gather_concurrent():\n    results = await asyncio.gather(square(3), square(4))\n    assert results == [9, 16]"
+  },
+  {
+    "instruction": "Write a pytest asyncio test asserting that an async function raises ValueError when awaited.\n\nasync def parse_age(text):\n    if not text.isdigit():\n        raise ValueError('not a number')\n    return int(text)",
+    "output": "import pytest\nfrom apiparse import parse_age\n\n@pytest.mark.asyncio\nasync def test_parse_age_ok():\n    assert await parse_age('30') == 30\n\n@pytest.mark.asyncio\nasync def test_parse_age_raises():\n    with pytest.raises(ValueError, match='not a number'):\n        await parse_age('abc')"
+  },
+  {
+    "instruction": "Write a pytest test using an async fixture that seeds an async repository before each test.\n\nclass AsyncRepo:\n    def __init__(self):\n        self.rows = {}\n    async def add(self, key, value):\n        self.rows[key] = value\n    async def get(self, key):\n        return self.rows.get(key)",
+    "output": "import pytest\nimport pytest_asyncio\nfrom repo import AsyncRepo\n\n@pytest_asyncio.fixture\nasync def repo():\n    r = AsyncRepo()\n    await r.add('a', 1)\n    await r.add('b', 2)\n    return r\n\n@pytest.mark.asyncio\nasync def test_repo_get(repo):\n    assert await repo.get('a') == 1\n\n@pytest.mark.asyncio\nasync def test_repo_missing(repo):\n    assert await repo.get('zz') is None"
+  },
+  {
+    "instruction": "Write a pytest asyncio test that patches an async client method with AsyncMock and asserts the awaited call.\n\nimport aiohttp\n\nclass Fetcher:\n    def __init__(self, session):\n        self.session = session\n    async def fetch(self, url):\n        resp = await self.session.get(url)\n        return await resp.text()",
+    "output": "from unittest.mock import AsyncMock, MagicMock, patch\nimport pytest\nfrom fetcher import Fetcher\n\n@pytest.mark.asyncio\nasync def test_fetch_uses_session():\n    session = MagicMock()\n    resp = AsyncMock()\n    resp.text.return_value = 'payload'\n    session.get.return_value = resp\n    fetcher = Fetcher(session)\n    assert await fetcher.fetch('http://x') == 'payload'\n    session.get.assert_awaited_once_with('http://x')\n    resp.text.assert_awaited_once_with()"
+  },
+  {
+    "instruction": "Write a pytest asyncio test that uses asyncio.wait_for to enforce a timeout on a slow coroutine, expecting asyncio.TimeoutError.\n\nimport asyncio\n\nasync def slow_operation():\n    await asyncio.sleep(10)\n    return 'done'",
+    "output": "import asyncio, pytest\nfrom slowops import slow_operation\n\n@pytest.mark.asyncio\nasync def test_slow_operation_times_out():\n    with pytest.raises(asyncio.TimeoutError):\n        await asyncio.wait_for(slow_operation(), timeout=0.05)"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for a producer/consumer pair using asyncio.Queue, asserting all items are processed in order.\n\nimport asyncio\n\nasync def producer(queue, items):\n    for item in items:\n        await queue.put(item)\n\nasync def consumer(queue, sink):\n    while True:\n        item = await queue.get()\n        if item is None:\n            break\n        sink.append(item)",
+    "output": "import asyncio, pytest\nfrom pipeline import producer, consumer\n\n@pytest.mark.asyncio\nasync def test_producer_consumer():\n    queue = asyncio.Queue()\n    sink = []\n\n    async def run():\n        await producer(queue, [1, 2, 3])\n        await queue.put(None)\n\n    await asyncio.gather(run(), consumer(queue, sink))\n    assert sink == [1, 2, 3]"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async retry helper that succeeds on the third attempt and verify the attempt count.\n\nimport asyncio\n\nasync def async_retry(fn, attempts=3):\n    last = None\n    for _ in range(attempts):\n        try:\n            return await fn()\n        except Exception as exc:\n            last = exc\n    raise last",
+    "output": "import pytest\nfrom async_retry import async_retry\n\n@pytest.mark.asyncio\nasync def test_async_retry_eventually_succeeds():\n    calls = []\n    async def flaky():\n        calls.append(1)\n        if len(calls) < 3:\n            raise ConnectionError('flaky')\n        return 'ok'\n    assert await async_retry(flaky) == 'ok'\n    assert len(calls) == 3\n\n@pytest.mark.asyncio\nasync def test_async_retry_gives_up():\n    import asyncio\n    async def always_fail():\n        raise RuntimeError('nope')\n    with pytest.raises(RuntimeError):\n        await async_retry(always_fail, attempts=2)"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an Event-based handshake between two coroutines, asserting the waiter resumes only after the event is set.\n\nimport asyncio",
+    "output": "import asyncio, pytest\n\nasync def waiter(event, results):\n    await event.wait()\n    results.append('resumed')\n\n@pytest.mark.asyncio\nasync def test_event_signaling():\n    event = asyncio.Event()\n    results = []\n    task = asyncio.create_task(waiter(event, results))\n    await asyncio.sleep(0)\n    assert results == []\n    event.set()\n    await task\n    assert results == ['resumed']"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async iterator class that implements __aiter__/__anext__ over a list of values.\n\nclass AsyncRange:\n    def __init__(self, n):\n        self.n = n\n        self.i = 0\n    def __aiter__(self):\n        return self\n    async def __anext__(self):\n        if self.i >= self.n:\n            raise StopAsyncIteration\n        self.i += 1\n        return self.i - 1",
+    "output": "import pytest\nfrom iterators import AsyncRange\n\n@pytest.mark.asyncio\nasync def test_async_range():\n    seen = [x async for x in AsyncRange(4)]\n    assert seen == [0, 1, 2, 3]\n\n@pytest.mark.asyncio\nasync def test_async_range_manual_next():\n    it = AsyncRange(1).__aiter__()\n    assert await it.__anext__() == 0\n    assert await it.__anext__() == 1"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for a mocked async HTTP client class using AsyncMock configured with side_effect responses.\n\nclass HttpClient:\n    async def get_json(self, url):\n        raise NotImplementedError",
+    "output": "from unittest.mock import AsyncMock\nimport pytest\nfrom httpc import HttpClient\n\n@pytest.mark.asyncio\nasync def test_get_json_mocked():\n    client = HttpClient()\n    client.get_json = AsyncMock(side_effect=[{'id': 1}, {'id': 2}])\n    assert await client.get_json('/a') == {'id': 1}\n    assert await client.get_json('/b') == {'id': 2}\n    assert client.get_json.await_count == 2"
+  },
+  {
+    "instruction": "Write a pytest asyncio test that cancels a long-running task and asserts the cancellation surfaces as asyncio.CancelledError.\n\nimport asyncio\n\nasync def forever():\n    await asyncio.sleep(60)",
+    "output": "import asyncio, pytest\nfrom tasks import forever\n\n@pytest.mark.asyncio\nasync def test_cancel_long_task():\n    task = asyncio.create_task(forever())\n    await asyncio.sleep(0)\n    task.cancel()\n    with pytest.raises(asyncio.CancelledError):\n        await task\n    assert task.cancelled()"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async lock ensuring only one critical section runs at a time (serialized access).\n\nimport asyncio\n\nasync def guarded_increment(lock, counter, times):\n    for _ in range(times):\n        async with lock:\n            current = counter['value']\n            await asyncio.sleep(0)\n            counter['value'] = current + 1",
+    "output": "import asyncio, pytest\nfrom concurrency import guarded_increment\n\n@pytest.mark.asyncio\nasync def test_lock_serializes_updates():\n    lock = asyncio.Lock()\n    counter = {'value': 0}\n    await asyncio.gather(\n        guarded_increment(lock, counter, 50),\n        guarded_increment(lock, counter, 50),\n    )\n    assert counter['value'] == 100"
+  },
+  {
+    "instruction": "Write a pytest asyncio test verifying sequential awaits preserve order and side effects across two dependent coroutines.\n\nimport asyncio\n\nasync def fetch_user(user_id, store):\n    await asyncio.sleep(0)\n    user = {'id': user_id, 'name': f'user{user_id}'}\n    store.append(user)\n    return user",
+    "output": "import pytest\nfrom service import fetch_user\n\n@pytest.mark.asyncio\nasync def test_sequential_depends_on_previous():\n    store = []\n    first = await fetch_user(1, store)\n    second = await fetch_user(first['id'] + 1, store)\n    assert [u['id'] for u in store] == [1, 2]\n    assert second['name'] == 'user2'"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async class method on a Client class that authenticates on first use and reuses the token afterwards.\n\nclass Client:\n    def __init__(self):\n        self.token = None\n        self.auth_calls = 0\n    async def authenticate(self):\n        self.auth_calls += 1\n        self.token = 'tok-xyz'\n    async def get_token(self):\n        if self.token is None:\n            await self.authenticate()\n        return self.token",
+    "output": "import pytest\nfrom client import Client\n\n@pytest.mark.asyncio\nasync def test_authenticate_once():\n    client = Client()\n    assert await client.get_token() == 'tok-xyz'\n    assert await client.get_token() == 'tok-xyz'\n    assert client.auth_calls == 1\n\n@pytest.mark.asyncio\nasync def test_explicit_authenticate():\n    client = Client()\n    await client.authenticate()\n    assert client.token == 'tok-xyz'"
+  },
+  {
+    "instruction": "Write a pytest asyncio test using pytest.raises to assert an async validator raises for a malformed payload, and asyncio.all_tasks to prove no leaked tasks remain.\n\nimport asyncio\n\nasync def validate_payload(payload):\n    await asyncio.sleep(0)\n    if 'id' not in payload:\n        raise KeyError('id')\n    return payload",
+    "output": "import asyncio, pytest\nfrom validation import validate_payload\n\n@pytest.mark.asyncio\nasync def test_validate_payload_ok():\n    assert await validate_payload({'id': 1}) == {'id': 1}\n\n@pytest.mark.asyncio\nasync def test_validate_payload_missing_id_and_no_leaked_tasks():\n    with pytest.raises(KeyError, match='id'):\n        await validate_payload({'name': 'x'})\n    current = asyncio.current_task()\n    tasks = [t for t in asyncio.all_tasks() if t is not current and not t.done()]\n    assert tasks == []"
+  },
+  {
+    "instruction": "Write a pytest asyncio test for an async batch processor that maps a coroutine over a list of ids with asyncio.gather, asserting results arrive in input order.\n\nimport asyncio\n\nasync def fetch_item(item_id):\n    await asyncio.sleep(0.001 * (item_id % 3))\n    return {'id': item_id, 'doubled': item_id * 2}\n\nasync def fetch_all(item_ids):\n    return await asyncio.gather(*(fetch_item(i) for i in item_ids))",
+    "output": "import pytest\nfrom batch import fetch_all\n\n@pytest.mark.asyncio\nasync def test_fetch_all_preserves_order():\n    results = await fetch_all([1, 2, 3, 4])\n    assert [r['id'] for r in results] == [1, 2, 3, 4]\n    assert [r['doubled'] for r in results] == [2, 4, 6, 8]\n\n@pytest.mark.asyncio\nasync def test_fetch_all_empty_list():\n    assert await fetch_all([]) == []"
+  }
+]

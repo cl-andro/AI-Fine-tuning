@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that determines whether an integer is prime, handling values below 2 and large values efficiently.",
+    "output": "def is_prime(n):\n    if n < 2:\n        return False\n    if n < 4:\n        return True\n    if n % 2 == 0 or n % 3 == 0:\n        return n in (2, 3)\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\nprint(is_prime(7919))"
+  },
+  {
+    "instruction": "Write a Python function that returns a list of all prime numbers up to n using the sieve of Eratosthenes.",
+    "output": "def sieve(limit):\n    if limit < 2:\n        return []\n    flags = [True] * (limit + 1)\n    flags[0] = flags[1] = False\n    for i in range(2, int(limit ** 0.5) + 1):\n        if flags[i]:\n            for j in range(i * i, limit + 1, i):\n                flags[j] = False\n    return [i for i, ok in enumerate(flags) if ok]\n\nprint(sieve(30))"
+  },
+  {
+    "instruction": "Write a Python function that returns both the greatest common divisor and the least common multiple of two positive integers.",
+    "output": "from math import gcd\n\ndef gcd_lcm(a, b):\n    if a == 0 and b == 0:\n        raise ValueError('both arguments cannot be zero')\n    g = gcd(a, b)\n    return g, abs(a * b) // g\n\nprint(gcd_lcm(12, 18))"
+  },
+  {
+    "instruction": "Write a Python function that computes the nth Fibonacci number iteratively in O(n) time without recursion.",
+    "output": "def fibonacci(n):\n    if n < 0:\n        raise ValueError('n must be non-negative')\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n\nprint(fibonacci(50))"
+  },
+  {
+    "instruction": "Write a Python function that computes n! with a loop, raising ValueError for negative inputs.",
+    "output": "def factorial(n):\n    if n < 0:\n        raise ValueError('factorial is undefined for negative numbers')\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result\n\nprint(factorial(20))"
+  },
+  {
+    "instruction": "Write a Python function that computes (base ** exponent) % mod efficiently using fast exponentiation.",
+    "output": "def modpow(base, exponent, mod):\n    if mod <= 0:\n        raise ValueError('mod must be positive')\n    result = 1\n    base %= mod\n    while exponent > 0:\n        if exponent & 1:\n            result = (result * base) % mod\n        base = (base * base) % mod\n        exponent >>= 1\n    return result\n\nprint(modpow(7, 560, 561))"
+  },
+  {
+    "instruction": "Write a Python function that checks whether a number is an Armstrong (narcissistic) number, e.g. 153 = 1**3 + 5**3 + 3**3.",
+    "output": "def is_armstrong(n):\n    digits = [int(d) for d in str(abs(n))]\n    power = len(digits)\n    return sum(d ** power for d in digits) == abs(n)\n\nprint(is_armstrong(9474))"
+  },
+  {
+    "instruction": "Write a Python function that returns the prime factorization of an integer as a sorted list of factors, with multiplicity.",
+    "output": "def prime_factors(n):\n    if n < 2:\n        return []\n    factors, d = [], 2\n    while d * d <= n:\n        while n % d == 0:\n            factors.append(d)\n            n //= d\n        d += 1\n    if n > 1:\n        factors.append(n)\n    return factors\n\nprint(prime_factors(360))"
+  },
+  {
+    "instruction": "Write a Python function that computes the digital root of a non-negative integer (repeatedly sum digits until a single digit remains).",
+    "output": "def digital_root(n):\n    if not isinstance(n, int) or n < 0:\n        raise ValueError('expected a non-negative integer')\n    while n >= 10:\n        n = sum(int(d) for d in str(n))\n    return n\n\nprint(digital_root(493193))"
+  },
+  {
+    "instruction": "Write a Python function that returns the mean, median and mode of a list of numbers using only the standard library.",
+    "output": "from statistics import mean, median, mode\n\ndef summary(nums):\n    if not nums:\n        raise ValueError('list is empty')\n    return {'mean': mean(nums), 'median': median(nums), 'mode': mode(nums)}\n\nprint(summary([2, 3, 3, 4, 4, 4, 9]))"
+  },
+  {
+    "instruction": "Write a Python function that computes the population standard deviation of a list of numbers without using statistics.",
+    "output": "def population_stddev(nums):\n    if not nums:\n        raise ValueError('list is empty')\n    mu = sum(nums) / len(nums)\n    return (sum((x - mu) ** 2 for x in nums) / len(nums)) ** 0.5\n\nprint(population_stddev([2, 4, 4, 4, 5, 5, 7, 9]))"
+  },
+  {
+    "instruction": "Write a Python function that clamps a number to the inclusive range [low, high], raising an error when low exceeds high.",
+    "output": "def clamp(value, low, high):\n    if low > high:\n        raise ValueError('low must not exceed high')\n    return max(low, min(value, high))\n\nprint(clamp(15, 0, 10))"
+  },
+  {
+    "instruction": "Write a Python function that converts a non-negative integer to a string in a given base from 2 to 36.",
+    "output": "def to_base(n, base):\n    if not 2 <= base <= 36:\n        raise ValueError('base must be between 2 and 36')\n    if n == 0:\n        return '0'\n    digits = '0123456789abcdefghijklmnopqrstuvwxyz'\n    if n < 0:\n        return '-' + to_base(-n, base)\n    out = []\n    while n:\n        out.append(digits[n % base])\n        n //= base\n    return ''.join(reversed(out))\n\nprint(to_base(255, 16))"
+  },
+  {
+    "instruction": "Write a Python function that returns the length of the Collatz (3n+1) sequence starting from n, including n itself.",
+    "output": "def collatz_length(n):\n    if n < 1:\n        raise ValueError('start must be a positive integer')\n    steps = 1\n    while n != 1:\n        n = n // 2 if n % 2 == 0 else 3 * n + 1\n        steps += 1\n    return steps\n\nprint(collatz_length(27))"
+  },
+  {
+    "instruction": "Write a Python function that approximates the square root of a number with Newton's method to a given tolerance.",
+    "output": "def sqrt_newton(x, tol=1e-10):\n    if x < 0:\n        raise ValueError('cannot take square root of a negative number')\n    if x == 0:\n        return 0.0\n    guess = x / 2.0\n    while True:\n        new_guess = (guess + x / guess) / 2\n        if abs(new_guess - guess) < tol:\n            return new_guess\n        guess = new_guess\n\nprint(sqrt_newton(2))"
+  },
+  {
+    "instruction": "Write a Python function that checks whether a positive integer is a perfect number (equal to the sum of its proper divisors).",
+    "output": "def is_perfect(n):\n    if n < 2:\n        return False\n    total = 1\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            total += d\n            if d != n // d:\n                total += n // d\n        d += 1\n    return total == n\n\nprint(is_perfect(496))"
+  },
+  {
+    "instruction": "Write a Python function that converts a Roman numeral string to its integer value, raising ValueError for malformed input.",
+    "output": "def roman_to_int(s):\n    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    if not s or any(ch not in values for ch in s):\n        raise ValueError('invalid Roman numeral')\n    total = 0\n    for i, ch in enumerate(s):\n        total += values[ch]\n        if i + 1 < len(s) and values[ch] < values[s[i + 1]]:\n            total -= 2 * values[ch]\n    return total\n\nprint(roman_to_int('MCMXCIV'))"
+  },
+  {
+    "instruction": "Write a Python function that rounds a float to the given number of decimal places using a half-away-from-zero strategy.",
+    "output": "from decimal import Decimal, ROUND_HALF_UP\n\ndef round_half_up(value, places=2):\n    quant = Decimal(1).scaleb(-places)\n    return float(Decimal(str(value)).quantize(quant, rounding=ROUND_HALF_UP))\n\nprint(round_half_up(2.675, 2))"
+  },
+  {
+    "instruction": "Write a Python function that computes the binomial coefficient n choose k iteratively with early exit to avoid overflow of intermediates.",
+    "output": "def n_choose_k(n, k):\n    if k < 0 or k > n:\n        return 0\n    k = min(k, n - k)\n    result = 1\n    for i in range(k):\n        result = result * (n - i) // (i + 1)\n    return result\n\nprint(n_choose_k(52, 5))"
+  },
+  {
+    "instruction": "Write a Python function that returns the number of decimal digits of a non-negative integer without converting it to a string.",
+    "output": "def digit_count(n):\n    if n < 0:\n        n = -n\n    if n == 0:\n        return 1\n    count = 0\n    while n:\n        count += 1\n        n //= 10\n    return count\n\nprint(digit_count(9876543210))"
+  }
+]

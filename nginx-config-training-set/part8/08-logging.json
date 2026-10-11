@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Add a custom access log format that records request time and upstream response time, and use it for the site.",
+    "output": "http {\n    log_format timed '$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" rt=$request_time urt=$upstream_response_time';\n    access_log /var/log/nginx/access.log timed;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  },
+  {
+    "instruction": "Write JSON access logs for the API so they can be shipped into Elasticsearch.",
+    "output": "http {\n    log_format json escape=json '{\"time\":\"$time_iso8601\",\"remote_addr\":\"$remote_addr\",\"method\":\"$request_method\",\"uri\":\"$uri\",\"status\":$status,\"bytes\":$body_bytes_sent,\"request_time\":$request_time}';\n    access_log /var/log/nginx/api.json.log json;\n    server {\n        listen 80;\n        server_name api.example.com;\n        location / {\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Buffer access log writes for 5 seconds in 32k chunks to reduce disk I/O on the busy web server.",
+    "output": "http {\n    access_log /var/log/nginx/access.log main buffer=32k flush=5s;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  },
+  {
+    "instruction": "Ship access logs to the local syslog collector on UDP port 5140 with the tag web01 and facility local7.",
+    "output": "http {\n    access_log syslog:server=127.0.0.1:5140,facility=local7,tag=web01,severity=info main;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  },
+  {
+    "instruction": "Record only 404 responses in a separate log file to track broken links on the documentation site.",
+    "output": "map $status $log_404 {\n    404 1;\n    default 0;\n}\nhttp {\n    access_log /var/log/nginx/docs-404.log main if=$log_404;\n    server {\n        listen 80;\n        server_name docs.example.com;\n        root /var/www/docs;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Turn off access logging for the heavy /assets/ directory while keeping logs for everything else.",
+    "output": "location /assets/ {\n    root /var/www/site;\n    access_log off;\n    try_files $uri =404;\n}"
+  },
+  {
+    "instruction": "Write a dedicated error log at warn level for the legacy CRM vhost.",
+    "output": "server {\n    listen 80;\n    server_name crm.legacy.example;\n    root /var/www/crm;\n    error_log /var/log/nginx/crm-error.log warn;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Log the real client IP when nginx sits behind the corporate load balancer in 10.0.0.0/24.",
+    "output": "http {\n    set_real_ip_from 10.0.0.0/24;\n    real_ip_header X-Forwarded-For;\n    real_ip_recursive on;\n    access_log /var/log/nginx/access.log main;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n    }\n}"
+  },
+  {
+    "instruction": "Log upstream latency alongside the request line for the order-processing API.",
+    "output": "http {\n    log_format upstream '$remote_addr [$time_local] \"$request\" status=$status upstream_time=$upstream_response_time connect=$upstream_connect_time';\n    access_log /var/log/nginx/orders.log upstream;\n    server {\n        listen 80;\n        server_name orders.example.com;\n        location / {\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Send error-level messages from the /api/ location to their own log file.",
+    "output": "location /api/ {\n    proxy_pass http://127.0.0.1:8080;\n    proxy_set_header Host $host;\n    error_log /var/log/nginx/api-error.log error;\n}"
+  },
+  {
+    "instruction": "Disable access logging globally and re-enable it only for the www vhost.",
+    "output": "http {\n    access_log off;\n    server {\n        listen 80;\n        server_name www.example.com;\n        access_log /var/log/nginx/main.log combined;\n        root /var/www/site;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Include the incoming X-Request-Id header in the access log for distributed tracing.",
+    "output": "http {\n    log_format trace '$remote_addr [$time_local] rid=$http_x_request_id \"$request\" $status $request_time';\n    access_log /var/log/nginx/trace.log trace;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Log only 5xx server errors to a dedicated file for the incident on-call rotation.",
+    "output": "map $status $log_5xx {\n    ~^5 1;\n    default 0;\n}\nhttp {\n    access_log /var/log/nginx/5xx.log main if=$log_5xx;\n    server {\n        listen 80;\n        server_name shop.example.com;\n        root /var/www/shop;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Skip access log entries for health check probes to /healthz while logging everything else.",
+    "output": "map $request_uri $loggable {\n    default 1;\n    ~^/healthz 0;\n}\nhttp {\n    access_log /var/log/nginx/access.log main if=$loggable;\n    server {\n        listen 80;\n        server_name app.example.com;\n        root /var/www/app;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Set the global error log to notice level for the main nginx.conf.",
+    "output": "http {\n    error_log /var/log/nginx/error.log notice;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Forward error logs to the local syslog socket instead of a file.",
+    "output": "http {\n    error_log syslog:server=unix:/dev/log warn;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Record the cache hit or miss status of every proxied response for the product catalog.",
+    "output": "http {\n    log_format cache '$remote_addr [$time_local] \"$request\" status=$status cache=$upstream_cache_status';\n    access_log /var/log/nginx/catalog-cache.log cache;\n    server {\n        listen 80;\n        server_name catalog.example.com;\n        location / {\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Write a referer-focused log for marketing analysis of the campaign landing pages.",
+    "output": "http {\n    log_format referers '$time_local host=$host referrer=\"$http_referer\" target=\"$request_uri\" status=$status';\n    access_log /var/log/nginx/referrers.log referers;\n    server {\n        listen 80;\n        server_name campaign.example.com;\n        root /var/www/campaign;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Buffer and flush access logs every 5 seconds for the high-traffic homepage vhost.",
+    "output": "server {\n    listen 80;\n    server_name www.popular.example;\n    root /var/www/popular;\n    access_log /var/log/nginx/popular.log main buffer=64k flush=5s;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Give the search service its own error log at info level while the rest of the server logs warnings.",
+    "output": "http {\n    error_log /var/log/nginx/error.log warn;\n    server {\n        listen 80;\n        server_name search.example.com;\n        error_log /var/log/nginx/search-error.log info;\n        location / {\n            proxy_pass http://127.0.0.1:7700;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  }
+]

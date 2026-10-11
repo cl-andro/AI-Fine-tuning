@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a workflow that runs only when pushes target the main or develop branches.",
+    "output": "name: branch-push\non:\n  push:\n    branches:\n      - main\n      - develop\njobs:\n  ci:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make ci"
+  },
+  {
+    "instruction": "Trigger a workflow on pull requests targeting main for the opened, synchronize, and reopened actions.",
+    "output": "name: pr-ci\non:\n  pull_request:\n    branches: [main]\n    types: [opened, synchronize, reopened]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm test"
+  },
+  {
+    "instruction": "Schedule a workflow to run nightly at 02:30 UTC with a cron expression.",
+    "output": "name: nightly\non:\n  schedule:\n    - cron: '30 2 * * *'\njobs:\n  nightly:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: python scripts/nightly_report.py"
+  },
+  {
+    "instruction": "Add a workflow_dispatch trigger with a choice input for the target environment.",
+    "output": "name: manual-run\non:\n  workflow_dispatch:\n    inputs:\n      environment:\n        description: Target environment\n        required: true\n        type: choice\n        options:\n          - staging\n          - production\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Deploying to ${{ inputs.environment }}\""
+  },
+  {
+    "instruction": "Run the workflow whenever a GitHub release is published.",
+    "output": "name: release\non:\n  release:\n    types: [published]\njobs:\n  notify:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Release ${{ github.event.release.tag_name }} published\""
+  },
+  {
+    "instruction": "Trigger a workflow on version tags matching the v* pattern.",
+    "output": "name: tag-build\non:\n  push:\n    tags:\n      - 'v*'\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: echo \"Building tag ${{ github.ref_name }}\""
+  },
+  {
+    "instruction": "Limit a workflow to runs where files under src/ or package.json changed.",
+    "output": "name: src-paths\non:\n  push:\n    paths:\n      - 'src/**'\n      - 'package.json'\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci && npm run build"
+  },
+  {
+    "instruction": "Ignore documentation-only changes by excluding docs/** and markdown files from push triggers.",
+    "output": "name: docs-ignored\non:\n  push:\n    paths-ignore:\n      - 'docs/**'\n      - '**/*.md'\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test"
+  },
+  {
+    "instruction": "Trigger a workflow with repository_dispatch and check out the ref from the client payload.",
+    "output": "name: repo-dispatch\non:\n  repository_dispatch:\n    types: [build-triggered]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.client_payload.ref }}\n      - run: make build"
+  },
+  {
+    "instruction": "Run a workflow when an issue is opened or labeled.",
+    "output": "name: issue-triage\non:\n  issues:\n    types: [opened, labeled]\njobs:\n  triage:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Issue ${{ github.event.issue.number }} was ${{ github.event.action }}\""
+  },
+  {
+    "instruction": "Start a workflow when a comment containing the deploy command is created on an issue.",
+    "output": "name: comment-trigger\non:\n  issue_comment:\n    types: [created]\njobs:\n  respond:\n    if: ${{ contains(github.event.comment.body, '/deploy') }}\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Deploy requested in comment\""
+  },
+  {
+    "instruction": "Run a workflow after the CI workflow on the main branch completes successfully.",
+    "output": "name: after-ci\non:\n  workflow_run:\n    workflows: [CI]\n    branches: [main]\n    types: [completed]\njobs:\n  post:\n    if: ${{ github.event.workflow_run.conclusion == 'success' }}\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"CI finished successfully\""
+  },
+  {
+    "instruction": "Allow both a weekly cron schedule and manual workflow_dispatch for the same job.",
+    "output": "name: weekly-manual\non:\n  schedule:\n    - cron: '0 9 * * 1'\n  workflow_dispatch:\njobs:\n  weekly:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: python scripts/weekly_digest.py"
+  },
+  {
+    "instruction": "Filter pull request runs with paths so only changes under app/ or api/ trigger tests.",
+    "output": "name: pr-paths\non:\n  pull_request:\n    paths:\n      - 'app/**'\n      - 'api/**'\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pytest -q"
+  },
+  {
+    "instruction": "Run only for pushes that do not touch the experimental branch namespace.",
+    "output": "name: ignore-experimental\non:\n  push:\n    branches-ignore:\n      - 'experimental/**'\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build"
+  },
+  {
+    "instruction": "Create a workflow_dispatch trigger with string, boolean, and number inputs used later by the job.",
+    "output": "name: typed-inputs\non:\n  workflow_dispatch:\n    inputs:\n      ref:\n        description: Git ref to build\n        required: true\n        type: string\n        default: main\n      run_migration:\n        description: Run database migration\n        required: false\n        type: boolean\n        default: false\n      workers:\n        description: Number of workers\n        required: false\n        type: number\n        default: 2\njobs:\n  run:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ inputs.ref }}\n      - run: echo \"migration=${{ inputs.run_migration }} workers=${{ inputs.workers }}\""
+  },
+  {
+    "instruction": "Trigger a workflow when a discussion is created in the repository.",
+    "output": "name: discussion\non:\n  discussion:\n    types: [created]\njobs:\n  acknowledge:\n    runs-on: ubuntu-latest\n    steps:\n      - run: |\n          echo \"New discussion: ${{ github.event.discussion.title }}\""
+  },
+  {
+    "instruction": "Run a workflow when a package is published to the GitHub Container Registry.",
+    "output": "name: package-published\non:\n  registry_packages:\n    types: [published]\njobs:\n  notify:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Package ${{ github.event.registry_package.name }} published\""
+  },
+  {
+    "instruction": "Add a merge_group trigger so the workflow runs for merge queue validation.",
+    "output": "name: merge-queue\non:\n  merge_group:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make validate"
+  },
+  {
+    "instruction": "Run a workflow twice daily on cron and also on manual dispatch for emergency runs.",
+    "output": "name: twice-daily\non:\n  schedule:\n    - cron: '0 6,18 * * *'\n  workflow_dispatch:\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: python scripts/sync_upstream.py"
+  }
+]

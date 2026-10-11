@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write TypeScript code defining a custom ValidationError class with a code field, and throw one from a validateAge function.",
+    "output": "class ValidationError extends Error {\n  constructor(\n    message: string,\n    public readonly code: string\n  ) {\n    super(message);\n    this.name = \"ValidationError\";\n  }\n}\n\nfunction validateAge(age: number): void {\n  if (age < 0 || age > 150) {\n    throw new ValidationError(\"age out of range\", \"AGE_RANGE\");\n  }\n}\n\ntry {\n  validateAge(200);\n} catch (err) {\n  if (err instanceof ValidationError) {\n    console.log(err.code); // \"AGE_RANGE\"\n  }\n}"
+  },
+  {
+    "instruction": "Write JavaScript code using try/catch/finally where finally always logs cleanup even when an exception is thrown.",
+    "output": "function risky() {\n  try {\n    throw new Error(\"boom\");\n  } catch (err) {\n    console.log(\"caught:\", err.message);\n    throw err; // rethrow after logging\n  } finally {\n    console.log(\"cleanup always runs\");\n  }\n}\n\ntry {\n  risky();\n} catch (err) {\n  console.log(\"outer catch:\", err.message);\n}"
+  },
+  {
+    "instruction": "Write an async JavaScript function that wraps a fetch in try/catch, converting non-2xx responses into a thrown Error with the status code.",
+    "output": "async function getJson(url) {\n  let res;\n  try {\n    res = await fetch(url);\n  } catch (err) {\n    throw new Error(`network error for ${url}`, { cause: err });\n  }\n  if (!res.ok) {\n    throw new Error(`HTTP ${res.status} for ${url}`);\n  }\n  return res.json();\n}\n\ngetJson(\"/api/items\").catch((err) => console.error(err.message));"
+  },
+  {
+    "instruction": "Write JavaScript code demonstrating error propagation: a low-level function throws, middle layers catch, log and rethrow with cause, and the top level handles it.",
+    "output": "function parseConfig(text) {\n  try {\n    return JSON.parse(text);\n  } catch (err) {\n    throw new Error(\"invalid config\", { cause: err });\n  }\n}\n\nfunction loadConfig(text) {\n  try {\n    return parseConfig(text);\n  } catch (err) {\n    console.error(\"while loading config:\", err.message);\n    throw err;\n  }\n}\n\ntry {\n  loadConfig(\"{oops\");\n} catch (err) {\n  console.error(\"fatal:\", err.cause.message); // native JSON message\n}"
+  },
+  {
+    "instruction": "Write a TypeScript validation function assertIsString(value: unknown): asserts value is string that throws a TypeError, and a caller using it.",
+    "output": "function assertIsString(value: unknown): asserts value is string {\n  if (typeof value !== \"string\") {\n    throw new TypeError(`expected string, received ${typeof value}`);\n  }\n}\n\nfunction shout(value: unknown): string {\n  assertIsString(value);\n  return value.toUpperCase() + \"!\";\n}\n\nconsole.log(shout(\"hey\"));\n// shout(42) throws TypeError: expected string, received number"
+  },
+  {
+    "instruction": "Write JavaScript code handling Promise rejections with .catch, including a rejection handler that receives the original Error.",
+    "output": "new Promise((resolve, reject) => {\n  reject(new Error(\"denied\"));\n})\n  .then((value) => console.log(value))\n  .catch((err) => {\n    console.error(\"rejected:\", err instanceof Error, err.message);\n  })\n  .finally(() => console.log(\"settled\"));"
+  },
+  {
+    "instruction": "Write JavaScript code implementing safeParse(text) that returns {ok: true, data} or {ok: false, error} instead of throwing, and a caller handling both branches.",
+    "output": "function safeParse(text) {\n  try {\n    return { ok: true, data: JSON.parse(text) };\n  } catch (error) {\n    return { ok: false, error };\n  }\n}\n\nconst result = safeParse(\"{bad json\");\nif (result.ok) {\n  console.log(result.data);\n} else {\n  console.log(\"parse failed:\", result.error.message);\n}"
+  },
+  {
+    "instruction": "Write TypeScript code narrowing errors with instanceof across a union of custom error classes in a catch block.",
+    "output": "class NetworkError extends Error {\n  constructor(public status: number) {\n    super(`network ${status}`);\n  }\n}\nclass PermissionError extends Error {\n  constructor(public role: string) {\n    super(`no permission for ${role}`);\n  }\n}\n\nfunction handle(err: unknown): string {\n  if (err instanceof NetworkError) {\n    return `retry later (status ${err.status})`;\n  }\n  if (err instanceof PermissionError) {\n    return `ask an admin for ${err.role}`;\n  }\n  return \"unknown failure\";\n}\n\nconsole.log(handle(new NetworkError(503)));"
+  },
+  {
+    "instruction": "Write JavaScript code that installs window.addEventListener(\"unhandledrejection\") to log unhandled promise rejections with the reason.",
+    "output": "window.addEventListener(\"unhandledrejection\", (event) => {\n  console.error(\"Unhandled rejection:\", event.reason);\n  event.preventDefault();\n});\n\nPromise.reject(new Error(\"nobody caught me\"));"
+  },
+  {
+    "instruction": "Write JavaScript code showing that a synchronous error inside a setTimeout callback escapes an outer try/catch, and how to catch it inside the callback instead.",
+    "output": "try {\n  setTimeout(() => {\n    try {\n      JSON.parse(\"{bad\");\n    } catch (err) {\n      console.log(\"caught in timer:\", err.message);\n    }\n  }, 0);\n} catch (err) {\n  // This would only catch errors thrown synchronously below, not in the timer.\n  console.log(\"sync catch\");\n}"
+  },
+  {
+    "instruction": "Write TypeScript code defining a discriminated Result union and a fetchUserTyped function that never throws, returning Result<User, string>.",
+    "output": "interface User {\n  id: number;\n  name: string;\n}\n\ntype Result<T> = { ok: true; value: T } | { ok: false; error: string };\n\nasync function fetchUserTyped(id: number): Promise<Result<User>> {\n  try {\n    const res = await fetch(`/api/users/${id}`);\n    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };\n    return { ok: true, value: (await res.json()) as User };\n  } catch (err) {\n    return { ok: false, error: (err as Error).message };\n  }\n}"
+  },
+  {
+    "instruction": "Write a JavaScript safeExecute(fn, fallback) wrapper that catches synchronous exceptions and returns the fallback value.",
+    "output": "function safeExecute(fn, fallback) {\n  try {\n    return fn();\n  } catch (err) {\n    console.error(\"safeExecute:\", err.message);\n    return fallback;\n  }\n}\n\nconsole.log(safeExecute(() => JSON.parse(\"{bad\"), null)); // null\nconsole.log(safeExecute(() => 2 + 2, null)); // 4"
+  },
+  {
+    "instruction": "Write JavaScript code with a custom HttpError class carrying statusCode, thrown by an assertOk(response) helper after fetch.",
+    "output": "class HttpError extends Error {\n  constructor(public statusCode, message, public body) {\n    super(message);\n    this.name = \"HttpError\";\n  }\n}\n\nasync function assertOk(response) {\n  if (!response.ok) {\n    const body = await response.text().catch(() => \"\");\n    throw new HttpError(response.status, `HTTP ${response.status}`, body);\n  }\n  return response;\n}\n\nassertOk({ ok: false, status: 404, text: async () => \"missing\" })\n  .catch((err) => console.log(err instanceof HttpError, err.statusCode)); // true 404"
+  },
+  {
+    "instruction": "Write JavaScript code implementing retryWithError(fn, attempts, onRetry) that retries a failing sync function and reports each attempt's error.",
+    "output": "function retryWithError(fn, attempts, onRetry) {\n  let lastErr;\n  for (let i = 1; i <= attempts; i++) {\n    try {\n      return fn(i);\n    } catch (err) {\n      lastErr = err;\n      if (i < attempts) onRetry(err, i);\n    }\n  }\n  throw lastErr;\n}\n\nlet tries = 0;\ntry {\n  retryWithError(\n    (attempt) => {\n      tries++;\n      if (attempt < 3) throw new Error(`attempt ${attempt} failed`);\n      return \"ok\";\n    },\n    5,\n    (err, attempt) => console.log(`retrying after error on attempt ${attempt}:`, err.message)\n  );\n} catch (err) {\n  console.error(\"gave up\", err);\n}"
+  },
+  {
+    "instruction": "Write TypeScript code defining an error code enum as a const object, a MapErrorCode type, and a toHttpError(code) function that throws an Error with a standard message.",
+    "output": "const ErrorCodes = {\n  NOT_FOUND: \"NOT_FOUND\",\n  FORBIDDEN: \"FORBIDDEN\",\n  BAD_REQUEST: \"BAD_REQUEST\",\n} as const;\n\ntype ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];\n\nconst MESSAGES: Record<ErrorCode, string> = {\n  NOT_FOUND: \"resource not found\",\n  FORBIDDEN: \"access denied\",\n  BAD_REQUEST: \"invalid request\",\n};\n\nfunction toHttpError(code: ErrorCode): Error {\n  return new Error(MESSAGES[code]);\n}\n\nconsole.log(toHttpError(\"FORBIDDEN\").message); // \"access denied\""
+  },
+  {
+    "instruction": "Write JavaScript code demonstrating that finally cleanup runs after an error is caught but before it propagates, including restoring a modified variable.",
+    "output": "let connection = \"open\";\n\nfunction query() {\n  try {\n    connection = \"busy\";\n    throw new Error(\"query failed\");\n  } finally {\n    connection = \"open\"; // always restored\n  }\n}\n\ntry {\n  query();\n} catch (err) {\n  console.log(err.message, \"| connection:\", connection); // \"query failed | connection: open\"\n}"
+  },
+  {
+    "instruction": "Write TypeScript code using Error.captureStackTrace (Node.js) inside a custom error to trim internal frames from the stack.",
+    "output": "class AppError extends Error {\n  constructor(message: string) {\n    super(message);\n    this.name = \"AppError\";\n    if (typeof Error.captureStackTrace === \"function\") {\n      Error.captureStackTrace(this, AppError);\n    }\n  }\n}\n\nthrow new AppError(\"boot failed\"); // stack starts at user code, not the constructor"
+  },
+  {
+    "instruction": "Write JavaScript code that guards against null returns: a parseJsonOrNull(text) function and a caller using optional chaining and the nullish coalescing operator.",
+    "output": "function parseJsonOrNull(text) {\n  try {\n    return JSON.parse(text);\n  } catch {\n    return null;\n  }\n}\n\nconst config = parseJsonOrNull(process.env.CONFIG_JSON || \"\") ?? { retries: 3 };\nconsole.log(config.retries);"
+  },
+  {
+    "instruction": "Write JavaScript code that logs errors consistently: a formatError(err) function handling Error instances, strings and unknown values.",
+    "output": "function formatError(err) {\n  if (err instanceof Error) {\n    return `${err.name}: ${err.message}`;\n  }\n  if (typeof err === \"string\") {\n    return `Error: ${err}`;\n  }\n  return `Unknown error: ${JSON.stringify(err)}`;\n}\n\nconsole.log(formatError(new TypeError(\"bad type\")));\nconsole.log(formatError(\"simple failure\"));\nconsole.log(formatError({ code: 5 }));"
+  },
+  {
+    "instruction": "Write JavaScript code implementing a circuit breaker that throws a CircuitOpenError while the failure count is above a threshold, resetting after a cooldown.",
+    "output": "class CircuitOpenError extends Error {\n  constructor() {\n    super(\"circuit open\");\n    this.name = \"CircuitOpenError\";\n  }\n}\n\nfunction createBreaker(threshold, cooldownMs) {\n  let failures = 0;\n  let openedAt = 0;\n  return function run(fn) {\n    if (failures >= threshold) {\n      if (Date.now() - openedAt < cooldownMs) throw new CircuitOpenError();\n      failures = 0; // half-open: allow a trial call\n    }\n    try {\n      return fn();\n    } catch (err) {\n      failures++;\n      if (failures >= threshold) openedAt = Date.now();\n      throw err;\n    }\n  };\n}\n\nconst run = createBreaker(2, 1000);\nconst failing = () => {\n  throw new Error(\"down\");\n};\nfor (let i = 0; i < 4; i++) {\n  try {\n    run(failing);\n  } catch (err) {\n    console.log(err.name);\n  }\n}"
+  }
+]

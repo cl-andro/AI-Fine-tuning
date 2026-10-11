@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "A server cannot reach the internet but can reach its gateway. Diagnose routing.",
+    "output": "**Diagnose:**\nip addr\nip route\nip route get 8.8.8.8\nping -c2 <gateway>\ncat /etc/resolv.conf\n**Interpretation:** If the gateway pings but 8.8.8.8 does not, either the default route is missing/wrong or the gateway is not NATing. `ip route get 8.8.8.8` shows which path the kernel picks.\n**Fix:** Add the correct default route (`ip route add default via <gw> dev eth0`), fix the netplan/network config, and ensure the gateway SNATs. Verify with `ip route get 8.8.8.8` and a ping to a public IP."
+  },
+  {
+    "instruction": "An interface has the right IP but traffic never leaves. Diagnose link and carrier state.",
+    "output": "**Diagnose:**\nip link show eth0\nethtool eth0\nethtool -S eth0 | grep -i -E 'link|carrier'\ndmesg | grep -i eth0\n**Interpretation:** `ip link` showing 'NO-CARRIER' or DOWN means the physical/logical link is not up: bad cable, disabled switch port, or a VLAN mismatch. Ethtool 'Link detected: no' confirms L1.\n**Fix:** Bring the link up (`ip link set eth0 up`), reseat/replace the cable, enable the switch port, and fix VLAN tagging. Confirm `ethtool eth0` reports 'Link detected: yes' and `ip link` shows UP with carrier."
+  },
+  {
+    "instruction": "Traffic goes out the wrong interface. Diagnose policy routing.",
+    "output": "**Diagnose:**\nip rule list\nip route show table all\nip route get <dest>\ncat /etc/iproute2/rt_tables\n**Interpretation:** `ip rule list` may direct certain sources/destinations to a custom table that overrides the main table. `ip route get` shows the chosen table and interface; if it is not what you expect, a policy rule is misrouting.\n**Fix:** Correct the rule/table: adjust priorities so the intended default applies, or fix the route in the custom table. Persist via a network config or a systemd unit. Verify `ip route get <dest>` selects the right interface."
+  },
+  {
+    "instruction": "Two interfaces have routes to the same subnet (asymmetric). Diagnose.",
+    "output": "**Diagnose:**\nip route show\nip route get <dest> from <src-ip>\nip rule list\nsysctl net.ipv4.conf.all.rp_filter\n**Interpretation:** Overlapping connected routes on two interfaces let the kernel pick either, causing asymmetric return paths that stateful firewalls drop. rp_filter may also drop the return packets.\n**Fix:** Remove the redundant route or scope one interface so only one path is used. Set `rp_filter=2` (loose) if asymmetry is unavoidable, and ensure both directions traverse the same stateful device. Verify with `ip route get`."
+  },
+  {
+    "instruction": "A VLAN-tagged interface is not receiving traffic. Diagnose VLAN config.",
+    "output": "**Diagnose:**\nip -d link show eth0\nip addr show eth0.100\nbridge vlan show\ntcpdump -ni eth0 -e | grep -i vlan\n**Interpretation:** If the parent interface is not up or the VLAN subinterface has no address, tagged frames are dropped. tcpdump -e shows whether VLAN tags arrive; no tags means the switch is not tagging or the port is in the wrong VLAN.\n**Fix:** Create/bring up the VLAN interface (`ip link add link eth0 name eth0.100 type vlan id 100; ip link set eth0.100 up`) and configure the switch trunk port. Verify tagged frames arrive and the subinterface gets traffic."
+  },
+  {
+    "instruction": "Adding a static route for a specific host breaks other traffic. Diagnose prefix/longest-match.",
+    "output": "**Diagnose:**\nip route show\nip route get <host>\nip route get <other-host>\n**Interpretation:** A too-specific route (e.g a /32 via the wrong gateway) is fine in principle, but a wrong gateway on an overlapping less-specific route can shadow the default. Longest-prefix match means the /32 always wins; if that gateway is wrong, only that host breaks.\n**Fix:** Remove or correct the offending route (`ip route del <host> via <bad-gw>`) and add the right gateway. Verify with `ip route get` for both the target and unaffected hosts."
+  },
+  {
+    "instruction": "DHCP assigns an APIPA 169.254 address. Diagnose.",
+    "output": "**Diagnose:**\nip addr show eth0\njournalctl -u NetworkManager -n 50\nsudo nmcli device show eth0\ntcpdump -ni eth0 port 67 or port 68\n**Interpretation:** 169.254.x.x means DHCP failed and the host self-assigned link-local. tcpdump shows whether DISCOVERs get OFFERs; no offer means the DHCP server/relay is unreachable or the VLAN is wrong.\n**Fix:** Fix the DHCP server/relay or the port VLAN, then renew: `sudo dhclient -r eth0 && sudo dhclient eth0` or `nmcli con up eth0`. Alternatively configure a static IP via netplan. Verify a real lease appears."
+  },
+  {
+    "instruction": "A host has a default route but DNS/other traffic uses a secondary interface. Diagnose metric.",
+    "output": "**Diagnose:**\nip route show default\nnmcli -f IP4.ROUTE device show eth0\nip route get 8.8.8.8\n**Interpretation:** With two default routes, the lower metric wins. If a secondary interface (VPN, Wi-Fi) has a lower metric, all traffic uses it, breaking split-tunnel expectations. `ip route get` shows the winner.\n**Fix:** Adjust route metrics so the intended interface is preferred (`ip route change default via <gw> dev eth0 metric 100`), or use policy routing to send specific subnets over the other interface. Persist in network config."
+  },
+  {
+    "instruction": "The loopback interface is down or missing. Diagnose.",
+    "output": "**Diagnose:**\nip link show lo\nip addr show lo\nping -c2 127.0.0.1\nss -tlnp | grep 127.0.0.1\n**Interpretation:** If lo is DOWN, localhost connections and many services fail. This is rare but happens after manual misconfiguration or in broken containers.\n**Fix:** `ip link set lo up` and ensure 127.0.0.1/8 is assigned. Persist by fixing the network config so lo comes up at boot. Verify `ping 127.0.0.1` and that local listeners bind."
+  },
+  {
+    "instruction": "A network interface reports errors/drops in ethtool statistics. Diagnose.",
+    "output": "**Diagnose:**\nethtool -S eth0 | grep -i -E 'err|drop|discard|crc'\nethtool eth0\nip -s link show eth0\ndmesg | grep -i eth0\n**Interpretation:** Rising rx_crc_errors point to cabling/SFP; rx_dropped to buffer/CPU; tx_dropped to queue saturation. Duplex mismatch shows as late collisions. These cap throughput and cause retransmits.\n**Fix:** Replace the cable/SFP for CRC errors, fix duplex/speed negotiation (`ethtool -s eth0 speed 1000 duplex full autoneg on`), and add CPU/queue capacity for drops (RPS/RSS). Re-check counters after the fix."
+  },
+  {
+    "instruction": "A container host cannot route between bridge networks. Diagnose IP forwarding.",
+    "output": "**Diagnose:**\nsysctl net.ipv4.ip_forward\nip route show\niptables -L FORWARD -n -v\nbrctl show 2>/dev/null || ip link show type bridge\n**Interpretation:** If `ip_forward=0`, the kernel will not route between bridges. A DROP policy on the FORWARD chain also blocks it.\n**Fix:** Enable forwarding (`sysctl -w net.ipv4.ip_forward=1`, persist in /etc/sysctl.d/) and add FORWARD accept rules for the bridge interfaces or set the FORWARD policy to ACCEPT with appropriate rules. Verify connectivity between networks."
+  },
+  {
+    "instruction": "The default gateway is unreachable due to ARP. Diagnose.",
+    "output": "**Diagnose:**\nip neigh show <gateway>\narping -I eth0 -c 3 <gateway> 2>/dev/null\ntcpdump -ni eth0 arp\nip link show eth0\n**Interpretation:** `ip neigh` showing FAILED or INCOMPLETE for the gateway means ARP requests get no reply: wrong gateway IP, wrong VLAN, or a switch blocking the port. arping confirms on L2.\n**Fix:** Correct the gateway IP/subnet, ensure the interface is in the right VLAN/subnet, and enable the switch port. Verify `arping` gets a reply and `ip neigh` shows REACHABLE."
+  },
+  {
+    "instruction": "A route added at runtime disappears after reboot. Diagnose persistence.",
+    "output": "**Diagnose:**\nip route show\ngrep -rn route /etc/netplan/ /etc/network/interfaces 2>/dev/null\nnmcli con show\nls /etc/sysconfig/network-scripts/ 2>/dev/null\n**Interpretation:** Runtime `ip route add` commands vanish because the network manager regenerates routes from its config at boot. The route is not in netplan/NetworkManager/ifcfg files.\n**Fix:** Add the route to the persistent config: netplan `routes:` stanza, `nmcli con mod eth0 +ipv4.routes '10.20.0.0/16 <gw>'`, or an ifcfg `route-eth0` file. Apply and reboot-test. Verify with `ip route show`."
+  },
+  {
+    "instruction": "A host is reachable by IP but not by name from a different subnet. Diagnose routing vs DNS.",
+    "output": "**Diagnose:**\nping -c2 <ip>\nping -c2 <hostname>\nnslookup <hostname>\nip route get <ip>\n**Interpretation:** If IP works and the name fails, it is DNS (or the resolved IP differs). If nslookup returns an IP but ping still fails, the name resolves to a wrong/unroutable address (stale record or external search-domain hijack).\n**Fix:** Fix the DNS record to the correct routable IP, remove search-domain interference (use FQDN), and flush caches. Verify `getent hosts <hostname>` matches the working IP."
+  },
+  {
+    "instruction": "A point-to-point link needs a static route but the peer is in a different subnet. Diagnose.",
+    "output": "**Diagnose:**\nip addr show tun0\nip route show\nip route get <peer>\nping -c2 <peer>\n**Interpretation:** Without the peer address set and a route, the kernel does not know how to reach the peer across a p2p tunnel. `ip route get` falls to the default, so packets are misrouted.\n**Fix:** Configure the peer address on the interface (`ip addr add 10.0.0.1 peer 10.0.0.2 dev tun0`) or add a host route to the peer via the tunnel. Verify `ip route get <peer>` uses tun0 and ping succeeds."
+  },
+  {
+    "instruction": "IPv6 is enabled but hosts do not get addresses. Diagnose SLAAC/DHCPv6.",
+    "output": "**Diagnose:**\nip -6 addr\nsysctl net.ipv6.conf.eth0.accept_ra net.ipv6.conf.eth0.accept_ra_defrtr\nrdisc6 eth0 2>/dev/null\ntcpdump -ni eth0 icmp6\n**Interpretation:** If accept_ra=0, the host ignores router advertisements and never autoconfigures. A missing default router means no RA or no radvd on the router. tcpdump shows whether RAs arrive.\n**Fix:** Enable `accept_ra=1` (and `accept_ra_defrtr=1`) and fix the router's RA/radvd config or DHCPv6 server. Persist with sysctl.d. Verify `ip -6 addr` gets a global address and `ip -6 route` a default."
+  },
+  {
+    "instruction": "A multihomed host responds from the wrong source IP. Diagnose source address selection.",
+    "output": "**Diagnose:**\nip route get <dest> from <ip>\nip rule list\nip addr\nsysctl net.ipv4.conf.all.rp_filter\n**Interpretation:** Without policy routing, the kernel picks the source by route lookup on the outgoing interface, which may not be the IP the remote expects (especially with multiple defaults). Return traffic then looks asymmetric.\n**Fix:** Add source-based policy rules/routes so replies use the matching IP: `ip rule add from <ip> table 100` with an appropriate default in table 100. Persist the config. Verify `ip route get <dest> from <ip>` uses the right source."
+  },
+  {
+    "instruction": "A network interface name changed after a kernel update, breaking config. Diagnose.",
+    "output": "**Diagnose:**\nip link\ncat /etc/netplan/*.yaml\njournalctl -k | grep -i renamed\n**Interpretation:** Predictable names (ens3, enp0s3) can change if hardware/PCI enumeration or firmware changes, leaving config referencing the old name. The journal logs the rename.\n**Fix:** Update the config to the new name, or pin the name with a udev rule / systemd .link file based on MAC. Apply with `netplan apply` or reboot, and verify the interface has the expected IP."
+  },
+  {
+    "instruction": "A server drops packets larger than a certain size between two subnets. Diagnose PMTU.",
+    "output": "**Diagnose:**\nping -M do -s 1400 <dest>\nping -M do -s 1472 <dest>\ntracepath --mtu <dest>\nsysctl net.ipv4.ip_no_pmtu_disc\n**Interpretation:** If small pings work and large ones fail, the path MTU is lower than the interface MTU and ICMP 'fragmentation needed' is blocked, so PMTUD fails. Connections hang after the handshake when larger data flows.\n**Fix:** Fix the MTU on the bottleneck link, allow ICMP type 3 code 4 through firewalls, or clamp MSS on the router (`iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu`). Verify with large `ping -M do`."
+  },
+  {
+    "instruction": "An alias IP on an interface is not reachable. Diagnose.",
+    "output": "**Diagnose:**\nip addr show eth0\nip route get <alias-ip>\narping -I eth0 <alias-ip> 2>/dev/null\nss -tlnp | grep <alias-ip>\ntcpdump -ni eth0 arp\n**Interpretation:** If the alias IP is on eth0 but clients cannot reach it, the upstream router/switch may not know the MAC for that IP, or the service is not listening on it. arping from the client shows L2 reachability.\n**Fix:** Ensure the service binds the alias IP, and if the alias is in a different subnet, add a route/ARP entry or use proxy ARP. Verify with arping and a connection to a bound service."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write JavaScript code that chains promises: fetchUser(id) returns a Promise resolving to {id, postId}, then chain to fetchPosts(postId) logging the title.",
+    "output": "function fetchUser(id) {\n  return Promise.resolve({ id, postId: 101 });\n}\nfunction fetchPosts(postId) {\n  return Promise.resolve({ postId, title: \"Hello\" });\n}\n\nfetchUser(1)\n  .then((user) => fetchPosts(user.postId))\n  .then((post) => console.log(post.title))\n  .catch((err) => console.error(err));"
+  },
+  {
+    "instruction": "Write an async/await function getUser(id) that awaits a fetch call, throws when the response is not ok, and returns the parsed JSON.",
+    "output": "async function getUser(id) {\n  const res = await fetch(`/api/users/${id}`);\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return res.json();\n}"
+  },
+  {
+    "instruction": "Write JavaScript code using Promise.all to fetch three URLs in parallel and log all results together.",
+    "output": "async function fetchAll(urls) {\n  const results = await Promise.all(urls.map((url) => fetch(url).then((r) => r.json())));\n  console.log(results);\n}\n\nfetchAll([\"/a\", \"/b\", \"/c\"]);"
+  },
+  {
+    "instruction": "Write JavaScript code that uses Promise.allSettled to run three tasks and report how many fulfilled and how many rejected.",
+    "output": "async function report(tasks) {\n  const results = await Promise.allSettled(tasks);\n  const ok = results.filter((r) => r.status === \"fulfilled\").length;\n  const failed = results.length - ok;\n  console.log({ ok, failed });\n}\n\nreport([\n  Promise.resolve(1),\n  Promise.reject(new Error(\"boom\")),\n  Promise.resolve(3),\n]); // { ok: 2, failed: 1 }"
+  },
+  {
+    "instruction": "Write a JavaScript withTimeout(promise, ms) helper that rejects with an Error if the promise does not settle within ms, using Promise.race.",
+    "output": "function withTimeout(promise, ms) {\n  let timer;\n  const timeout = new Promise((_, reject) => {\n    timer = setTimeout(() => reject(new Error(\"timeout\")), ms);\n  });\n  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));\n}\n\nwithTimeout(new Promise((r) => setTimeout(r, 100)), 50).catch((e) => console.log(e.message)); // \"timeout\""
+  },
+  {
+    "instruction": "Write a JavaScript async loop that awaits a promise-producing function sequentially over an array, collecting results in order.",
+    "output": "async function sequentialMap(items, fn) {\n  const out = [];\n  for (const item of items) {\n    out.push(await fn(item));\n  }\n  return out;\n}\n\nsequentialMap([1, 2, 3], (n) => Promise.resolve(n * 10)).then(console.log); // [10, 20, 30]"
+  },
+  {
+    "instruction": "Write a JavaScript promisify(fn) that converts a Node-style callback function (err, result) into one returning a Promise.",
+    "output": "function promisify(fn) {\n  return (...args) =>\n    new Promise((resolve, reject) => {\n      fn(...args, (err, result) => (err ? reject(err) : resolve(result)));\n    });\n}\n\nconst readAsPromise = promisify(require(\"fs\").readFile);\nreadAsPromise(\"package.json\", \"utf8\").then(console.log).catch(console.error);"
+  },
+  {
+    "instruction": "Write a JavaScript delay(ms) promise helper and an async function greetAfter(name) that logs a greeting after the delay.",
+    "output": "function delay(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms));\n}\n\nasync function greetAfter(name) {\n  await delay(500);\n  console.log(`Hello, ${name}!`);\n}\n\ngreetAfter(\"Ada\");"
+  },
+  {
+    "instruction": "Write JavaScript code that retries an async operation up to 3 times with a 100ms delay between attempts, stopping on success.",
+    "output": "async function retry(fn, times = 3, waitMs = 100) {\n  let lastError;\n  for (let i = 0; i < times; i++) {\n    try {\n      return await fn();\n    } catch (err) {\n      lastError = err;\n      if (i < times - 1) await new Promise((r) => setTimeout(r, waitMs));\n    }\n  }\n  throw lastError;\n}\n\nlet attempt = 0;\nretry(async () => {\n  attempt++;\n  if (attempt < 2) throw new Error(\"flaky\");\n  return \"ok\";\n}).then(console.log); // \"ok\""
+  },
+  {
+    "instruction": "Write an async function that uses AbortController to cancel a fetch after 2 seconds and handles the abort error.",
+    "output": "async function fetchWithAbort(url, ms = 2000) {\n  const controller = new AbortController();\n  const timer = setTimeout(() => controller.abort(), ms);\n  try {\n    const res = await fetch(url, { signal: controller.signal });\n    return await res.json();\n  } catch (err) {\n    if (err.name === \"AbortError\") {\n      console.log(\"request cancelled\");\n      return null;\n    }\n    throw err;\n  } finally {\n    clearTimeout(timer);\n  }\n}"
+  },
+  {
+    "instruction": "Write JavaScript code that awaits Promise.resolve values and a rejected promise inside try/catch, logging the error message.",
+    "output": "async function run() {\n  try {\n    const a = await Promise.resolve(1);\n    const b = await Promise.resolve(2);\n    await Promise.reject(new Error(\"nope\"));\n    console.log(a + b);\n  } catch (err) {\n    console.log(\"caught\", err.message); // \"caught nope\"\n  }\n}\n\nrun();"
+  },
+  {
+    "instruction": "Write a JavaScript async function parallelLimit(tasks, limit) that runs promise-producing tasks with at most `limit` running at once.",
+    "output": "async function parallelLimit(tasks, limit) {\n  const results = new Array(tasks.length);\n  let index = 0;\n  async function worker() {\n    while (index < tasks.length) {\n      const i = index++;\n      results[i] = await tasks[i]();\n    }\n  }\n  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));\n  return results;\n}\n\nparallelLimit(\n  [1, 2, 3, 4].map((n) => () => Promise.resolve(n * 2)),\n  2\n).then(console.log); // [2, 4, 6, 8]"
+  },
+  {
+    "instruction": "Write an async function main() that chains a thenable then and an await, demonstrating mixed promise styles safely with error handling.",
+    "output": "async function main() {\n  try {\n    const value = await Promise.resolve(2)\n      .then((n) => n * 5)\n      .then((n) => Promise.resolve(n + 1));\n    console.log(value); // 11\n  } catch (err) {\n    console.error(err);\n  }\n}\n\nmain();"
+  },
+  {
+    "instruction": "Write JavaScript code where an async function returns a promise and the caller attaches both .then and .catch plus an await in another async function.",
+    "output": "async function divide(a, b) {\n  if (b === 0) throw new Error(\"division by zero\");\n  return a / b;\n}\n\ndivide(10, 2).then((v) => console.log(v)); // 5\ndivide(1, 0).catch((err) => console.log(err.message)); // \"division by zero\"\n\nasync function callIt() {\n  const result = await divide(9, 3);\n  console.log(result); // 3\n}\ncallIt();"
+  },
+  {
+    "instruction": "Write a JavaScript fetchJson(url, options) wrapper that returns parsed JSON, sets an Accept header, and wraps network failures in a custom Error with a cause.",
+    "output": "async function fetchJson(url, options = {}) {\n  let res;\n  try {\n    res = await fetch(url, {\n      ...options,\n      headers: { Accept: \"application/json\", ...options.headers },\n    });\n  } catch (err) {\n    throw new Error(`network failure for ${url}`, { cause: err });\n  }\n  if (!res.ok) throw new Error(`HTTP ${res.status}`);\n  return res.json();\n}"
+  },
+  {
+    "instruction": "Write JavaScript code that implements Promise.myAll(promises) behaving like Promise.all, resolving when all settle and rejecting on the first rejection.",
+    "output": "function myAll(promises) {\n  return new Promise((resolve, reject) => {\n    const results = [];\n    let remaining = promises.length;\n    if (remaining === 0) return resolve(results);\n    promises.forEach((p, i) => {\n      Promise.resolve(p).then(\n        (value) => {\n          results[i] = value;\n          if (--remaining === 0) resolve(results);\n        },\n        (err) => reject(err)\n      );\n    });\n  });\n}\n\nmyAll([Promise.resolve(1), Promise.resolve(2)]).then(console.log); // [1, 2]"
+  },
+  {
+    "instruction": "Write an async function retryOnNetworkError(fn, attempts) that only retries when the thrown error is a TypeError (fetch network failure).",
+    "output": "async function retryOnNetworkError(fn, attempts = 3) {\n  let lastErr;\n  for (let i = 0; i < attempts; i++) {\n    try {\n      return await fn();\n    } catch (err) {\n      lastErr = err;\n      if (!(err instanceof TypeError)) throw err;\n    }\n  }\n  throw lastErr;\n}"
+  },
+  {
+    "instruction": "Write JavaScript code that sequences an async write then async read with await, and runs two independent async tasks concurrently with Promise.all.",
+    "output": "async function storeAndRead(value) {\n  const write = (v) => Promise.resolve(`stored:${v}`);\n  const read = (key) => Promise.resolve(key);\n\n  const key = await write(value);\n  const loaded = await read(key);\n\n  const [a, b] = await Promise.all([read(\"x\"), read(\"y\")]);\n  console.log(loaded, a, b);\n}\n\nstoreAndRead(42);"
+  },
+  {
+    "instruction": "Write a JavaScript promisePool(items, workerCount, worker) that processes items with limited concurrency and resolves to an array of results in input order.",
+    "output": "function promisePool(items, workerCount, worker) {\n  const results = new Array(items.length);\n  let next = 0;\n  async function run() {\n    while (next < items.length) {\n      const i = next++;\n      results[i] = await worker(items[i], i);\n    }\n  }\n  const workers = Array.from({ length: Math.min(workerCount, items.length) }, run);\n  return Promise.all(workers).then(() => results);\n}\n\npromisePool([1, 2, 3, 4, 5], 2, async (n) => n * n).then(console.log); // [1, 4, 9, 16, 25]"
+  },
+  {
+    "instruction": "Write an async function cachedFetch(url, cache) that stores promise results in a Map so concurrent duplicate calls share one in-flight promise.",
+    "output": "async function cachedFetch(url, cache) {\n  if (cache.has(url)) return cache.get(url);\n  const promise = fetch(url)\n    .then((res) => res.json())\n    .catch((err) => {\n      cache.delete(url);\n      throw err;\n    });\n  cache.set(url, promise);\n  return promise;\n}\n\nconst cache = new Map();\ncachedFetch(\"/api/me\", cache).then(console.log);"
+  }
+]

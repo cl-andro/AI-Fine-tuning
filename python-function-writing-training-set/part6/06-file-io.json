@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that reads a text file and returns the list of its lines without trailing newline characters, using a context manager.",
+    "output": "def read_lines(path):\n    with open(path, 'r', encoding='utf-8') as f:\n        return [line.rstrip('\\n') for line in f]\n\nprint(read_lines('notes.txt'))"
+  },
+  {
+    "instruction": "Write a Python function that writes a Python object to a JSON file with indentation and a trailing newline, creating parent directories if needed.",
+    "output": "import json, os\n\ndef write_json(path, data):\n    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)\n    with open(path, 'w', encoding='utf-8') as f:\n        json.dump(data, f, indent=2, ensure_ascii=False)\n        f.write('\\n')\n\nwrite_json('out/config.json', {'debug': True, 'workers': 4})"
+  },
+  {
+    "instruction": "Write a Python function that reads a CSV file and returns a list of dicts keyed by the header row, converting numeric fields to int or float when possible.",
+    "output": "import csv\n\ndef read_csv_dicts(path):\n    rows = []\n    with open(path, newline='', encoding='utf-8') as f:\n        for row in csv.DictReader(f):\n            converted = {}\n            for key, value in row.items():\n                try:\n                    converted[key] = float(value) if '.' in value else int(value)\n                except (ValueError, AttributeError):\n                    converted[key] = value\n            rows.append(converted)\n    return rows\n\nprint(read_csv_dicts('sales.csv'))"
+  },
+  {
+    "instruction": "Write a Python function that counts lines, words and bytes in a file in a single pass without loading the whole file into memory.",
+    "output": "def file_stats(path):\n    lines = words = bytes_count = 0\n    with open(path, 'rb') as f:\n        for line in f:\n            lines += 1\n            bytes_count += len(line)\n            words += len(line.split())\n    return {'lines': lines, 'words': words, 'bytes': bytes_count}\n\nprint(file_stats('data.txt'))"
+  },
+  {
+    "instruction": "Write a Python function that recursively finds all files matching a glob-style pattern beneath a root directory using pathlib.",
+    "output": "from pathlib import Path\n\ndef find_files(root, pattern):\n    return sorted(str(p) for p in Path(root).rglob(pattern) if p.is_file())\n\nprint(find_files('.', '*.py'))"
+  },
+  {
+    "instruction": "Write a Python function that copies an entire directory tree to a destination, overwriting existing files, using shutil.",
+    "output": "import shutil\n\ndef copy_tree(src, dst):\n    shutil.copytree(src, dst, dirs_exist_ok=True)\n    return dst\n\nprint(copy_tree('assets', 'backup/assets'))"
+  },
+  {
+    "instruction": "Write a Python function that writes text to a file atomically by writing to a temporary file in the same directory and then renaming it over the target.",
+    "output": "import os, tempfile\n\ndef atomic_write(path, text):\n    directory = os.path.dirname(path) or '.'\n    fd, tmp = tempfile.mkstemp(dir=directory, prefix='.tmp-')\n    try:\n        with os.fdopen(fd, 'w', encoding='utf-8') as f:\n            f.write(text)\n        os.replace(tmp, path)\n    except BaseException:\n        if os.path.exists(tmp):\n            os.unlink(tmp)\n        raise\n\natomic_write('state.txt', 'ready')"
+  },
+  {
+    "instruction": "Write a Python function that returns the last n lines of a file efficiently by reading blocks from the end of the file.",
+    "output": "def tail(path, n=10):\n    with open(path, 'rb') as f:\n        f.seek(0, 2)\n        end = f.tell()\n        block, lines = 4096, []\n        data = b''\n        while end > 0 and data.count(b'\\n') <= n:\n            step = min(block, end)\n            end -= step\n            f.seek(end)\n            data = f.read(step) + data\n        lines = data.splitlines()\n    return [line.decode('utf-8') for line in lines[-n:]]\n\nprint(tail('server.log', 5))"
+  },
+  {
+    "instruction": "Write a Python function that compresses a file with gzip and returns the path of the compressed file.",
+    "output": "import gzip, shutil\n\ndef gzip_file(path):\n    gz_path = path + '.gz'\n    with open(path, 'rb') as src, gzip.open(gz_path, 'wb') as dst:\n        shutil.copyfileobj(src, dst)\n    return gz_path\n\nprint(gzip_file('report.csv'))"
+  },
+  {
+    "instruction": "Write a Python generator function that yields fixed-size chunks of a large file as bytes, useful for streaming uploads.",
+    "output": "def iter_file_chunks(path, size=8192):\n    with open(path, 'rb') as f:\n        while True:\n            chunk = f.read(size)\n            if not chunk:\n                break\n            yield chunk\n\nfor c in iter_file_chunks('big.bin', 1024):\n    print(len(c))"
+  },
+  {
+    "instruction": "Write a Python function that appends a timestamped message to a log file, one ISO-8601 line per call.",
+    "output": "from datetime import datetime\n\ndef append_log(path, message):\n    stamp = datetime.now().isoformat(timespec='seconds')\n    with open(path, 'a', encoding='utf-8') as f:\n        f.write(f'{stamp} {message}\\n')\n\nappend_log('app.log', 'service started')"
+  },
+  {
+    "instruction": "Write a Python function that joins a user-supplied relative path to a base directory and rejects paths that would escape the base directory.",
+    "output": "import os\n\ndef safe_join(base, *paths):\n    target = os.path.normpath(os.path.join(base, *paths))\n    base_abs = os.path.abspath(base)\n    if not os.path.abspath(target).startswith(base_abs + os.sep) and os.path.abspath(target) != base_abs:\n        raise ValueError('path escapes the base directory')\n    return target\n\nprint(safe_join('/srv/data', 'reports', 'jan.csv'))"
+  },
+  {
+    "instruction": "Write a Python function that returns a human-readable file size string such as '1.5 MB' for a given number of bytes.",
+    "output": "def human_filesize(num_bytes):\n    units = ['B', 'KB', 'MB', 'GB', 'TB']\n    size = float(num_bytes)\n    for unit in units:\n        if size < 1024 or unit == units[-1]:\n            return f'{size:.1f} {unit}' if unit != 'B' else f'{int(size)} B'\n        size /= 1024\n\nprint(human_filesize(1536000))"
+  },
+  {
+    "instruction": "Write a Python function that removes duplicate lines from a file while preserving first-occurrence order and writes the result to a new file.",
+    "output": "def dedupe_file(src, dst):\n    seen, kept = set(), []\n    with open(src, 'r', encoding='utf-8') as f:\n        for line in f:\n            if line not in seen:\n                seen.add(line)\n                kept.append(line)\n    with open(dst, 'w', encoding='utf-8') as f:\n        f.writelines(kept)\n    return len(kept)\n\nprint(dedupe_file('raw.txt', 'clean.txt'))"
+  },
+  {
+    "instruction": "Write a Python function that encodes the contents of a file to base64 and writes it to another file.",
+    "output": "import base64\n\ndef base64_encode_file(src, dst):\n    with open(src, 'rb') as f:\n        encoded = base64.b64encode(f.read())\n    with open(dst, 'wb') as f:\n        f.write(encoded)\n    return len(encoded)\n\nprint(base64_encode_file('photo.png', 'photo.b64'))"
+  },
+  {
+    "instruction": "Write a Python function that writes a list of dicts to a CSV file, deriving the column order from the first record.",
+    "output": "import csv\n\ndef write_csv(path, rows):\n    if not rows:\n        raise ValueError('no rows to write')\n    with open(path, 'w', newline='', encoding='utf-8') as f:\n        writer = csv.DictWriter(f, fieldnames=list(rows[0]))\n        writer.writeheader()\n        writer.writerows(rows)\n\nwrite_csv('out.csv', [{'name': 'ann', 'score': 91}, {'name': 'bob', 'score': 84}])"
+  },
+  {
+    "instruction": "Write a Python function that searches a file with a regular expression and returns a list of (line_number, matched_text) pairs.",
+    "output": "import re\n\ndef search_file(path, pattern):\n    results = []\n    rx = re.compile(pattern)\n    with open(path, 'r', encoding='utf-8') as f:\n        for number, line in enumerate(f, 1):\n            for match in rx.finditer(line):\n                results.append((number, match.group(0)))\n    return results\n\nprint(search_file('access.log', r'ERROR.*'))"
+  },
+  {
+    "instruction": "Write a Python function that watches a file for modifications by comparing mtimes and returns True when the file changed since a previously recorded stamp.",
+    "output": "import os, time\n\ndef file_changed(path, last_stamp):\n    current = os.path.getmtime(path)\n    return current != last_stamp, current\n\nstamp = time.time()\nchanged, stamp = file_changed('config.yaml', stamp)\nprint(changed)"
+  },
+  {
+    "instruction": "Write a Python function that creates a temporary directory, writes files into it, and guarantees cleanup even on failure.",
+    "output": "import os, tempfile\n\ndef with_temp_workspace(work):\n    with tempfile.TemporaryDirectory(prefix='job-') as tmp:\n        input_path = os.path.join(tmp, 'input.txt')\n        with open(input_path, 'w', encoding='utf-8') as f:\n            f.write('payload')\n        return work(tmp, input_path)\n\nprint(with_temp_workspace(lambda tmp, path: os.path.exists(path)))"
+  },
+  {
+    "instruction": "Write a Python function that reads an INI-style configuration file with configparser and returns a nested dict, applying defaults for missing sections.",
+    "output": "import configparser\n\ndef read_config(path):\n    parser = configparser.ConfigParser()\n    if not parser.read(path):\n        raise FileNotFoundError(path)\n    parser.setdefault('core', {})\n    parser['core'].setdefault('log_level', 'INFO')\n    return {section: dict(parser[section]) for section in parser.sections()}\n\nprint(read_config('app.ini'))"
+  }
+]

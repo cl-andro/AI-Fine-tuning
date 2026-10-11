@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: analytics script loading a 12 GB CSV into a single DataFrame.\n\nTraceback (most recent call last):\n  File \"/app/analytics.py\", line 8, in <module>\n    df = pd.read_csv(\"/data/big.csv\")\n  File \"/usr/lib/python3.11/site-packages/pandas/io/parsers/readers.py\", line 912, in read\nMemoryError",
+    "output": "**Root cause:** the process tries to materialise the whole 12 GB file plus Python object overhead in RAM, exceeding the container's memory limit.\n**Fix:** Stream in chunks (`pd.read_csv(..., chunksize=50_000)`), use efficient dtypes/Parquet, and raise the container memory limit."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: batch client calling a partner endpoint with a 5 second read timeout.\n\nrequests.exceptions.ReadTimeout: HTTPSConnectionPool(host='partner.example.com', port=443): Read timed out. (read timeout=5)",
+    "output": "**Root cause:** the partner accepted the connection but did not send a response byte within 5 s, so the client aborted the read.\n**Fix:** Increase the timeout for this endpoint (with a retry/backoff budget) and ask the partner to check their p95 latency."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: JVM service (default heap) caching every row it reads from the warehouse.\n\njava.lang.OutOfMemoryError: Java heap space\n\tat java.util.Arrays.copyOf(Arrays.java:3512)\n\tat java.base/java.util.ArrayList.grow(ArrayList.java:425)\n\tat com.acme.cache.RowCache.add(RowCache.java:64)",
+    "output": "**Root cause:** `RowCache` never evicts, so the heap fills with every row read and the JVM cannot allocate more.\n**Fix:** Bound the cache (size/TTL eviction, e.g. Caffeine), stream rows instead of accumulating, and raise `-Xmx` only as a stopgap."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: JVM under steady traffic spending all time in garbage collection.\n\njava.lang.OutOfMemoryError: GC overhead limit exceeded\n\tat com.acme.report.Aggregator.snapshot(Aggregator.java:112)\n\tat com.acme.report.ReportJob.run(ReportJob.java:38)",
+    "output": "**Root cause:** the JVM spends over 98% of time collecting and still cannot free enough memory - the classic symptom of a leak (retained report objects).\n**Fix:** Fix retention (drop references/clear collections), enable heap dumps (`-XX:+HeapDumpOnOutOfMemoryError`) to find the dominator, then tune `-Xmx`."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: thread pool with no upper bound spawning workers on every request.\n\njava.lang.OutOfMemoryError: unable to create new native thread\n\tat java.lang.Thread.start0(Native Method)\n\tat java.lang.Thread.start(Thread.java:803)\n\tat com.acme.pool.TaskFactory.spawn(TaskFactory.java:51)",
+    "output": "**Root cause:** thread count (or the process's `ulimit -u`/cgroup pids limit) is exhausted because unbounded executors keep creating threads.\n**Fix:** Use bounded pools with a queue and rejection policy, reuse threads, and raise `ulimit -u` only after removing the unbounded creation."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Java HTTP client fetching a slow report with a 2 second socket timeout.\n\njava.net.SocketTimeoutException: Read timed out\n\tat java.base/java.net.SocketInputStream.socketRead0(Native Method)\n\tat com.acme.http.Client.get(Client.java:73)\n\tat com.acme.jobs.ReportFetcher.fetch(ReportFetcher.java:29)",
+    "output": "**Root cause:** the server took longer than 2 s to send response bytes, so the socket read timed out and the call failed.\n**Fix:** Raise the read timeout for report endpoints (or make the call async), and instrument the server to find the slow stage."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Node ETL pushing every database row into one array.\n\n<--- Last few GCs --->\n[9112:0x61a8c0]  128456 ms: Mark-Compact 4088.9 (4126.2) -> 4094.1 (4131.7) MB, 1204.2 / 0.0 ms  (average = 1.1 ms, alloc rate = 3020 MB/s) last resort\n\nFATAL ERROR: CALL_AND_LAST_RETRY Allocation failed - JavaScript heap out of memory",
+    "output": "**Root cause:** the default heap (about 4 GB) is filled by the accumulating `rows` array, so V8 exhausts the heap and aborts.\n**Fix:** Process in batches with a cursor/stream (`Readable.fromIterable`), and set `--max-old-space-size` after fixing the accumulation."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: HTTP client waiting on an upload endpoint.\n\nAggregateError: timeout of 30000ms exceeded\n    at RedirectableRequest.handleRequestTimeout (node_modules/axios/lib/adapters/http.js:646:16)\n    at RedirectableRequest.emit (node:events:529:35)",
+    "output": "**Root cause:** the request did not complete within axios's 30 s timeout (the server kept the connection open without finishing).\n**Fix:** Increase `timeout` for large uploads, send progress/heartbeats server-side, and switch to streaming uploads that do not buffer everything."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Go service under a traffic spike.\n\nruntime: out of memory: cannot allocate 2048KB (4096000 KiB in use), maxArenaHits=1000\nfatal error: out of memory\n\ngoroutine 1 [running]:\nruntime.throw({0x4a3d1d?, 0x0?})\n\t/usr/local/go/src/runtime/panic.go:1047 +0x48 fp=0xc000081f00\nmain.main()\n\t/app/main.go:12 +0x1a",
+    "output": "**Root cause:** RSS reached the cgroup/container limit while Go's heap arenas were growing, so the runtime aborts.\n**Fix:** Cap concurrent buffering (semaphores/`io.LimitReader`), profile with `pprof`, and give the container enough memory for the real working set."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: synchronous report endpoint that aggregates a year of events.\n\ncode = DeadlineExceeded (deadline exceeded), desc = \"context deadline exceeded\"\n\tat client.call(...)\n\t/reportpb.ReportService/Build\n\napp log: context canceled - context deadline exceeded while executing query",
+    "output": "**Root cause:** the caller's `context.WithTimeout` (5 s) expired while the report query was still running, cancelling it.\n**Fix:** Move report generation to a job with an async status endpoint (or raise the deadline and speed up the query)."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Kubernetes pod running the JVM worker.\n\nkubectl describe pod worker-7d9c8:\n  State:          Waiting\n  Reason:         CrashLoopBackOff\n  Last State:     Terminated\n  Reason:         OOMKilled\n  Exit Code:      137\n  Limits:         memory: 256Mi",
+    "output": "**Root cause:** the container's 256 Mi limit is below the JVM's real working set, so the kernel OOM killer terminates PID 1 (exit 137 = 128+SIGKILL).\n**Fix:** Size the limit above `-Xmx` + metaspace/native overhead, set `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75`, and use a proper JVM base image."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: shell in a production container running a heavy import step.\n\n$ ./import.sh --file big.csv\nimport.sh: line 34: 127  Killed\n\n$ dmesg | tail -2\n[41234.112] Memory cgroup out of memory: Killed process 127 (python3) total-vm:1942016kB, anon-rss:1028016kB",
+    "output": "**Root cause:** the cgroup memory limit was exceeded, and the kernel OOM killer SIGKILLed the process (no graceful shutdown).\n**Fix:** Run the import in batches under the limit, add memory requests/limits sized to the job, and monitor cgroup usage alerts."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: async worker awaiting a downstream call with a 5 second budget.\n\nTraceback (most recent call last):\n  File \"/app/worker.py\", line 51, in fetch_all\n    result = await asyncio.wait_for(client.get(url), timeout=5)\n  File \"/usr/lib/python3.11/asyncio/tasks.py\", line 502, in wait_for\n    raise exceptions.TimeoutError\nasyncio.exceptions.TimeoutError",
+    "output": "**Root cause:** the awaited HTTP call did not finish within the 5 s `wait_for` budget, so the future was cancelled with TimeoutError.\n**Fix:** Enlarge the budget where the work legitimately takes longer, or parallelise/queue the work instead of awaiting serially."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: gRPC client calling a recommendation service with a 2 s deadline.\n\nrpc error: code = DeadlineExceeded desc = context deadline exceeded\n\tat client.unaryCall(...)\n\tat com.acme.grpc.RecommendClient.fetch(RecommendClient.java:58)",
+    "output": "**Root cause:** the server did not send a status within the client's 2 s deadline; the call was cancelled as DeadlineExceeded.\n**Fix:** Increase the deadline for this method, add server-side timeouts/metrics to find the slow handler, and make the client fail soft when recommendations are late."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: MySQL warehouse running an unindexed reporting query with a 30 s cap.\n\nERROR 3024 (HY000): Query execution was interrupted, maximum statement execution time exceeded",
+    "output": "**Root cause:** the query exceeded `max_statement_execution_time` (30 s), so the server killed it mid-flight.\n**Fix:** Add the missing index (check `EXPLAIN`), narrow the date range, or raise the limit only for known-long analytical queries."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: PostgreSQL job running a heavy update inside a batch.\n\nERROR:  canceling statement due to statement timeout\n\napp log: duration: 30012.487 ms  statement: UPDATE events SET archived = true WHERE tenant_id = $1",
+    "output": "**Root cause:** the statement hit `statement_timeout = 30s`, so PostgreSQL cancelled it before completion.\n**Fix:** Index the filter (or batch the update by primary-key ranges) and keep the timeout as protection rather than raising it blindly."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Redis session store with `maxmemory 512mb` and no eviction policy.\n\n(error) OOM command not allowed when used memory > 'maxmemory'",
+    "output": "**Root cause:** the instance is at `maxmemory` with `maxmemory-policy noeviction`, so write commands are refused.\n**Fix:** Set an eviction policy (`allkeys-lru`), expire keys with TTLs, and grow `maxmemory` if the working set genuinely requires it."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: JDBC service with a pool of 10 connections under peak load.\n\nHHH000342: Could not obtain connection to query metadata\nCaused by: java.sql.SQLException: Connection is not available, request timed out after 30000ms\n\tat com.zaxxer.hikari.pool.HikariPool.getConnection(HikariPool.java:696)\n\tat com.acme.dao.OrderDao.find(OrderDao.java:41)",
+    "output": "**Root cause:** all 10 pooled connections are checked out (slow queries hold them), so the next borrower times out after 30 s.\n**Fix:** Find the leak/slow query holding connections, shorten transaction scope, and size `maximumPoolSize` to the database's real capacity."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: monitoring script probing a partner API from cron.\n\ncurl: (28) Operation timed out after 300001 milliseconds with 0 bytes received (exit code 28)",
+    "output": "**Root cause:** the server accepted the TCP connection but sent no response body within 5 minutes, so curl gave up.\n**Fix:** Reduce `--max-time`, investigate upstream saturation on their side, and page on consecutive timeouts rather than a single probe."
+  },
+  {
+    "instruction": "Root cause this memory/timeout failure.\nContext: Python client reading from a queue socket with a 5 second timeout.\n\nTraceback (most recent call last):\n  File \"/app/consumer.py\", line 63, in poll\n    chunk = sock.recv(4096)\nsocket.timeout: timed out",
+    "output": "**Root cause:** no data arrived within the 5 s socket timeout; the consumer treats the timeout as fatal and exits.\n**Fix:** Catch `socket.timeout` and treat it as \"no message yet\" (loop/heartbeat), reconnecting only after repeated idle failures."
+  }
+]

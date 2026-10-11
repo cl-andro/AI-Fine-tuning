@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef parse_port(s):\n    try:\n        return int(s)\n    except:\n        pass",
+    "output": "**Issue:** Bare except that swallows every exception and returns None.\n**Why:** KeyboardInterrupt, SystemExit and real bugs are eaten, and callers get None with no explanation.\n**Fix:**\ndef parse_port(s):\n    try:\n        return int(s)\n    except (TypeError, ValueError) as e:\n        raise ValueError(f'invalid port: {s!r}') from e"
+  },
+  {
+    "instruction": "Review this code:\n\nfor line in data:\n    try:\n        record = json.loads(line)\n        db.insert(record)\n    except Exception:\n        continue",
+    "output": "**Issue:** Every failure in the batch is silently discarded.\n**Why:** A schema change or DB outage can reject 100% of records and the job still exits with code 0.\n**Fix:**\nfailed = []\nfor i, line in enumerate(data):\n    try:\n        db.insert(json.loads(line))\n    except Exception as e:\n        failed.append((i, e))\nif failed:\n    logger.error('%d/%d records failed', len(failed), len(data))\n    raise RuntimeError(f'{len(failed)} records failed: {failed[:5]}')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef apply_discount(price, user):\n    try:\n        rate = user.coupons[0].rate\n        if price * rate > 100:\n            rate = 0.5\n        return price * rate\n    except Exception:\n        return price",
+    "output": "**Issue:** The try block covers business logic, so genuine bugs (e.g. typo'd attribute) are hidden behind a 'safe' default.\n**Why:** The coupon logic silently stops working in production and no one notices the except path is always taken.\n**Fix:**\ndef apply_discount(price, user):\n    try:\n        rate = user.coupons[0].rate\n    except (AttributeError, IndexError):\n        return price\n    if price * rate > 100:\n        rate = 0.5\n    return price * rate"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_config(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except Exception as e:\n        raise Exception('could not read config')",
+    "output": "**Issue:** Raises a generic Exception that discards the original error type and traceback.\n**Why:** Callers cannot catch FileNotFoundError vs JSONDecodeError, and the message loses the path and parser detail.\n**Fix:**\ndef read_config(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except (OSError, json.JSONDecodeError) as e:\n        raise RuntimeError(f'could not read config {path}') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef to_int(v):\n    try:\n        return int(v)\n    except Exception:\n        raise ValueError('bad input')",
+    "output": "**Issue:** Re-raising without `from e` breaks the exception chain.\n**Why:** The traceback shows ValueError with no record of the original TypeError/ValueError, making debugging guesswork.\n**Fix:**\ndef to_int(v):\n    try:\n        return int(v)\n    except (TypeError, ValueError) as e:\n        raise ValueError(f'bad input: {v!r}') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load(path):\n    try:\n        return open(path).read()\n    except IOError:\n        sys.exit('missing file: ' + path)",
+    "output": "**Issue:** sys.exit() inside a reusable function.\n**Why:** Library code should not terminate the interpreter; it makes the function untestable and unusable from notebooks or services.\n**Fix:**\nclass ConfigError(Exception):\n    pass\n\ndef load(path):\n    try:\n        with open(path) as f:\n            return f.read()\n    except OSError as e:\n        raise ConfigError(f'missing file: {path}') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef create_user(payload):\n    assert 'name' in payload and 'email' in payload\n    return db.create(payload)",
+    "output": "**Issue:** assert used for validating untrusted input.\n**Why:** Running Python with -O removes all asserts, so validation disappears exactly in optimized deployments.\n**Fix:**\ndef create_user(payload):\n    missing = {'name', 'email'} - payload.keys()\n    if missing:\n        raise ValueError(f'missing fields: {sorted(missing)}')\n    return db.create(payload)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef compute(rows):\n    try:\n        total = sum(r['amount'] for r in rows)\n        return total / len(rows)\n    finally:\n        return round(total, 2)",
+    "output": "**Issue:** return inside finally swallows any in-flight exception.\n**Why:** If rows is empty, ZeroDivisionError is raised but finally's return discards it, so the caller gets a bogus value instead of an error.\n**Fix:**\ndef compute(rows):\n    if not rows:\n        raise ValueError('rows must not be empty')\n    total = sum(r['amount'] for r in rows)\n    return round(total / len(rows), 2)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef stop(worker):\n    try:\n        worker.stop()\n    except:\n        pass",
+    "output": "**Issue:** Bare except also catches KeyboardInterrupt and SystemExit.\n**Why:** Ctrl-C during shutdown silently does nothing, leaving the process unkillable through normal signals.\n**Fix:**\ndef stop(worker):\n    try:\n        worker.stop()\n    except OSError:\n        logger.warning('worker already stopped')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load_settings():\n    with open('settings.json') as f:\n        return json.load(f)\n\nsettings = load_settings()",
+    "output": "**Issue:** No handling for a missing or malformed settings file.\n**Why:** First deploy without the file crashes with an unhandled FileNotFoundError and an unhelpful traceback at import time.\n**Fix:**\nimport os, json, logging\n\ndef load_settings():\n    if not os.path.exists('settings.json'):\n        logging.warning('settings.json missing; using defaults')\n        return {}\n    try:\n        with open('settings.json') as f:\n            return json.load(f)\n    except json.JSONDecodeError as e:\n        raise RuntimeError('settings.json is not valid JSON') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef fetch_user(uid):\n    resp = requests.get(f'https://api.example.com/users/{uid}')\n    return resp.json()",
+    "output": "**Issue:** HTTP request without timeout and without status checking.\n**Why:** A stalled server hangs the caller forever; a 500 response is parsed as JSON and raises an opaque JSONDecodeError.\n**Fix:**\nimport requests\n\ndef fetch_user(uid):\n    resp = requests.get(f'https://api.example.com/users/{uid}', timeout=10)\n    resp.raise_for_status()\n    return resp.json()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef download_all(urls):\n    results = []\n    for u in urls:\n        while True:\n            try:\n                results.append(requests.get(u).content)\n                break\n            except Exception:\n                pass\n    return results",
+    "output": "**Issue:** Retry loop with no attempt limit and no backoff.\n**Why:** A permanently dead host spins forever, pegging a worker; even transient errors are retried in a tight hot loop.\n**Fix:**\nimport time\n\ndef download_all(urls, attempts=3):\n    results = []\n    for u in urls:\n        for attempt in range(attempts):\n            try:\n                results.append(requests.get(u, timeout=10).content)\n                break\n            except requests.RequestException:\n                if attempt == attempts - 1:\n                    raise\n                time.sleep(2 ** attempt)\n    return results"
+  },
+  {
+    "instruction": "Review this code:\n\ndef divide(a, b):\n    try:\n        return a / b\n    except Exception as e:\n        print('error: ' + str(e))",
+    "output": "**Issue:** Failures reported with print and swallowed as a None return.\n**Why:** print goes to stdout (often discarded), no traceback is recorded, and callers crash later on None.\n**Fix:**\nimport logging\n\ndef divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        logging.exception('divide called with b=0')\n        raise"
+  },
+  {
+    "instruction": "Review this code:\n\ndef get_price(product_id):\n    row = db.query('SELECT price FROM products WHERE id = %s', product_id)\n    if row is None:\n        return None\n    return row[0]",
+    "output": "**Issue:** Returns None both for 'not found' and (implicitly) for failures, so errors are indistinguishable from missing data.\n**Why:** Callers treat None as 'free product' and silently apply a zero price.\n**Fix:**\nclass NotFound(Exception):\n    pass\n\ndef get_price(product_id):\n    row = db.query('SELECT price FROM products WHERE id = %s', product_id)\n    if row is None:\n        raise NotFound(product_id)\n    return row[0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef parse(data):\n    try:\n        obj = json.loads(data)\n    except Exception as e:\n        try:\n            raise ValueError('parse failed: ' + str(e))\n        except ValueError:\n            pass\n    return obj",
+    "output": "**Issue:** A nested except replaces the original failure and then swallows the replacement too.\n**Why:** obj is referenced before assignment (NameError), and the root cause json.JSONDecodeError is lost.\n**Fix:**\nimport json\n\ndef parse(data):\n    try:\n        return json.loads(data)\n    except json.JSONDecodeError as e:\n        raise ValueError('parse failed') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_key(path):\n    try:\n        with open(path) as f:\n            return f.read().strip()\n    except Exception:\n        return 'default-key'",
+    "output": "**Issue:** Broad except masks permission errors and directory-instead-of-file errors as 'missing key'.\n**Why:** A misconfigured 000-permissions secret silently falls back to a weak default key in production.\n**Fix:**\ndef read_key(path):\n    try:\n        with open(path) as f:\n            return f.read().strip()\n    except FileNotFoundError:\n        return 'default-key'\n    except OSError as e:\n        raise RuntimeError(f'cannot read key file {path}: {e}') from e"
+  },
+  {
+    "instruction": "Review this code:\n\ndef connect():\n    try:\n        return make_socket()\n    except SocketError:\n        pass\n\ndef connect_with_retry():\n    while True:\n        try:\n            return connect()\n        except Exception:\n            time.sleep(1)",
+    "output": "**Issue:** connect() converts a SocketError into None (pass), so the retry loop never sees a failure and returns None immediately.\n**Why:** The retry wrapper retries only on exceptions; a swallowed error short-circuits it and None propagates.\n**Fix:**\ndef connect():\n    return make_socket()\n\ndef connect_with_retry(attempts=5):\n    last = None\n    for i in range(attempts):\n        try:\n            return connect()\n        except SocketError as e:\n            last = e\n            time.sleep(2 ** i)\n    raise RuntimeError('connect failed') from last"
+  },
+  {
+    "instruction": "Review this code:\n\ndef close_all(resources):\n    for r in resources:\n        try:\n            r.close()\n        except Exception:\n            raise RuntimeError('cleanup failed')",
+    "output": "**Issue:** Cleanup raises on the first failure, abandoning the remaining resources.\n**Why:** If three files are open and the first close fails, the other two are leaked and the original exception is hidden.\n**Fix:**\ndef close_all(resources):\n    errors = []\n    for r in resources:\n        try:\n            r.close()\n        except Exception as e:\n            errors.append(e)\n    if errors:\n        raise RuntimeError(f'{len(errors)} resources failed to close') from errors[0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef send(order):\n    err = place_order(order)\n    if err:\n        pass\n    notify_customer(order)\n    return True",
+    "output": "**Issue:** The error returned by place_order is assigned and then ignored.\n**Why:** The customer is notified and success is reported even when the order failed.\n**Fix:**\ndef send(order):\n    err = place_order(order)\n    if err:\n        raise RuntimeError(f'place_order failed: {err}')\n    notify_customer(order)\n    return True"
+  },
+  {
+    "instruction": "Review this code:\n\ndef get_record(uid):\n    try:\n        return db.fetch(uid)\n    except Exception as e:\n        if 'timeout' in str(e):\n            return None\n        if 'not found' in str(e):\n            return None\n        raise",
+    "output": "**Issue:** Errors classified by substring matching on the message.\n**Why:** Exception messages change between driver versions and locales, so the branch silently stops matching and the wrong path runs.\n**Fix:**\nfrom db import TimeoutError, NotFoundError\n\ndef get_record(uid):\n    try:\n        return db.fetch(uid)\n    except (TimeoutError, NotFoundError):\n        return None"
+  }
+]

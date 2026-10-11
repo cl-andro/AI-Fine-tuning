@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a TypeScript generic identity function identity<T>(value: T): T and show calls with a string and a number.",
+    "output": "function identity<T>(value: T): T {\n  return value;\n}\n\nconst s = identity(\"hello\"); // string\nconst n = identity(42); // number\nconsole.log(s, n);"
+  },
+  {
+    "instruction": "Write a TypeScript generic class Stack<T> with push, pop, peek and a size getter, throwing on pop of an empty stack.",
+    "output": "class Stack<T> {\n  private items: T[] = [];\n\n  push(item: T): void {\n    this.items.push(item);\n  }\n\n  pop(): T {\n    if (this.items.length === 0) throw new Error(\"Stack is empty\");\n    return this.items.pop()!;\n  }\n\n  peek(): T | undefined {\n    return this.items[this.items.length - 1];\n  }\n\n  get size(): number {\n    return this.items.length;\n  }\n}\n\nconst stack = new Stack<number>();\nstack.push(1);\nconsole.log(stack.pop()); // 1"
+  },
+  {
+    "instruction": "Write a TypeScript generic function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] that extracts one property from each object.",
+    "output": "function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {\n  return items.map((item) => item[key]);\n}\n\nconst users = [\n  { id: 1, name: \"Ada\" },\n  { id: 2, name: \"Grace\" },\n];\nconsole.log(pluck(users, \"name\")); // [\"Ada\", \"Grace\"]"
+  },
+  {
+    "instruction": "Write TypeScript code using Partial<T> to update a user record with only the provided fields, in an updateUser function.",
+    "output": "interface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\nfunction updateUser(user: User, changes: Partial<Omit<User, \"id\">>): User {\n  return { ...user, ...changes };\n}\n\nconst updated = updateUser(\n  { id: 1, name: \"Ada\", email: \"ada@example.com\" },\n  { email: \"new@example.com\" }\n);\nconsole.log(updated);"
+  },
+  {
+    "instruction": "Write TypeScript code using Record<K, V> to build a lookup table from an array of {id, label} objects.",
+    "output": "interface Item {\n  id: string;\n  label: string;\n}\n\nfunction indexById(items: Item[]): Record<string, Item> {\n  const out: Record<string, Item> = {};\n  for (const item of items) {\n    out[item.id] = item;\n  }\n  return out;\n}\n\nconst byId = indexById([{ id: \"a\", label: \"Alpha\" }]);\nconsole.log(byId.a.label); // \"Alpha\""
+  },
+  {
+    "instruction": "Write TypeScript code using Pick<T, K> to create a public view of a User with only id and name, and Omit to strip the password field.",
+    "output": "interface Account {\n  id: number;\n  name: string;\n  email: string;\n  passwordHash: string;\n}\n\ntype PublicUser = Pick<Account, \"id\" | \"name\">;\ntype SafeAccount = Omit<Account, \"passwordHash\">;\n\nconst pub: PublicUser = { id: 1, name: \"Ada\" };\nconsole.log(pub);"
+  },
+  {
+    "instruction": "Write TypeScript code using Readonly<T> and ReadonlyArray<T> to define immutable config and ensure push is rejected on the array.",
+    "output": "interface AppConfig {\n  readonly apiUrl: string;\n  readonly flags: ReadonlyArray<string>;\n}\n\nconst config: AppConfig = {\n  apiUrl: \"https://api.example.com\",\n  flags: [\"beta\", \"dark\"],\n};\n\nconfig.apiUrl = \"other\"; // Error\nconfig.flags.push(\"x\"); // Error: Property 'push' does not exist"
+  },
+  {
+    "instruction": "Write a generic TypeScript function firstOf<T>(items: readonly T[]): T | undefined, and a constrained generic filterTruthy<T>(items: T[]): T[] that removes null and undefined.",
+    "output": "function firstOf<T>(items: readonly T[]): T | undefined {\n  return items[0];\n}\n\nfunction filterTruthy<T>(items: (T | null | undefined)[]): T[] {\n  return items.filter((item): item is T => item != null);\n}\n\nconsole.log(firstOf([1, 2, 3])); // 1\nconsole.log(filterTruthy([1, null, 2, undefined])); // [1, 2]"
+  },
+  {
+    "instruction": "Write TypeScript code using ReturnType<typeof fn> and Parameters<typeof fn> to type a wrapper around an existing function.",
+    "output": "function fetchUser(id: number): Promise<{ id: number; name: string }> {\n  return Promise.resolve({ id, name: \"Ada\" });\n}\n\ntype FetchUserReturn = ReturnType<typeof fetchUser>;\ntype FetchUserParams = Parameters<typeof fetchUser>;\n\nasync function wrapper(...args: FetchUserParams): FetchUserReturn {\n  console.log(\"calling with\", args[0]);\n  return fetchUser(...args);\n}\n\nwrapper(1).then((u) => console.log(u.name));"
+  },
+  {
+    "instruction": "Write a TypeScript generic function memoize<TArgs extends unknown[], TResult>(fn: (...args: TArgs) => TResult) with proper generic typing.",
+    "output": "function memoize<TArgs extends unknown[], TResult>(\n  fn: (...args: TArgs) => TResult\n): (...args: TArgs) => TResult {\n  const cache = new Map<string, TResult>();\n  return (...args: TArgs) => {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) return cache.get(key)!;\n    const result = fn(...args);\n    cache.set(key, result);\n    return result;\n  };\n}\n\nconst slow = memoize((n: number) => n ** 2);\nconsole.log(slow(5)); // 25"
+  },
+  {
+    "instruction": "Write TypeScript code using Exclude and Extract to derive subtypes from a union of event names.",
+    "output": "type EventName = \"click\" | \"hover\" | \"focus\" | \"blur\";\n\ntype PointerEventName = Extract<EventName, \"click\" | \"hover\">;\ntype FocusEventName = Exclude<EventName, PointerEventName>;\n\nfunction onPointer(name: PointerEventName): void {\n  console.log(\"pointer\", name);\n}\n\nonPointer(\"click\");\nconst focus: FocusEventName = \"focus\";\nconsole.log(focus);"
+  },
+  {
+    "instruction": "Write TypeScript code using Required<T> to force all optional properties of an interface to be present.",
+    "output": "interface Draft {\n  title?: string;\n  body?: string;\n  tags?: string[];\n}\n\nfunction publish(draft: Required<Draft>): void {\n  console.log(draft.title, draft.body, draft.tags.length);\n}\n\npublish({ title: \"Hi\", body: \"text\", tags: [\"a\"] });"
+  },
+  {
+    "instruction": "Write a TypeScript generic class TypedEmitter<Events extends Record<string, unknown>> with typed on and emit methods.",
+    "output": "class TypedEmitter<Events extends Record<string, unknown>> {\n  private handlers: { [K in keyof Events]?: Array<(payload: Events[K]) => void> } = {};\n\n  on<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void): void {\n    (this.handlers[event] ||= []).push(handler);\n  }\n\n  emit<K extends keyof Events>(event: K, payload: Events[K]): void {\n    for (const handler of this.handlers[event] || []) handler(payload);\n  }\n}\n\nconst emitter = new TypedEmitter<{ message: { text: string }; close: undefined }>();\nemitter.on(\"message\", (p) => console.log(p.text.toUpperCase()));\nemitter.emit(\"message\", { text: \"hi\" });"
+  },
+  {
+    "instruction": "Write TypeScript code using Array<T> versus T[] syntax and a generic tuple type Pair<T> with a swap function.",
+    "output": "type Pair<T> = [T, T];\n\nfunction swap<T>(pair: Pair<T>): Pair<T> {\n  const [a, b] = pair;\n  return [b, a];\n}\n\nconst numbers: Pair<number> = [1, 2];\nconst strings: Array<string> = [\"a\", \"b\"];\nconsole.log(swap(numbers)); // [2, 1]\nconsole.log(strings);"
+  },
+  {
+    "instruction": "Write TypeScript code with a generic constrained to an interface HasId, and a generic uniqueById function returning a Map keyed by id.",
+    "output": "interface HasId {\n  id: string | number;\n}\n\nfunction uniqueById<T extends HasId>(items: T[]): Map<string | number, T> {\n  const map = new Map<string | number, T>();\n  for (const item of items) {\n    map.set(item.id, item);\n  }\n  return map;\n}\n\nconsole.log(uniqueById([{ id: 1, name: \"a\" }, { id: 2, name: \"b\" }]));"
+  },
+  {
+    "instruction": "Write a TypeScript generic comparator-based sort function and a custom GenericDictionary<K extends string, V> class with get and set.",
+    "output": "function sortBy<T>(items: T[], compare: (a: T, b: T) => number): T[] {\n  return [...items].sort(compare);\n}\n\nclass GenericDictionary<K extends string, V> {\n  private map = new Map<K, V>();\n\n  set(key: K, value: V): this {\n    this.map.set(key, value);\n    return this;\n  }\n\n  get(key: K): V | undefined {\n    return this.map.get(key);\n  }\n}\n\nconst dict = new GenericDictionary<\"small\" | \"large\", number>().set(\"small\", 1).set(\"large\", 2);\nconsole.log(dict.get(\"large\")); // 2"
+  },
+  {
+    "instruction": "Write TypeScript code implementing NonNullable<T> manually as a conditional type and using it in a function signature.",
+    "output": "type MyNonNullable<T> = T extends null | undefined ? never : T;\n\nfunction compact<T>(items: T[]): MyNonNullable<T>[] {\n  return items.filter((item): item is MyNonNullable<T> => item != null);\n}\n\nconst out = compact([1, null, 2, undefined, 3]);\nconsole.log(out); // [1, 2, 3]"
+  },
+  {
+    "instruction": "Write a TypeScript generic factory createWithDefault<T>(defaults: T, overrides?: Partial<T>): T that merges defaults with overrides.",
+    "output": "function createWithDefault<T extends object>(defaults: T, overrides?: Partial<T>): T {\n  return { ...defaults, ...overrides };\n}\n\nconst settings = createWithDefault(\n  { retries: 3, verbose: false },\n  { verbose: true }\n);\nconsole.log(settings); // { retries: 3, verbose: true }"
+  },
+  {
+    "instruction": "Write TypeScript code contrasting any with a generic: show an untyped identity function losing type information, then the generic version preserving it.",
+    "output": "// Loses type information:\nfunction identityAny(value: any): any {\n  return value;\n}\nconst a = identityAny(\"hello\");\na.notAMethod(); // no compile error, runtime crash\n\n// Preserves type information:\nfunction identityGeneric<T>(value: T): T {\n  return value;\n}\nconst b = identityGeneric(\"hello\");\nconsole.log(b.toUpperCase()); // b is string"
+  },
+  {
+    "instruction": "Write a TypeScript generic deep pick helper using mapped types: type DeepPartial<T> that recursively makes all properties optional.",
+    "output": "type DeepPartial<T> = T extends object\n  ? { [K in keyof T]?: DeepPartial<T[K]> }\n  : T;\n\ninterface Config {\n  db: { host: string; port: number };\n  flags: { debug: boolean };\n}\n\nconst patch: DeepPartial<Config> = {\n  db: { port: 5432 },\n};\n\nconsole.log(patch);"
+  }
+]

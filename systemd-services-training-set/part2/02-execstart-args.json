@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Pass a configuration file path as an argument to the service binary.",
+    "output": "[Service]\nExecStart=/usr/local/bin/myapp --config /etc/myapp/config.yaml"
+  },
+  {
+    "instruction": "Run a command with an environment prefix using the env binary.",
+    "output": "[Service]\nExecStart=/usr/bin/env PYTHONUNBUFFERED=1 /opt/app/venv/bin/python /opt/app/main.py"
+  },
+  {
+    "instruction": "Use ExecStartPre to validate configuration before starting.",
+    "output": "[Service]\nExecStartPre=/usr/local/bin/myapp --check\nExecStart=/usr/local/bin/myapp"
+  },
+  {
+    "instruction": "Use ExecStartPost to notify a health endpoint after start.",
+    "output": "[Service]\nExecStart=/usr/local/bin/myapp\nExecStartPost=/usr/bin/curl -fsS http://127.0.0.1:8080/health -o /dev/null"
+  },
+  {
+    "instruction": "Use ExecStop to gracefully stop the app.",
+    "output": "[Service]\nExecStart=/usr/local/bin/myapp\nExecStop=/usr/local/bin/myapp --shutdown --timeout 30"
+  },
+  {
+    "instruction": "Use ExecReload to reload configuration without a restart.",
+    "output": "[Service]\nExecStart=/usr/local/bin/myapp\nExecReload=/bin/kill -HUP $MAINPID"
+  },
+  {
+    "instruction": "Pass multiple arguments to a long-running command.",
+    "output": "[Service]\nExecStart=/usr/local/bin/worker --queues high,default --concurrency 8 --loglevel warning"
+  },
+  {
+    "instruction": "Set an absolute path and avoid shell features in ExecStart.",
+    "output": "[Service]\n# Correct: no shell is used\nExecStart=/usr/local/bin/app --serve"
+  },
+  {
+    "instruction": "Show the correct way to have a pipe in a unit (using /bin/sh -c).",
+    "output": "[Service]\nExecStart=/bin/sh -c '/usr/local/bin/generate | /usr/local/bin/consume'"
+  },
+  {
+    "instruction": "Prefix a command with a dash to ignore its non-zero exit status.",
+    "output": "[Service]\nExecStartPre=-/usr/local/bin/cleanup.sh\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Set an argument that contains spaces using quoting.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app --message \"hello world\" --name test"
+  },
+  {
+    "instruction": "Define per-service PATH for ExecStart lookups.",
+    "output": "[Service]\nEnvironment=PATH=/opt/app/bin:/usr/local/bin:/usr/bin:/bin\nExecStart=myapp --serve"
+  },
+  {
+    "instruction": "Use ${VAR} style expansion from the service environment in ExecStart.",
+    "output": "[Service]\nEnvironment=APP_HOME=/opt/app\nExecStart=/bin/sh -c 'cd ${APP_HOME} && ./start.sh'"
+  },
+  {
+    "instruction": "Restart only on specific exit codes.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app\nRestart=on-failure\nRestartPreventExitStatus=2 3"
+  },
+  {
+    "instruction": "Run a node script with a fixed max-old-space-size.",
+    "output": "[Service]\nExecStart=/usr/bin/node --max-old-space-size=2048 /srv/app/index.js"
+  },
+  {
+    "instruction": "Add a working directory and an argument list for a Gradle-built app.",
+    "output": "[Service]\nWorkingDirectory=/opt/service\nExecStart=/usr/bin/java -Xms512m -Xmx2g -jar /opt/service/app.jar --spring.profiles.active=prod"
+  },
+  {
+    "instruction": "Use a wrapper script and explain why quoting differs from a shell.",
+    "output": "[Service]\n# systemd does not invoke a shell; spaces are split into arguments\nExecStart=/opt/app/start.sh --mode production"
+  },
+  {
+    "instruction": "Set the main process to be a forking daemon with a PID file.",
+    "output": "[Service]\nType=forking\nPIDFile=/run/app.pid\nExecStart=/usr/local/bin/app --daemon"
+  },
+  {
+    "instruction": "Limit the ExecStart command to run only once at a fixed time using ConditionPathExists.",
+    "output": "[Service]\nConditionPathExists=!/var/lib/app/.initialized\nExecStart=/usr/local/bin/initialize\nExecStartPost=/usr/bin/touch /var/lib/app/.initialized"
+  },
+  {
+    "instruction": "Reset arguments with an empty ExecStart line before redefining.",
+    "output": "[Service]\nExecStart=/usr/local/bin/app --default\nExecStart=\nExecStart=/usr/local/bin/app --override"
+  }
+]

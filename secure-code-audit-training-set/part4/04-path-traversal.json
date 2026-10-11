@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\n@app.route('/download')\ndef download():\n    name = request.args['file']\n    return send_file(os.path.join('/srv/files', name))",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `os.path.join` does not confine the path; `../` escapes `/srv/files`.\n**Exploit:** `?file=../../etc/passwd` reads arbitrary files.\n**Fix:**\nimport os\nbase = '/srv/files'\nname = os.path.basename(name)  # drop any directory components\npath = os.path.join(base, name)\nif not os.path.realpath(path).startswith(os.path.realpath(base) + os.sep):\n    abort(403)\nreturn send_file(path)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Node/JS):\n\napp.get('/img', (req, res) => {\n  res.sendFile('/var/www/' + req.query.name);\n});",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** The name is appended to a base path without confinement.\n**Exploit:** `?name=../../etc/passwd`.\n**Fix:**\nconst path = require('path');\nconst base = '/var/www';\nconst target = path.resolve(base, req.query.name);\nif (!target.startsWith(base + path.sep)) return res.sendStatus(403);\nres.sendFile(target);"
+  },
+  {
+    "instruction": "Audit this code for security issues (zip extraction):\n\nimport zipfile\nwith zipfile.ZipFile('upload.zip') as z:\n    z.extractall('/tmp/out')",
+    "output": "**Vulnerability:** Zip Slip (path traversal via archive)\n**Severity:** High\n**Why:** Archive entries can contain `../` and are written outside the target dir.\n**Exploit:** An entry named `../../etc/cron.d/evil` overwrites system files.\n**Fix:**\nimport os\nwith zipfile.ZipFile('upload.zip') as z:\n    for member in z.infolist():\n        target = os.path.realpath(os.path.join('/tmp/out', member.filename))\n        if not target.startswith('/tmp/out' + os.sep):\n            raise ValueError('zip slip detected')\n        z.extract(member, '/tmp/out')"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\ntpl = request.args.get('tpl')\nreturn render_template(tpl)",
+    "output": "**Vulnerability:** Path traversal (template injection / file read)\n**Severity:** High\n**Why:** The template name is user-controlled; `../` can escape the templates dir.\n**Exploit:** `?tpl=../../../../etc/passwd` or another template file.\n**Fix:**\nALLOWED = {'home.html', 'about.html'}\nif tpl not in ALLOWED:\n    abort(404)\nreturn render_template(tpl)"
+  },
+  {
+    "instruction": "Audit this code for security issues (C/ POSIX):\n\nchar path[256];\nsprintf(path, \"/data/%s\", user_input);\nFILE *f = fopen(path, \"r\");",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `user_input` is concatenated; `../` escapes `/data`. Also no length bound (buffer overflow risk).\n**Exploit:** `user_input = \"../../etc/passwd\"`.\n**Fix:**\n// Validate: reject '/', '..', absolute paths; use realpath and prefix-check.\nif (strstr(user_input, \"..\") || strchr(user_input, '/')) { return NULL; }\nsnprintf(path, sizeof(path), \"/data/%s\", user_input);"
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\n$f = $_GET['f'];\nreadfile('/var/data/' . $f);",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `$f` is appended to a base directory with no validation.\n**Exploit:** `?f=../../../etc/passwd`.\n**Fix:**\n$base = '/var/data/';\n$f = basename($_GET['f']);\n$path = realpath($base . $f);\nif ($path === false || strpos($path, realpath($base)) !== 0) { http_response_code(403); exit; }\nreadfile($path);"
+  },
+  {
+    "instruction": "Audit this code for security issues (template include):\n\npage = request.args.get('page', 'home')\nreturn render(f'pages/{page}.html')",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `page` is inserted into a filesystem path.\n**Exploit:** `?page=../../../etc/passwd%00` (on old runtimes) or reading other files.\n**Fix:**\nif not re.fullmatch(r'[a-z0-9_-]+', page):\n    abort(404)\nreturn render(f'pages/{page}.html')"
+  },
+  {
+    "instruction": "Audit this code for security issues (tar extraction):\n\nimport tarfile\ntarfile.open('in.tar').extractall('/tmp/x')",
+    "output": "**Vulnerability:** Tar traversal / symlink escape\n**Severity:** High\n**Why:** Tar members with `../` or symlinks can write outside the destination.\n**Exploit:** A member path `../../root/.ssh/authorized_keys`.\n**Fix:**\nimport os\nwith tarfile.open('in.tar') as t:\n    for m in t.getmembers():\n        p = os.path.realpath(os.path.join('/tmp/x', m.name))\n        if not p.startswith('/tmp/x' + os.sep) or m.issym() or m.islnk():\n            raise ValueError('unsafe tar member')\n        t.extract(m, '/tmp/x')"
+  },
+  {
+    "instruction": "Audit this code for security issues (S3-like key):\n\nkey = request.args['key']\nclient.get_object(Bucket='uploads', Key='public/' + key)",
+    "output": "**Vulnerability:** Path traversal (object key escape)\n**Severity:** High\n**Why:** `../` in the key can address objects outside the `public/` prefix.\n**Exploit:** `key = ../private/secrets.json`.\n**Fix:**\nimport posixpath\nkey = posixpath.normpath(posixpath.join('public', key))\nif not key.startswith('public/'):\n    abort(403)\nclient.get_object(Bucket='uploads', Key=key)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\nfilename = request.form['filename']\nopen('/uploads/' + filename, 'wb').write(data)",
+    "output": "**Vulnerability:** Path traversal (write)\n**Severity:** High\n**Why:** The filename can contain `../` and overwrite arbitrary files.\n**Exploit:** `filename = ../../etc/cron.d/backdoor` writes a new cron job.\n**Fix:**\nfrom werkzeug.utils import secure_filename\nname = secure_filename(filename)\nopen(os.path.join('/uploads', name), 'wb').write(data)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Java):\n\nString file = request.getParameter(\"file\");\nreturn new File(\"/srv/data\", file).getBytes();",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** The parameter is used directly to build a path.\n**Exploit:** `?file=../../../etc/passwd`.\n**Fix:**\nPath base = Paths.get(\"/srv/data\").toRealPath();\nPath target = base.resolve(file).normalize();\nif (!target.startsWith(base)) throw new SecurityException(\"traversal\");\nreturn Files.readAllBytes(target);"
+  },
+  {
+    "instruction": "Audit this code for security issues (static file server):\n\ndef serve(path):\n    full = os.path.normpath('/srv/www/' + path)\n    return open(full, 'rb').read()",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `normpath` only cleans cosmetics; it does not confine the result to `/srv/www`.\n**Exploit:** `path = ../etc/passwd` -> `/srv/etc/passwd` or with more `..` reaches `/etc`.\n**Fix:**\nbase = os.path.realpath('/srv/www')\nfull = os.path.realpath(os.path.join(base, path))\nif not full.startswith(base + os.sep):\n    raise PermissionError('escaped base')\nreturn open(full, 'rb').read()"
+  },
+  {
+    "instruction": "Audit this code for security issues (URL-based download):\n\ndef fetch(user_path):\n    url = 'https://cdn.example.com/assets/' + user_path\n    return requests.get(url).content",
+    "output": "**Vulnerability:** Path traversal (SSRF-adjacent)\n**Severity:** Medium\n**Why:** `..` can traverse to other paths on the CDN host.\n**Exploit:** `user_path = ../../admin/export.json`.\n**Fix:**\nfrom urllib.parse import quote\npath = user_path.strip('/')\nif '..' in path.split('/'):\n    raise ValueError('invalid path')\nurl = 'https://cdn.example.com/assets/' + quote(path)"
+  },
+  {
+    "instruction": "Audit this code for security issues (symlink):\n\nos.symlink(user_target, '/tmp/link')\nopen('/tmp/link', 'r').read()",
+    "output": "**Vulnerability:** Symlink attack\n**Severity:** High\n**Why:** A user-controlled symlink can point anywhere; subsequent access reads/writes that target.\n**Exploit:** Symlink to `/etc/shadow` then read via the link.\n**Fix:**\n# Never follow user-created symlinks. Use O_NOFOLLOW and validate the\ntarget is within an allowed root via realpath + prefix check."
+  },
+  {
+    "instruction": "Audit this code for security issues (config loader):\n\nname = request.args['name']\nwith open(f'/etc/myapp/conf.d/{name}.conf') as f:\n    return f.read()",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `name` is embedded into the file path.\n**Exploit:** `?name=../../../../etc/passwd%00` or reading other configs.\n**Fix:**\nif not re.fullmatch(r'[a-z0-9_-]+', name):\n    abort(400)\npath = os.path.realpath(f'/etc/myapp/conf.d/{name}.conf')\nif not path.startswith('/etc/myapp/conf.d/'):\n    abort(403)\nreturn open(path).read()"
+  },
+  {
+    "instruction": "Audit this code for security issues (Node/JS):\n\nconst f = path.join(__dirname, 'uploads', req.params.name);\nfs.createReadStream(f).pipe(res);",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** `path.join` normalizes but does not confine; `../` escapes `uploads`.\n**Exploit:** `name = ../../.env`.\n**Fix:**\nconst root = path.join(__dirname, 'uploads');\nconst f = path.resolve(root, req.params.name);\nif (f !== root && !f.startsWith(root + path.sep)) return res.sendStatus(403);\nfs.createReadStream(f).pipe(res);"
+  },
+  {
+    "instruction": "Audit this code for security issues (image processing):\n\nurl = f\"/tmp/{request.json['name']}\"\nshutil.copy(url, '/srv/public/' + request.json['name'])",
+    "output": "**Vulnerability:** Path traversal (read + write)\n**Severity:** High\n**Why:** The name is used to build both source and destination paths.\n**Exploit:** `name = ../../etc/passwd` copies a sensitive file into the public web root.\n**Fix:**\nfrom werkzeug.utils import secure_filename\nname = secure_filename(request.json['name'])\nshutil.copy(os.path.join('/tmp', name), os.path.join('/srv/public', name))"
+  },
+  {
+    "instruction": "Audit this code for security issues (log file naming):\n\nfname = header.get('X-Request-ID')\nopen('/var/log/app/' + fname, 'a').write(line)",
+    "output": "**Vulnerability:** Path traversal (arbitrary file append)\n**Severity:** High\n**Why:** A header controls the log filename.\n**Exploit:** `X-Request-ID: ../../etc/cron.d/x` appends to system files.\n**Fix:**\nif not re.fullmatch(r'[A-Za-z0-9-]{1,64}', fname or ''):\n    fname = 'default'\nopen(os.path.join('/var/log/app', fname), 'a').write(line)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Windows):\n\npath = \"C:\\\\data\\\\\" + request.args['name']\nreturn open(path).read()",
+    "output": "**Vulnerability:** Path traversal (Windows)\n**Severity:** High\n**Why:** Windows accepts both `/` and `\\`; `..\\` escapes the directory.\n**Exploit:** `name = ..\\..\\Windows\\win.ini`.\n**Fix:**\nimport os\nbase = os.path.realpath('C:\\\\data')\ntarget = os.path.realpath(os.path.join(base, name))\nif os.path.commonpath([base, target]) != base:\n    abort(403)\nreturn open(target).read()"
+  },
+  {
+    "instruction": "Audit this code for security issues (Python):\n\nrel = request.args.get('rel', '')\nwith open('/srv/static/' + rel) as f:\n    return f.read()",
+    "output": "**Vulnerability:** Path traversal\n**Severity:** High\n**Why:** The relative path is appended to a base directory with no confinement.\n**Exploit:** `?rel=../../etc/passwd`.\n**Fix:**\nbase = os.path.realpath('/srv/static')\np = os.path.realpath(os.path.join(base, rel))\nif not p.startswith(base + os.sep):\n    abort(403)\nreturn open(p).read()"
+  }
+]

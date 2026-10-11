@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Prometheus recording rule that precomputes the 5 minute request rate per job and name it job:http_requests:rate5m",
+    "output": "groups:\n  - name: http-recording\n    interval: 30s\n    rules:\n      - record: job:http_requests:rate5m\n        expr: sum by (job) (rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule computing the per-instance 1 minute request rate named instance:http_requests:rate1m",
+    "output": "groups:\n  - name: http-recording\n    rules:\n      - record: instance:http_requests:rate1m\n        expr: sum by (instance) (rate(http_requests_total[1m]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_request_errors:rate5m for the 5xx error rate per job",
+    "output": "groups:\n  - name: error-recording\n    rules:\n      - record: job:http_request_errors:rate5m\n        expr: sum by (job) (rate(http_requests_total{status=~\"5..\"}[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_request_duration_seconds:p95 that caches the 95th percentile latency",
+    "output": "groups:\n  - name: latency-recording\n    interval: 30s\n    rules:\n      - record: job:http_request_duration_seconds:p95\n        expr: histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket[5m])))"
+  },
+  {
+    "instruction": "Write a recording rule named instance:node_cpu_utilisation:rate5m for CPU utilisation excluding idle time",
+    "output": "groups:\n  - name: node-recording\n    rules:\n      - record: instance:node_cpu_utilisation:rate5m\n        expr: 1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named node:filesystem_usage:ratio for root filesystem usage between 0 and 1",
+    "output": "groups:\n  - name: node-recording\n    rules:\n      - record: node:filesystem_usage:ratio\n        expr: 1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})"
+  },
+  {
+    "instruction": "Write a recording rule named node:memory_utilisation:ratio computing used memory fraction",
+    "output": "groups:\n  - name: node-recording\n    rules:\n      - record: node:memory_utilisation:ratio\n        expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)"
+  },
+  {
+    "instruction": "Write a recording rule named job:up:ratio giving the fraction of healthy targets per job",
+    "output": "groups:\n  - name: availability-recording\n    interval: 30s\n    rules:\n      - record: job:up:ratio\n        expr: avg by (job) (up)"
+  },
+  {
+    "instruction": "Write a recording rule named namespace:pod_count:count that counts pods per namespace",
+    "output": "groups:\n  - name: kubernetes-recording\n    rules:\n      - record: namespace:pod_count:count\n        expr: count by (namespace) (kube_pod_info)"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_requests:increase1h that caches one hour of request increase",
+    "output": "groups:\n  - name: http-recording\n    interval: 1m\n    rules:\n      - record: job:http_requests:increase1h\n        expr: sum by (job) (increase(http_requests_total[1h]))"
+  },
+  {
+    "instruction": "Write a recording rule named instance:network_receive:rate5m for receive bandwidth per instance",
+    "output": "groups:\n  - name: node-recording\n    rules:\n      - record: instance:network_receive:rate5m\n        expr: sum by (instance) (rate(node_network_receive_bytes_total{device!=\"lo\"}[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:scrape_duration:avg5m averaging scrape duration per job",
+    "output": "groups:\n  - name: scrape-recording\n    rules:\n      - record: job:scrape_duration:avg5m\n        expr: avg by (job) (scrape_duration_seconds)"
+  },
+  {
+    "instruction": "Write a recording rule named job:request_size:rate5m for bytes of request body received per second",
+    "output": "groups:\n  - name: http-recording\n    rules:\n      - record: job:request_size:rate5m\n        expr: sum by (job) (rate(http_request_size_bytes_sum[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named container:memory_working_set:ratio comparing usage to the memory limit",
+    "output": "groups:\n  - name: container-recording\n    rules:\n      - record: container:memory_working_set:ratio\n        expr: container_memory_working_set_bytes / container_spec_memory_limit_bytes"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_requests:irate1m using irate for a fast-moving counter",
+    "output": "groups:\n  - name: http-recording\n    rules:\n      - record: job:http_requests:irate1m\n        expr: sum by (job) (irate(http_requests_total[1m]))"
+  },
+  {
+    "instruction": "Write a recording rule named instance:process_cpu:rate5m for process CPU per second by instance",
+    "output": "groups:\n  - name: process-recording\n    rules:\n      - record: instance:process_cpu:rate5m\n        expr: sum by (instance) (rate(process_cpu_seconds_total[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:probe_success:avg5m averaging blackbox probe success per job",
+    "output": "groups:\n  - name: blackbox-recording\n    interval: 30s\n    rules:\n      - record: job:probe_success:avg5m\n        expr: avg by (job) (probe_success)"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_requests_status:rate5m keeping the status label in the aggregation",
+    "output": "groups:\n  - name: http-recording\n    rules:\n      - record: job:http_requests_status:rate5m\n        expr: sum by (job, status) (rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_availability:ratio30d computing a 30 day success ratio",
+    "output": "groups:\n  - name: slo-recording\n    interval: 5m\n    rules:\n      - record: job:http_availability:ratio30d\n        expr: sum by (job) (rate(http_requests_total{status!~\"5..\"}[30d])) / sum by (job) (rate(http_requests_total[30d]))"
+  },
+  {
+    "instruction": "Write a recording rule named job:http_request_duration_seconds:p99 caching the 99th percentile per job",
+    "output": "groups:\n  - name: latency-recording\n    interval: 30s\n    rules:\n      - record: job:http_request_duration_seconds:p99\n        expr: histogram_quantile(0.99, sum by (job, le) (rate(http_request_duration_seconds_bucket[5m])))"
+  }
+]

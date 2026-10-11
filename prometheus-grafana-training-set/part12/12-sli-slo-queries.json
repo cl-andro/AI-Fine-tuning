@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a PromQL query for the 30 day availability SLI excluding 5xx responses",
+    "output": "sum(rate(http_requests_total{status!~\"5..\"}[30d])) / sum(rate(http_requests_total[30d]))"
+  },
+  {
+    "instruction": "Write a PromQL query for a latency SLI: fraction of requests completing under 300 milliseconds",
+    "output": "sum(rate(http_request_duration_seconds_bucket{le=\"0.3\"}[30d])) / sum(rate(http_request_duration_seconds_count[30d]))"
+  },
+  {
+    "instruction": "Write a PromQL query for remaining error budget against a 99.9 percent SLO using the 30 day SLI",
+    "output": "1 - ((1 - (sum(rate(http_requests_total{status!~\"5..\"}[30d])) / sum(rate(http_requests_total[30d])))) / (1 - 0.999))"
+  },
+  {
+    "instruction": "Write a PromQL query computing the 1 hour error budget burn rate against a 0.1 percent error tolerance",
+    "output": "sum(rate(http_requests_total{status=~\"5..\"}[1h])) / sum(rate(http_requests_total[1h])) / 0.001"
+  },
+  {
+    "instruction": "Write a PromQL query for a fast burn rate combining 5 minute and 1 hour windows on a 99.9 percent SLO",
+    "output": "(sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) > 14.4 * 0.001) and (sum(rate(http_requests_total{status=~\"5..\"}[1h])) / sum(rate(http_requests_total[1h])) > 14.4 * 0.001)"
+  },
+  {
+    "instruction": "Write a PromQL query for a slow burn rate combining 6 hour and 3 day windows on a 99.9 percent SLO",
+    "output": "(sum(rate(http_requests_total{status=~\"5..\"}[6h])) / sum(rate(http_requests_total[6h])) > 6 * 0.001) and (sum(rate(http_requests_total{status=~\"3d\"}[3d])) / sum(rate(http_requests_total[3d])) > 6 * 0.001)"
+  },
+  {
+    "instruction": "Write a PromQL query for an uptime SLI based on blackbox probe success over 30 days",
+    "output": "avg_over_time(probe_success[30d])"
+  },
+  {
+    "instruction": "Write a PromQL query counting good events in the last 30 days for a request based SLO",
+    "output": "sum(increase(http_requests_total{status!~\"5..\"}[30d]))"
+  },
+  {
+    "instruction": "Write a PromQL query computing how many seconds of downtime a 99.9 percent SLO allows in a 30 day month",
+    "output": "(1 - 0.999) * 30 * 24 * 3600"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON showing the availability SLI over time with percent units",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Availability SLI 30d\", \"targets\": [{\"expr\": \"sum(rate(http_requests_total{status!~\\\"5..\\\"}[30d])) / sum(rate(http_requests_total[30d]))\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"percentunit\", \"min\": 0.99, \"max\": 1}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a recording rule YAML computing the 1 hour error rate used by SLO burn alerts",
+    "output": "groups:\n  - name: slo-recording\n    interval: 1m\n    rules:\n      - record: job:http_request_errors:rate1h\n        expr: sum by (job) (rate(http_requests_total{status=~\"5..\"}[1h]))"
+  },
+  {
+    "instruction": "Write a PromQL query computing the availability SLI per route over 7 days",
+    "output": "sum by (route) (rate(http_requests_total{status!~\"5..\"}[7d])) / sum by (route) (rate(http_requests_total[7d]))"
+  },
+  {
+    "instruction": "Write a PromQL query reporting the fraction of requests meeting a 300 ms p99 latency SLO using histogram buckets",
+    "output": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m]))) < 0.3"
+  },
+  {
+    "instruction": "Write a PromQL query for a success ratio that also excludes client errors from failures",
+    "output": "sum(rate(http_requests_total{status!~\"4..|5..\"}[30d])) / sum(rate(http_requests_total[30d]))"
+  },
+  {
+    "instruction": "Explain the difference between request based and window based SLOs in one sentence, then give a request based availability query",
+    "output": "Request based SLOs count every event in a period while window based SLOs require the system to be up at each probe moment; a request based query is: sum(rate(http_requests_total{status!~\"5..\"}[30d])) / sum(rate(http_requests_total[30d]))"
+  },
+  {
+    "instruction": "Write a PromQL query for daily uptime of a synthetic check",
+    "output": "avg_over_time(probe_success[1d])"
+  },
+  {
+    "instruction": "Write a PromQL query computing the allowed number of errors per day at a 99.9 percent SLO",
+    "output": "0.001 * sum(rate(http_requests_total[1d])) * 86400"
+  },
+  {
+    "instruction": "Write a PromQL query flagging when the actual burn rate exceeds the allowed burn rate",
+    "output": "sum(rate(http_requests_total{status=~\"5..\"}[1h])) / sum(rate(http_requests_total[1h])) > 1000 * 0.001"
+  },
+  {
+    "instruction": "Write a PromQL query for an Apdex style satisfaction score with a 300 ms t and a 1 second tolerance",
+    "output": "sum(rate(http_request_duration_seconds_bucket{le=\"0.3\"}[5m])) + 0.5 * (sum(rate(http_request_duration_seconds_bucket{le=\"1\"}[5m])) - sum(rate(http_request_duration_seconds_bucket{le=\"0.3\"}[5m]))) / sum(rate(http_request_duration_seconds_count[5m]))"
+  },
+  {
+    "instruction": "Write a PromQL query computing error budget consumption as a percentage over the last 30 days",
+    "output": "1 - ((1 - (sum(rate(http_requests_total{status!~\"5..\"}[30d])) / sum(rate(http_requests_total[30d])))) / 0.001)"
+  }
+]

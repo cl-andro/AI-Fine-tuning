@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Proxy WebSocket connections to a Node backend on port 3000 with a 1-hour read timeout.",
+    "output": "map $http_upgrade $connection_upgrade {\n    default upgrade;\n    ''      close;\n}\n\nserver {\n    listen 80;\n    server_name chat.example.com;\n    location /ws/ {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection $connection_upgrade;\n        proxy_set_header Host $host;\n        proxy_read_timeout 3600s;\n    }\n}"
+  },
+  {
+    "instruction": "Terminate TLS and forward secure WebSocket (wss) traffic to backend port 8080.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name realtime.example.com;\n    ssl_certificate /etc/letsencrypt/live/realtime.example.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/realtime.example.com/privkey.pem;\n    location /socket {\n        proxy_pass http://127.0.0.1:8080;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_set_header Host $host;\n        proxy_read_timeout 7d;\n    }\n}"
+  },
+  {
+    "instruction": "Serve both regular HTTP and WebSocket traffic on the same path, upgrading when requested.",
+    "output": "map $http_upgrade $connection_upgrade {\n    default upgrade;\n    ''      close;\n}\n\nserver {\n    listen 80;\n    server_name mixed.example.com;\n    location /app/ {\n        proxy_pass http://127.0.0.1:4000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection $connection_upgrade;\n    }\n}"
+  },
+  {
+    "instruction": "Load balance WebSocket connections across a pool, disabling buffering.",
+    "output": "upstream ws_backends {\n    server 10.1.0.1:9000;\n    server 10.1.0.2:9000;\n}\n\nserver {\n    listen 80;\n    server_name wslb.example.com;\n    location /ws {\n        proxy_pass http://ws_backends;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_buffering off;\n        proxy_read_timeout 3600s;\n    }\n}"
+  },
+  {
+    "instruction": "Redirect plain HTTP WebSocket requests to their TLS (wss) equivalent.",
+    "output": "server {\n    listen 80;\n    server_name ws.example.com;\n    location /ws {\n        return 301 https://$host$request_uri;\n    }\n}"
+  },
+  {
+    "instruction": "Set a sane client body and proxy buffer size for a WebSocket-heavy app.",
+    "output": "server {\n    listen 80;\n    server_name game.example.com;\n    client_max_body_size 1m;\n    location /ws {\n        proxy_pass http://127.0.0.1:5000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_buffers 16 16k;\n        proxy_buffer_size 32k;\n        proxy_read_timeout 600s;\n        proxy_send_timeout 600s;\n    }\n}"
+  },
+  {
+    "instruction": "Forward only the /notifications WebSocket path and return 404 for everything else.",
+    "output": "server {\n    listen 80;\n    server_name api.example.com;\n    location /notifications {\n        proxy_pass http://127.0.0.1:7000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n    location / {\n        return 404;\n    }\n}"
+  },
+  {
+    "instruction": "Keep upstream WebSocket connections alive and reuse them.",
+    "output": "upstream ws_keepalive {\n    server 10.2.0.1:8080;\n    server 10.2.0.2:8080;\n    keepalive 16;\n}\n\nserver {\n    listen 80;\n    server_name wskeep.example.com;\n    location /ws {\n        proxy_pass http://ws_keepalive;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"upgrade\";\n        proxy_set_header Upgrade $http_upgrade;\n    }\n}"
+  },
+  {
+    "instruction": "Add the real client IP header when proxying WebSocket connections through a CDN.",
+    "output": "server {\n    listen 80;\n    server_name cdn.example.com;\n    set_real_ip_from 0.0.0.0/0;\n    real_ip_header CF-Connecting-IP;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_set_header X-Real-IP $remote_addr;\n    }\n}"
+  },
+  {
+    "instruction": "Cap the number of concurrent WebSocket connections per IP at 20.",
+    "output": "limit_conn_zone $binary_remote_addr zone=wsconn:10m;\n\nserver {\n    listen 80;\n    server_name limited.example.com;\n    location /ws {\n        limit_conn wsconn 20;\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}"
+  },
+  {
+    "instruction": "Disable proxy caching entirely for a WebSocket endpoint.",
+    "output": "server {\n    listen 80;\n    server_name nocache.example.com;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_cache off;\n        proxy_buffering off;\n    }\n}"
+  },
+  {
+    "instruction": "Set proxy_send_timeout and proxy_read_timeout for idle long-lived sockets.",
+    "output": "server {\n    listen 80;\n    server_name idle.example.com;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_read_timeout 1800s;\n        proxy_send_timeout 1800s;\n    }\n}"
+  },
+  {
+    "instruction": "Route WebSocket traffic to a dedicated upstream while HTTP goes elsewhere.",
+    "output": "upstream ws_tier {\n    server 10.3.0.1:9000;\n}\nupstream http_tier {\n    server 10.3.0.2:8080;\n}\n\nserver {\n    listen 80;\n    server_name tieredws.example.com;\n    location /ws {\n        proxy_pass http://ws_tier;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n    location / {\n        proxy_pass http://http_tier;\n    }\n}"
+  },
+  {
+    "instruction": "Increase worker_connections and set multi_accept for many WebSocket clients.",
+    "output": "events {\n    worker_connections 20480;\n    multi_accept on;\n    use epoll;\n}\n\nhttp {\n    server {\n        listen 80;\n        server_name scale.example.com;\n        location /ws {\n            proxy_pass http://127.0.0.1:3000;\n            proxy_http_version 1.1;\n            proxy_set_header Upgrade $http_upgrade;\n            proxy_set_header Connection \"upgrade\";\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Log the upgrade header for WebSocket connections in a custom log format.",
+    "output": "log_format ws '$remote_addr - $request_uri upgrade=$http_upgrade status=$status';\n\nserver {\n    listen 80;\n    server_name logws.example.com;\n    access_log /var/log/nginx/ws.log ws;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}"
+  },
+  {
+    "instruction": "Handle WebSocket reconnects gracefully by disabling request buffering.",
+    "output": "server {\n    listen 80;\n    server_name reconnect.example.com;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_request_buffering off;\n        proxy_buffering off;\n    }\n}"
+  },
+  {
+    "instruction": "Proxy WebSockets over a Unix socket backend.",
+    "output": "server {\n    listen 80;\n    server_name socketws.example.com;\n    location /ws {\n        proxy_pass http://unix:/run/app/app.sock;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}"
+  },
+  {
+    "instruction": "Add security headers while still allowing WebSocket upgrades.",
+    "output": "server {\n    listen 443 ssl http2;\n    server_name securews.example.com;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        add_header X-Content-Type-Options nosniff always;\n        add_header X-Frame-Options DENY always;\n    }\n}"
+  },
+  {
+    "instruction": "Only allow WebSocket upgrades from an allowlist of origins.",
+    "output": "map $http_origin $ws_allowed {\n    default 0;\n    \"https://app.example.com\" 1;\n}\n\nserver {\n    listen 80;\n    server_name origin.example.com;\n    location /ws {\n        if ($ws_allowed = 0) { return 403; }\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}"
+  },
+  {
+    "instruction": "Set TCP optimizations for latency-sensitive WebSocket traffic.",
+    "output": "server {\n    listen 80;\n    server_name fastws.example.com;\n    location /ws {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_socket_keepalive on;\n        tcp_nodelay on;\n    }\n}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Extract eventTime, eventSource, eventName, sourceIPAddress and the user arn from this AWS CloudTrail event as JSON:\n{\"eventVersion\": \"1.09\", \"eventTime\": \"2023-10-12T14:05:07Z\", \"eventSource\": \"s3.amazonaws.com\", \"eventName\": \"PutObject\", \"sourceIPAddress\": \"203.0.113.10\", \"userIdentity\": {\"type\": \"IAMUser\", \"arn\": \"arn:aws:iam::123456789012:user/deployer\"}, \"requestParameters\": {\"bucketName\": \"prod-assets\", \"key\": \"app/v1.2.3.tar.gz\"}}",
+    "output": "{\"eventTime\": \"2023-10-12T14:05:07Z\", \"eventSource\": \"s3.amazonaws.com\", \"eventName\": \"PutObject\", \"sourceIPAddress\": \"203.0.113.10\", \"user_arn\": \"arn:aws:iam::123456789012:user/deployer\"}"
+  },
+  {
+    "instruction": "From this CloudTrail AssumeRole event extract the role arn and the session name as JSON:\n{\"eventTime\": \"2023-10-12T14:06:00Z\", \"eventSource\": \"sts.amazonaws.com\", \"eventName\": \"AssumeRole\", \"sourceIPAddress\": \"10.0.0.20\", \"requestParameters\": {\"roleArn\": \"arn:aws:iam::123456789012:role/DeployRole\", \"roleSessionName\": \"ci-pipeline-4711\"}}",
+    "output": "{\"role_arn\": \"arn:aws:iam::123456789012:role/DeployRole\", \"session_name\": \"ci-pipeline-4711\", \"eventTime\": \"2023-10-12T14:06:00Z\"}"
+  },
+  {
+    "instruction": "Extract the instance ids terminated in this CloudTrail event as a JSON array:\n{\"eventTime\": \"2023-10-12T14:07:00Z\", \"eventSource\": \"ec2.amazonaws.com\", \"eventName\": \"TerminateInstances\", \"requestParameters\": {\"instancesSet\": {\"items\": [{\"instanceId\": \"i-0abc123\"}, {\"instanceId\": \"i-0def456\"}]}}}",
+    "output": "{\"eventName\": \"TerminateInstances\", \"instance_ids\": [\"i-0abc123\", \"i-0def456\"]}"
+  },
+  {
+    "instruction": "From these CloudTrail events return a JSON array of the eventName values that carry an errorCode:\n[{\"eventTime\": \"2023-10-12T14:08:00Z\", \"eventName\": \"AuthorizeSecurityGroupIngress\", \"errorCode\": null}, {\"eventTime\": \"2023-10-12T14:08:05Z\", \"eventName\": \"CreateUser\", \"errorCode\": \"AccessDenied\"}, {\"eventTime\": \"2023-10-12T14:08:09Z\", \"eventName\": \"DescribeInstances\", \"errorCode\": null}, {\"eventTime\": \"2023-10-12T14:08:15Z\", \"eventName\": \"PutObject\", \"errorCode\": \"InternalError\"}]",
+    "output": "[\"CreateUser\", \"PutObject\"]"
+  },
+  {
+    "instruction": "Extract serviceName, methodName, principalEmail and resource name from this GCP audit log entry as JSON:\n{\"protoPayload\": {\"serviceName\": \"compute.googleapis.com\", \"methodName\": \"v1.compute.instances.delete\", \"authenticationInfo\": {\"principalEmail\": \"alice@example.com\"}, \"resourceName\": \"projects/p1/zones/us-central1-a/instances/i1\"}, \"severity\": \"NOTICE\", \"timestamp\": \"2023-10-12T14:09:00Z\"}",
+    "output": "{\"serviceName\": \"compute.googleapis.com\", \"methodName\": \"v1.compute.instances.delete\", \"principalEmail\": \"alice@example.com\", \"resourceName\": \"projects/p1/zones/us-central1-a/instances/i1\", \"severity\": \"NOTICE\", \"timestamp\": \"2023-10-12T14:09:00Z\"}"
+  },
+  {
+    "instruction": "Extract operation name, caller and status from this Azure activity log entry as JSON:\n{\"category\": \"Administrative\", \"operationName\": {\"value\": \"Microsoft.Compute/virtualMachines/delete\"}, \"status\": {\"value\": \"Succeeded\"}, \"caller\": \"alice@example.com\", \"eventTimestamp\": \"2023-10-12T14:10:00Z\", \"resourceGroupName\": \"rg-prod\"}",
+    "output": "{\"operation\": \"Microsoft.Compute/virtualMachines/delete\", \"caller\": \"alice@example.com\", \"status\": \"Succeeded\", \"eventTimestamp\": \"2023-10-12T14:10:00Z\", \"resource_group\": \"rg-prod\"}"
+  },
+  {
+    "instruction": "Extract verb, user, source IP and resource from this Kubernetes audit log entry as JSON:\n{\"kind\": \"Event\", \"auditID\": \"abc-123\", \"stage\": \"ResponseComplete\", \"requestURI\": \"/api/v1/namespaces/default/pods\", \"verb\": \"create\", \"user\": {\"username\": \"deployer\", \"groups\": [\"system:masters\"]}, \"sourceIPs\": [\"10.0.0.9\"], \"objectRef\": {\"resource\": \"pods\", \"namespace\": \"default\", \"name\": \"api-1\"}}",
+    "output": "{\"verb\": \"create\", \"user\": \"deployer\", \"source_ip\": \"10.0.0.9\", \"resource\": \"pods\", \"namespace\": \"default\", \"name\": \"api-1\", \"stage\": \"ResponseComplete\"}"
+  },
+  {
+    "instruction": "Count the API calls by eventSource across these CloudTrail events and return the counts as JSON:\n[{\"eventSource\": \"ec2.amazonaws.com\", \"eventName\": \"RunInstances\"}, {\"eventSource\": \"s3.amazonaws.com\", \"eventName\": \"GetObject\"}, {\"eventSource\": \"ec2.amazonaws.com\", \"eventName\": \"DescribeInstances\"}, {\"eventSource\": \"s3.amazonaws.com\", \"eventName\": \"PutObject\"}, {\"eventSource\": \"ec2.amazonaws.com\", \"eventName\": \"TerminateInstances\"}]",
+    "output": "{\"ec2.amazonaws.com\": 3, \"s3.amazonaws.com\": 2}"
+  },
+  {
+    "instruction": "Return a JSON array with the eventName of every CloudTrail event whose sourceIPAddress is 203.0.113.10:\n[{\"eventTime\": \"2023-10-12T14:11:00Z\", \"eventName\": \"DescribeUsers\", \"sourceIPAddress\": \"203.0.113.10\"}, {\"eventTime\": \"2023-10-12T14:11:05Z\", \"eventName\": \"GetUser\", \"sourceIPAddress\": \"198.51.100.4\"}, {\"eventTime\": \"2023-10-12T14:11:09Z\", \"eventName\": \"CreateAccessKey\", \"sourceIPAddress\": \"203.0.113.10\"}]",
+    "output": "[\"DescribeUsers\", \"CreateAccessKey\"]"
+  },
+  {
+    "instruction": "Write a Python function that takes a list of CloudTrail events and returns the names of events that failed (errorCode is not null)",
+    "output": "def failed_events(events):\n    return [e[\"eventName\"] for e in events if e.get(\"errorCode\")]\n\ndef summarize(events):\n    failed = failed_events(events)\n    return {\"total\": len(events), \"failed\": len(failed), \"failed_names\": failed}"
+  },
+  {
+    "instruction": "Extract the identity type and the arn from this CloudTrail event and report whether it is the root account as JSON:\n{\"eventTime\": \"2023-10-12T14:12:00Z\", \"eventName\": \"DeleteBucket\", \"userIdentity\": {\"type\": \"Root\", \"arn\": \"arn:aws:iam::123456789012:root\", \"accountId\": \"123456789012\"}, \"sourceIPAddress\": \"198.51.100.77\"}",
+    "output": "{\"identity_type\": \"Root\", \"arn\": \"arn:aws:iam::123456789012:root\", \"is_root\": true, \"sourceIPAddress\": \"198.51.100.77\"}"
+  },
+  {
+    "instruction": "Return a JSON array with the eventTime values of every event performed by the root account:\n[{\"eventTime\": \"2023-10-12T14:13:00Z\", \"userIdentity\": {\"type\": \"IAMUser\", \"arn\": \"arn:aws:iam::123456789012:user/bob\"}}, {\"eventTime\": \"2023-10-12T14:13:30Z\", \"userIdentity\": {\"type\": \"Root\", \"arn\": \"arn:aws:iam::123456789012:root\"}}, {\"eventTime\": \"2023-10-12T14:14:00Z\", \"userIdentity\": {\"type\": \"AssumedRole\", \"arn\": \"arn:aws:sts::123456789012:assumed-role/DeployRole/ci\"}}]",
+    "output": "[\"2023-10-12T14:13:30Z\"]"
+  },
+  {
+    "instruction": "From this security group modification event extract the protocol and the port range as JSON:\n{\"eventTime\": \"2023-10-12T14:14:30Z\", \"eventSource\": \"ec2.amazonaws.com\", \"eventName\": \"AuthorizeSecurityGroupIngress\", \"requestParameters\": {\"groupId\": \"sg-0aa1\", \"ipPermissions\": [{\"ipProtocol\": \"tcp\", \"fromPort\": 22, \"toPort\": 22, \"ipRanges\": [{\"cidrIp\": \"0.0.0.0/0\"}]}]}}",
+    "output": "{\"groupId\": \"sg-0aa1\", \"ipProtocol\": \"tcp\", \"fromPort\": 22, \"toPort\": 22, \"cidrIp\": \"0.0.0.0/0\", \"eventTime\": \"2023-10-12T14:14:30Z\"}"
+  },
+  {
+    "instruction": "Extract bucket, key and requester from this S3 object access audit event as JSON:\n{\"eventVersion\": \"1.09\", \"eventSource\": \"s3.amazonaws.com\", \"eventName\": \"GetObject\", \"requestParameters\": {\"bucketName\": \"customer-uploads\", \"key\": \"invoices/2023-10.pdf\"}, \"userIdentity\": {\"type\": \"AssumedRole\", \"arn\": \"arn:aws:sts::123456789012:assumed-role/AppRole/web-1\"}, \"sourceIPAddress\": \"10.1.2.3\"}",
+    "output": "{\"bucket\": \"customer-uploads\", \"key\": \"invoices/2023-10.pdf\", \"requester\": \"arn:aws:sts::123456789012:assumed-role/AppRole/web-1\", \"sourceIPAddress\": \"10.1.2.3\"}"
+  },
+  {
+    "instruction": "Extract principal, method and resource from this GCP BigQuery audit entry as JSON:\n{\"protoPayload\": {\"serviceName\": \"bigquery.googleapis.com\", \"methodName\": \"jobservice.jobcompleted\", \"authenticationInfo\": {\"principalEmail\": \"etl@example.com\"}, \"resource\": {\"type\": \"bigquery_project\", \"labels\": {\"project_id\": \"analytics-1\"}}}, \"severity\": \"INFO\", \"timestamp\": \"2023-10-12T14:15:00Z\"}",
+    "output": "{\"principal\": \"etl@example.com\", \"method\": \"jobservice.jobcompleted\", \"project_id\": \"analytics-1\", \"severity\": \"INFO\", \"timestamp\": \"2023-10-12T14:15:00Z\"}"
+  },
+  {
+    "instruction": "This Azure activity entry failed. Return JSON with operation, status and the status substatus if present:\n{\"operationName\": {\"value\": \"Microsoft.Network/publicIPAddresses/write\"}, \"status\": {\"value\": \"Failed\", \"substatus\": \"Conflict\"}, \"caller\": \"bob@example.com\", \"eventTimestamp\": \"2023-10-12T14:16:00Z\", \"level\": \"Error\"}",
+    "output": "{\"operation\": \"Microsoft.Network/publicIPAddresses/write\", \"status\": \"Failed\", \"substatus\": \"Conflict\", \"caller\": \"bob@example.com\", \"level\": \"Error\"}"
+  },
+  {
+    "instruction": "This Kubernetes audit entry was denied. Extract user, verb, resource and the decision as JSON:\n{\"stage\": \"ResponseComplete\", \"verb\": \"delete\", \"user\": {\"username\": \"ci-bot\"}, \"objectRef\": {\"resource\": \"secrets\", \"namespace\": \"prod\", \"name\": \"db-credentials\"}, \"annotations\": {\"authorization.k8s.io/decision\": \"forbid\", \"authorization.k8s.io/reason\": \"not in allowed groups\"}}",
+    "output": "{\"user\": \"ci-bot\", \"verb\": \"delete\", \"resource\": \"secrets\", \"namespace\": \"prod\", \"name\": \"db-credentials\", \"decision\": \"forbid\", \"reason\": \"not in allowed groups\"}"
+  },
+  {
+    "instruction": "Return a JSON array with the eventName of CloudTrail events that happened between 14:17:00Z and 14:17:59Z on 2023-10-12:\n[{\"eventTime\": \"2023-10-12T14:16:59Z\", \"eventName\": \"First\"}, {\"eventTime\": \"2023-10-12T14:17:10Z\", \"eventName\": \"Second\"}, {\"eventTime\": \"2023-10-12T14:17:45Z\", \"eventName\": \"Third\"}, {\"eventTime\": \"2023-10-12T14:18:01Z\", \"eventName\": \"Fourth\"}]",
+    "output": "[\"Second\", \"Third\"]"
+  },
+  {
+    "instruction": "Normalize these three cloud audit formats into one schema with provider, action, actor and time as a JSON array:\nAWS: {\"eventTime\": \"2023-10-12T14:18:00Z\", \"eventName\": \"RunInstances\", \"userIdentity\": {\"arn\": \"arn:aws:iam::123456789012:user/bob\"}}\nGCP: {\"timestamp\": \"2023-10-12T14:18:10Z\", \"protoPayload\": {\"methodName\": \"v1.compute.instances.create\", \"authenticationInfo\": {\"principalEmail\": \"bob@example.com\"}}}\nAzure: {\"eventTimestamp\": \"2023-10-12T14:18:20Z\", \"operationName\": {\"value\": \"Microsoft.Compute/virtualMachines/write\"}, \"caller\": \"bob@example.com\"}",
+    "output": "[{\"provider\": \"aws\", \"action\": \"RunInstances\", \"actor\": \"arn:aws:iam::123456789012:user/bob\", \"time\": \"2023-10-12T14:18:00Z\"}, {\"provider\": \"gcp\", \"action\": \"v1.compute.instances.create\", \"actor\": \"bob@example.com\", \"time\": \"2023-10-12T14:18:10Z\"}, {\"provider\": \"azure\", \"action\": \"Microsoft.Compute/virtualMachines/write\", \"actor\": \"bob@example.com\", \"time\": \"2023-10-12T14:18:20Z\"}]"
+  },
+  {
+    "instruction": "From this CloudTrail event extract the user agent and the region as JSON:\n{\"eventTime\": \"2023-10-12T14:19:00Z\", \"eventSource\": \"dynamodb.amazonaws.com\", \"eventName\": \"PutItem\", \"awsRegion\": \"eu-west-1\", \"userAgent\": \"aws-cli/2.13.0 Python/3.11.6\", \"sourceIPAddress\": \"198.51.100.4\", \"requestParameters\": {\"tableName\": \"sessions\"}}",
+    "output": "{\"userAgent\": \"aws-cli/2.13.0 Python/3.11.6\", \"awsRegion\": \"eu-west-1\", \"eventName\": \"PutItem\", \"tableName\": \"sessions\"}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "A service is listening but remote clients get 'connection timed out'. Diagnose the firewall.",
+    "output": "**Diagnose:**\nss -tlnp | grep :443\nsudo iptables -S INPUT\nsudo nft list ruleset\nsudo tcpdump -ni eth0 'tcp port 443'\nsudo ufw status verbose\n**Interpretation:** tcpdump on the server showing SYNs arriving but no SYN-ACK means a local rule is dropping (not rejecting) the reply or the request. A DROP rule yields timeouts; REJECT yields refused. If no SYN arrives at all, an upstream firewall blocks it.\n**Fix:** Add an accept rule for the port and allow established/related return traffic: `iptables -A INPUT -p tcp --dport 443 -j ACCEPT` and `iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`. With ufw: `ufw allow 443/tcp`. Verify from the client."
+  },
+  {
+    "instruction": "After enabling ufw, all SSH access is lost. Diagnose and recover.",
+    "output": "**Diagnose:**\nsudo ufw status verbose\nsudo ufw show added\nsudo iptables -S\nsudo ss -tlnp | grep :22\n**Interpretation:** ufw's default deny incoming drops SSH if no allow rule for port 22 exists before enabling. The local console still works, so you can inspect the rules.\n**Fix:** From the console: `sudo ufw allow 22/tcp` (or `ufw allow from <admin-subnet> to any port 22 proto tcp`) then verify. Always add the SSH allow rule before `ufw enable`, and keep a console/serial fallback."
+  },
+  {
+    "instruction": "nftables blocks traffic that an old iptables rule allowed. Diagnose the rule migration.",
+    "output": "**Diagnose:**\nsudo nft list ruleset\nsudo iptables-legacy -S\nsudo iptables -S\nsudo update-alternatives --list iptables\n**Interpretation:** On systems with both nft and iptables-legacy, rules can live in different backends. If a service relies on iptables-legacy but nft ruleset has a drop policy, traffic is blocked. `iptables -S` may show nothing while legacy has the rule.\n**Fix:** Consolidate rules into one backend. Migrate legacy rules with `iptables-restore-translate` or `iptables-nft` and remove duplicates. Set the default alternative (`update-alternatives --set iptables /usr/sbin/iptables-nft`) consistently and reload."
+  },
+  {
+    "instruction": "A specific source IP is blocked but no explicit rule exists. Diagnose fail2ban or dynamic blocks.",
+    "output": "**Diagnose:**\nsudo iptables -S | grep <ip>\nsudo nft list ruleset | grep <ip>\nsudo fail2ban-client status\nsudo fail2ban-client status sshd\nipset list 2>/dev/null\n**Interpretation:** fail2ban or another IPS inserts temporary DROP rules/ipsets referencing the offending IP. The absence of a manual rule but presence in a fail2ban chain (f2b-sshd) confirms it.\n**Fix:** If legitimate, unban with `fail2ban-client set sshd unbanip <ip>`, fix the underlying auth failures, and add a whitelist (`ignoreip`) in /etc/fail2ban/jail.local. For iptables/ipset bans, remove the entry from the set."
+  },
+  {
+    "instruction": "Only ports below 1024 are reachable; higher ports are blocked. Diagnose a hardening policy.",
+    "output": "**Diagnose:**\nsudo iptables -S\nsudo nft list ruleset\nss -tlnp\nnmap -Pn -p 1-1024,8080,8443 <server>\n**Interpretation:** A common hardening baseline accepts only privileged ports and rejects/drops high ports. nmap showing 80/443 open but 8080/8443 filtered confirms a port-range restriction.\n**Fix:** Add explicit accepts for the application ports needed (e.g `iptables -A INPUT -p tcp --dport 8443 -j ACCEPT`) or use a jump chain. Document the allowed ports in your baseline. Re-scan with nmap to verify."
+  },
+  {
+    "instruction": "A firewall rule accepts the port but the app still cannot bind it. Diagnose SELinux/AppArmor port policy.",
+    "output": "**Diagnose:**\nsudo iptables -S | grep <port>\nsudo semanage port -l | grep <port>\nausearch -m avc -ts recent 2>/dev/null\nsudo aa-status 2>/dev/null\njournalctl -xe | grep -i -E 'denied|apparmor'\n**Interpretation:** The packet filter allows the port, but SELinux/AppArmor denies the process binding it, so the listener is absent or fails. AVC denials in audit.log name the port type.\n**Fix:** Allow the port for the service context (`semanage port -a -t http_port_t -p tcp 8080`), or add an AppArmor profile rule. Reload the policy and restart the service. Verify the socket appears with `ss -tlnp`."
+  },
+  {
+    "instruction": "Inbound port is open but outbound connections from the server are blocked. Diagnose egress filtering.",
+    "output": "**Diagnose:**\nsudo iptables -S OUTPUT\nsudo nft list ruleset | grep -A5 output\ncurl -v https://example.com\nsudo iptables -L -n -v | grep DROP\n**Interpretation:** Many baselines allow inbound but restrict OUTPUT. If the OUTPUT policy is DROP with no ESTABLISHED rule, response packets and outbound requests are dropped, breaking downloads and updates.\n**Fix:** Allow established/related and required outbound ports: `iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT` plus explicit accepts for DNS (53), NTP (123), and HTTPS. Reload and verify egress."
+  },
+  {
+    "instruction": "A firewall DNAT rule forwards to the wrong backend. Diagnose NAT port forwarding.",
+    "output": "**Diagnose:**\nsudo iptables -t nat -S\nsudo nft list ruleset | grep -A5 nat\nsudo tcpdump -ni any 'tcp port 8080 or tcp port 80'\nsudo conntrack -L | grep 8080\n**Interpretation:** If a DNAT rule rewrites the destination but the backend never sees traffic or receives it on the wrong port, the rule or the FORWARD policy is wrong. conntrack shows the NAT translation being applied.\n**Fix:** Correct the DNAT destination/port (`iptables -t nat -R PREROUTING <n> -p tcp --dport 80 -j DNAT --to-destination 10.0.0.10:8080`) and ensure FORWARD accepts the flow. Reload and verify with conntrack and tcpdump."
+  },
+  {
+    "instruction": "A server has two firewall tools active and rules conflict. Diagnose the effective ruleset.",
+    "output": "**Diagnose:**\nsudo nft list ruleset\nsudo iptables -S\nsudo iptables-legacy -S\nsudo ufw status\nsudo firewall-cmd --list-all 2>/dev/null\n**Interpretation:** Multiple front ends (ufw, firewalld, raw nft, iptables) can each program the same kernel tables, producing confusing. Comparing each tool's view reveals which rules are actually loaded and where.\n**Fix:** Choose one management tool and stop the others (`systemctl disable --now firewalld`, purge ufw if unused), then recreate the intended rules in the chosen tool. Reload and verify with `nft list ruleset`."
+  },
+  {
+    "instruction": "A port scan reports the host as 'filtered' for a port that is listening. Diagnose.",
+    "output": "**Diagnose:**\nsudo nmap -Pn -p <port> <host>\nsudo nmap -sA -p <port> <host>\nsudo tcpdump -ni eth0 'tcp port <port>' | head\nsudo iptables -S INPUT\n**Interpretation:** 'filtered' means no response to SYN (dropped). If the local app listens but packets get no reply, a DROP rule or an upstream device drops them. An ACK scan (-sA) helps distinguish stateful drop behavior.\n**Fix:** Replace the DROP with ACCEPT for legitimate sources, or add an explicit rule before the drop. If a cloud security group drops, update it. Verify with a fresh nmap scan showing 'open'."
+  },
+  {
+    "instruction": "Rate limiting blocks legitimate burst traffic. Diagnose the limit rule.",
+    "output": "**Diagnose:**\nsudo iptables -S | grep -i -E 'limit|hashlimit|recent'\nsudo nft list ruleset | grep -i -E 'limit|meter'\nsudo iptables -L -n -v | grep -i drop\n**Interpretation:** Rules using `-m limit --limit 10/s` or `hashlimit`/nft `meter` drop excess packets once the rate is exceeded. The counters on the DROP rule climbing during bursts confirms throttling.\n**Fix:** Raise or reshape the limits, exempt trusted sources, or move the rate limit to a specific chain. For nft adjust the meter rate/burst. Verify legitimate bursts now pass while abuse is still limited."
+  },
+  {
+    "instruction": "A firewall blocks the return traffic for a valid flow (stateful issue). Diagnose.",
+    "output": "**Diagnose:**\nsudo conntrack -L | grep <flow>\nsudo iptables -S\nsudo tcpdump -ni eth0 'host <peer>'\nsudo conntrack -S\n**Interpretation:** If SYNs pass outbound but replies are dropped, the conntrack state may be missing or the INPUT rule only allows NEW and not ESTABLISHED. Asymmetric routing also makes conntrack see one direction.\n**Fix:** Add `-m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT` to INPUT/FORWARD. Ensure both directions traverse the same firewall. If the table is full, raise nf_conntrack_max. Verify the flow appears in `conntrack -L`."
+  },
+  {
+    "instruction": "A firewall allows ICMP echo but blocks ping replies due to rate limiting. Diagnose.",
+    "output": "**Diagnose:**\nping -c 20 <host>\nsudo iptables -L -n -v | grep icmp\nsudo nft list ruleset | grep -i icmp\nsudo tcpdump -ni eth0 icmp and host <host>\n**Interpretation:** ICMP rate limiting (`--limit 1/s`) drops rapid echo replies, so ping shows loss even though the link is fine and other traffic is unaffected. tcpdump shows replies arriving but the kernel rate-limits them.\n**Fix:** Raise the ICMP rate limit or exempt diagnostic hosts, while keeping some limit to prevent abuse. `iptables -R INPUT <n> -p icmp --icmp-type echo-request -m limit --limit 10/s -j ACCEPT`. Verify ping loss falls to zero."
+  },
+  {
+    "instruction": "New connections are dropped but existing ones keep working. Diagnose SYN handling.",
+    "output": "**Diagnose:**\nsudo iptables -S INPUT | grep -i syn\nsudo nft list ruleset | grep -i syn\nsudo tcpdump -ni eth0 'tcp[tcpflags] & tcp-syn != 0'\nsudo nstat -az | grep -i -E 'ListenOverflows|TCPReqQFullDrop'\n**Interpretation:** A rule that accepts ESTABLISHED but not NEW, or an invalid-flag drop, kills only new handshakes; existing flows continue. If nstat shows listen overflows, the app backlog (not the firewall) is the cause.\n**Fix:** Ensure INPUT allows NEW to the service port and ESTABLISHED for returns: `iptables -A INPUT -p tcp --dport <port> -m conntrack --ctstate NEW -j ACCEPT`. If backlog overflow, raise somaxconn and the app backlog. Verify new connections succeed."
+  },
+  {
+    "instruction": "A NAT gateway runs out of ports for outbound connections. Diagnose.",
+    "output": "**Diagnose:**\nsudo conntrack -C\ncat /proc/sys/net/netfilter/nf_conntrack_max\nsudo conntrack -L | wc -l\nipvsadm -Ln 2>/dev/null\ndmesg | grep -i conntrack\n**Interpretation:** With many clients SNATed to one public IP, the source-port range can be exhausted; new outbound connections fail or are delayed. High conntrack count and 'table full' in dmesg confirm.\n**Fix:** Add more public IPs to the NAT pool, widen the SNAT port range, shorten TIME_WAIT/conntrack timeouts, and raise nf_conntrack_max. Reuse connections to reduce churn. Verify outbound success rate."
+  },
+  {
+    "instruction": "A firewall rule is present but has zero packet hits. Diagnose ordering/shadowing.",
+    "output": "**Diagnose:**\nsudo iptables -L -n -v --line-numbers\nsudo nft list ruleset\nsudo iptables -S\n**Interpretation:** A rule below a broad earlier ACCEPT/DROP never matches, so its counter stays at zero. Shadowing is common when a catch-all appears before specific rules.\n**Fix:** Reorder so specific rules precede broad ones, or move them into dedicated chains jumped to before the catch-all. Use `iptables -I` to insert at the right position and verify counters increment under test."
+  },
+  {
+    "instruction": "Containers in a Docker network cannot reach each other. Diagnose the DOCKER-USER chain.",
+    "output": "**Diagnose:**\nsudo iptables -S DOCKER-USER\nsudo iptables -S FORWARD\nsudo iptables -L -n -v | grep DOCKER\ndocker network inspect <net>\n**Interpretation:** A custom DOCKER-USER rule with a DROP can block inter-container traffic before Docker's own rules run. The FORWARD policy or a misconfigured bridge also blocks it.\n**Fix:** Adjust DOCKER-USER to accept the container subnet, or add a RETURN for it. Ensure `net.ipv4.ip_forward=1` and FORWARD policy allows established. Verify connectivity with `docker exec ... ping <other-container>`."
+  },
+  {
+    "instruction": "A host firewall drops fragmented packets. Diagnose.",
+    "output": "**Diagnose:**\nsudo iptables -L -n -v | grep -i frag\nsudo nft list ruleset | grep -i frag\nping -M do -s 2000 <host>\nsudo tcpdump -ni eth0 'ip[6:2] & 0x3fff != 0'\n**Interpretation:** Rules matching `-f` (second fragment) or dropping fragmented packets break large UDP/TCP payloads. tcpdump showing fragments arriving but no reassembled data confirms the drop.\n**Fix:** Allow related fragments (`-m conntrack --ctstate ESTABLISHED,RELATED`) and avoid blanket fragment drops; rely on conntrack. If defending against fragment attacks, only drop invalid fragments. Verify large-packet flows work."
+  },
+  {
+    "instruction": "A cloud security group allows the port but the instance firewall blocks it. Diagnose layered firewalls.",
+    "output": "**Diagnose:**\ncurl -v --connect-timeout 5 http://<instance>:8080\nsudo tcpdump -ni eth0 'tcp port 8080'\nsudo iptables -S\naws ec2 describe-security-groups --group-ids <sg> 2>/dev/null\n**Interpretation:** Cloud security groups and host firewalls are independent layers. If the SG allows 8080 but the host iptables has no accept, SYNs arrive (tcpdump) but get no reply. If SYNs do not arrive, the SG/NACL is blocking.\n**Fix:** Open the port at the correct layer. If SYNs arrive, add the host accept rule. If not, fix the security group/NACL. Verify with tcpdump and a client connection."
+  },
+  {
+    "instruction": "A new firewall rule broke DNS for everyone. Diagnose.",
+    "output": "**Diagnose:**\nsudo iptables -S | grep -E '53|udp'\nsudo nft list ruleset | grep -i 53\ndig example.com\ndig example.com @8.8.8.8\ntcpdump -ni eth0 port 53\n**Interpretation:** If DNS to 8.8.8.8 works but to the local resolver fails, an OUTPUT/INPUT rule blocks UDP/TCP 53 to the resolver. A rule allowing only TCP 53 breaks UDP DNS.\n**Fix:** Allow both UDP and TCP 53 to/from the resolver, plus established/related. `iptables -A OUTPUT -p udp --dport 53 -j ACCEPT; iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT`. Verify with dig."
+  }
+]

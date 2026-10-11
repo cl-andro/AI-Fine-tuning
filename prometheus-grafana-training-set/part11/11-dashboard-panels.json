@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Grafana timeseries panel target JSON for request rate grouped by job with a {{job}} legend",
+    "output": "{\"expr\": \"sum by (job) (rate(http_requests_total[5m]))\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\", \"interval\": \"1m\"}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON of type stat that shows the count of healthy targets",
+    "output": "{\"type\": \"stat\", \"title\": \"Healthy targets\", \"targets\": [{\"expr\": \"count(up == 1)\", \"refId\": \"A\"}], \"options\": {\"reduceOptions\": {\"calcs\": [\"lastNotNull\"]}}, \"fieldConfig\": {\"defaults\": {\"unit\": \"short\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana gauge panel JSON showing CPU utilisation with thresholds at 70 and 90 percent",
+    "output": "{\"type\": \"gauge\", \"title\": \"CPU utilisation\", \"targets\": [{\"expr\": \"avg(instance:node_cpu_utilisation:rate5m) * 100\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"percent\", \"min\": 0, \"max\": 100, \"thresholds\": {\"mode\": \"absolute\", \"steps\": [{\"color\": \"green\", \"value\": null}, {\"color\": \"yellow\", \"value\": 70}, {\"color\": \"red\", \"value\": 90}]}}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana table panel JSON running an instant query listing down instances",
+    "output": "{\"type\": \"table\", \"title\": \"Down instances\", \"targets\": [{\"expr\": \"up == 0\", \"instant\": true, \"format\": \"table\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"custom\": {\"align\": \"auto\"}}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana heatmap panel JSON using histogram buckets with legend {{le}}",
+    "output": "{\"type\": \"heatmap\", \"title\": \"Latency distribution\", \"targets\": [{\"expr\": \"sum by (le) (rate(http_request_duration_seconds_bucket[5m]))\", \"legendFormat\": \"{{le}}\", \"refId\": \"A\"}], \"options\": {\"calculate\": false}}"
+  },
+  {
+    "instruction": "Write a Grafana dashboard JSON with a 30 second refresh and an absolute time range",
+    "output": "{\"title\": \"Platform overview\", \"refresh\": \"30s\", \"time\": {\"from\": \"now-6h\", \"to\": \"now\"}, \"timezone\": \"browser\", \"panels\": []}"
+  },
+  {
+    "instruction": "Write a Grafana template variable JSON object providing a job dropdown populated with label_values",
+    "output": "{\"name\": \"job\", \"type\": \"query\", \"label\": \"Job\", \"datasource\": {\"type\": \"prometheus\", \"uid\": \"prom\"}, \"query\": \"label_values(up, job)\", \"refresh\": 2, \"multi\": true, \"includeAll\": true}"
+  },
+  {
+    "instruction": "Write a Grafana timeseries panel JSON with two targets comparing this hour to the same hour yesterday",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Requests now vs yesterday\", \"targets\": [{\"expr\": \"sum(rate(http_requests_total[1h]))\", \"legendFormat\": \"now\", \"refId\": \"A\"}, {\"expr\": \"sum(rate(http_requests_total[1h] offset 1d))\", \"legendFormat\": \"yesterday\", \"refId\": \"B\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"reqps\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana pie chart panel JSON showing request share per job",
+    "output": "{\"type\": \"piechart\", \"title\": \"Requests by job\", \"targets\": [{\"expr\": \"sum by (job) (rate(http_requests_total[5m]))\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}], \"options\": {\"legend\": {\"displayMode\": \"table\", \"placement\": \"right\"}, \"reduceOptions\": {\"calcs\": [\"sum\"]}}}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON for a timeseries with a legend table showing min max and mean",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Latency p99\", \"targets\": [{\"expr\": \"job:http_request_duration_seconds:p99\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}], \"options\": {\"legend\": {\"displayMode\": \"table\", \"placement\": \"bottom\", \"calcs\": [\"min\", \"max\", \"mean\"]}}, \"fieldConfig\": {\"defaults\": {\"unit\": \"s\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana bar gauge panel JSON showing memory usage per namespace sorted descending",
+    "output": "{\"type\": \"bargauge\", \"title\": \"Memory by namespace\", \"targets\": [{\"expr\": \"sum by (namespace) (container_memory_working_set_bytes)\", \"legendFormat\": \"{{namespace}}\", \"refId\": \"A\"}], \"options\": {\"reduceOptions\": {\"calcs\": [\"lastNotNull\"]}, \"displayMode\": \"gradient\", \"orientation\": \"horizontal\"}, \"fieldConfig\": {\"defaults\": {\"unit\": \"bytes\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana timeseries panel JSON using a logarithmic y axis for request rate",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Request rate log scale\", \"targets\": [{\"expr\": \"sum by (job) (rate(http_requests_total[5m]))\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"reqps\", \"custom\": {\"scale\": {\"type\": \"log\", \"log\": 10}}}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON whose query uses a recording rule for 5 minute request rate",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Precomputed request rate\", \"targets\": [{\"expr\": \"job:http_requests:rate5m\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"reqps\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana stat panel JSON that shows the last value of a SLO ratio formatted as percent",
+    "output": "{\"type\": \"stat\", \"title\": \"Availability 30d\", \"targets\": [{\"expr\": \"job:http_availability:ratio30d\", \"refId\": \"A\"}], \"options\": {\"reduceOptions\": {\"calcs\": [\"lastNotNull\"]}}, \"fieldConfig\": {\"defaults\": {\"unit\": \"percentunit\", \"min\": 0, \"max\": 1}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON with a field override that colors 5xx series red",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Status split\", \"targets\": [{\"expr\": \"sum by (status) (rate(http_requests_total[5m]))\", \"legendFormat\": \"{{status}}\", \"refId\": \"A\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"reqps\"}, \"overrides\": [{\"matcher\": {\"id\": \"byRegexp\", \"options\": \"5..\"}, \"properties\": [{\"id\": \"color\", \"value\": {\"mode\": \"fixed\", \"fixedColor\": \"red\"}}]}]}}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON with max data points and a min interval of 30 seconds",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Long range CPU\", \"targets\": [{\"expr\": \"instance:node_cpu_utilisation:rate5m\", \"legendFormat\": \"{{instance}}\", \"refId\": \"A\", \"interval\": \"30s\"}], \"maxDataPoints\": 500, \"fieldConfig\": {\"defaults\": {\"unit\": \"percentunit\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana timeseries panel JSON for network bandwidth with byte units on both axes",
+    "output": "{\"type\": \"timeseries\", \"title\": \"Network throughput\", \"targets\": [{\"expr\": \"rate(node_network_receive_bytes_total{device=\\\"eth0\\\"}[5m])\", \"legendFormat\": \"rx\", \"refId\": \"A\"}, {\"expr\": \"rate(node_network_transmit_bytes_total{device=\\\"eth0\\\"}[5m])\", \"legendFormat\": \"tx\", \"refId\": \"B\"}], \"fieldConfig\": {\"defaults\": {\"unit\": \"Bps\"}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana panel JSON embedding a PromQL alert-style boolean expression for down targets",
+    "output": "{\"type\": \"stat\", \"title\": \"Targets down\", \"targets\": [{\"expr\": \"sum(up == 0)\", \"refId\": \"A\"}], \"options\": {\"colorMode\": \"background\", \"reduceOptions\": {\"calcs\": [\"lastNotNull\"]}}, \"fieldConfig\": {\"defaults\": {\"unit\": \"short\", \"thresholds\": {\"mode\": \"absolute\", \"steps\": [{\"color\": \"green\", \"value\": null}, {\"color\": \"red\", \"value\": 1}]}}, \"overrides\": []}}"
+  },
+  {
+    "instruction": "Write a Grafana dashboard panel JSON with the Prometheus datasource reference and a refresh interval",
+    "output": "{\"title\": \"Service health\", \"datasource\": {\"type\": \"prometheus\", \"uid\": \"prom\"}, \"interval\": \"1m\", \"panels\": [{\"type\": \"timeseries\", \"title\": \"Up ratio\", \"datasource\": {\"type\": \"prometheus\", \"uid\": \"prom\"}, \"targets\": [{\"expr\": \"avg by (job) (up)\", \"legendFormat\": \"{{job}}\", \"refId\": \"A\"}]}]}"
+  },
+  {
+    "instruction": "Write a Grafana timeseries panel JSON whose legend uses a custom regex format for route labels",
+    "output": "{\"type\": \"timeseries\", \"title\": \"RPS by route\", \"targets\": [{\"expr\": \"sum by (route) (rate(http_requests_total[5m]))\", \"legendFormat\": \"{{route}}\", \"refId\": \"A\"}], \"options\": {\"legend\": {\"displayMode\": \"list\", \"placement\": \"right\", \"sortBy\": \"Total\", \"sortDesc\": true}}, \"fieldConfig\": {\"defaults\": {\"unit\": \"reqps\", \"custom\": {\"drawStyle\": \"line\", \"lineWidth\": 1}}, \"overrides\": []}}"
+  }
+]

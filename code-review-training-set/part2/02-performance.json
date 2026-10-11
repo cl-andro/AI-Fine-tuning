@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef build_html(items):\n    html = ''\n    for it in items:\n        html += '<li>' + it + '</li>'\n    return html",
+    "output": "**Issue:** Repeated string concatenation inside a loop.\n**Why:** Strings are immutable, so every += allocates and copies the whole string, giving quadratic time on large inputs.\n**Fix:**\ndef build_html(items):\n    parts = []\n    for it in items:\n        parts.append('<li>' + it + '</li>')\n    return ''.join(parts)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef not_in_blacklist(words, blacklist):\n    out = []\n    for w in words:\n        if w not in blacklist:\n            out.append(w)\n    return out",
+    "output": "**Issue:** Membership test against a list is O(n) per lookup.\n**Why:** With 10k words and a 5k blacklist this does 50 million comparisons; the whole function becomes O(n*m).\n**Fix:**\ndef not_in_blacklist(words, blacklist):\n    blocked = set(blacklist)\n    return [w for w in words if w not in blocked]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef extract_codes(lines):\n    out = []\n    for line in lines:\n        m = re.search(r'code=(\\d+)', line)\n        if m:\n            out.append(int(m.group(1)))\n    return out",
+    "output": "**Issue:** The regex pattern is recompiled on every loop iteration.\n**Why:** re.search recompiles the pattern unless it is cached, adding constant overhead to every one of the possibly millions of lines.\n**Fix:**\nimport re\nCODE_RE = re.compile(r'code=(\\d+)')\n\ndef extract_codes(lines):\n    out = []\n    for line in lines:\n        m = CODE_RE.search(line)\n        if m:\n            out.append(int(m.group(1)))\n    return out"
+  },
+  {
+    "instruction": "Review this code:\n\nimport heapq\n\ndef top_k(scores, k):\n    ranked = []\n    for s in scores:\n        ranked.insert(0, s)\n        if len(ranked) > k:\n            ranked.pop()\n    return ranked",
+    "output": "**Issue:** insert(0, ...) shifts the entire list on every iteration.\n**Why:** Each insert is O(n), so the loop is O(n*k) even though only k items are ever kept.\n**Fix:**\nimport heapq\n\ndef top_k(scores, k):\n    return heapq.nlargest(k, scores)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nprint(fib(35))",
+    "output": "**Issue:** Naive recursion recomputes the same subproblems exponentially.\n**Why:** fib(35) performs about 30 million calls and takes many seconds; fib(60) will never finish.\n**Fix:**\nfrom functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef checksum(data):\n    out = b''\n    for chunk in data:\n        out += chunk\n    return hash(out)",
+    "output": "**Issue:** bytes concatenation in a loop creates a new object each pass.\n**Why:** Each += copies the accumulated bytes, turning an O(n) job into O(n^2) allocations and GC churn.\n**Fix:**\ndef checksum(data):\n    return hash(b''.join(data))"
+  },
+  {
+    "instruction": "Review this code:\n\ndef scale(values, factor, result):\n    for i in range(len(values)):\n        result[i] = values[i] * factor\n    return result",
+    "output": "**Issue:** factor is looked up as a global name on every iteration.\n**Why:** Global/attribute lookups in a tight Python loop cost far more than a local binding, easily 30-50% of the loop time.\n**Fix:**\ndef scale(values, factor, result):\n    f = factor\n    for i in range(len(values)):\n        result[i] = values[i] * f\n    return result\n# even faster: import numpy as np; return np.asarray(values) * factor"
+  },
+  {
+    "instruction": "Review this code:\n\ndef ordered(words):\n    return sorted(words, key=lambda w: w.lower())",
+    "output": "**Issue:** The key function re-lowercases every string on every comparison.\n**Why:** sorted calls the key once per element (good) but here the result is recomputed on each sort pass in variants using cmp; more importantly chained .lower() in a loop elsewhere scales poorly. Prefer a precomputed key.\n**Fix:**\ndef ordered(words):\n    lowered = [(w.lower(), w) for w in words]\n    lowered.sort()\n    return [w for _, w in lowered]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef common(a, b):\n    out = []\n    for x in a:\n        if x in b:\n            out.append(x)\n    return out",
+    "output": "**Issue:** Nested membership scans make this O(n*m).\n**Why:** For two 50k-element lists each `in b` walks the whole list, giving ~2.5 billion comparisons.\n**Fix:**\ndef common(a, b):\n    return list(set(a) & set(b))"
+  },
+  {
+    "instruction": "Review this code:\n\ndef normalize(matrix):\n    out = []\n    for row in matrix:\n        new_row = []\n        for v in row:\n            new_row.append((v - 128) / 255.0)\n        out.append(new_row)\n    return out",
+    "output": "**Issue:** Element-wise math over an array with nested Python loops.\n**Why:** Python-level loops over numeric data are orders of magnitude slower than vectorized ops and allocate a list per row.\n**Fix:**\nimport numpy as np\n\ndef normalize(matrix):\n    return ((np.asarray(matrix, dtype=float) - 128) / 255.0).tolist()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef handle_request(payload):\n    import copy\n    cfg = copy.deepcopy(SETTINGS)\n    cfg['trace'] = payload.get('trace', False)\n    return render(cfg)",
+    "output": "**Issue:** deepcopy of the configuration on every request.\n**Why:** Deepcopy walks and clones the entire nested structure per call, burning CPU and memory on a hot path where it is not needed.\n**Fix:**\ndef handle_request(payload):\n    cfg = {**SETTINGS, 'trace': payload.get('trace', False)}\n    return render(cfg)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef word_count(path):\n    counts = {}\n    with open(path) as f:\n        for line in f:\n            with open(path) as g:\n                g.seek(0)\n            for w in line.split():\n                counts[w] = counts.get(w, 0) + 1\n    return counts",
+    "output": "**Issue:** The file is reopened for every line (and the inner handle never used). \n**Why:** Open/reopen is a syscall per line; on a 1M-line log this is a million pointless file opens.\n**Fix:**\ndef word_count(path):\n    counts = {}\n    with open(path) as f:\n        for line in f:\n            for w in line.split():\n                counts[w] = counts.get(w, 0) + 1\n    return counts"
+  },
+  {
+    "instruction": "Review this code:\n\ndef running_total(values):\n    total = []\n    s = 0\n    for v in values:\n        s += v\n        total.append(s)\n    return total",
+    "output": "**Issue:** Fine for correctness, but the loop is a pure aggregation already available built-in and slower than the vectorized equivalent.\n**Why:** In pandas/numpy pipelines this Python loop defeats columnar optimization entirely.\n**Fix:**\nimport numpy as np\n\ndef running_total(values):\n    return np.cumsum(values).tolist()\n# pure python alternative: itertools.accumulate(values)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef remove_odds(nums):\n    i = 0\n    while i < len(nums):\n        if nums[i] % 2:\n            nums.pop(i)\n        else:\n            i += 1\n    return nums",
+    "output": "**Issue:** Deleting while scanning with pop(i) shifts the tail on every removal.\n**Why:** pop in the middle is O(n), so a list of all odds becomes O(n^2) plus index bookkeeping bugs.\n**Fix:**\ndef remove_odds(nums):\n    return [n for n in nums if n % 2 == 0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef find_duplicates(ids):\n    dups = []\n    for i in range(len(ids)):\n        for j in range(i + 1, len(ids)):\n            if ids[i] == ids[j] and ids[i] not in dups:\n                dups.append(ids[i])\n    return dups",
+    "output": "**Issue:** O(n^2) pairwise scan to find duplicates.\n**Why:** 20k ids means ~200 million comparisons, plus an O(k) `not in dups` check inside the inner loop.\n**Fix:**\nfrom collections import Counter\n\ndef find_duplicates(ids):\n    return [k for k, c in Counter(ids).items() if c > 1]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef total_size(cur):\n    rows = cur.execute('SELECT path, size FROM files').fetchall()\n    total = 0\n    for path, size in rows:\n        total += size\n    return total",
+    "output": "**Issue:** fetchall() materializes the entire result set in memory.\n**Why:** A table with 50M rows loads every path/size pair into a Python list before any work happens, causing huge memory spikes or MemoryError.\n**Fix:**\ndef total_size(cur):\n    total = 0\n    for (size,) in cur.execute('SELECT size FROM files'):\n        total += size\n    return total\n# or push it down: SELECT SUM(size) FROM files"
+  },
+  {
+    "instruction": "Review this code:\n\ndef expensive_report(data):\n    return sorted(data, key=lambda r: r['name'].lower())[:10]\n\n# called in a loop for each page view\nfor req in requests_iter:\n    render(expensive_report(req['data']))",
+    "output": "**Issue:** Full sort of a large collection on every call just to get the top 10.\n**Why:** sorted is O(n log n) and allocates a whole new list per request; a bounded heap keeps only k items.\n**Fix:**\nimport heapq\n\ndef expensive_report(data):\n    return heapq.nsmallest(10, data, key=lambda r: r['name'].lower())"
+  },
+  {
+    "instruction": "Review this code:\n\nimport threading\n\ndef process(items):\n    for item in items:\n        t = threading.Thread(target=handle, args=(item,))\n        t.start()",
+    "output": "**Issue:** A brand-new thread is spawned for every item.\n**Why:** Thread creation costs tens of microseconds plus a stack allocation; at high volume the scheduler thrashes and memory grows unbounded.\n**Fix:**\nfrom concurrent.futures import ThreadPoolExecutor\n\ndef process(items):\n    with ThreadPoolExecutor(max_workers=16) as ex:\n        list(ex.map(handle, items))"
+  },
+  {
+    "instruction": "Review this code:\n\ndef index_words(words):\n    d = {}\n    for w in words:\n        if w not in d:\n            d[w] = []\n        d[w].append(w)\n    return d",
+    "output": "**Issue:** Manual check-then-insert pattern instead of a defaultdict.\n**Why:** Two dict lookups per element and duplicated boilerplate on every grouping loop in the codebase.\n**Fix:**\nfrom collections import defaultdict\n\ndef index_words(words):\n    d = defaultdict(list)\n    for w in words:\n        d[w].append(w)\n    return dict(d)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef scrub(text):\n    text = text.replace('BEGIN', 'X')\n    text = text.replace('END', 'Y')\n    text = text.replace('TOKEN', 'Z')\n    text = text.replace('SECRET', 'W')\n    return text",
+    "output": "**Issue:** Chained str.replace scans the whole string once per pattern.\n**Why:** Each replace is a full pass and allocates a new string, so k patterns cost k passes and k intermediate strings.\n**Fix:**\nimport re\nPAT = re.compile(r'BEGIN|END|TOKEN|SECRET')\nMAP = {'BEGIN': 'X', 'END': 'Y', 'TOKEN': 'Z', 'SECRET': 'W'}\n\ndef scrub(text):\n    return PAT.sub(lambda m: MAP[m.group(0)], text)"
+  }
+]

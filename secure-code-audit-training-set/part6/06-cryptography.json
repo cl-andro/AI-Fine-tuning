@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nfrom Crypto.Cipher import AES\nkey = b'0' * 16\ncipher = AES.new(key, AES.MODE_ECB)",
+    "output": "**Vulnerability:** ECB mode + hardcoded key\n**Severity:** High\n**Why:** ECB leaks plaintext patterns (equal blocks encrypt equally) and the key is fixed/guessable.\n**Exploit:** Recover structure from ciphertext; with a known key, decrypt everything.\n**Fix:**\nimport os\nfrom cryptography.hazmat.primitives.ciphers.aead import AESGCM\nkey = AESGCM.generate_key(bit_length=256)\nnonce = os.urandom(12)\nct = AESGCM(key).encrypt(nonce, plaintext, None)  # authenticated encryption"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nhashlib.md5(file_bytes).hexdigest()\n# used for password storage",
+    "output": "**Vulnerability:** Weak hash for passwords\n**Severity:** High\n**Why:** MD5 is fast and collision-prone; unsuitable for password hashing.\n**Exploit:** Offline cracking and rainbow tables.\n**Fix:**\nimport bcrypt\nstored = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))\n# or argon2-cffi / scrypt for memory-hard hashing"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\niv = b'1234567890abcdef'\ncipher = AES.new(key, AES.MODE_CBC, iv)",
+    "output": "**Vulnerability:** Static IV with CBC\n**Severity:** High\n**Why:** A reused IV with CBC leaks whether two messages share a prefix and enables chosen-plaintext attacks.\n**Exploit:** Compare ciphertext blocks across messages to infer equality.\n**Fix:**\nimport os\niv = os.urandom(16)  # fresh random IV per message, stored alongside the ciphertext"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nimport random\nsession_id = str(random.random())",
+    "output": "**Vulnerability:** Insecure randomness\n**Severity:** High\n**Why:** `random` is a predictable PRNG seeded from time; not cryptographically secure.\n**Exploit:** Predict or enumerate session ids.\n**Fix:**\nimport secrets\nsession_id = secrets.token_urlsafe(32)"
+  },
+  {
+    "instruction": "Audit this code for security issues (RSA):\n\ncipher = PKCS1_v1_5.new(key)\nenc = cipher.encrypt(data)",
+    "output": "**Vulnerability:** RSA PKCS#1 v1.5 encryption\n**Severity:** Medium\n**Why:** v1.5 is vulnerable to Bleichenbacher padding-oracle attacks.\n**Exploit:** Adaptive chosen-ciphertext attack recovers the plaintext.\n**Fix:**\nfrom cryptography.hazmat.primitives.asymmetric import padding\nenc = key.public_key().encrypt(data, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nimport hmac\nreturn hmac.new(key, msg).digest()",
+    "output": "**Vulnerability:** HMAC without a hash algorithm\n**Severity:** Medium\n**Why:** Relying on `hmac`'s default digest is ambiguous and can differ across versions; legacy MD5 default is weak.\n**Exploit:** Weak digest reduces forgery resistance.\n**Fix:**\nimport hmac, hashlib\nreturn hmac.new(key, msg, hashlib.sha256).digest()  # explicit SHA-256"
+  },
+  {
+    "instruction": "Audit this code for security issues (key derivation):\n\nderived = hashlib.sha256(password).digest()  # used as an encryption key",
+    "output": "**Vulnerability:** Unsalted, fast key derivation\n**Severity:** High\n**Why:** A single SHA-256 pass is brute-forceable and unsalted (same password -> same key).\n**Exploit:** Dictionary/rainbow attack on the password to recover the key.\n**Fix:**\nimport os\nfrom cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC\nfrom cryptography.hazmat.primitives import hashes\nsalt = os.urandom(16)\nkdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=600000)\nkey = kdf.derive(password.encode())\n# or use argon2 / scrypt for memory-hardness"
+  },
+  {
+    "instruction": "Audit this code for security issues (TLS):\n\nrequests.get(url, verify=False)",
+    "output": "**Vulnerability:** Disabled certificate verification\n**Severity:** High\n**Why:** `verify=False` accepts any certificate, enabling MITM.\n**Exploit:** A network attacker presents a self-signed cert and reads/modifies traffic.\n**Fix:**\nrequests.get(url, verify=True)  # default; pin a CA bundle if needed\n# fix the underlying trust issue instead of disabling verification"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nsentinel = object()\ncipher = PKCS1_OAEP.new(key)\nif not cipher.decrypt(enc, sentinel) is sentinel:\n    return True",
+    "output": "**Vulnerability:** Broken error handling in decryption (potential padding oracle)\n**Severity:** Medium\n**Why:** Differentiating decryption failure from success can leak information to an attacker.\n**Exploit:** Repeated probes derive plaintext via oracle behavior.\n**Fix:**\n# Use authenticated encryption (AES-GCM) so tampering is detected uniformly,\n# and return a single generic error for all failure modes."
+  },
+  {
+    "instruction": "Audit this code for security issues (hashing):\n\nif hashlib.md5(user_input).hexdigest() == expected:\n    authorize()",
+    "output": "**Vulnerability:** Weak comparison / collision-prone hash\n**Severity:** High\n**Why:** MD5 collisions allow forging a different input with the same hash; also plain `==` leaks timing.\n**Exploit:** Generate a colliding input to pass the check.\n**Fix:**\nimport hmac, hashlib\nif hmac.compare_digest(hashlib.sha256(user_input).hexdigest(), expected):\n    authorize()"
+  },
+  {
+    "instruction": "Audit this code for security issues (JWT signing):\n\njwt.encode(payload, '', algorithm='HS256')",
+    "output": "**Vulnerability:** Empty signing key\n**Severity:** Critical\n**Why:** An empty HMAC key makes signatures trivially forgeable.\n**Exploit:** Recompute a valid signature with the empty key.\n**Fix:**\n# Load a strong random key from a secret manager:\njwt.encode(payload, os.environ['JWT_SECRET'], algorithm='HS256')"
+  },
+  {
+    "instruction": "Audit this code for security issues (XOR cipher):\n\ndef encrypt(data, key):\n    return bytes(b ^ key[i % len(key)] for i, b in enumerate(data))",
+    "output": "**Vulnerability:** XOR stream cipher (home-grown)\n**Severity:** High\n**Why:** Reusing a short key without a nonce makes it a repeating-key XOR, trivially broken.\n**Exploit:** Recover the key via frequency analysis / crib dragging.\n**Fix:**\n# Use AES-GCM (authenticated) with a random nonce, or libsodium's secretbox:\nfrom cryptography.hazmat.primitives.ciphers.aead import AESGCM\nimport os\nnonce = os.urandom(12)\nct = AESGCM(key).encrypt(nonce, data, None)"
+  },
+  {
+    "instruction": "Audit this code for security issues (password comparison):\n\nif user.password == request.form['password']:\n    login()",
+    "output": "**Vulnerability:** Plaintext comparison and timing leak\n**Severity:** High\n**Why:** Stored passwords are plaintext; `==` also short-circuits (timing side-channel).\n**Exploit:** A DB leak exposes passwords; timing narrows brute-forcing.\n**Fix:**\nimport bcrypt\nif bcrypt.checkpw(request.form['password'].encode(), user.password_hash):\n    login()"
+  },
+  {
+    "instruction": "Audit this code for security issues (key generation):\n\nfrom Crypto.PublicKey import RSA\nkey = RSA.generate(1024)",
+    "output": "**Vulnerability:** Weak RSA key size\n**Severity:** High\n**Why:** 1024-bit RSA is no longer considered secure (and may be non-compliant).\n**Exploit:** Factor the modulus with sufficient resources.\n**Fix:**\nkey = RSA.generate(3072)  # 2048 minimum, 3072+ preferred\n# or use Ed25519 for signatures / ECDH X25519 for key exchange"
+  },
+  {
+    "instruction": "Audit this code for security issues (secrets in crypto):\n\nkey = b'mysecretkey12345'\ncipher = AES.new(key, AES.MODE_CBC, os.urandom(16))",
+    "output": "**Vulnerability:** Hardcoded/weak encryption key, wrong key length\n**Severity:** High\n**Why:** A 16-byte ASCII phrase with low entropy; key is embedded in source.\n**Exploit:** Guess/derive the key and decrypt all data.\n**Fix:**\n# Generate and store a strong key out of band:\nkey = base64.b64decode(os.environ['DATA_KEY'])  # 32 bytes from a secret manager"
+  },
+  {
+    "instruction": "Audit this code for security issues (signature verification):\n\nsignature = hmac.new(SECRET, body, hashlib.sha256).hexdigest()\nif signature != request.headers['X-Sig']:\n    reject()",
+    "output": "**Vulnerability:** Timing side-channel in signature check\n**Severity:** Medium\n**Why:** `!=` short-circuits and leaks how many characters matched.\n**Exploit:** Measure timing to forge a valid signature character by character.\n**Fix:**\nimport hmac\nif not hmac.compare_digest(signature, request.headers['X-Sig']):\n    reject()"
+  },
+  {
+    "instruction": "Audit this code for security issues (random tokens):\n\nimport time, hashlib\ntoken = hashlib.sha1(str(time.time()).encode()).hexdigest()",
+    "output": "**Vulnerability:** Predictable token generation\n**Severity:** High\n**Why:** Seeding from the clock makes tokens predictable.\n**Exploit:** Enumerate likely timestamps to regenerate tokens.\n**Fix:**\nimport secrets\ntoken = secrets.token_hex(32)"
+  },
+  {
+    "instruction": "Audit this code for security issues (encrypt-then-nothing):\n\nct = AES_CBC_encrypt(data, key, iv)\nreturn iv + ct",
+    "output": "**Vulnerability:** Unauthenticated encryption (no MAC)\n**Severity:** High\n**Why:** CBC without a MAC allows bit-flipping and padding-oracle attacks.\n**Exploit:** Modify ciphertext blocks to alter decrypted plaintext.\n**Fix:**\nfrom cryptography.hazmat.primitives.ciphers.aead import AESGCM\nnonce = os.urandom(12)\nreturn nonce + AESGCM(key).encrypt(nonce, data, None)"
+  },
+  {
+    "instruction": "Audit this code for security issues (certificate pinning):\n\nctx.check_hostname = False\nctx.verify_mode = ssl.CERT_NONE",
+    "output": "**Vulnerability:** TLS verification disabled\n**Severity:** High\n**Why:** Accepts any certificate; hostname checks disabled too.\n**Exploit:** MITM with a rogue certificate.\n**Fix:**\nctx.check_hostname = True\nctx.verify_mode = ssl.CERT_REQUIRED\n# pin the expected CA/serial if you need pinning"
+  },
+  {
+    "instruction": "Audit this code for security issues (password hashing):\n\nsalt = 'mysalt'\nh = sha256((salt + password).encode()).hexdigest()",
+    "output": "**Vulnerability:** Static salt + fast hash\n**Severity:** High\n**Why:** A constant salt enables precomputation; a single SHA-256 pass is fast to brute-force.\n**Exploit:** Rainbow tables / GPU cracking.\n**Fix:**\nimport bcrypt\nh = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))  # random salt per user"
+  }
+]

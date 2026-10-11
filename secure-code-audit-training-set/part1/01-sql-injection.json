@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nquery = \"SELECT * FROM users WHERE email = '\" + email + \"'\"\ncursor.execute(query)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** The user-controlled `email` is concatenated directly into SQL, so an attacker can alter the query.\n**Exploit:** `email = \"' OR '1'='1\"` returns all users; `\"' UNION SELECT password FROM users--\"` leaks data.\n**Fix:**\nquery = \"SELECT * FROM users WHERE email = %s\"\ncursor.execute(query, (email,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nlogin = \"SELECT id FROM accounts WHERE user='%s' AND pass='%s'\" % (user, pw)\ndb.execute(login)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** Critical\n**Why:** Both `user` and `pw` are interpolated into the query via `%` formatting.\n**Exploit:** `user = \"admin'--\"` logs in as admin without a password.\n**Fix:**\nlogin = \"SELECT id FROM accounts WHERE user=%s AND pass=%s\"\ndb.execute(login, (user, pw))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nsql = f\"UPDATE balances SET amount={amount} WHERE id={account_id}\"\nconn.cursor().execute(sql)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** Values are formatted via f-string into the SQL text instead of bound as parameters.\n**Exploit:** `account_id = \"1 OR 1=1\"` updates every row.\n**Fix:**\nsql = \"UPDATE balances SET amount=%s WHERE id=%s\"\nconn.cursor().execute(sql, (amount, account_id))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\ncur.execute(\"DELETE FROM sessions WHERE token = '\" + token + \"'\")",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** `token` is concatenated into the statement.\n**Exploit:** A crafted token like `' OR '1'='1` deletes all sessions.\n**Fix:**\ncur.execute(\"DELETE FROM sessions WHERE token = %s\", (token,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nORDER = request.args['sort']\ncur.execute(\"SELECT * FROM items ORDER BY \" + ORDER)",
+    "output": "**Vulnerability:** SQL injection via identifier\n**Severity:** High\n**Why:** Column/identifier position can't be parameterized with a placeholder, and `ORDER` is attacker-controlled.\n**Exploit:** `sort = \"id; DROP TABLE items--\"` (with multi-statement) or inference via boolean ordering.\n**Fix:**\nALLOWED = {\"id\", \"name\", \"created_at\"}\ncol = request.args.get(\"sort\", \"id\")\nif col not in ALLOWED:\n    col = \"id\"\ncur.execute(f\"SELECT * FROM items ORDER BY {col}\")"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\ndef get_user(request, uid):\n    sql = \"SELECT * FROM users WHERE id = \" + uid\n    return db.query(sql)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** `uid` is concatenated without validation or binding.\n**Exploit:** `uid = \"1 UNION SELECT username,password,3 FROM users\"`.\n**Fix:**\nreturn db.query(\"SELECT * FROM users WHERE id = %s\", (uid,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nname = input('Name: ')\nc.execute(f\"INSERT INTO logs (msg) VALUES ('{name}')\")",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** Direct f-string interpolation of untrusted input.\n**Exploit:** `name = \"'); DROP TABLE logs;--\"`.\n**Fix:**\nc.execute(\"INSERT INTO logs (msg) VALUES (%s)\", (name,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nfilter = request.GET.get('q')\nqs = \"SELECT * FROM products WHERE name LIKE '%\" + filter + \"%'\"\nProduct.objects.raw(qs)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** The search term is concatenated into a raw SQL string.\n**Exploit:** `q = \"%' UNION SELECT * FROM auth_user--\"`.\n**Fix:**\nProduct.objects.raw(\"SELECT * FROM products WHERE name LIKE %s\", [f\"%{filter}%\"])\n# Prefer the ORM: Product.objects.filter(name__icontains=filter)"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nsid = cookies['sid']\nconn.execute(\"SELECT role FROM users WHERE session='\" + sid + \"'\")",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** Cookie value flows unescaped into SQL.\n**Exploit:** `sid = \"x' OR role='admin'--\"` escalates privileges.\n**Fix:**\nconn.execute(\"SELECT role FROM users WHERE session=%s\", (sid,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nstmt = \"SELECT * FROM t WHERE a = %s AND b = '%s'\" % (a, b)\n# note: first %s was meant to be a placeholder too\nexecute(stmt)",
+    "output": "**Vulnerability:** SQL injection / broken parameterization\n**Severity:** High\n**Why:** `%` formatting substitutes the values, so `b` is injected; the `%s` for `a` is consumed by the format operator.\n**Fix:**\nexecute(\"SELECT * FROM t WHERE a = %s AND b = %s\", (a, b))"
+  },
+  {
+    "instruction": "Audit this code for security issues (Go):\n\nq := fmt.Sprintf(\"SELECT * FROM users WHERE name='%s'\", name)\ndb.Query(q)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** `fmt.Sprintf` builds the query with untrusted `name`.\n**Exploit:** `name = \"' OR 1=1--\"`.\n**Fix:**\ndb.Query(\"SELECT * FROM users WHERE name = $1\", name)"
+  },
+  {
+    "instruction": "Audit this code for security issues (Node/JS):\n\ndb.query(`SELECT * FROM posts WHERE slug = '${req.params.slug}'`)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** Template literal interpolation into SQL.\n**Exploit:** `slug = \"' OR '1'='1\"`.\n**Fix:**\ndb.query('SELECT * FROM posts WHERE slug = ?', [req.params.slug])"
+  },
+  {
+    "instruction": "Audit this code for security issues (PHP):\n\n$sql = \"SELECT * FROM users WHERE id = \" . $_GET['id'];\n$res = $pdo->query($sql);",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** `$_GET['id']` is concatenated into the SQL.\n**Exploit:** `?id=1 UNION SELECT password FROM users`.\n**Fix:**\n$stmt = $pdo->prepare(\"SELECT * FROM users WHERE id = ?\");\n$stmt->execute([$_GET['id']]);"
+  },
+  {
+    "instruction": "Audit this code for security issues (Java):\n\nString q = \"SELECT * FROM users WHERE email='\" + email + \"'\";\nStatement st = conn.createStatement();\nResultSet rs = st.executeQuery(q);",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** String concatenation with untrusted input.\n**Exploit:** `email = \"' OR '1'='1\"`.\n**Fix:**\nPreparedStatement ps = conn.prepareStatement(\"SELECT * FROM users WHERE email = ?\");\nps.setString(1, email);\nResultSet rs = ps.executeQuery();"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nsort = request.data.get('order', 'asc')\nq = f\"SELECT * FROM events ORDER BY created {sort}\"\nexecute(q)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** Medium\n**Why:** `sort` is interpolated into the ORDER BY direction.\n**Exploit:** `order = \"asc; DROP TABLE events--\"` on backends permitting stacked queries.\n**Fix:**\ndirection = \"asc\" if sort.lower() != \"desc\" else \"desc\"\nexecute(f\"SELECT * FROM events ORDER BY created {direction}\")"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\ntable = request.args['table']\nq = \"SELECT COUNT(*) FROM %s\" % table\ncur.execute(q)",
+    "output": "**Vulnerability:** SQL injection via table name\n**Severity:** High\n**Why:** Table names are identifiers and cannot be safely bound; `table` is unvalidated.\n**Exploit:** `table = \"users WHERE 1=1 UNION SELECT ...\"`.\n**Fix:**\nALLOWED = {\"orders\", \"customers\", \"products\"}\nif table not in ALLOWED:\n    raise ValueError(\"invalid table\")\ncur.execute(f\"SELECT COUNT(*) FROM {table}\")"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nemail = request.json['email']\ncur.execute(\"SELECT * FROM subs WHERE email = '\" + email + \"'\")\ncur.execute(\"INSERT INTO activity (email) VALUES ('\" + email + \"')\")",
+    "output": "**Vulnerability:** SQL injection (two sinks)\n**Severity:** High\n**Why:** The same untrusted value is concatenated into two queries.\n**Exploit:** `email = \"x' OR 1=1--\"` on the SELECT; `\"'); DELETE FROM subs;--\"` on INSERT.\n**Fix:**\ncur.execute(\"SELECT * FROM subs WHERE email = %s\", (email,))\ncur.execute(\"INSERT INTO activity (email) VALUES (%s)\", (email,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nraw = \"SELECT password_hash FROM users WHERE username = '\" + username + \"' AND active = 1\"",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** `username` is concatenated; also a classic credential-harvesting target.\n**Exploit:** `username = \"' UNION SELECT password_hash FROM admins--\"`.\n**Fix:**\nraw = \"SELECT password_hash FROM users WHERE username = %s AND active = 1\"\ncur.execute(raw, (username,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nid = request.args.get('id')\n# stored procedure wrapper\ncall = \"CALL get_report('\" + id + \"')\"\nexecute(call)",
+    "output": "**Vulnerability:** SQL injection in a stored-procedure call\n**Severity:** High\n**Why:** Dynamic procedure invocation with a concatenated argument.\n**Exploit:** `id = \"1'); DROP TABLE reports;--\"`.\n**Fix:**\nexecute(\"CALL get_report(%s)\", (id,))"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nemail = request.form.get('email')\ncur.execute(\"SELECT * FROM newsletter WHERE email = '%s'\" % email)",
+    "output": "**Vulnerability:** SQL injection\n**Severity:** High\n**Why:** The email is interpolated with `%` formatting into the query.\n**Exploit:** `email = \"' OR '1'='1\"` returns every subscriber.\n**Fix:**\ncur.execute(\"SELECT * FROM newsletter WHERE email = %s\", (email,))"
+  }
+]

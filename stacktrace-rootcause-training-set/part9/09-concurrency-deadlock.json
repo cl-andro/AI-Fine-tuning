@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: two worker threads have been hung for 60 seconds; a faulthandler dump was taken.\n\nThread 0x00007f3a4c001b80 (most recent call first):\n  File \"/app/transfer.py\", line 41, in transfer_a\n    with lock_b:\n  File \"/app/transfer.py\", line 39, in transfer_a\n    lock_a.acquire()\n\nThread 0x00007f3a4c802c00 (most recent call first):\n  File \"/app/transfer.py\", line 55, in transfer_b\n    with lock_a:\n  File \"/app/transfer.py\", line 53, in transfer_b\n    lock_b.acquire()",
+    "output": "**Root cause:** classic lock-order inversion: thread 1 holds `lock_a` and waits for `lock_b` while thread 2 holds `lock_b` and waits for `lock_a`, so both block forever.\n**Fix:** Always acquire locks in one global order (or use a single mutex/`threading.RLock`), and consider `lock.acquire(timeout=...)` to surface mistakes."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: background thread mutating a shared config dict while the main thread iterates it.\n\nTraceback (most recent call last):\n  File \"/app/config.py\", line 77, in snapshot\n    for key in self._values:\nRuntimeError: dictionary changed size during iteration",
+    "output": "**Root cause:** another thread inserted/removed a key while the loop was running; CPython detects the size change and raises.\n**Fix:** Iterate over a stable copy (`for key in list(self._values):`) and guard writes with the same `threading.Lock`."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: a worker inside a multiprocessing pool tries to create its own pool.\n\nTraceback (most recent call last):\n  File \"/app/parallel.py\", line 118, in shard\n    pool = multiprocessing.Pool(processes=4)\n  File \"/usr/lib/python3.11/multiprocessing/pool.py\", line 322, in __init__\nRuntimeError: daemonic processes are not allowed to have children",
+    "output": "**Root cause:** pool workers are daemon processes, and daemons cannot spawn children, so creating a nested `Pool` inside a task fails.\n**Fix:** Do the sharding one level up (create pools in the parent), or run the nested work with a thread pool instead."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: async webhook sender dropped during shutdown.\n\nTask was destroyed but it is pending!\ntask: <Task pending name='Task-17' coro=<deliver() running at /app/webhooks/sender.py:64> wait_for=<Future pending>>",
+    "output": "**Root cause:** the event loop was closed while `deliver()` was still awaiting its HTTP call - the task reference was garbage-collected without being awaited or cancelled.\n**Fix:** On shutdown, `await asyncio.wait_for(asyncio.gather(*tasks), timeout)` (or cancel tasks) before `loop.close()`."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: a job started in a background thread that created its own event loop.\n\nRuntimeError: Task <Task pending coro=<refresh() running at /app/cache/refresh.py:31>> got Future <Future pending> attached to a different loop",
+    "output": "**Root cause:** the future was created on one loop (the main thread's) and awaited on another (the worker thread's loop), which is not allowed.\n**Fix:** Create and await futures on the same loop - run the coroutine with `loop.run_until_complete` inside the owning thread, or share a single loop."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: a shared future completed twice by racing callbacks.\n\nTraceback (most recent call last):\n  File \"/app/rpc/client.py\", line 96, in complete\n    self._future.set_result(value)\n  File \"/usr/lib/python3.11/asyncio/futures.py\", line 399, in set_result\nasyncio.exceptions.InvalidStateError: invalid state",
+    "output": "**Root cause:** two callbacks raced to fulfil the same future; the second `set_result` on an already-done future raises InvalidStateError.\n**Fix:** Guard with `if not fut.done(): fut.set_result(...)` (or use an `asyncio.Lock`/a one-shot future wrapper) so only the first wins."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: report builder iterating over a live cache of users.\n\nException in thread \"main\" java.util.ConcurrentModificationException: null\n\tat java.base/java.util.TreeMap.next(TreeMap.java:2997)\n\tat com.acme.report.UserReport.render(UserReport.java:45)\n\tat com.acme.report.Job.run(Job.java:22)",
+    "output": "**Root cause:** a second thread inserted/removed entries while the iterator traversed the `TreeMap`, and fail-fast iterators throw on structural modification.\n**Fix:** Iterate a snapshot or a `ConcurrentHashMap`/`CopyOnWriteArrayList`, or lock the map for the whole iteration."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: executor shutdown interrupting workers blocked on a queue.\n\nException in thread \"pool-3-worker-2\" java.lang.InterruptedException: sleep interrupted\n\tat java.base/java.lang.Thread.sleep(Native Method)\n\tat com.acme.pool.Worker.take(Worker.java:58)\n\tat com.acme.pool.Worker.run(Worker.java:41)",
+    "output": "**Root cause:** shutdown called `shutdownNow()` (interrupting workers) while a task was sleeping in `take()`, and the interrupt was swallowed instead of propagating.\n**Fix:** Re-set the interrupt status (`Thread.currentThread().interrupt()`) or convert to a graceful `awaitTermination` so the task can exit cleanly."
+  },
+  {
+    "instruction": "Root cause this concurrency deadlock.\nContext: two request threads hang; jstack was attached to the support ticket.\n\nFound one Java-level deadlock:\n=============================\n\"Thread-1\":\n  waiting to lock monitor 0x00007f2c1c005a38 (object 0x000000074ab2c1a0, a java.lang.Object),\n  which is held by \"Thread-2\"\n\"Thread-2\":\n  waiting to lock monitor 0x00007f2c1c004e18 (object 0x000000074ab2c1b8, a java.lang.Object),\n  which is held by \"Thread-1\"\n\nJava stack information for the threads listed above:\n===================================================\n\"Thread-1\":\n\tat com.acme.billing.Debit.apply(Debit.java:33)\n\t- waiting to lock <74ab2c1a0> (a java.lang.Object)\n\tat com.acme.billing.Debit.transfer(Debit.java:22)\n\t- locked <74ab2c1b8> (a java.lang.Object)\n\"Thread-2\":\n\tat com.acme.billing.Credit.apply(Credit.java:29)\n\t- waiting to lock <74ab2c1b8> (a java.lang.Object)\n\tat com.acme.billing.Credit.transfer(Credit.java:18)\n\t- locked <74ab2c1a0> (a java.lang.Object)",
+    "output": "**Root cause:** Thread-1 locks object A then waits for B, while Thread-2 locks B then waits for A; the JVM reports a formal deadlock.\n**Fix:** Impose a lock ordering (always debit-side first), use `tryLock` with timeout, or collapse both locks into one lock guarding the transfer."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: batching library invoking a completion callback from a producer and a consumer.\n\nError: Callback was already called.\n    at Function.once (/app/node_modules/async/dist/async.js:9935:26)\n    at drainQueue (/app/node_modules/async/dist/async.js:7707:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)",
+    "output": "**Root cause:** the callback fired twice (a race between the timeout path and the normal completion), which async libraries treat as a fatal contract violation.\n**Fix:** Ensure exactly-once completion with a guard flag/`AbortController`, and clear timers when the request completes first."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: background thread starting the request loop while the main thread already runs one.\n\nThreadError: deadlock; recursive locking\n\tfrom /app/lib/mutex.rb:18 in `synchronize'\n\tfrom /app/workers/pusher.rb:42 in `publish'",
+    "output": "**Root cause:** the same non-reentrant mutex was locked twice on one thread (`synchronize` nested inside `synchronize`), which Ruby detects as a deadlock.\n**Fix:** Use `Monitor` (re-entrant) or restructure so the inner block does not re-acquire the lock it already holds."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: webhook list rendered while a writer appends events on another thread.\n\nUnhandled exception. System.InvalidOperationException: Collection was modified; enumeration operation may not execute.\n   at System.Collections.Generic.List`1.MoveNext()\n   at Web.Hooks.RenderAll() in /src/Web/Hooks.cs:line 63\n   at Web.Queue.Consume() in /src/Web/Queue.cs:line 41",
+    "output": "**Root cause:** the `List<T>` was mutated during `foreach`, and its enumerator throws when the version changes.\n**Fix:** Snapshot the collection (`list.ToList()`), iterate under the same lock as writers, or use `ConcurrentQueue<T>`."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: fan-out job awaiting three upstream calls with Task.WhenAll.\n\nSystem.AggregateException: One or more errors occurred. (A task was canceled.)\n ---> System.Threading.Tasks.TaskCanceledException: A task was canceled.\n   at System.Net.Http.HttpClient.SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)\n   at App.Upstream.GetAsync(String path) in /src/App/Upstream.cs:line 55\n   at App.Jobs.Merge.Run() in /src/App/Jobs/Merge.cs:line 37\n ---> (Inner Exception #0) System.Threading.Tasks.TaskCanceledException: A task was canceled.",
+    "output": "**Root cause:** one of the three calls hit its `CancellationTokenSource` timeout, so `Task.WhenAll` surfaced an `AggregateException` containing the cancellation.\n**Fix:** Catch per-task (`Task.WhenAll(...).ContinueWith` or `try/catch` on each awaited task), return partial results with a clear degradation flag."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: graceful shutdown of a worker waiting on a queue.\n\nUnhandled exception. System.Threading.Tasks.TaskCanceledException: A task was canceled.\n   at System.Threading.Tasks.Task.Delay(Int32 millisecondsDelay, CancellationToken cancellationToken)\n   at App.Queue.Drain(CancellationToken token) in /src/App/Queue.cs:line 88\n   at App.Worker.StopAsync() in /src/App/Worker.cs:line 44",
+    "output": "**Root cause:** the shutdown `CancellationToken` was triggered while `Drain` awaited `Task.Delay`, cancelling the task as designed but leaving messages unprocessed.\n**Fix:** Distinguish cancellation from failure: honour a grace period to finish in-flight messages, then nack/republish the remainder before exiting."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: two goroutines writing to a shared request counter map.\n\nfatal error: concurrent map writes\n\ngoroutine 7 [running]:\nruntime.throw({0x44b1d5?, 0xc0000d4000?})\n\t/usr/local/go/src/runtime/panic.go:1047 +0x48\ngo runtime map assign panic\nmain.(*Metrics).Record(0xc0000e4000, {0x4a7c12, 0x6})\n\t/app/metrics.go:39 +0x11c\n\n\ngoroutine 11 [running]:\nmain.(*Metrics).Record(0xc0000e4000, {0x4a7c12, 0x6})\n\t/app/metrics.go:39 +0x11c",
+    "output": "**Root cause:** unsynchronised concurrent writes to the same Go map; Go maps are not safe for parallel writes, so the runtime aborts the process.\n**Fix:** Guard the map with `sync.Mutex`/`sync.RWMutex`, use `sync.Map`, or shard counters per goroutine and merge at read time."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: metrics exporter reading while request handlers write.\n\nfatal error: concurrent map read and map write\n\ngoroutine 32 [running]:\nruntime.mapaccess1_faststr(0x442e75?, 0xc0000c2000?, 0xc0000d8000?)\n\t/usr/local/go/src/runtime/map.go:479 +0x1d8\nmain.(*Stats).Snapshot(0xc0000e6000)\n\t/app/stats.go:58 +0x6c\n\ngoroutine 6 [running]:\nmain.(*Stats).Bump(0xc0000e6000, 0x1)\n\t/app/stats.go:31 +0x156",
+    "output": "**Root cause:** the exporter reads the map while a handler writes to it; Go maps allow neither interleaving, so the runtime detects and panics.\n**Fix:** Protect both read and write paths with the same `RWMutex` (RLock for snapshot, Lock for bump), or copy-on-write under a lock."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: `go test -race ./...` on the ingest package.\n\nWARNING: DATA RACE\nWrite at 0x00c0001a2090 by goroutine 8:\n  app/ingest.(*Counter).Add()\n      /app/ingest/counter.go:27 +0x8c\n  app/ingest.TestParallelAdd()\n      /app/ingest/counter_test.go:41 +0x5c\n\nPrevious read at 0x00c0001a2090 by goroutine 7:\n  app/ingest.(*Counter).Value()\n      /app/ingest/counter.go:18 +0x44\n  app/ingest.TestParallelAdd()\n      /app/ingest/counter_test.go:44 +0x38\n\nSUMMARY: DATA RACE",
+    "output": "**Root cause:** `Add` writes the counter field while `Value` reads it with no synchronisation - a data race that can lose updates even without a crash.\n**Fix:** Use `atomic.Int64` (or a mutex) for the counter, and run CI with `-race` so regressions fail the build."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: two transactions updating invoice rows in MySQL InnoDB.\n\nERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction\n\tat com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translate(SQLExceptionsMapping.java:232)\n\tat com.acme.billing.InvoiceDao.markPaid(InvoiceDao.java:88)",
+    "output": "**Root cause:** two transactions lock invoice rows in different orders and each waits for the other's lock, so InnoDB rolls one back with 1213.\n**Fix:** Lock rows in a consistent order (`SELECT ... FOR UPDATE ORDER BY id`), keep transactions short, and retry on deadlock."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: psql session updating inventory while another session does the same.\n\nERROR:  deadlock detected\nDETAIL:  Process 4211 waits for ShareLock on transaction 889314; blocked by process 4207.\nHINT:  See server log for query details.\nCONTEXT:  UPDATE inventory SET qty = qty - 3 WHERE sku = 'A1';",
+    "output": "**Root cause:** two sessions hold conflicting row locks in opposite order (transaction A waits on B while B waits on A), so PostgreSQL aborts one.\n**Fix:** Take row locks in one order (e.g. `ORDER BY sku` / a single upsert), reduce transaction length, and retry the aborted one."
+  },
+  {
+    "instruction": "Root cause this concurrency failure.\nContext: two CLI tools writing the same SQLite database file at once.\n\nsqlite3 reports:\nError: database is locked\n  hint: database is locked (5) (SQLITE_BUSY)",
+    "output": "**Root cause:** one writer holds the write lock while another tries to write; SQLite returns SQLITE_BUSY when `busy_timeout` expires (or is 0).\n**Fix:** Set `PRAGMA busy_timeout = 5000;`, serialise writers through a queue, or switch to WAL mode for concurrent readers/writers."
+  }
+]

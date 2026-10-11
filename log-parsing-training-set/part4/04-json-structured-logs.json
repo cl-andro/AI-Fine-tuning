@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this JSON log line and return a JSON object with ts, level, msg and trace_id only:\n{\"ts\": \"2023-10-12T14:05:07Z\", \"level\": \"error\", \"msg\": \"payment failed\", \"user_id\": 4821, \"trace_id\": \"abc123\"}",
+    "output": "{\"ts\": \"2023-10-12T14:05:07Z\", \"level\": \"error\", \"msg\": \"payment failed\", \"trace_id\": \"abc123\"}"
+  },
+  {
+    "instruction": "Flatten this nested JSON log into a single level using dot notation as JSON:\n{\"event\": \"login\", \"context\": {\"user\": {\"id\": 7, \"name\": \"alice\"}, \"ip\": \"10.0.0.5\"}}",
+    "output": "{\"event\": \"login\", \"context.user.id\": 7, \"context.user.name\": \"alice\", \"context.ip\": \"10.0.0.5\"}"
+  },
+  {
+    "instruction": "These two JSON log lines should both contain the keys ts, level and msg. Return JSON with a valid array and an invalid array listing the offending lines:\n{\"ts\": \"2023-10-12T14:05:07Z\", \"level\": \"info\", \"msg\": \"started\"}\n{\"ts\": \"2023-10-12T14:05:08Z\", \"msg\": \"missing level field\"}",
+    "output": "{\"valid\": [{\"ts\": \"2023-10-12T14:05:07Z\", \"level\": \"info\", \"msg\": \"started\"}], \"invalid\": [{\"ts\": \"2023-10-12T14:05:08Z\", \"msg\": \"missing level field\"}]}"
+  },
+  {
+    "instruction": "Extract the value at the path request.user.id from this JSON log as JSON with just that value:\n{\"request\": {\"user\": {\"id\": 991, \"role\": \"admin\"}, \"path\": \"/admin\"}, \"status\": 200}",
+    "output": "{\"value\": 991}"
+  },
+  {
+    "instruction": "This JSON log embeds an exception object. Return JSON with exception_type, exception_message and the first stack line:\n{\"ts\": \"2023-10-12T14:06:00Z\", \"level\": \"error\", \"msg\": \"handler crashed\", \"exception\": {\"type\": \"ValueError\", \"message\": \"invalid amount\", \"stack\": [\"  at charge(/app/billing.py:44)\", \"  at main(/app/main.py:10)\"]}}",
+    "output": "{\"exception_type\": \"ValueError\", \"exception_message\": \"invalid amount\", \"top_stack_line\": \"  at charge(/app/billing.py:44)\"}"
+  },
+  {
+    "instruction": "This JSON log stores the time as epoch milliseconds. Convert it to an ISO 8601 UTC string and return JSON with time_iso and level:\n{\"time\": 1697129107123, \"level\": \"warn\", \"msg\": \"cache miss rate high\"}",
+    "output": "{\"time_iso\": \"2023-10-12T16:45:07.123000Z\", \"level\": \"warn\", \"msg\": \"cache miss rate high\"}"
+  },
+  {
+    "instruction": "Parse these JSON log lines and return a JSON array of objects containing only level and msg:\n{\"level\": \"info\", \"msg\": \"boot\"}\n{\"level\": \"error\", \"msg\": \"db down\"}\n{\"level\": \"info\", \"msg\": \"retry 1\"}",
+    "output": "[{\"level\": \"info\", \"msg\": \"boot\"}, {\"level\": \"error\", \"msg\": \"db down\"}, {\"level\": \"info\", \"msg\": \"retry 1\"}]"
+  },
+  {
+    "instruction": "Count the log levels in these five JSON lines and return the counts as JSON:\n{\"level\": \"info\", \"msg\": \"a\"}\n{\"level\": \"error\", \"msg\": \"b\"}\n{\"level\": \"warn\", \"msg\": \"c\"}\n{\"level\": \"error\", \"msg\": \"d\"}\n{\"level\": \"info\", \"msg\": \"e\"}",
+    "output": "{\"info\": 2, \"error\": 2, \"warn\": 1}"
+  },
+  {
+    "instruction": "Normalize the level field of this JSON log: map warn to warning. Return the normalized JSON object:\n{\"ts\": \"2023-10-12T14:07:00Z\", \"level\": \"warn\", \"msg\": \"slow query\", \"duration_ms\": 1450}",
+    "output": "{\"ts\": \"2023-10-12T14:07:00Z\", \"level\": \"warning\", \"msg\": \"slow query\", \"duration_ms\": 1450}"
+  },
+  {
+    "instruction": "This JSON log has a tags array. Promote each tag into a boolean field of the same name and return the resulting JSON object:\n{\"msg\": \"deploy finished\", \"tags\": [\"canary\", \"eu-west\"], \"level\": \"info\"}",
+    "output": "{\"msg\": \"deploy finished\", \"level\": \"info\", \"canary\": true, \"eu-west\": true}"
+  },
+  {
+    "instruction": "From these JSON log lines return a JSON array of the messages whose level is error or warn:\n{\"level\": \"info\", \"msg\": \"ready\"}\n{\"level\": \"warn\", \"msg\": \"disk 80% full\"}\n{\"level\": \"error\", \"msg\": \"write failed\"}\n{\"level\": \"info\", \"msg\": \"heartbeat\"}",
+    "output": "[\"disk 80% full\", \"write failed\"]"
+  },
+  {
+    "instruction": "Write a Python snippet that parses one JSON log line with json.loads and returns an empty dict instead of raising when the line is malformed",
+    "output": "import json\n\ndef parse_line(line):\n    try:\n        obj = json.loads(line)\n    except (json.JSONDecodeError, ValueError):\n        return {}\n    if not isinstance(obj, dict):\n        return {}\n    return {\"level\": obj.get(\"level\", \"unknown\"), \"msg\": obj.get(\"msg\", \"\")}"
+  },
+  {
+    "instruction": "This JSON document contains an array of events. Return JSON with event_count and the names of the events as an array:\n{\"received_at\": \"2023-10-12T14:08:00Z\", \"events\": [{\"name\": \"signup\", \"user\": 1}, {\"name\": \"purchase\", \"user\": 2}, {\"name\": \"refund\", \"user\": 2}]}",
+    "output": "{\"event_count\": 3, \"names\": [\"signup\", \"purchase\", \"refund\"]}"
+  },
+  {
+    "instruction": "Flatten the http object of this JSON log into top level status_code and path fields and return the full object as JSON:\n{\"ts\": \"2023-10-12T14:08:30Z\", \"level\": \"error\", \"http\": {\"status\": 500, \"path\": \"/api/orders\", \"latency_ms\": 91}}",
+    "output": "{\"ts\": \"2023-10-12T14:08:30Z\", \"level\": \"error\", \"status_code\": 500, \"path\": \"/api/orders\", \"latency_ms\": 91}"
+  },
+  {
+    "instruction": "This log line looks like JSON but has a trailing comma. Report whether it parses and why not as JSON:\n{\"ts\": \"2023-10-12T14:09:00Z\", \"level\": \"info\", \"msg\": \"hello\",}",
+    "output": "{\"valid\": false, \"reason\": \"trailing comma before closing brace\"}"
+  },
+  {
+    "instruction": "Parse this Graylog GELF JSON log and map the numeric level 4 to its name. Return JSON with host, level and short_message:\n{\"version\": \"1.1\", \"host\": \"web01\", \"short_message\": \"disk usage above 90 percent\", \"level\": 4, \"timestamp\": 1697129107}",
+    "output": "{\"host\": \"web01\", \"level\": \"warning\", \"short_message\": \"disk usage above 90 percent\", \"timestamp\": 1697129107}"
+  },
+  {
+    "instruction": "This JSON log stores epoch seconds. Convert the timestamp to an ISO 8601 UTC string and return JSON:\n{\"timestamp\": 1697129107, \"level\": \"info\", \"msg\": \"job finished\"}",
+    "output": "{\"timestamp_iso\": \"2023-10-12T16:45:07Z\", \"level\": \"info\", \"msg\": \"job finished\"}"
+  },
+  {
+    "instruction": "Add up duration_ms across these JSON log lines and return the total as JSON:\n{\"msg\": \"step1\", \"duration_ms\": 120}\n{\"msg\": \"step2\", \"duration_ms\": 180}\n{\"msg\": \"step3\", \"duration_ms\": 300}",
+    "output": "{\"total_duration_ms\": 600, \"lines\": 3}"
+  },
+  {
+    "instruction": "Extract the params object from this JSON log as JSON:\n{\"level\": \"info\", \"msg\": \"search\", \"params\": {\"q\": \"prometheus\", \"page\": 2, \"limit\": 10}}",
+    "output": "{\"q\": \"prometheus\", \"page\": 2, \"limit\": 10}"
+  },
+  {
+    "instruction": "Build a JSON log line from these field values with keys ts, level, service and msg (no extra fields):\nlevel=info, service=checkout, msg=order created, ts=2023-10-12T14:10:00Z",
+    "output": "{\"ts\": \"2023-10-12T14:10:00Z\", \"level\": \"info\", \"service\": \"checkout\", \"msg\": \"order created\"}"
+  }
+]

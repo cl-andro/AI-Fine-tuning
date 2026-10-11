@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this RFC3164 syslog line into JSON with timestamp, host, app, pid and message:\nOct 12 14:05:07 web01 sshd[12345]: Failed password for invalid user admin from 203.0.113.9 port 42422 ssh2",
+    "output": "{\"timestamp\": \"Oct 12 14:05:07\", \"host\": \"web01\", \"app\": \"sshd\", \"pid\": 12345, \"message\": \"Failed password for invalid user admin from 203.0.113.9 port 42422 ssh2\"}"
+  },
+  {
+    "instruction": "This syslog line carries a PRI header. Parse it and return the facility and severity names as JSON (PRI 34):\n<34>Oct 12 14:05:07 web01 sshd[12345]: Failed password for invalid user admin from 203.0.113.9 port 42422 ssh2",
+    "output": "{\"priority\": 34, \"facility\": \"auth\", \"severity\": \"crit\", \"host\": \"web01\", \"app\": \"sshd\", \"pid\": 12345}"
+  },
+  {
+    "instruction": "Parse this RFC5424 syslog line into JSON with version, timestamp, host, app and message:\n<85>1 2023-10-12T14:05:07.003Z appserver1.example.com systemd - - - Started session c1 of user alice.",
+    "output": "{\"version\": 1, \"timestamp\": \"2023-10-12T14:05:07.003Z\", \"host\": \"appserver1.example.com\", \"app\": \"systemd\", \"procid\": \"-\", \"msgid\": \"-\", \"message\": \"Started session c1 of user alice.\"}"
+  },
+  {
+    "instruction": "This line comes from journalctl -o short-precise. Parse it into JSON with host, app, pid and message:\nOct 12 14:05:07.123456 web01 systemd[1]: Started Daily apt upgrade and clean activities.",
+    "output": "{\"timestamp\": \"Oct 12 14:05:07.123456\", \"host\": \"web01\", \"app\": \"systemd\", \"pid\": 1, \"message\": \"Started Daily apt upgrade and clean activities.\"}"
+  },
+  {
+    "instruction": "This is a journalctl -o json record. Normalize it into JSON with timestamp_unix_us, host, unit, message and priority:\n{\"__REALTIME_TIMESTAMP\": \"1697129107123456\", \"_HOSTNAME\": \"web01\", \"_SYSTEMD_UNIT\": \"sshd.service\", \"MESSAGE\": \"Accepted publickey for alice from 10.0.0.5 port 52344 ssh2\", \"PRIORITY\": \"6\"}",
+    "output": "{\"timestamp_unix_us\": 1697129107123456, \"host\": \"web01\", \"unit\": \"sshd.service\", \"message\": \"Accepted publickey for alice from 10.0.0.5 port 52344 ssh2\", \"priority\": 6}"
+  },
+  {
+    "instruction": "Parse this kernel printk line into JSON with severity name, uptime and message. PRI 6 means info:\n<6>[12345.678901] TCP: request_sock_TCP: Possible SYN flooding on port 80. Sending cookies.",
+    "output": "{\"severity\": \"info\", \"uptime_seconds\": 12345.678901, \"message\": \"TCP: request_sock_TCP: Possible SYN flooding on port 80. Sending cookies.\"}"
+  },
+  {
+    "instruction": "Parse this cron syslog line and return the user and command as JSON:\nOct 12 14:16:01 web01 CRON[23456]: (root) CMD (/usr/local/bin/backup.sh)",
+    "output": "{\"timestamp\": \"Oct 12 14:16:01\", \"host\": \"web01\", \"app\": \"CRON\", \"pid\": 23456, \"user\": \"root\", \"command\": \"/usr/local/bin/backup.sh\"}"
+  },
+  {
+    "instruction": "Write a regex with named groups that parses an RFC3164 syslog line into timestamp, host, app, pid and message",
+    "output": "^(?P<timestamp>[A-Z][a-z]{2} [ 0-9]\\d \\d{2}:\\d{2}:\\d{2}) (?P<host>\\S+) (?P<app>[^\\[:]+)(?:\\[(?P<pid>\\d+)\\])?: (?P<message>.*)$"
+  },
+  {
+    "instruction": "Write a Python function that parses an RFC5424 syslog line (PRI, version, timestamp, host, app, procid, msgid, message) and returns a dict",
+    "output": "import re\n\nPATTERN = re.compile(r\"^<(?P<pri>\\d+)>(?P<version>\\d+) (?P<ts>\\S+) (?P<host>\\S+) (?P<app>\\S+) (?P<procid>\\S+) (?P<msgid>\\S+) (?P<rest>.*)$\")\n\ndef parse_rfc5424(line):\n    m = PATTERN.match(line)\n    if not m:\n        return None\n    d = m.groupdict()\n    d[\"pri\"] = int(d[\"pri\"])\n    d[\"severity\"] = d[\"pri\"] % 8\n    d[\"facility\"] = d[\"pri\"] // 8\n    return d"
+  },
+  {
+    "instruction": "Parse this sudo syslog line into JSON with user, tty, pwd, run_as and command:\nOct 12 14:17:33 web01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by alice(uid=1000)",
+    "output": "{\"timestamp\": \"Oct 12 14:17:33\", \"host\": \"web01\", \"app\": \"sudo\", \"event\": \"session opened\", \"run_as\": \"root\", \"run_as_uid\": 0, \"by_user\": \"alice\", \"by_uid\": 1000}"
+  },
+  {
+    "instruction": "Parse these three syslog lines into a JSON array with app and message:\nOct 12 14:18:01 web01 nginx[4567]: 192.0.2.10 - - \"GET / HTTP/1.1\" 200\nOct 12 14:18:02 web01 php-fpm[4568]: pool www reached max_children\nOct 12 14:18:03 web01 kernel: eth0: link up, 1000 Mbps, full duplex",
+    "output": "[{\"app\": \"nginx\", \"pid\": 4567, \"message\": \"192.0.2.10 - - \\\"GET / HTTP/1.1\\\" 200\"}, {\"app\": \"php-fpm\", \"pid\": 4568, \"message\": \"pool www reached max_children\"}, {\"app\": \"kernel\", \"pid\": null, \"message\": \"eth0: link up, 1000 Mbps, full duplex\"}]"
+  },
+  {
+    "instruction": "Parse this kernel syslog line without brackets around the app name into JSON with host, app and message:\nOct 12 14:19:00 web01 kernel: eth0: link state changed to up",
+    "output": "{\"timestamp\": \"Oct 12 14:19:00\", \"host\": \"web01\", \"app\": \"kernel\", \"pid\": null, \"message\": \"eth0: link state changed to up\"}"
+  },
+  {
+    "instruction": "Decode PRI 28 from this syslog line and return the facility and severity names as JSON:\n<28>Oct 12 14:20:00 web01 cron[9001]: CMD (/etc/cron.daily/logrotate)",
+    "output": "{\"priority\": 28, \"facility\": \"daemon\", \"severity\": \"warning\", \"app\": \"cron\", \"pid\": 9001}"
+  },
+  {
+    "instruction": "Parse this journalctl export format block (KEY=value lines) into a JSON object:\nMESSAGE=Session 123 of user alice was closed.\nHOSTNAME=web01\nSYSTEMD_UNIT=session-123.scope\nPRIORITY=6\nSYSLOG_IDENTIFIER=systemd-logind",
+    "output": "{\"MESSAGE\": \"Session 123 of user alice was closed.\", \"HOSTNAME\": \"web01\", \"SYSTEMD_UNIT\": \"session-123.scope\", \"PRIORITY\": 6, \"SYSLOG_IDENTIFIER\": \"systemd-logind\"}"
+  },
+  {
+    "instruction": "Extract the application name and message text from this syslog line as JSON:\nOct 12 14:21:00 web01 nginx[4567]: 203.0.113.45 - - \"GET /health HTTP/1.1\" 200 2 \"-\" \"Prometheus/2.45.0\"",
+    "output": "{\"app\": \"nginx\", \"pid\": 4567, \"message\": \"203.0.113.45 - - \\\"GET /health HTTP/1.1\\\" 200 2 \\\"-\\\" \\\"Prometheus/2.45.0\\\"\"}"
+  },
+  {
+    "instruction": "Decode PRI 165 and return facility, severity and host as JSON:\n<165>Oct 12 14:22:00 edge01 haproxy[700]: 10.0.0.5:51234 [12/Oct/2023:14:22:00] fe_web be_api 0/0/1/5/6 200 1234 - - -- nn 1/1/1/1/1 0/0",
+    "output": "{\"priority\": 165, \"facility\": \"local4\", \"severity\": \"notice\", \"host\": \"edge01\", \"app\": \"haproxy\", \"pid\": 700}"
+  },
+  {
+    "instruction": "This syslog line has no pid. Parse it into JSON with app and message:\nOct 12 14:23:00 web01 CRON: (www-data) CMD (/usr/bin/php /var/www/cron.php)",
+    "output": "{\"timestamp\": \"Oct 12 14:23:00\", \"host\": \"web01\", \"app\": \"CRON\", \"pid\": null, \"message\": \"(www-data) CMD (/usr/bin/php /var/www/cron.php)\"}"
+  },
+  {
+    "instruction": "Write a grok pattern that parses a syslog line into timestamp, host, program, pid and message",
+    "output": "%{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:host} %{DATA:program}(?:\\[%{POSINT:pid}\\])?: %{GREEDYDATA:message}"
+  },
+  {
+    "instruction": "Decode the PRI headers 13, 30 and 11 and return a JSON array of objects with priority, facility and severity",
+    "output": "[{\"priority\": 13, \"facility\": \"user\", \"severity\": \"notice\"}, {\"priority\": 30, \"facility\": \"daemon\", \"severity\": \"info\"}, {\"priority\": 11, \"facility\": \"user\", \"severity\": \"err\"}]"
+  },
+  {
+    "instruction": "These journal records include a PRIORITY field. Return a JSON array with the messages whose priority is 3 or lower (error or worse):\n{\"PRIORITY\": \"6\", \"MESSAGE\": \"Starting unit sshd.service\", \"_HOSTNAME\": \"web01\"}\n{\"PRIORITY\": \"3\", \"MESSAGE\": \"Failed to start sshd.service\", \"_HOSTNAME\": \"web01\"}\n{\"PRIORITY\": \"6\", \"MESSAGE\": \"Reached target Network\", \"_HOSTNAME\": \"web01\"}\n{\"PRIORITY\": \"2\", \"MESSAGE\": \"Out of memory killing process 4711\", \"_HOSTNAME\": \"web01\"}",
+    "output": "[\"Failed to start sshd.service\", \"Out of memory killing process 4711\"]"
+  }
+]

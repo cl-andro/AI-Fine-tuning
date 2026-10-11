@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef avg_price(df):\n    total = 0\n    count = 0\n    for idx, row in df.iterrows():\n        total += row['price']\n        count += 1\n    return total / count",
+    "output": "**Issue:** iterrows() to compute an aggregate.\n**Why:** iterrows() boxes every row into a Series, which is orders of magnitude slower than column ops; df['price'].mean() is C-level and exact.\n**Fix:**\ndef avg_price(df):\n    return df['price'].mean()"
+  },
+  {
+    "instruction": "Review this code:\n\ndf = df[df['status'] == 'active']\ndf['score'] = df['score'] * 1.1\nprint(df)",
+    "output": "**Issue:** Chained assignment after a filter (SettingWithCopyWarning).\n**Why:** The filter returns a view/copy of unknown status, so the new column may be written to a temporary frame and silently dropped.\n**Fix:**\ndf = df.loc[df['status'] == 'active'].copy()\ndf['score'] = df['score'] * 1.1"
+  },
+  {
+    "instruction": "Review this code:\n\nchunks = []\nfor f in files:\n    chunks.append(pd.read_csv(f))\nresult = pd.DataFrame()\nfor c in chunks:\n    result = result.append(c)",
+    "output": "**Issue:** DataFrame.append() was removed in pandas 2.0 and is quadratic anyway.\n**Why:** Each append copies the whole frame; on top of that the API no longer exists, so this raises AttributeError.\n**Fix:**\nimport glob, pandas as pd\n\nresult = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load_many(files):\n    out = pd.DataFrame()\n    for f in files:\n        df = pd.read_csv(f)\n        out = pd.concat([out, df])\n    return out",
+    "output": "**Issue:** concat inside the loop.\n**Why:** Every iteration copies the accumulated frame, giving O(n^2) work and heavy memory churn for 1000 files.\n**Fix:**\ndef load_many(files):\n    frames = [pd.read_csv(f) for f in files]\n    return pd.concat(frames, ignore_index=True)"
+  },
+  {
+    "instruction": "Review this code:\n\ndf['tax'] = df.apply(lambda r: r['price'] * 0.2 if r['country'] == 'DE' else 0, axis=1)",
+    "output": "**Issue:** Row-wise apply with a Python lambda for a vectorizable expression.\n**Why:** axis=1 apply builds a Series per row, easily 100x slower than boolean masking on the whole column.\n**Fix:**\ndf['tax'] = 0.0\ndf.loc[df['country'] == 'DE', 'tax'] = df.loc[df['country'] == 'DE', 'price'] * 0.2\n# or: df['tax'] = np.where(df['country'].eq('DE'), df['price'] * 0.2, 0)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef index_rows(df):\n    out = {}\n    for idx, row in df.iterrows():\n        out[row['sku']] = {'qty': row['qty'], 'price': row['price']}\n    return out",
+    "output": "**Issue:** Manual dict building via iterrows.\n**Why:** It defeats pandas' columnar storage; to_dict does the same in C and handles duplicate keys by design.\n**Fix:**\ndef index_rows(df):\n    return df.set_index('sku')[['qty', 'price']].to_dict('index')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef mark_totals(df):\n    for i in range(len(df)):\n        df.loc[i, 'total'] = df.loc[i, 'qty'] * df.loc[i, 'price']\n    return df",
+    "output": "**Issue:** Row-by-row .loc assignment in a Python loop.\n**Why:** Each .loc call re-validates the index, making this quadratic; vectorized arithmetic runs in native code.\n**Fix:**\ndef mark_totals(df):\n    df = df.copy()\n    df['total'] = df['qty'] * df['price']\n    return df"
+  },
+  {
+    "instruction": "Review this code:\n\ndef bad_rows(df):\n    return df[df['score'] != float('nan')]",
+    "output": "**Issue:** Comparing against NaN with != (or ==).\n**Why:** NaN never equals itself, so every row with NaN passes the filter; the condition silently selects garbage.\n**Fix:**\ndef bad_rows(df):\n    return df[df['score'].notna()]   # or df.dropna(subset=['score'])"
+  },
+  {
+    "instruction": "Review this code:\n\ndf['date'] = pd.to_datetime(df['date'].apply(lambda s: s.split(' ')[0]))\ndf['month'] = df['date'].apply(lambda d: d.month if d else None)",
+    "output": "**Issue:** Manual date parsing with string splitting and per-row month extraction.\n**Why:** Timezone/format edge cases break the split, and apply runs Python for every row; pandas has vectorized accessors.\n**Fix:**\ndf['date'] = pd.to_datetime(df['date'], format='mixed')\ndf['month'] = df['date'].dt.month"
+  },
+  {
+    "instruction": "Review this code:\n\ndef totals(df):\n    out = {}\n    for cat, group in df.groupby('category'):\n        out[cat] = group['amount'].apply(lambda s: s.sum() / 100)\n    return out",
+    "output": "**Issue:** groupby with a Python lambda where an agg is intended.\n**Why:** The per-group Python call adds overhead and prevents aggregation pushdown; named aggregations are faster and clearer.\n**Fix:**\ndef totals(df):\n    result = df.groupby('category')['amount'].sum() / 100\n    return result.to_dict()"
+  },
+  {
+    "instruction": "Review this code:\n\nif 'price' in df:\n    print('has price')\nfor col in df:\n    if col in df.index:\n        print(col)",
+    "output": "**Issue:** Using `in` on the DataFrame checks columns, but the code assumes rows (and vice versa in the second block).\n**Why:** `x in df` tests column labels; row checks need df.index, so the condition is almost always wrong.\n**Fix:**\nif 'price' in df.columns:\n    print('has price')\nif label in df.index:\n    print(label)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef bump(df):\n    sub = df[df['active']]\n    sub['bump'] = sub['value'] * 2\n    return df",
+    "output": "**Issue:** Modifying a filtered slice without .copy(), then expecting the original to change.\n**Why:** The assignment lands on an intermediate object (or raises a warning), so the returned df never gets the 'bump' column.\n**Fix:**\ndef bump(df):\n    df = df.copy()\n    df.loc[df['active'], 'bump'] = df.loc[df['active'], 'value'] * 2\n    return df"
+  },
+  {
+    "instruction": "Review this code:\n\ndef old_lookup(df, label):\n    return df.ix[label, 'value']",
+    "output": "**Issue:** The .ix indexer was removed from pandas years ago.\n**Why:** .ix mixed label and position semantics ambiguously; this raises AttributeError on any modern pandas.\n**Fix:**\ndef old_lookup(df, label):\n    return df.loc[label, 'value']   # labels\n    # df.iloc[0] when you mean positions"
+  },
+  {
+    "instruction": "Review this code:\n\ndef append_row(df, rec):\n    df.loc[len(df)] = [rec['a'], rec['b'], rec['c']]\n    return df\n\nfor r in records:\n    df = append_row(df, r)",
+    "output": "**Issue:** Growing a DataFrame one row at a time with .loc[len(df)].\n**Why:** Each insertion re-allocates the block manager; frames are not designed to grow, so imports crawl and fragment memory.\n**Fix:**\nrows = []\nfor r in records:\n    rows.append({'a': r['a'], 'b': r['b'], 'c': r['c']})\ndf = pd.concat([df, pd.DataFrame(rows)], ignore_index=True)"
+  },
+  {
+    "instruction": "Review this code:\n\nif (df['qty'] > 10).any():\n    df['tier'] = 'bulk'\nelse:\n    df['tier'] = 'single'\nif (df['qty'] > 50).any():\n    df['tier'] = 'pallet'",
+    "output": "**Issue:** Sequential if/else blocks that overwrite the whole column.\n**Why:** The second branch clobbers the first for every row; row-wise conditions need element-wise selection, not .any() gates.\n**Fix:**\nimport numpy as np\n\ndf['tier'] = np.select([df['qty'] > 50, df['qty'] > 10], ['pallet', 'bulk'], default='single')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef keep(df, cols):\n    for c in cols:\n        if c in df:\n            df = df.drop(c, axis=1)\n    return df",
+    "output": "**Issue:** Drop logic written as a loop with the wrong membership test and axis spelled out.\n**Why:** `c in df` checks columns (ok here) but repeated full-frame drops each copy the frame; also drop(c) defaults to axis=0 (rows), so forgetting axis=1 deletes a row instead of a column.\n**Fix:**\ndef keep(df, cols):\n    return df.drop(columns=[c for c in cols if c in df.columns])"
+  },
+  {
+    "instruction": "Review this code:\n\ndef top_per_group(df):\n    result = {}\n    for g, sub in df.groupby('team'):\n        sub = sub.sort_values('score', ascending=False)\n        result[g] = sub.head(3)\n    return result",
+    "output": "**Issue:** Sort-and-head inside a Python group loop.\n**Why:** Sorting each group in Python misses the built-in per-group top-n; a single call is faster and returns one frame.\n**Fix:**\ndef top_per_group(df):\n    return {g: s.nlargest(3, 'score') for g, s in df.groupby('team')}\n# or one frame: df.sort_values('score').groupby('team').head(3)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef clean(df):\n    df['amount'] = df['amount'].astype(float)\n    return df\n\n# amount column contains values like '1,234.50'",
+    "output": "**Issue:** astype(float) on strings with thousands separators.\n**Why:** It raises ValueError instead of parsing; the column must be cleaned as text first.\n**Fix:**\ndef clean(df):\n    df['amount'] = (df['amount'].str.replace(',', '', regex=False).astype(float))\n    return df"
+  },
+  {
+    "instruction": "Review this code:\n\ndef drop_zero(df):\n    df.drop(df[df['value'] == 0].index, axis=1)\n    return df",
+    "output": "**Issue:** df.drop(..., axis=1) used with row indices.\n**Why:** axis=1 drops columns; passing a row index list silently deletes columns that match (usually none) and keeps the zero rows.\n**Fix:**\ndef drop_zero(df):\n    return df[df['value'] != 0]\n# or: df = df.loc[df['value'] != 0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load_all(pattern):\n    out = pd.DataFrame()\n    for f in glob.glob(pattern):\n        d = pd.read_csv(f, parse_dates=['ts'])\n        out = pd.concat([out, d])\n    return out",
+    "output": "**Issue:** Reading and concatenating file-by-file inside the loop.\n**Why:** It re-copies the accumulated frame per file and cannot leverage chunked reads; memory doubles at every step.\n**Fix:**\ndef load_all(pattern):\n    files = sorted(glob.glob(pattern))\n    frames = (pd.read_csv(f, parse_dates=['ts'], chunksize=500_000) for f in files)\n    return pd.concat([c for chunks in frames for c in chunks], ignore_index=True)"
+  }
+]

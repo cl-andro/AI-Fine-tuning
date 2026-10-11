@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write Jest unit tests for this JavaScript function.\n\nfunction sum(a, b) {\n  return a + b;\n}",
+    "output": "const { sum } = require('./sum');\n\ndescribe('sum', () => {\n  test('adds two positive numbers', () => {\n    expect(sum(2, 3)).toBe(5);\n  });\n\n  test('adds negative numbers', () => {\n    expect(sum(-1, -1)).toBe(-2);\n  });\n\n  test('returns zero for zeros', () => {\n    expect(sum(0, 0)).toBe(0);\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a capitalize helper that uppercases the first letter of a string.\n\nfunction capitalize(str) {\n  if (!str) return '';\n  return str[0].toUpperCase() + str.slice(1).toLowerCase();\n}",
+    "output": "const { capitalize } = require('./capitalize');\n\ndescribe('capitalize', () => {\n  test('capitalizes a lowercase word', () => {\n    expect(capitalize('hello')).toBe('Hello');\n  });\n\n  test('lowercases the remaining letters', () => {\n    expect(capitalize('hELLO')).toBe('Hello');\n  });\n\n  test('returns empty string for empty input', () => {\n    expect(capitalize('')).toBe('');\n  });\n});"
+  },
+  {
+    "instruction": "Write Vitest unit tests for this reverseString function using vi and expect.\n\nexport function reverseString(s) {\n  return [...s].reverse().join('');\n}",
+    "output": "import { describe, test, expect } from 'vitest';\nimport { reverseString } from './reverseString';\n\ndescribe('reverseString', () => {\n  test('reverses ascii text', () => {\n    expect(reverseString('abc')).toBe('cba');\n  });\n\n  test('handles empty string', () => {\n    expect(reverseString('')).toBe('');\n  });\n\n  test('handles unicode code points', () => {\n    expect(reverseString('abcé')).toBe('écba');\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a Calculator class with add and subtract methods.\n\nclass Calculator {\n  add(a, b) { return a + b; }\n  subtract(a, b) { return a - b; }\n}",
+    "output": "const Calculator = require('./calculator');\n\ndescribe('Calculator', () => {\n  let calc;\n\n  beforeEach(() => {\n    calc = new Calculator();\n  });\n\n  test('add returns the sum', () => {\n    expect(calc.add(4, 6)).toBe(10);\n  });\n\n  test('subtract returns the difference', () => {\n    expect(calc.subtract(10, 4)).toBe(6);\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a fizzbuzz function that returns strings for multiples of 3, 5 and 15.\n\nfunction fizzbuzz(n) {\n  if (n % 15 === 0) return 'FizzBuzz';\n  if (n % 3 === 0) return 'Fizz';\n  if (n % 5 === 0) return 'Buzz';\n  return String(n);\n}",
+    "output": "const { fizzbuzz } = require('./fizzbuzz');\n\ndescribe('fizzbuzz', () => {\n  test.each([\n    [1, '1'],\n    [3, 'Fizz'],\n    [5, 'Buzz'],\n    [15, 'FizzBuzz'],\n  ])('fizzbuzz(%i) === %s', (n, expected) => {\n    expect(fizzbuzz(n)).toBe(expected);\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a findMax function over an array, including the empty-array error case.\n\nfunction findMax(nums) {\n  if (nums.length === 0) throw new Error('empty array');\n  return Math.max(...nums);\n}",
+    "output": "const { findMax } = require('./findMax');\n\ndescribe('findMax', () => {\n  test('returns the largest number', () => {\n    expect(findMax([1, 9, 3])).toBe(9);\n  });\n\n  test('handles negative numbers', () => {\n    expect(findMax([-5, -1, -3])).toBe(-1);\n  });\n\n  test('throws on empty array', () => {\n    expect(() => findMax([])).toThrow('empty array');\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a unique function that removes duplicates while preserving order.\n\nfunction unique(items) {\n  return [...new Set(items)];\n}",
+    "output": "const { unique } = require('./unique');\n\ndescribe('unique', () => {\n  test('removes duplicates keeping first occurrence order', () => {\n    expect(unique([3, 1, 3, 2, 1])).toEqual([3, 1, 2]);\n  });\n\n  test('returns empty array for empty input', () => {\n    expect(unique([])).toEqual([]);\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test that mocks the global fetch for an async getUser function and asserts the parsed result.\n\nasync function getUser(id) {\n  const resp = await fetch(`/api/users/${id}`);\n  if (!resp.ok) throw new Error('not found');\n  return resp.json();\n}",
+    "output": "const { getUser } = require('./getUser');\n\ndescribe('getUser', () => {\n  beforeEach(() => {\n    global.fetch = jest.fn();\n  });\n\n  test('returns parsed user json', async () => {\n    fetch.mockResolvedValue({\n      ok: true,\n      json: async () => ({ id: 1, name: 'Ann' }),\n    });\n    await expect(getUser(1)).resolves.toEqual({ id: 1, name: 'Ann' });\n    expect(fetch).toHaveBeenCalledWith('/api/users/1');\n  });\n\n  test('rejects when response is not ok', async () => {\n    fetch.mockResolvedValue({ ok: false });\n    await expect(getUser(9)).rejects.toThrow('not found');\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test for a delay(ms) promise helper, verifying it resolves after approximately the given time (use fake timers).\n\nfunction delay(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms));\n}",
+    "output": "const { delay } = require('./delay');\n\ndescribe('delay', () => {\n  beforeEach(() => {\n    jest.useFakeTimers();\n  });\n  afterEach(() => {\n    jest.useRealTimers();\n  });\n\n  test('resolves after the specified delay', async () => {\n    const promise = delay(1000);\n    jest.advanceTimersByTime(1000);\n    await expect(promise).resolves.toBeUndefined();\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a TaskQueue class with add and size, ensuring tasks are stored in order.\n\nclass TaskQueue {\n  constructor() { this.tasks = []; }\n  add(task) { this.tasks.push(task); return this.tasks.length; }\n  size() { return this.tasks.length; }\n  next() { return this.tasks.shift(); }\n}",
+    "output": "const TaskQueue = require('./taskQueue');\n\ndescribe('TaskQueue', () => {\n  test('add increases size and stores order', () => {\n    const queue = new TaskQueue();\n    expect(queue.add('a')).toBe(1);\n    expect(queue.add('b')).toBe(2);\n    expect(queue.size()).toBe(2);\n  });\n\n  test('next removes the first task', () => {\n    const queue = new TaskQueue();\n    queue.add('first');\n    queue.add('second');\n    expect(queue.next()).toBe('first');\n    expect(queue.size()).toBe(1);\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests asserting custom errors from a validateEmail function using toThrow with the error class and message.\n\nclass ValidationError extends Error {}\n\nfunction validateEmail(email) {\n  if (!email || !email.includes('@')) {\n    throw new ValidationError('invalid email');\n  }\n  return email.toLowerCase();\n}",
+    "output": "const { validateEmail, ValidationError } = require('./validateEmail');\n\ndescribe('validateEmail', () => {\n  test('returns lowercased email when valid', () => {\n    expect(validateEmail('Ann@Example.com')).toBe('ann@example.com');\n  });\n\n  test('throws ValidationError with message', () => {\n    expect(() => validateEmail('nope')).toThrow(ValidationError);\n    expect(() => validateEmail('nope')).toThrow('invalid email');\n  });\n\n  test('throws on empty email', () => {\n    expect(() => validateEmail('')).toThrow(ValidationError);\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test using spies to assert a notifier.send was called with the exact arguments for a publish function.\n\nfunction publish(events, notifier) {\n  for (const event of events) {\n    notifier.send(event.type, event.payload);\n  }\n  return events.length;\n}",
+    "output": "const { publish } = require('./publish');\n\ndescribe('publish', () => {\n  test('notifier.send called once per event', () => {\n    const notifier = { send: jest.fn() };\n    const events = [\n      { type: 'order', payload: { id: 1 } },\n      { type: 'ship', payload: { id: 1 } },\n    ];\n    expect(publish(events, notifier)).toBe(2);\n    expect(notifier.send).toHaveBeenCalledTimes(2);\n    expect(notifier.send).toHaveBeenCalledWith('order', { id: 1 });\n    expect(notifier.send).toHaveBeenNthCalledWith(2, 'ship', { id: 1 });\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test suite using beforeEach to build a shared fixture object used by several tests of a NotesApp class.\n\nclass NotesApp {\n  constructor() { this.notes = []; }\n  add(text) { this.notes.push({ id: this.notes.length + 1, text }); }\n  list() { return [...this.notes]; }\n}",
+    "output": "const NotesApp = require('./notesApp');\n\ndescribe('NotesApp', () => {\n  let app;\n\n  beforeEach(() => {\n    app = new NotesApp();\n    app.add('first');\n    app.add('second');\n  });\n\n  test('list returns added notes', () => {\n    expect(app.list()).toHaveLength(2);\n    expect(app.list()[0]).toEqual({ id: 1, text: 'first' });\n  });\n\n  test('fresh fixture for each test', () => {\n    expect(app.list()).toHaveLength(2);\n    app.add('third');\n    expect(app.list()).toHaveLength(3);\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest tests demonstrating toBe vs toEqual for a getConfig function returning a new object each call.\n\nfunction getConfig() {\n  return { debug: false, retries: 3, tags: ['a'] };\n}",
+    "output": "const { getConfig } = require('./config');\n\ndescribe('getConfig', () => {\n  test('toBe fails for distinct objects with same shape', () => {\n    expect(getConfig()).not.toBe(getConfig());\n  });\n\n  test('toEqual compares structure deeply', () => {\n    expect(getConfig()).toEqual(getConfig());\n  });\n\n  test('toEqual ignores key order', () => {\n    expect(getConfig()).toEqual({ tags: ['a'], retries: 3, debug: false });\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test that mocks Date.now to produce a deterministic timestamp inside a buildFooter function.\n\nfunction buildFooter(user) {\n  const now = new Date(Date.now()).toISOString();\n  return `Generated ${now} for ${user}`;\n}",
+    "output": "const { buildFooter } = require('./footer');\n\ndescribe('buildFooter', () => {\n  test('uses mocked Date.now', () => {\n    jest.spyOn(Date, 'now').mockReturnValue(1700000000000);\n    const footer = buildFooter('ann');\n    expect(footer).toContain('2023-11-14');\n    expect(footer).toContain('for ann');\n    Date.now.mockRestore();\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test using jest.spyOn on an imported logger object to assert debug calls from a runJob function without printing anything.\n\nconst logger = {\n  debug(msg) { console.log(msg); },\n};\n\nfunction runJob(name) {\n  logger.debug(`starting ${name}`);\n  return 'done';\n}\n\nmodule.exports = { runJob, logger };",
+    "output": "const { runJob, logger } = require('./job');\n\ndescribe('runJob', () => {\n  let spy;\n\n  beforeEach(() => {\n    spy = jest.spyOn(logger, 'debug').mockImplementation(() => {});\n  });\n\n  afterEach(() => {\n    spy.mockRestore();\n  });\n\n  test('logs the job start and returns done', () => {\n    expect(runJob('etl')).toBe('done');\n    expect(spy).toHaveBeenCalledWith('starting etl');\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest snapshot test for a formatUser function that renders a user object into a multi-line string.\n\nfunction formatUser(user) {\n  return [\n    `Name: ${user.name}`,\n    `Email: ${user.email}`,\n    `Active: ${user.active ? 'yes' : 'no'}`,\n  ].join('\\n');\n}",
+    "output": "const { formatUser } = require('./formatUser');\n\ndescribe('formatUser', () => {\n  test('matches the snapshot for a typical user', () => {\n    const user = { name: 'Ann', email: 'ann@example.com', active: true };\n    expect(formatUser(user)).toMatchSnapshot();\n  });\n\n  test('matches snapshot for inactive user', () => {\n    const user = { name: 'Bob', email: 'bob@example.com', active: false };\n    expect(formatUser(user)).toMatchSnapshot();\n  });\n});"
+  },
+  {
+    "instruction": "Write Jest unit tests for a pipe function that composes unary functions left to right.\n\nfunction pipe(...fns) {\n  return (input) => fns.reduce((acc, fn) => fn(acc), input);\n}",
+    "output": "const { pipe } = require('./pipe');\n\ndescribe('pipe', () => {\n  const double = (x) => x * 2;\n  const increment = (x) => x + 1;\n  const toStr = (x) => String(x);\n\n  test('applies functions left to right', () => {\n    expect(pipe(double, increment)(3)).toBe(7);\n  });\n\n  test('works with three functions', () => {\n    expect(pipe(double, increment, toStr)(5)).toBe('11');\n  });\n\n  test('identity when no functions given', () => {\n    expect(pipe()('raw')).toBe('raw');\n  });\n});"
+  },
+  {
+    "instruction": "Write a Jest test that mocks localStorage for a saveTheme function and asserts setItem was called with the right keys.\n\nfunction saveTheme(theme) {\n  localStorage.setItem('theme', theme);\n  localStorage.setItem('themeSavedAt', String(Date.now()));\n  return true;\n}",
+    "output": "const { saveTheme } = require('./theme');\n\ndescribe('saveTheme', () => {\n  beforeEach(() => {\n    const store = {};\n    global.localStorage = {\n      getItem: jest.fn((k) => store[k] ?? null),\n      setItem: jest.fn((k, v) => { store[k] = String(v); }),\n      removeItem: jest.fn((k) => { delete store[k]; }),\n    };\n  });\n\n  test('persists theme keys to localStorage', () => {\n    expect(saveTheme('dark')).toBe(true);\n    expect(localStorage.setItem).toHaveBeenCalledWith('theme', 'dark');\n    expect(localStorage.setItem).toHaveBeenCalledWith('themeSavedAt', expect.any(String));\n  });\n});"
+  },
+  {
+    "instruction": "Write Vitest tests using vi.fn for a payments module that calls a stripe-like client.\n\nexport async function charge(client, amount) {\n  const result = await client.charges.create({ amount, currency: 'usd' });\n  return result.id;\n}",
+    "output": "import { describe, test, expect, vi, beforeEach } from 'vitest';\nimport { charge } from './payments';\n\ndescribe('charge', () => {\n  let client;\n\n  beforeEach(() => {\n    client = { charges: { create: vi.fn() } };\n  });\n\n  test('returns the created charge id', async () => {\n    client.charges.create.mockResolvedValue({ id: 'ch_123' });\n    await expect(charge(client, 500)).resolves.toBe('ch_123');\n    expect(client.charges.create).toHaveBeenCalledWith({ amount: 500, currency: 'usd' });\n  });\n\n  test('propagates client failures', async () => {\n    client.charges.create.mockRejectedValue(new Error('card declined'));\n    await expect(charge(client, 500)).rejects.toThrow('card declined');\n  });\n});"
+  }
+]

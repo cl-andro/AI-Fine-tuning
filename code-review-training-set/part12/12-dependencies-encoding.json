@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef read_config(path):\n    with open(path) as f:\n        return json.load(f)",
+    "output": "**Issue:** Text file opened without an explicit encoding.\n**Why:** The default is locale-dependent; the same file is utf-8 on Linux and cp1252 on Windows, so non-ASCII names crash with UnicodeDecodeError.\n**Fix:**\ndef read_config(path):\n    with open(path, encoding='utf-8') as f:\n        return json.load(f)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef ascii_id(raw):\n    return raw.encode('ascii').decode('ascii')",
+    "output": "**Issue:** Non-ASCII bytes decoded with the ascii codec.\n**Why:** Any é, emoji or CJK character raises UnicodeDecodeError; identifiers from users are inherently unicode.\n**Fix:**\ndef ascii_id(raw):\n    return unicodedata.normalize('NFKC', raw).encode('ascii', 'ignore').decode('ascii')\n# or keep it unicode: return raw.strip()"
+  },
+  {
+    "instruction": "Review this code:\n\nrequests>=2.31.0\nflask\nnumpy\npandas\nsqlalchemy",
+    "output": "**Issue:** Unpinned dependency versions in requirements.txt.\n**Why:** A fresh install picks whatever is newest, so flask 3.x or numpy 2.x breaks the app with no code change; builds are not reproducible.\n**Fix:**\nrequests==2.31.0\nflask==3.0.3\nnumpy==1.26.4\npandas==2.2.2\nsqlalchemy==2.0.30\n# or pin with pip freeze / use poetry.lock or uv.lock"
+  },
+  {
+    "instruction": "Review this code:\n\nfrom helper import *\nfrom utils import *\nfrom tests.fixtures import *",
+    "output": "**Issue:** Wildcard imports pollute the namespace.\n**Why:** Name clashes silently pick the last definition, editors cannot resolve symbols, and 'helper not defined' errors surface far from the import.\n**Fix:**\nfrom helper import parse_config, validate\nfrom utils import retry, timed"
+  },
+  {
+    "instruction": "Review this code:\n\nimport cv2\nimport Image\nimport NumPy",
+    "output": "**Issue:** Module names that do not match installed package names.\n**Why:** The PyPI package is opencv-python/Pillow/numpy; `pip install cv2` or `import Image` fails or installs a typosquat.\n**Fix:**\npip install opencv-python pillow numpy\nimport cv2\nfrom PIL import Image\nimport numpy as np"
+  },
+  {
+    "instruction": "Review this code:\n\ndef save_report(path, rows):\n    f = open(path, 'w')\n    f.write('\\n'.join(rows))\n    f.close()",
+    "output": "**Issue:** Text written without an encoding (and without a `with` block).\n**Why:** On Windows the default cp1252 codec refuses UTF-8 symbols and crashes mid-write, leaving a truncated report.\n**Fix:**\ndef save_report(path, rows):\n    with open(path, 'w', encoding='utf-8', newline='\\n') as f:\n        f.write('\\n'.join(rows))"
+  },
+  {
+    "instruction": "Review this code:\n\nproc = subprocess.run(['git', 'log', '-1', '--pretty=%s'], capture_output=True)\nsubject = proc.stdout",
+    "output": "**Issue:** Subprocess output used as str when capture_output returns bytes.\n**Why:** `subject + '!'` raises TypeError: can only concatenate str; text=True is required for string output.\n**Fix:**\nproc = subprocess.run(['git', 'log', '-1', '--pretty=%s'], capture_output=True, text=True, check=True)\nsubject = proc.stdout.strip()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef dump(data, path):\n    with open(path, 'w', encoding='ascii') as f:\n        json.dump(data, f)",
+    "output": "**Issue:** JSON containing non-ASCII written with the ascii codec.\n**Why:** ensure_ascii=True escapes by default, but the moment you pass ensure_ascii=False (or dump other payloads) any 'ü' raises UnicodeEncodeError.\n**Fix:**\ndef dump(data, path):\n    with open(path, 'w', encoding='utf-8') as f:\n        json.dump(data, f, ensure_ascii=False, indent=2)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef write_line(path, text):\n    with open(path, 'w', encoding='ascii') as f:\n        f.write(text + '\\n')",
+    "output": "**Issue:** ASCII encoding for user-facing text with emoji.\n**Why:** UnicodeEncodeError on '🎉'; text should be utf-8, not the 1963 character set.\n**Fix:**\ndef write_line(path, text):\n    with open(path, 'w', encoding='utf-8') as f:\n        f.write(text + '\\n')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef load_csv(path):\n    return pd.read_csv(path)",
+    "output": "**Issue:** No encoding specified when reading a CSV that may contain non-UTF-8 bytes.\n**Why:** Excel exports in cp1252/latin-1 raise UnicodeDecodeError on the first accented column name.\n**Fix:**\ndef load_csv(path):\n    return pd.read_csv(path, encoding='utf-8-sig')\n# fall back explicitly: try utf-8, then latin-1, and record which was used"
+  },
+  {
+    "instruction": "Review this code:\n\n# app/models.py\nfrom app.serializers import UserSerializer\n\n# app/serializers.py\nfrom app.models import User",
+    "output": "**Issue:** Circular imports between two modules.\n**Why:** Each module imports the other half-initialized, giving ImportError or partially constructed classes depending on import order.\n**Fix:**\n# move the shared code into a third module, or import inside the function:\ndef serialize(user):\n    from app.serializers import UserSerializer\n    return UserSerializer(user).data"
+  },
+  {
+    "instruction": "Review this code:\n\nimport optparse\nimport distutils.spawn\n\nparser = optparse.OptionParser()\nparser.add_option('--out')",
+    "output": "**Issue:** Deprecated/removed standard-library modules.\n**Why:** distutils was removed in Python 3.12 and optparse is frozen; the code breaks on any modern interpreter.\n**Fix:**\nimport argparse\nimport shutil\n\nparser = argparse.ArgumentParser()\nparser.add_argument('--out')\nargs = parser.parse_args()"
+  },
+  {
+    "instruction": "Review this code:\n\n# Dockerfile\nFROM python:latest\nRUN pip install -r requirements.txt",
+    "output": "**Issue:** Unpinned `python:latest` base image plus system-wide pip installs.\n**Why:** The base image changes under you (3.11 -> 3.13 overnight), image rebuilds break, and app deps collide with system packages.\n**Fix:**\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt"
+  },
+  {
+    "instruction": "Review this code:\n\nimport pandas as pd\n\ndef summarize(df):\n    return df.agg({'x': 'sum'})\n\ndef backup(df):\n    return df.append(df)",
+    "output": "**Issue:** Code depends on APIs that only exist in old library versions, but requirements do not pin the major version.\n**Why:** A clean install pulls pandas 2.x where DataFrame.append is gone, so the module imports but half the functions crash.\n**Fix:**\n# requirements.txt\npandas>=1.5,<2.0\n# and update the code to the supported API:\ndef backup(df):\n    return pd.concat([df, df], ignore_index=True)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef summarize(df):\n    # pandas is optional in dev\n    import pandas as pd\n    return df.describe()",
+    "output": "**Issue:** Optional third-party import not guarded, so import errors surface far away.\n**Why:** A missing extra (pip install app without app[analysis]) blows up at call time with a bare ImportError giving no hint which extra to install.\n**Fix:**\ntry:\n    import pandas as pd\nexcept ImportError as e:\n    raise ImportError(\"pandas is required; install with 'pip install app[analysis]'\") from e"
+  },
+  {
+    "instruction": "Review this code:\n\nimport sys, os\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))\nimport helper",
+    "output": "**Issue:** sys.path manipulated instead of installing the dependency.\n**Why:** Relative path hacks break depending on the CWD, mask packaging errors, and can import the wrong `helper` from an unrelated directory.\n**Fix:**\n# pyproject.toml\n[tool.setuptools.packages.find]\nwhere = ['src']\n# then: pip install -e .\nimport mypkg.helper"
+  },
+  {
+    "instruction": "Review this code:\n\n# requirements.txt\napp-frontend==1.2.0\napp-backend==1.0.0\n# app-frontend pins requests==2.28, app-backend pins requests>=2.31",
+    "output": "**Issue:** Conflicting transitive dependency pins.\n**Why:** pip resolver fails or silently installs a version one of the packages does not support, causing runtime breakage that only appears in production.\n**Fix:**\n# run: pip install app-frontend app-backend 2>&1 | tail\n# align on one version, or relax the pins:\nrequests>=2.31,<3\napp-frontend==1.2.0\napp-backend==1.0.0\n# verify with: pip check"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_log(path):\n    with open(path, encoding='utf-8', errors='ignore') as f:\n        return f.read()",
+    "output": "**Issue:** errors='ignore' silently discards undecodable bytes.\n**Why:** Corrupt or mixed-encoding data vanishes without a trace, so log analysis and audit trails lose evidence of the very anomalies you are looking for.\n**Fix:**\ndef read_log(path):\n    with open(path, encoding='utf-8', errors='replace') as f:\n        data = f.read()\n    if '\\ufffd' in data:\n        logger.warning('replacement characters found in %s', path)\n    return data"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_any(path):\n    with open(path, newline='') as f:\n        return list(csv.reader(f))",
+    "output": "**Issue:** newline='' handled for csv but the writer side opens without it (and no encoding).\n**Why:** Python's universal newlines turn '\\r\\n' into '\\n', so a CSV round-trip rewrites line endings and corrupts diffs on Windows.\n**Fix:**\ndef read_any(path):\n    with open(path, newline='', encoding='utf-8') as f:\n        return list(csv.reader(f))\n\ndef write_any(path, rows):\n    with open(path, 'w', newline='', encoding='utf-8') as f:\n        csv.writer(f).writerows(rows)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef normalize_header(h):\n    return h.strip().upper()\n\n# header contains 'İstanbul' or 'iIstanbul'",
+    "output": "**Issue:** str.upper()/lower() applied without locale-aware case folding.\n**Why:** Turkish dotted/dotless i and other locales fold differently, so column names and keys mismatch after .upper().\n**Fix:**\ndef normalize_header(h):\n    return unicodedata.normalize('NFKC', h).strip().casefold()\n# casefold() is the linguistically correct fold for comparisons"
+  }
+]

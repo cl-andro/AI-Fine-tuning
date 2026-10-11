@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef count_lines(path):\n    f = open(path)\n    n = 0\n    for line in f:\n        if line.strip():\n            n += 1\n    return n",
+    "output": "**Issue:** File handle never closed.\n**Why:** The descriptor stays open until GC runs; with many calls the process hits `Too many open files`.\n**Fix:**\ndef count_lines(path):\n    n = 0\n    with open(path) as f:\n        for line in f:\n            if line.strip():\n                n += 1\n    return n"
+  },
+  {
+    "instruction": "Review this code:\n\ndef total(path):\n    f = open(path)\n    data = f.read()\n    return sum(int(x) for x in data.split())\n\n# on bad data this raises ValueError before f.close() is ever reached",
+    "output": "**Issue:** Close is skipped whenever the body raises.\n**Why:** One malformed line leaks the descriptor for the lifetime of the process.\n**Fix:**\ndef total(path):\n    with open(path) as f:\n        data = f.read()\n    return sum(int(x) for x in data.split())"
+  },
+  {
+    "instruction": "Review this code:\n\ndef add_users(rows):\n    conn = psycopg2.connect(DSN)\n    cur = conn.cursor()\n    for row in rows:\n        cur.execute('INSERT INTO users (name) VALUES (%s)', row)\n    conn.commit()\n    return cur.rowcount",
+    "output": "**Issue:** Connection and cursor never closed; no rollback on failure.\n**Why:** A failed INSERT leaves the transaction open and the connection checked out of the pool forever.\n**Fix:**\ndef add_users(rows):\n    with psycopg2.connect(DSN) as conn:\n        with conn.cursor() as cur:\n            for row in rows:\n                cur.execute('INSERT INTO users (name) VALUES (%s)', row)\n            return cur.rowcount"
+  },
+  {
+    "instruction": "Review this code:\n\ndef ping(host):\n    proc = subprocess.Popen(['ping', '-c', '1', host], stdout=subprocess.PIPE)\n    out = proc.stdout.read()\n    return out",
+    "output": "**Issue:** Popen process is never waited on.\n**Why:** The child becomes a zombie, and exit status/return code is never checked so failures go unnoticed.\n**Fix:**\ndef ping(host):\n    result = subprocess.run(['ping', '-c', '1', host], capture_output=True, timeout=5)\n    return result.stdout"
+  },
+  {
+    "instruction": "Review this code:\n\ndef handle(conn):\n    data = conn.recv(1024)\n    conn.send(b'ok')\n    # conn.close() is missing\n\nwhile True:\n    c, _ = sock.accept()\n    threading.Thread(target=handle, args=(c,)).start()",
+    "output": "**Issue:** Accepted socket is never closed.\n**Why:** Each connection leaks an fd, so the server dies after a few thousand requests.\n**Fix:**\ndef handle(conn):\n    with conn:\n        data = conn.recv(1024)\n        conn.send(b'ok')"
+  },
+  {
+    "instruction": "Review this code:\n\ndef extract(archive, dest):\n    p = subprocess.Popen(['unzip', '-o', archive, '-d', dest])\n    print('started')\n    return True",
+    "output": "**Issue:** subprocess.Popen is started but never waited on.\n**Why:** The caller reports success while unzip is still writing, and unreaped children accumulate as zombies.\n**Fix:**\nsubprocess.run(['unzip', '-o', archive, '-d', dest], check=True)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef write_report(content):\n    path = tempfile.mktemp()\n    with open(path, 'w') as f:\n        f.write(content)\n    return path\n# caller never deletes the file",
+    "output": "**Issue:** Temporary file is never removed, including on the failure path.\n**Why:** /tmp fills up with stale reports and mktemp also allows a name-squatting race.\n**Fix:**\nimport os, tempfile\n\ndef write_report(content):\n    fd, path = tempfile.mkstemp(text=True)\n    try:\n        with os.fdopen(fd, 'w') as f:\n            f.write(content)\n        return path\n    except Exception:\n        os.unlink(path)\n        raise\n# better: return the content or use TemporaryDirectory as a context manager"
+  },
+  {
+    "instruction": "Review this code:\n\nfor i in range(100):\n    t = threading.Thread(target=sync, args=(i,))\n    t.start()\nprint('done')",
+    "output": "**Issue:** Threads are started but never joined.\n**Why:** The program prints 'done' and may exit while threads are mid-write, corrupting output or truncating work.\n**Fix:**\nthreads = []\nfor i in range(100):\n    t = threading.Thread(target=sync, args=(i,))\n    t.start()\n    threads.append(t)\nfor t in threads:\n    t.join()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef export(query):\n    s = requests.Session()\n    r = s.get('https://api.example.com/export', params={'q': query})\n    return r.content",
+    "output": "**Issue:** requests.Session is never closed.\n**Why:** Sessions hold connection pools; leaking them keeps sockets open until GC and can exhaust the local port range.\n**Fix:**\ndef export(query):\n    with requests.Session() as s:\n        r = s.get('https://api.example.com/export', params={'q': query}, timeout=30)\n        r.raise_for_status()\n        return r.content"
+  },
+  {
+    "instruction": "Review this code:\n\ndef scan(path):\n    for i, line in enumerate(open(path)):\n        if 'ERROR' in line:\n            print('found error at line', i)\n            break",
+    "output": "**Issue:** The file object created in the for statement is not closed when the loop breaks early.\n**Why:** break leaves the handle open; repeated scans leak descriptors.\n**Fix:**\ndef scan(path):\n    with open(path) as f:\n        for i, line in enumerate(f):\n            if 'ERROR' in line:\n                print('found error at line', i)\n                break"
+  },
+  {
+    "instruction": "Review this code:\n\ndef process():\n    lock.acquire()\n    data = transform(shared)\n    if data is None:\n        return\n    publish(data)\n    lock.release()",
+    "output": "**Issue:** Lock is not released when transform returns None or raises.\n**Why:** Every failure path leaves the lock held, deadlocking every other thread that needs it.\n**Fix:**\ndef process():\n    with lock:\n        data = transform(shared)\n        if data is None:\n            return\n        publish(data)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef map_file(path):\n    fh = open(path, 'rb')\n    mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)\n    return mm.read(10)\n\n# neither mm nor fh is ever closed",
+    "output": "**Issue:** Both the mmap and the underlying file are left open.\n**Why:** An open mmap pins the file so it cannot be deleted or rewritten on Windows, and it holds a fd.\n**Fix:**\nimport mmap\n\ndef map_file(path):\n    with open(path, 'rb') as fh:\n        with mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ) as mm:\n            return mm.read(10)"
+  },
+  {
+    "instruction": "Review this code:\n\nfrom PIL import Image\n\ndef thumb(path, size):\n    im = Image.open(path)\n    im.thumbnail((size, size))\n    im.save(path + '.thumb')\n    return im",
+    "output": "**Issue:** Image file handle is never closed.\n**Why:** PIL keeps the source file open until the object is collected, blocking the file from being rewritten or deleted.\n**Fix:**\ndef thumb(path, size):\n    with Image.open(path) as im:\n        im.thumbnail((size, size))\n        im.save(path + '.thumb')\n        return im.copy()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_gz(path):\n    f = gzip.open(path, 'rt')\n    first = f.readline()\n    return first",
+    "output": "**Issue:** gzip handle left open after reading one line.\n**Why:** Compressed streams hold a buffer and fd; in a loop this exhausts fds quickly.\n**Fix:**\ndef read_gz(path):\n    with gzip.open(path, 'rt') as f:\n        return f.readline()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef serve(port):\n    srv = socket.socket()\n    srv.bind(('0.0.0.0', port))\n    srv.listen(5)\n    try:\n        while True:\n            conn, _ = srv.accept()\n            handle(conn)\n    except KeyboardInterrupt:\n        print('bye')",
+    "output": "**Issue:** Listening socket is never closed on shutdown.\n**Why:** The port stays in TIME_WAIT/ESTABLISHED state and the next start fails with 'Address already in use'.\n**Fix:**\ndef serve(port):\n    with socket.socket() as srv:\n        srv.bind(('0.0.0.0', port))\n        srv.listen(5)\n        while True:\n            conn, _ = srv.accept()\n            with conn:\n                handle(conn)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef read_fd(path):\n    fd = os.open(path, os.O_RDONLY)\n    f = os.fdopen(fd, 'r')\n    data = f.read()\n    return parse(data)\n# if parse raises, f is never closed and fd leaks",
+    "output": "**Issue:** fdopen'd handle not protected by try/finally.\n**Why:** Any exception between fdopen and close leaks the raw descriptor.\n**Fix:**\ndef read_fd(path):\n    with open(path) as f:\n        return parse(f.read())"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Session:\n    def __del__(self):\n        self.db.close()",
+    "output": "**Issue:** Resource cleanup delegated to __del__.\n**Why:** __del__ timing is not guaranteed (and may never run on PyPy or during interpreter shutdown), so connections leak and errors in __del__ are ignored.\n**Fix:**\nclass Session:\n    def __enter__(self):\n        self.db = connect()\n        return self\n    def __exit__(self, *exc):\n        self.db.close()\n        return False"
+  },
+  {
+    "instruction": "Review this code:\n\ndef each_day():\n    conn = sqlite3.connect('app.db')\n    for row in conn.execute('SELECT day, value FROM metrics'):\n        yield row\n\n# caller abandons the generator after 3 rows",
+    "output": "**Issue:** The sqlite3 connection inside the generator is only closed when the generator is fully exhausted or collected.\n**Why:** Abandoning a generator mid-iteration keeps the connection (and its lock) alive indefinitely.\n**Fix:**\ndef each_day():\n    conn = sqlite3.connect('app.db')\n    try:\n        yield from conn.execute('SELECT day, value FROM metrics')\n    finally:\n        conn.close()"
+  },
+  {
+    "instruction": "Review this code:\n\nfor i in range(5):\n    p = multiprocessing.Process(target=worker, args=(i,))\n    p.start()\nprint('all launched')",
+    "output": "**Issue:** Child processes are never joined.\n**Why:** Zombies accumulate, and the parent can exit before children flush their results, silently losing output.\n**Fix:**\nprocs = []\nfor i in range(5):\n    p = multiprocessing.Process(target=worker, args=(i,))\n    p.start()\n    procs.append(p)\nfor p in procs:\n    p.join()"
+  },
+  {
+    "instruction": "Review this code:\n\ndef timed(fn):\n    t = threading.Timer(30.0, fn)\n    t.start()\n    return t\n\n# timer objects are dropped without cancel()",
+    "output": "**Issue:** threading.Timer threads are started and never cancelled or joined.\n**Why:** Dropped timers still fire later against stale state, and each one holds a thread until its deadline.\n**Fix:**\ndef timed(fn):\n    t = threading.Timer(30.0, fn)\n    t.daemon = True\n    t.start()\n    return t\n# callers must keep a reference and call t.cancel() when done"
+  }
+]

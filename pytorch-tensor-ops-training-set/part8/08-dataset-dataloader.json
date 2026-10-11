@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Dataset class that serves (features, label) pairs from two lists.",
+    "output": "import torch\nfrom torch.utils.data import Dataset\n\nclass ListDataset(Dataset):\n    def __init__(self, xs, ys):\n        self.xs = xs\n        self.ys = ys\n\n    def __len__(self):\n        return len(self.xs)\n\n    def __getitem__(self, i):\n        return self.xs[i], self.ys[i]"
+  },
+  {
+    "instruction": "Wrap existing tensors X and y with TensorDataset.",
+    "output": "import torch\nfrom torch.utils.data import TensorDataset\nds = TensorDataset(X, y)"
+  },
+  {
+    "instruction": "Iterate over a DataLoader with batch size 4.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=4)\nfor xb, yb in loader:\n    print(xb.shape)"
+  },
+  {
+    "instruction": "Shuffle the samples at every epoch while training.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=8, shuffle=True)"
+  },
+  {
+    "instruction": "Load data using 4 worker processes.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=16, num_workers=4)"
+  },
+  {
+    "instruction": "Grab a single batch from a DataLoader without iterating the whole epoch.",
+    "output": "xb, yb = next(iter(loader))"
+  },
+  {
+    "instruction": "Drop the last incomplete batch so every batch has the same size.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=8, drop_last=True)"
+  },
+  {
+    "instruction": "Write a collate function that stacks samples into batches with torch.stack.",
+    "output": "import torch\n\ndef collate(batch):\n    xs = torch.stack([s[0] for s in batch])\n    ys = torch.tensor([s[1] for s in batch])\n    return xs, ys"
+  },
+  {
+    "instruction": "Sample classes with replacement using a WeightedRandomSampler.",
+    "output": "from torch.utils.data import DataLoader, WeightedRandomSampler\nsampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)\nloader = DataLoader(ds, batch_size=32, sampler=sampler)"
+  },
+  {
+    "instruction": "Split a dataset into 80 percent train and 20 percent validation.",
+    "output": "from torch.utils.data import random_split\ntrain, val = random_split(ds, [0.8, 0.2])"
+  },
+  {
+    "instruction": "Write a Dataset that lazily loads one image file per index.",
+    "output": "from torch.utils.data import Dataset\nfrom PIL import Image\n\nclass PathDataset(Dataset):\n    def __init__(self, paths):\n        self.paths = paths\n\n    def __len__(self):\n        return len(self.paths)\n\n    def __getitem__(self, i):\n        return Image.open(self.paths[i])"
+  },
+  {
+    "instruction": "Build an evaluation DataLoader that never shuffles and keeps sample order.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=16, shuffle=False)"
+  },
+  {
+    "instruction": "Pad variable-length sequences inside a custom collate_fn.",
+    "output": "import torch\nfrom torch.nn.utils.rnn import pad_sequence\n\ndef collate(batch):\n    seqs = [s[0] for s in batch]\n    lengths = torch.tensor([len(s) for s in seqs])\n    return pad_sequence(seqs, batch_first=True), lengths"
+  },
+  {
+    "instruction": "Enable pinned memory so host-to-device copies are faster.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=32, pin_memory=True)"
+  },
+  {
+    "instruction": "Print how many batches make up one epoch.",
+    "output": "print(len(loader))"
+  },
+  {
+    "instruction": "Convert a NumPy array X and its labels y into a TensorDataset in two lines.",
+    "output": "import torch\nfrom torch.utils.data import TensorDataset\nds = TensorDataset(torch.as_tensor(X), torch.as_tensor(y))"
+  },
+  {
+    "instruction": "Write an IterableDataset that yields the squares of 0 through n-1.",
+    "output": "from torch.utils.data import IterableDataset, DataLoader\n\nclass Squares(IterableDataset):\n    def __init__(self, n):\n        self.n = n\n\n    def __iter__(self):\n        return (i * i for i in range(self.n))"
+  },
+  {
+    "instruction": "Use a seeded torch.Generator so that DataLoader shuffling is reproducible.",
+    "output": "import torch\nfrom torch.utils.data import DataLoader\ng = torch.Generator()\ng.manual_seed(0)\nloader = DataLoader(ds, batch_size=8, shuffle=True, generator=g)"
+  },
+  {
+    "instruction": "Fetch a single sample by index directly from a Dataset object.",
+    "output": "sample = ds[3]"
+  },
+  {
+    "instruction": "Iterate a DataLoader while also keeping track of the batch number.",
+    "output": "for i, (xb, yb) in enumerate(loader):\n    print(i, xb.shape)"
+  }
+]

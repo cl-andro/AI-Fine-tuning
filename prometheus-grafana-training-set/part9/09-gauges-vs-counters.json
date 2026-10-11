@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Classify these Prometheus metrics as gauge or counter: node_memory_MemAvailable_bytes, container_cpu_usage_seconds_total, process_resident_memory_bytes, node_network_receive_bytes_total",
+    "output": "node_memory_MemAvailable_bytes: gauge (value goes up and down with no monotonic increase)\ncontainer_cpu_usage_seconds_total: counter (monotonically increases, use rate)\nprocess_resident_memory_bytes: gauge (current RSS sample)\nnode_network_receive_bytes_total: counter (cumulative bytes, use rate)"
+  },
+  {
+    "instruction": "Write a PromQL query for the current memory working set of a container without applying rate",
+    "output": "container_memory_working_set_bytes"
+  },
+  {
+    "instruction": "Write a PromQL query computing CPU utilisation from a counter using rate over 5 minutes",
+    "output": "1 - rate(node_cpu_seconds_total{mode=\"idle\"}[5m])"
+  },
+  {
+    "instruction": "Write a PromQL query using delta() to measure the change in free filesystem space over 1 hour on a gauge",
+    "output": "delta(node_filesystem_avail_bytes[1h])"
+  },
+  {
+    "instruction": "Write a PromQL query using idelta() to get the change between the last two samples of a gauge",
+    "output": "idelta(node_memory_MemAvailable_bytes[5m])"
+  },
+  {
+    "instruction": "Write a PromQL query using changes() to detect how often the up gauge flipped in 15 minutes",
+    "output": "changes(up[15m])"
+  },
+  {
+    "instruction": "Write a PromQL query using deriv() to get the per-second growth trend of container memory over 30 minutes",
+    "output": "deriv(container_memory_usage_bytes[30m])"
+  },
+  {
+    "instruction": "Write a PromQL query using predict_linear() forecasting filesystem exhaustion within 24 hours",
+    "output": "predict_linear(node_filesystem_avail_bytes[6h], 24 * 3600) < 0"
+  },
+  {
+    "instruction": "Write a PromQL query computing the 90th percentile of a memory gauge over the last hour with quantile_over_time",
+    "output": "quantile_over_time(0.9, node_memory_MemAvailable_bytes[1h])"
+  },
+  {
+    "instruction": "Write a PromQL query computing system uptime in seconds from a gauge and the boot timestamp",
+    "output": "node_time_seconds - node_boot_time_seconds"
+  },
+  {
+    "instruction": "Explain in one sentence why rate() must not be applied to a gauge and show the correct query for current free memory",
+    "output": "rate() is only valid for monotonic counters, so applying it to a gauge is meaningless; query the gauge directly: node_memory_MemAvailable_bytes"
+  },
+  {
+    "instruction": "Write a PromQL query for a counter measuring how many requests arrived in the last 24 hours",
+    "output": "increase(http_requests_total[24h])"
+  },
+  {
+    "instruction": "Write a PromQL query choosing irate() over rate() for a counter that must react to the newest scrape",
+    "output": "irate(http_requests_total[1m])"
+  },
+  {
+    "instruction": "Write a PromQL query that measures counter growth while ignoring series that were reset mid-window",
+    "output": "increase(container_cpu_usage_seconds_total[1h])"
+  },
+  {
+    "instruction": "Write a PromQL query expressing free filesystem space as a percentage of total space",
+    "output": "node_filesystem_avail_bytes / node_filesystem_size_bytes * 100"
+  },
+  {
+    "instruction": "Write a PromQL query for the resident memory gauge of an application process",
+    "output": "process_resident_memory_bytes{job=\"app\"}"
+  },
+  {
+    "instruction": "Write a PromQL query for a temperature gauge that only shows sensors above 80 degrees",
+    "output": "node_hwmon_temp_celsius > 80"
+  },
+  {
+    "instruction": "Write a PromQL query reading the current queue depth gauge from RabbitMQ",
+    "output": "rabbitmq_queue_messages"
+  },
+  {
+    "instruction": "Write a PromQL query averaging a memory gauge over the last 10 minutes to reduce noise",
+    "output": "avg_over_time(container_memory_working_set_bytes[10m])"
+  },
+  {
+    "instruction": "For a dashboard showing current disk space, should you use rate(), increase() or the raw gauge? Give the PromQL query",
+    "output": "Use the raw gauge, because filesystem free space is a gauge: node_filesystem_avail_bytes{mountpoint=\"/\"}"
+  }
+]

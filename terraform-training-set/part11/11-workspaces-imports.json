@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Name a bucket with the current Terraform workspace so each workspace gets its own bucket.",
+    "output": "variable \"project\" {\n  type    = string\n  default = \"acme\"\n}\n\nresource \"aws_s3_bucket\" \"data\" {\n  bucket = \"${var.project}-${terraform.workspace}-data\"\n\n  tags = {\n    Workspace = terraform.workspace\n  }\n}"
+  },
+  {
+    "instruction": "Select configuration values from a local map keyed by the workspace name.",
+    "output": "locals {\n  env_config = {\n    default = {\n      instance_type = \"t3.micro\"\n      desired_size  = 1\n    }\n    staging = {\n      instance_type = \"t3.small\"\n      desired_size  = 2\n    }\n    production = {\n      instance_type = \"m5.large\"\n      desired_size  = 4\n    }\n  }\n\n  config = lookup(local.env_config, terraform.workspace, local.env_config[\"default\"])\n}\n\nresource \"aws_instance\" \"app\" {\n  ami           = var.ami_id\n  instance_type = local.config.instance_type\n\n  tags = {\n    Name = \"app-${terraform.workspace}\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Use different AWS provider settings per workspace with a local lookup.",
+    "output": "locals {\n  regions = {\n    default    = \"us-east-1\"\n    europe     = \"eu-west-1\"\n    asia       = \"ap-southeast-1\"\n  }\n}\n\nprovider \"aws\" {\n  region = lookup(local.regions, terraform.workspace, \"us-east-1\")\n}\n\nresource \"aws_sqs_queue\" \"events\" {\n  name = \"events-${terraform.workspace}\"\n}"
+  },
+  {
+    "instruction": "Import an existing S3 bucket into Terraform state with an import block.",
+    "output": "import {\n  to = aws_s3_bucket.legacy\n  id = \"acme-legacy-bucket\"\n}\n\nresource \"aws_s3_bucket\" \"legacy\" {\n  bucket = \"acme-legacy-bucket\"\n\n  tags = {\n    Imported = \"true\"\n  }\n}"
+  },
+  {
+    "instruction": "Import an existing EC2 instance by its instance id.",
+    "output": "import {\n  to = aws_instance.web\n  id = \"i-0abc1234def567890\"\n}\n\nresource \"aws_instance\" \"web\" {\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  tags = {\n    Name = \"web-imported\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Move a resource to a new address with a moved block after renaming it.",
+    "output": "moved {\n  from = aws_sqs_queue.legacy_jobs\n  to   = aws_sqs_queue.jobs\n}\n\nresource \"aws_sqs_queue\" \"jobs\" {\n  name = \"background-jobs\"\n}"
+  },
+  {
+    "instruction": "Refactor a module call to a new name with a moved block.",
+    "output": "moved {\n  from = module.app_v1\n  to   = module.app\n}\n\nmodule \"app\" {\n  source = \"./modules/app\"\n\n  name    = \"acme-app\"\n  env     = \"staging\"\n}"
+  },
+  {
+    "instruction": "Size resources per workspace using a config map combined with count.",
+    "output": "locals {\n  sizing = {\n    default    = { count = 1, type = \"t3.micro\" }\n    staging    = { count = 2, type = \"t3.small\" }\n    production = { count = 4, type = \"t3.medium\" }\n  }\n\n  current = lookup(local.sizing, terraform.workspace, local.sizing[\"default\"])\n}\n\nresource \"aws_instance\" \"worker\" {\n  count         = local.current.count\n  ami           = var.ami_id\n  instance_type = local.current.type\n\n  tags = {\n    Name = \"worker-${terraform.workspace}-${count.index}\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Import an existing IAM role by name.",
+    "output": "import {\n  to = aws_iam_role.deploy\n  id = \"legacy-deploy-role\"\n}\n\nresource \"aws_iam_role\" \"deploy\" {\n  name = \"legacy-deploy-role\"\n\n  assume_role_policy = jsonencode({\n    Version = \"2012-10-17\"\n    Statement = [\n      {\n        Effect = \"Allow\"\n        Principal = { Service = \"codedeploy.amazonaws.com\" }\n        Action    = \"sts:AssumeRole\"\n      }\n    ]\n  })\n}"
+  },
+  {
+    "instruction": "Import an existing DynamoDB table into state.",
+    "output": "import {\n  to = aws_dynamodb_table.sessions\n  id = \"sessions-prod\"\n}\n\nresource \"aws_dynamodb_table\" \"sessions\" {\n  name         = \"sessions-prod\"\n  billing_mode = \"PAY_PER_REQUEST\"\n  hash_key     = \"session_id\"\n\n  attribute {\n    name = \"session_id\"\n    type = \"S\"\n  }\n}"
+  },
+  {
+    "instruction": "Read remote state for the same workspace name from a shared network bucket.",
+    "output": "data \"terraform_remote_state\" \"network\" {\n  backend = \"s3\"\n\n  config = {\n    bucket = \"acme-terraform-state\"\n    key    = \"network/${terraform.workspace}/terraform.tfstate\"\n    region = \"us-east-1\"\n  }\n}\n\nresource \"aws_sqs_queue\" \"app\" {\n  name = \"app-events-${terraform.workspace}\"\n\n  tags = {\n    VpcId = data.terraform_remote_state.network.outputs.vpc_id\n  }\n}"
+  },
+  {
+    "instruction": "Declare two import blocks in one configuration for resources created outside Terraform.",
+    "output": "import {\n  to = aws_s3_bucket.logs\n  id = \"acme-manual-logs\"\n}\n\nimport {\n  to = aws_s3_bucket.audit\n  id = \"acme-manual-audit\"\n}\n\nresource \"aws_s3_bucket\" \"logs\" {\n  bucket = \"acme-manual-logs\"\n}\n\nresource \"aws_s3_bucket\" \"audit\" {\n  bucket = \"acme-manual-audit\"\n}"
+  },
+  {
+    "instruction": "Tag resources with workspace-specific tags from a lookup table.",
+    "output": "variable \"workspace_tags\" {\n  type = map(map(string))\n  default = {\n    default    = { Owner = \"platform\", CostCenter = \"dev\" }\n    staging    = { Owner = \"platform\", CostCenter = \"staging\" }\n    production = { Owner = \"sre\", CostCenter = \"prod\" }\n  }\n}\n\nresource \"aws_sqs_queue\" \"events\" {\n  name = \"events-${terraform.workspace}\"\n  tags = lookup(var.workspace_tags, terraform.workspace, {})\n}"
+  },
+  {
+    "instruction": "Move a whole module subtree from one directory to another with a moved block.",
+    "output": "moved {\n  from = module.network_v1[0]\n  to   = module.network[0]\n}\n\nmodule \"network\" {\n  count  = 1\n  source = \"./modules/v2-network\"\n\n  name       = \"shared\"\n  cidr_block = \"10.20.0.0/16\"\n}"
+  },
+  {
+    "instruction": "Import an existing VPC into Terraform management.",
+    "output": "import {\n  to = aws_vpc.main\n  id = \"vpc-0abc1234def567890\"\n}\n\nresource \"aws_vpc\" \"main\" {\n  cidr_block           = \"10.30.0.0/16\"\n  enable_dns_support   = true\n  enable_dns_hostnames = true\n\n  tags = {\n    Name = \"imported-vpc\"\n  }\n}"
+  },
+  {
+    "instruction": "Import an existing CloudWatch log group and shorten its retention.",
+    "output": "import {\n  to = aws_cloudwatch_log_group.app\n  id = \"/acme/production/app\"\n}\n\nresource \"aws_cloudwatch_log_group\" \"app\" {\n  name              = \"/acme/production/app\"\n  retention_in_days = 30\n}"
+  },
+  {
+    "instruction": "Use the workspace name in outputs so consumers know which environment they target.",
+    "output": "resource \"aws_sqs_queue\" \"jobs\" {\n  name = \"jobs-${terraform.workspace}\"\n}\n\noutput \"queue_url\" {\n  value       = aws_sqs_queue.jobs.url\n  description = \"URL of the ${terraform.workspace} job queue\"\n}\n\noutput \"workspace\" {\n  value = terraform.workspace\n}"
+  },
+  {
+    "instruction": "Combine an import block and a moved block in one refactor configuration.",
+    "output": "moved {\n  from = aws_s3_bucket.data_old\n  to   = aws_s3_bucket.data\n}\n\nimport {\n  to = aws_s3_bucket.shared\n  id = \"acme-shared-artifacts\"\n}\n\nresource \"aws_s3_bucket\" \"data\" {\n  bucket = \"acme-data-${terraform.workspace}\"\n}\n\nresource \"aws_s3_bucket\" \"shared\" {\n  bucket = \"acme-shared-artifacts\"\n}"
+  },
+  {
+    "instruction": "Create workspace-conditional resources for a queue that only exists outside the default workspace.",
+    "output": "resource \"aws_sqs_queue\" \"non_default_only\" {\n  count = terraform.workspace == \"default\" ? 0 : 1\n\n  name = \"workspace-queue-${terraform.workspace}\"\n}"
+  },
+  {
+    "instruction": "Import an existing security group and restrict its egress with an inline rule.",
+    "output": "import {\n  to = aws_security_group.app\n  id = \"sg-0abc1234def567890\"\n}\n\nresource \"aws_security_group\" \"app\" {\n  name   = \"app-sg\"\n  vpc_id = var.vpc_id\n\n  egress {\n    from_port   = 443\n    to_port     = 443\n    protocol    = \"tcp\"\n    cidr_blocks = [\"10.0.0.0/8\"]\n  }\n\n  tags = {\n    Name = \"app-sg\"\n  }\n}\n\nvariable \"vpc_id\" {\n  type = string\n}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Search for the best C value for logistic regression with GridSearchCV.",
+    "output": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.linear_model import LogisticRegression\ngrid = GridSearchCV(LogisticRegression(max_iter=1000), {'C': [0.01, 0.1, 1.0, 10.0]}, cv=5)\ngrid.fit(X, y)\nprint(grid.best_params_)"
+  },
+  {
+    "instruction": "Sample hyperparameters randomly instead of trying every combination.",
+    "output": "from sklearn.model_selection import RandomizedSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\nsearch = RandomizedSearchCV(RandomForestClassifier(random_state=0), {'n_estimators': [100, 300, 500], 'max_depth': [None, 5, 10, 20]}, n_iter=8, cv=4, random_state=0)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Tune a pipeline by prefixing the step name to each parameter.",
+    "output": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.svm import SVC\npipe = Pipeline([('scale', StandardScaler()), ('clf', SVC())])\ngrid = GridSearchCV(pipe, {'clf__C': [0.1, 1, 10], 'clf__kernel': ['linear', 'rbf']}, cv=4)\ngrid.fit(X, y)"
+  },
+  {
+    "instruction": "Print the best parameter combination that the search found.",
+    "output": "print(search.best_params_)"
+  },
+  {
+    "instruction": "Print the best cross-validated score achieved by the search.",
+    "output": "print(search.best_score_)"
+  },
+  {
+    "instruction": "Inspect the full cross-validation table of a finished search.",
+    "output": "import pandas as pd\nprint(pd.DataFrame(search.cv_results_).sort_values('rank_test_score').head())"
+  },
+  {
+    "instruction": "Retrain the winning configuration on the entire dataset automatically.",
+    "output": "from sklearn.model_selection import GridSearchCV\nsearch = GridSearchCV(LogisticRegression(max_iter=1000), {'C': [0.1, 1.0]}, cv=5, refit=True)\nsearch.fit(X, y)\nprint(search.best_estimator_)"
+  },
+  {
+    "instruction": "Speed up a grid search with successive halving.",
+    "output": "from sklearn.experimental import enable_halving_search_cv\nfrom sklearn.model_selection import HalvingGridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\nsearch = HalvingGridSearchCV(RandomForestClassifier(random_state=0), {'n_estimators': [50, 100, 200], 'max_depth': [5, 10, None]}, cv=3, random_state=0)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Randomize a hyperparameter search and let successive halving prune it.",
+    "output": "from sklearn.experimental import enable_halving_search_cv\nfrom sklearn.model_selection import HalvingRandomSearchCV\nfrom sklearn.ensemble import HistGradientBoostingClassifier\nsearch = HalvingRandomSearchCV(HistGradientBoostingClassifier(random_state=0), {'learning_rate': [0.01, 0.05, 0.1], 'max_depth': [3, 6, 9]}, n_candidates='auto', cv=3, random_state=0)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Enumerate a parameter grid manually without running a search.",
+    "output": "from sklearn.model_selection import ParameterGrid\nfor params in ParameterGrid({'C': [0.1, 1.0], 'penalty': ['l2']}):\n    print(params)"
+  },
+  {
+    "instruction": "Search learning rates on a logarithmic scale rather than a linear one.",
+    "output": "from scipy.stats import loguniform\nfrom sklearn.model_selection import RandomizedSearchCV\nfrom sklearn.linear_model import SGDClassifier\nsearch = RandomizedSearchCV(SGDClassifier(random_state=0), {'alpha': loguniform(1e-5, 1e-1)}, n_iter=10, cv=4, random_state=0)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Optimize ROC AUC instead of accuracy during the search.",
+    "output": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\nsearch = GridSearchCV(RandomForestClassifier(random_state=0), {'max_depth': [3, 6, None]}, scoring='roc_auc', cv=5)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Run the search on all available CPU cores.",
+    "output": "from sklearn.model_selection import GridSearchCV\nsearch = GridSearchCV(LogisticRegression(max_iter=2000), {'C': [0.01, 0.1, 1.0, 10.0]}, cv=5, n_jobs=-1)\nsearch.fit(X, y)"
+  },
+  {
+    "instruction": "Include the number of selected features in a pipeline search.",
+    "output": "from sklearn.feature_selection import SelectKBest, f_classif\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV\npipe = Pipeline([('sel', SelectKBest(f_classif)), ('clf', LogisticRegression(max_iter=1000))])\ngrid = GridSearchCV(pipe, {'sel__k': [5, 10, 20]}, cv=4)\ngrid.fit(X, y)"
+  },
+  {
+    "instruction": "Save the best estimator from a search and predict with it.",
+    "output": "search.fit(X_train, y_train)\nbest = search.best_estimator_\nprint(best.predict(X_test))"
+  },
+  {
+    "instruction": "Sort the cross-validation results by rank to see the top candidates.",
+    "output": "import pandas as pd\nres = pd.DataFrame(search.cv_results_)\nprint(res.sort_values('rank_test_score')[['params', 'mean_test_score', 'rank_test_score']].head())"
+  },
+  {
+    "instruction": "Tune tree count and depth of a random forest together.",
+    "output": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\ngrid = GridSearchCV(RandomForestClassifier(random_state=0), {'n_estimators': [100, 300], 'max_depth': [5, 15, None]}, cv=4)\ngrid.fit(X, y)"
+  },
+  {
+    "instruction": "Compare training and validation scores of a search to spot overfitting.",
+    "output": "from sklearn.model_selection import GridSearchCV\ngrid = GridSearchCV(DecisionTreeClassifier(random_state=0), {'max_depth': [1, 3, 10, None]}, cv=5, return_train_score=True)\ngrid.fit(X, y)\nprint(grid.cv_results_['mean_train_score'])\nprint(grid.cv_results_['mean_test_score'])"
+  },
+  {
+    "instruction": "Search over preprocessing and model hyperparameters in the same grid.",
+    "output": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\npipe = Pipeline([('impute', SimpleImputer()), ('scale', StandardScaler()), ('clf', LogisticRegression(max_iter=1000))])\ngrid = GridSearchCV(pipe, {'impute__strategy': ['mean', 'median'], 'scale__with_mean': [True, False], 'clf__C': [0.1, 1.0]}, cv=4)\ngrid.fit(X, y)"
+  },
+  {
+    "instruction": "Compare a tuned model against a plain cross-validated baseline.",
+    "output": "from sklearn.model_selection import cross_val_score, RandomizedSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\nbaseline = cross_val_score(RandomForestClassifier(n_estimators=100, random_state=0), X, y, cv=5).mean()\nsearch = RandomizedSearchCV(RandomForestClassifier(random_state=0), {'max_depth': [5, 10, None], 'min_samples_leaf': [1, 3, 5]}, n_iter=6, cv=5, random_state=0).fit(X, y)\nprint(baseline, search.best_score_)"
+  }
+]

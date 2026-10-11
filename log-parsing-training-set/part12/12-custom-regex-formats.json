@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this bracketed application log into JSON with timestamp, level, module and message:\n[2023-10-12 14:05:07] [ERROR] [payment] gateway timeout after 3000ms",
+    "output": "{\"timestamp\": \"2023-10-12 14:05:07\", \"level\": \"ERROR\", \"module\": \"payment\", \"message\": \"gateway timeout after 3000ms\"}"
+  },
+  {
+    "instruction": "Parse this logfmt line and convert numeric values to numbers as JSON:\nts=2023-10-12T14:05:07Z level=info msg=\"request done\" path=/api latency_ms=12.5 status=200",
+    "output": "{\"ts\": \"2023-10-12T14:05:07Z\", \"level\": \"info\", \"msg\": \"request done\", \"path\": \"/api\", \"latency_ms\": 12.5, \"status\": 200}"
+  },
+  {
+    "instruction": "Parse this pipe delimited custom log into JSON with timestamp, service, request_id, result and reason:\n2023-10-12T14:06:00Z | PAYMENT | 9912 | DECLINED | insufficient funds",
+    "output": "{\"timestamp\": \"2023-10-12T14:06:00Z\", \"service\": \"PAYMENT\", \"request_id\": \"9912\", \"result\": \"DECLINED\", \"reason\": \"insufficient funds\"}"
+  },
+  {
+    "instruction": "Parse this comma separated audit log line into JSON with fields converted to the right types:\n2023-10-12T14:07:00Z,checkout,ERROR,order 9912 failed,2.35",
+    "output": "{\"timestamp\": \"2023-10-12T14:07:00Z\", \"service\": \"checkout\", \"level\": \"ERROR\", \"message\": \"order 9912 failed\", \"duration\": 2.35}"
+  },
+  {
+    "instruction": "Parse this HAProxy log line and return JSON with client ip, frontend, backend, status and total_time_ms:\nOct 12 14:08:00 edge01 haproxy[700]: 10.0.0.5:51234 [12/Oct/2023:14:08:00] fe_web be_api 0/0/1/5/6 200 1234 - - -- nn",
+    "output": "{\"client_ip\": \"10.0.0.5\", \"client_port\": 51234, \"frontend\": \"fe_web\", \"backend\": \"be_api\", \"status\": 200, \"bytes\": 1234, \"total_time_ms\": 6}"
+  },
+  {
+    "instruction": "Parse this Postfix rejection line and return JSON with app, action, code and recipient:\nOct 12 14:09:00 mail01 postfix/smtpd[800]: NOQUEUE: reject: RCPT from unknown[203.0.113.9]: 554 5.7.1 Recipient address rejected: User unknown in local recipient table",
+    "output": "{\"app\": \"postfix/smtpd\", \"pid\": 800, \"action\": \"reject\", \"code\": 554, \"enhanced_code\": \"5.7.1\", \"from\": \"unknown[203.0.113.9]\", \"message\": \"Recipient address rejected: User unknown in local recipient table\"}"
+  },
+  {
+    "instruction": "Parse this iptables kernel log line into JSON with interface, src, dst, protocol and destination port:\n[ 1234.567890] iptables: DROP IN=eth0 OUT= MAC=aa:bb SRC=192.0.2.66 DST=10.0.0.5 LEN=60 TTL=64 PROTO=TCP SPT=44321 DPT=22 WINDOW=64240",
+    "output": "{\"uptime\": 1234.56789, \"action\": \"DROP\", \"in\": \"eth0\", \"src\": \"192.0.2.66\", \"dst\": \"10.0.0.5\", \"proto\": \"TCP\", \"spt\": 44321, \"dpt\": 22}"
+  },
+  {
+    "instruction": "This line mixes text and trailing key value pairs. Extract the trailing pairs as JSON:\nOct 12 14:11:00 web01 backup[1400]: snapshot finished status=500 latency=12.5 target=/var/lib/data",
+    "output": "{\"app\": \"backup\", \"pid\": 1400, \"message\": \"snapshot finished\", \"status\": 500, \"latency\": 12.5, \"target\": \"/var/lib/data\"}"
+  },
+  {
+    "instruction": "Parse this Windows event rendered text and return JSON with message, account_name and logon_type:\nAn account was successfully logged on.\n\nAccount Information:\n\tAccount Name:\talice\n\tLogon Type:\t10",
+    "output": "{\"message\": \"An account was successfully logged on.\", \"account_name\": \"alice\", \"logon_type\": 10}"
+  },
+  {
+    "instruction": "Parse this custom stream log into JSON with ts, client, backend, bytes and time:\n2023-10-12 14:12:00 [stream] 10.0.0.5:44321 -> 10.0.0.9:8443 bytes=1234 time=0.021",
+    "output": "{\"ts\": \"2023-10-12 14:12:00\", \"client\": \"10.0.0.5:44321\", \"backend\": \"10.0.0.9:8443\", \"bytes\": 1234, \"time\": 0.021}"
+  },
+  {
+    "instruction": "This line has a JSON payload at the end. Extract it as JSON with service and event:\nINFO 2023-10-12T14:13:00Z {\"service\": \"api\", \"event\": \"shutdown\"}",
+    "output": "{\"service\": \"api\", \"event\": \"shutdown\"}"
+  },
+  {
+    "instruction": "Parse this Exim log line into JSON with timestamp, message id, sender and size:\n2023-10-12 14:14:01 1qXyZ-0001AB-CD <= alice@example.com U=alice P=local S=1234",
+    "output": "{\"timestamp\": \"2023-10-12 14:14:01\", \"message_id\": \"1qXyZ-0001AB-CD\", \"direction\": \"<=\", \"sender\": \"alice@example.com\", \"user\": \"alice\", \"protocol\": \"local\", \"size\": 1234}"
+  },
+  {
+    "instruction": "Parse this sendmail log line into JSON with queue id, sender and size:\nOct 12 14:15:00 mail01 sendmail[900]: s2C160001: from=<alice@example.com>, size=1234, class=0",
+    "output": "{\"queue_id\": \"s2C160001\", \"sender\": \"alice@example.com\", \"size\": 1234, \"class\": 0, \"pid\": 900}"
+  },
+  {
+    "instruction": "Write a Python function that parses the bracketed application format [ts] [LEVEL] [module] message into a dict",
+    "output": "import re\n\nPATTERN = re.compile(\n    r\"^\\[(?P<ts>[^\\]]+)\\] \\[(?P<level>[A-Z]+)\\] \\[(?P<module>[^\\]]+)\\] (?P<message>.+)$\")\n\ndef parse_bracketed(line):\n    m = PATTERN.match(line.strip())\n    if not m:\n        return None\n    d = m.groupdict()\n    d[\"level\"] = d[\"level\"].lower()\n    return d"
+  },
+  {
+    "instruction": "Write a regex that matches one logfmt key value pair where the value may be double quoted",
+    "output": "(\\w+)=(?:\"([^\"]*)\"|([^\\s]+))"
+  },
+  {
+    "instruction": "Write a Python function that parses a logfmt line into a dict, converting numeric values to int or float",
+    "output": "import re\n\nPAIR = re.compile(r\"(\\w+)=(\\\"[^\\\"]*\\\"|\\S+)\")\n\ndef parse_logfmt(line):\n    out = {}\n    for key, raw in PAIR.findall(line):\n        if raw.startswith(\"\\\"\") and raw.endswith(\"\\\"\"):\n            out[key] = raw[1:-1]\n            continue\n        try:\n            out[key] = int(raw)\n        except ValueError:\n            try:\n                out[key] = float(raw)\n            except ValueError:\n                out[key] = raw\n    return out"
+  },
+  {
+    "instruction": "Parse this syslog line that carries inline key value fields into JSON with program and fields:\nOct 12 14:17:00 web01 router[600]: bgp session flapped peer=10.0.1.1 state=IDLE attempts=4",
+    "output": "{\"app\": \"router\", \"pid\": 600, \"message\": \"bgp session flapped\", \"peer\": \"10.0.1.1\", \"state\": \"IDLE\", \"attempts\": 4}"
+  },
+  {
+    "instruction": "Parse this two column report log into JSON with date and the three numeric readings:\n2023-10-12 14:18:00 cpu=0.42 mem=0.61 disk=0.77",
+    "output": "{\"timestamp\": \"2023-10-12 14:18:00\", \"cpu\": 0.42, \"mem\": 0.61, \"disk\": 0.77}"
+  },
+  {
+    "instruction": "Parse this custom build server line into JSON with job, stage, result and duration_s:\nBUILD 2023-10-12T14:21:00Z job=api-gateway stage=integration result=FAILED duration_s=142.5",
+    "output": "{\"event\": \"BUILD\", \"timestamp\": \"2023-10-12T14:21:00Z\", \"job\": \"api-gateway\", \"stage\": \"integration\", \"result\": \"FAILED\", \"duration_s\": 142.5}"
+  },
+  {
+    "instruction": "Parse this semicolon separated configuration change log into JSON with user, file and change:\n2023-10-12T14:23:00Z;alice;/etc/nginx/nginx.conf;added rate limit 10r/s",
+    "output": "{\"timestamp\": \"2023-10-12T14:23:00Z\", \"user\": \"alice\", \"file\": \"/etc/nginx/nginx.conf\", \"change\": \"added rate limit 10r/s\"}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Configure nginx with a basic HTTP virtual host for example.com that serves static files from /var/www/html on port 80.",
+    "output": "server {\n    listen 80;\n    listen [::]:80;\n    server_name example.com;\n    root /var/www/html;\n    index index.html index.htm;\n}"
+  },
+  {
+    "instruction": "Set up an nginx server block that listens on port 8080 for the hostname dashboard.internal and serves files from /srv/dashboard.",
+    "output": "server {\n    listen 8080;\n    server_name dashboard.internal;\n    root /srv/dashboard;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Make nginx close the connection with code 444 for every request that does not match a configured server_name on port 80.",
+    "output": "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    server_name _;\n    return 444;\n}"
+  },
+  {
+    "instruction": "Configure two virtual hosts, shop.example.com and blog.example.com, on port 80 with separate document roots.",
+    "output": "server {\n    listen 80;\n    server_name shop.example.com;\n    root /var/www/shop;\n    index index.html;\n}\nserver {\n    listen 80;\n    server_name blog.example.com;\n    root /var/www/blog;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Create an nginx server block on port 3000 that only answers to the hostname grafana.monitoring and serves /usr/share/grafana/public.",
+    "output": "server {\n    listen 3000;\n    server_name grafana.monitoring;\n    root /usr/share/grafana/public;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Serve the site in /opt/site so directory requests try home.html first, then index.html, and return 404 when the file does not exist.",
+    "output": "server {\n    listen 80;\n    server_name www.mysite.dev;\n    root /opt/site;\n    index home.html index.html;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Configure nginx to reject request bodies larger than 2 MB for the upload service at upload.example.com on port 80.",
+    "output": "server {\n    listen 80;\n    server_name upload.example.com;\n    root /var/www/uploads;\n    client_max_body_size 2m;\n    client_body_buffer_size 128k;\n}"
+  },
+  {
+    "instruction": "Tune nginx for high-throughput static delivery on assets.example.com by enabling sendfile, TCP nopush and a 65 second keepalive timeout.",
+    "output": "server {\n    listen 80;\n    server_name assets.example.com;\n    root /var/www/assets;\n    sendfile on;\n    tcp_nopush on;\n    keepalive_timeout 65;\n}"
+  },
+  {
+    "instruction": "Serve the French site in /var/www/fr and declare charset utf-8 on every response for www.exemple.fr.",
+    "output": "server {\n    listen 80;\n    server_name www.exemple.fr;\n    root /var/www/fr;\n    charset utf-8;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Configure custom error pages so 404 responses show /404.html and 502, 503 or 504 responses show /50x.html.",
+    "output": "server {\n    listen 80;\n    server_name www.errors.example;\n    root /var/www/html;\n    error_page 404 /404.html;\n    error_page 502 503 504 /50x.html;\n    location = /404.html {\n        internal;\n    }\n    location = /50x.html {\n        internal;\n    }\n}"
+  },
+  {
+    "instruction": "Configure a default server on port 80 that serves a placeholder landing page from /var/www/default for any unknown Host header.",
+    "output": "server {\n    listen 80 default_server;\n    server_name _;\n    root /var/www/default;\n    index index.html;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}"
+  },
+  {
+    "instruction": "Write a server block that responds to both example.org and www.example.org on port 80 using the document root /var/www/example-org.",
+    "output": "server {\n    listen 80;\n    server_name example.org www.example.org;\n    root /var/www/example-org;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Add a server block for a Node.js app on port 8000 with server_name app.local that writes its own access and error logs.",
+    "output": "server {\n    listen 8000;\n    server_name app.local;\n    root /srv/app/public;\n    access_log /var/log/nginx/app.access.log;\n    error_log /var/log/nginx/app.error.log warn;\n}"
+  },
+  {
+    "instruction": "Hide the nginx version number in response headers and error pages for the site legacy.example.net.",
+    "output": "server {\n    listen 80;\n    server_name legacy.example.net;\n    root /var/www/legacy;\n    server_tokens off;\n}"
+  },
+  {
+    "instruction": "Serve the same site on both port 80 and port 8080 with a single server block for www.same-site.io.",
+    "output": "server {\n    listen 80;\n    listen 8080;\n    server_name www.same-site.io;\n    root /var/www/same-site;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Write a server block that matches only the exact hostname old.example.com with no wildcards, serving /var/www/old.",
+    "output": "server {\n    listen 80;\n    server_name old.example.com;\n    root /var/www/old;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Configure nginx to buffer client bodies up to 64k and time out slow clients after 30 seconds on form.example.com.",
+    "output": "server {\n    listen 80;\n    server_name form.example.com;\n    root /var/www/form;\n    client_body_buffer_size 64k;\n    client_body_timeout 30s;\n    client_header_timeout 30s;\n    send_timeout 30s;\n}"
+  },
+  {
+    "instruction": "Create a minimal health-check endpoint that answers 200 OK without reading any file from disk for the load balancer on port 80.",
+    "output": "server {\n    listen 80;\n    server_name _;\n    location = /healthz {\n        default_type text/plain;\n        return 200 'OK';\n    }\n}"
+  },
+  {
+    "instruction": "Configure nginx to listen only on IPv6 port 80 for the host v6.example.com.",
+    "output": "server {\n    listen [::]:80 ipv6only=on;\n    server_name v6.example.com;\n    root /var/www/v6;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Turn off absolute redirects for www.behind-lb.example so nginx issues relative Location headers when it runs behind a load balancer.",
+    "output": "server {\n    listen 80;\n    server_name www.behind-lb.example;\n    root /var/www/app;\n    absolute_redirect off;\n    port_in_redirect off;\n}"
+  }
+]

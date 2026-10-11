@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Call the official terraform-aws-modules/vpc/aws module from the public registry with a version pin.",
+    "output": "module \"vpc\" {\n  source  = \"terraform-aws-modules/vpc/aws\"\n  version = \"5.5.1\"\n\n  name = \"acme-vpc\"\n  cidr = \"10.0.0.0/16\"\n\n  azs             = [\"us-east-1a\", \"us-east-1b\", \"us-east-1c\"]\n  private_subnets = [\"10.0.1.0/24\", \"10.0.2.0/24\", \"10.0.3.0/24\"]\n  public_subnets  = [\"10.0.101.0/24\", \"10.0.102.0/24\", \"10.0.103.0/24\"]\n\n  enable_nat_gateway = true\n\n  tags = {\n    Environment = \"dev\"\n    Terraform   = \"true\"\n  }\n}"
+  },
+  {
+    "instruction": "Call a local module stored in ./modules/storage and pass a bucket name into it.",
+    "output": "module \"storage\" {\n  source = \"./modules/storage\"\n\n  bucket_name = \"acme-uploads\"\n  environment = \"staging\"\n}"
+  },
+  {
+    "instruction": "Pull a reusable module from a GitHub repository at a tagged ref.",
+    "output": "module \"iam_user\" {\n  source = \"github.com/acme-modules/terraform-aws-iam-user?ref=v1.2.0\"\n\n  name    = \"ci-bot\"\n  pgp_key = var.pgp_key\n}\n\nvariable \"pgp_key\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Write a local KMS key module and call it from the root configuration.",
+    "output": "# modules/kms/main.tf\nvariable \"description\" {\n  type = string\n}\n\nvariable \"deletion_window\" {\n  type    = number\n  default = 10\n}\n\nresource \"aws_kms_key\" \"this\" {\n  description             = var.description\n  deletion_window_in_days = var.deletion_window\n}\n\nresource \"aws_kms_alias\" \"this\" {\n  name          = \"alias/${var.description}\"\n  target_key_id = aws_kms_key.this.key_id\n}\n\n# modules/kms/outputs.tf\noutput \"key_arn\" {\n  value = aws_kms_key.this.arn\n}\n\n# main.tf\nmodule \"app_key\" {\n  source = \"./modules/kms\"\n\n  description      = \"acme-app\"\n  deletion_window = 7\n}\n\noutput \"app_key_arn\" {\n  value = module.app_key.key_arn\n}"
+  },
+  {
+    "instruction": "Instantiate the same local module twice with different names for dev and prod.",
+    "output": "module \"queue_dev\" {\n  source = \"./modules/queue\"\n\n  name    = \"orders-dev\"\n  max_redrive = 5\n}\n\nmodule \"queue_prod\" {\n  source = \"./modules/queue\"\n\n  name    = \"orders-prod\"\n  max_redrive = 10\n}"
+  },
+  {
+    "instruction": "Expose a module output from the root configuration so downstream stacks can consume it.",
+    "output": "module \"network\" {\n  source = \"./modules/network\"\n\n  cidr_block = \"10.20.0.0/16\"\n}\n\noutput \"vpc_id\" {\n  description = \"VPC id created by the network module\"\n  value       = module.network.vpc_id\n}"
+  },
+  {
+    "instruction": "Use the terraform-aws-modules/eks/aws module to create a managed Kubernetes cluster.",
+    "output": "module \"eks\" {\n  source  = \"terraform-aws-modules/eks/aws\"\n  version = \"20.8.4\"\n\n  cluster_name    = \"acme-cluster\"\n  cluster_version = \"1.29\"\n\n  vpc_id     = module.vpc.vpc_id\n  subnet_ids = module.vpc.private_subnets\n\n  eks_managed_node_groups = {\n    default = {\n      instance_types = [\"m5.large\"]\n      min_size       = 2\n      max_size       = 5\n      desired_size   = 2\n    }\n  }\n}\n\nmodule \"vpc\" {\n  source = \"./modules/network\"\n\n  cidr_block = \"10.30.0.0/16\"\n}"
+  },
+  {
+    "instruction": "Call the registry security-group module and allow HTTPS ingress from the VPC CIDR.",
+    "output": "module \"alb_sg\" {\n  source  = \"terraform-aws-modules/security-group/aws\"\n  version = \"5.1.2\"\n\n  name        = \"alb-sg\"\n  description = \"Security group for the application load balancer\"\n  vpc_id      = var.vpc_id\n\n  ingress_cidr_blocks = [var.vpc_cidr]\n  ingress_rules       = [\"https-443-tcp\"]\n}\n\nvariable \"vpc_id\" {\n  type = string\n}\n\nvariable \"vpc_cidr\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Pin a registry module with a pessimistic version constraint.",
+    "output": "module \"rds\" {\n  source  = \"terraform-aws-modules/rds/aws\"\n  version = \"~> 6.5\"\n\n  identifier = \"acme-db\"\n\n  engine               = \"postgres\"\n  engine_version       = \"16\"\n  family               = \"postgres16\"\n  instance_class       = \"db.t4g.medium\"\n  allocated_storage    = 50\n  db_name              = \"acme\"\n  username             = \"acme_admin\"\n  manage_master_user_password = true\n\n  vpc_security_group_ids = [module.db_sg.security_group_id]\n  subnet_ids             = var.database_subnet_ids\n}\n\nvariable \"database_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Use the terraform-aws-modules/security-group/aws module to protect a bastion host.",
+    "output": "module \"bastion_sg\" {\n  source  = \"terraform-aws-modules/security-group/aws\"\n  version = \"5.1.2\"\n\n  name   = \"bastion-sg\"\n  vpc_id = var.vpc_id\n\n  ingress_cidr_blocks = var.admin_cidrs\n  ingress_rules       = [\"ssh-tcp\"]\n}\n\nvariable \"vpc_id\" {\n  type = string\n}\n\nvariable \"admin_cidrs\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Reference a module stored in a subdirectory of a remote Git repository.",
+    "output": "module \"blob_storage\" {\n  source = \"github.com/acme-modules/terraform-aws-buckets//modules/private-bucket?ref=v2.1.0\"\n\n  bucket_name = \"acme-archive\"\n  force_destroy = false\n}"
+  },
+  {
+    "instruction": "Write a module that accepts a map of settings and create it from the root module.",
+    "output": "# modules/app/main.tf\nvariable \"settings\" {\n  type = map(string)\n}\n\nresource \"aws_cloudwatch_log_group\" \"this\" {\n  for_each = var.settings\n\n  name              = \"/app/${each.key}\"\n  retention_in_days = tonumber(each.value)\n}\n\noutput \"log_group_names\" {\n  value = [for g in aws_cloudwatch_log_group.this : g.name]\n}\n\n# main.tf\nmodule \"app_logs\" {\n  source = \"./modules/app\"\n\n  settings = {\n    api     = \"14\"\n    worker  = \"30\"\n  }\n}"
+  },
+  {
+    "instruction": "Connect two modules so the network module feeds subnet ids into the compute module.",
+    "output": "module \"network\" {\n  source = \"./modules/network\"\n\n  name       = \"shared\"\n  cidr_block = \"10.40.0.0/16\"\n}\n\nmodule \"compute\" {\n  source = \"./modules/compute\"\n\n  subnet_ids         = module.network.private_subnet_ids\n  security_group_ids = [module.network.default_security_group_id]\n  instance_count     = 2\n}"
+  },
+  {
+    "instruction": "Configure the private module registry in the required_providers block and call a module from it.",
+    "output": "terraform {\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 5.40\"\n    }\n  }\n}\n\nterraform {\n  required_version = \">= 1.5\"\n\n  # Private registry modules resolve through the host configured in .terraformrc\n  # with an address like app.terraform.io/acme/vpc/aws\n}\n\nmodule \"vpc\" {\n  source = \"app.terraform.io/acme/vpc/aws\"\n\n  version = \"1.4.0\"\n  name    = \"private-registry-vpc\"\n  cidr    = \"10.50.0.0/16\"\n}"
+  },
+  {
+    "instruction": "Create a shared tags module and pass its output into another module.",
+    "output": "module \"tags\" {\n  source = \"./modules/tags\"\n\n  project     = \"acme\"\n  environment = \"prod\"\n  owner       = \"platform\"\n}\n\nmodule \"bucket\" {\n  source = \"./modules/tagged-bucket\"\n\n  name = \"acme-prod-artifacts\"\n  tags = module.tags.tags\n}"
+  },
+  {
+    "instruction": "Call a local module that generates random names for consistent resource naming.",
+    "output": "module \"names\" {\n  source = \"./modules/names\"\n\n  count_per_env = 1\n}\n\nresource \"aws_sqs_queue\" \"jobs\" {\n  name = \"jobs-${module.names.suffix}\"\n}"
+  },
+  {
+    "instruction": "Build a landing zone style configuration where a shared module creates accounts-related resources and a network module consumes its outputs.",
+    "output": "module \"log_archive\" {\n  source = \"./modules/log-archive\"\n\n  bucket_name = \"acme-log-archive\"\n}\n\nmodule \"security\" {\n  source = \"./modules/security hub\"\n\n  log_bucket_arn = module.log_archive.bucket_arn\n}\n\nmodule \"network\" {\n  source = \"./modules/network\"\n\n  flow_log_bucket_arn = module.log_archive.bucket_arn\n  depends_on          = [module.security]\n}"
+  },
+  {
+    "instruction": "Use an S3 registry module and consume its website endpoint in a root output.",
+    "output": "module \"website\" {\n  source  = \"terraform-aws-modules/s3-bucket/aws\"\n  version = \"4.1.1\"\n\n  bucket = \"acme-static-website\"\n  acl    = \"public-read\"\n\n  control_object_ownership = true\n  object_ownership         = \"BucketOwnerPreferred\"\n\n  website_index_document = \"index.html\"\n}\n\noutput \"website_endpoint\" {\n  value = module.website.s3_bucket_website_endpoint\n}"
+  },
+  {
+    "instruction": "Call the terraform-aws-modules/alb/aws module to expose an application load balancer.",
+    "output": "module \"alb\" {\n  source  = \"terraform-aws-modules/alb/aws\"\n  version = \"9.4.0\"\n\n  name               = \"acme-alb\"\n  load_balancer_type = \"application\"\n\n  vpc_id          = var.vpc_id\n  subnets         = var.public_subnet_ids\n  security_groups = [module.alb_sg.security_group_id]\n\n  target_groups = {\n    app = {\n      name      = \"app\"\n      port      = 8080\n      protocol  = \"HTTP\"\n      target_type = \"instance\"\n    }\n  }\n}\n\nmodule \"alb_sg\" {\n  source = \"./modules/alb-sg\"\n\n  vpc_id = var.vpc_id\n}\n\nvariable \"vpc_id\" {\n  type = string\n}\n\nvariable \"public_subnet_ids\" {\n  type = list(string)\n}"
+  },
+  {
+    "instruction": "Create a local module with variables, main, and outputs files for an SQS queue, then call it with rich inputs.",
+    "output": "# modules/queue/variables.tf\nvariable \"name\" {\n  type = string\n}\n\nvariable \"visibility_timeout\" {\n  type    = number\n  default = 60\n}\n\nvariable \"tags\" {\n  type    = map(string)\n  default = {}\n}\n\n# modules/queue/main.tf\nresource \"aws_sqs_queue\" \"this\" {\n  name                       = var.name\n  visibility_timeout_seconds = var.visibility_timeout\n  tags                       = var.tags\n}\n\n# modules/queue/outputs.tf\noutput \"queue_arn\" {\n  value = aws_sqs_queue.this.arn\n}\n\n# main.tf\nmodule \"payments_queue\" {\n  source = \"./modules/queue\"\n\n  name              = \"payments\"\n  visibility_timeout = 120\n  tags = {\n    Team = \"payments\"\n  }\n}"
+  }
+]

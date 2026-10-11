@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Make a service start only after PostgreSQL is up.",
+    "output": "[Unit]\nDescription=API\nAfter=postgresql.service\nRequires=postgresql.service\n\n[Service]\nExecStart=/opt/api/venv/bin/uvicorn main:app"
+  },
+  {
+    "instruction": "Use Wants for a soft dependency on a cache.",
+    "output": "[Unit]\nDescription=Web app\nAfter=redis.service\nWants=redis.service\n\n[Service]\nExecStart=/usr/local/bin/webapp"
+  },
+  {
+    "instruction": "Order a worker after the broker but allow it to start if the broker fails.",
+    "output": "[Unit]\nDescription=Worker\nAfter=rabbitmq-server.service\nWants=rabbitmq-server.service\n\n[Service]\nExecStart=/usr/local/bin/worker"
+  },
+  {
+    "instruction": "Define a hard failure propagation using BindsTo.",
+    "output": "[Unit]\nDescription=Follower\nBindsTo=leader.service\nAfter=leader.service\n\n[Service]\nExecStart=/usr/local/bin/follower"
+  },
+  {
+    "instruction": "Stop a dependent service when another one stops using PartOf.",
+    "output": "[Unit]\nDescription=Sidecar\nPartOf=main.service\nAfter=main.service\n\n[Service]\nExecStart=/usr/local/bin/sidecar"
+  },
+  {
+    "instruction": "Use Before to make a service finish before another starts.",
+    "output": "[Unit]\nDescription=Migration\nBefore=app.service\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/migrate"
+  },
+  {
+    "instruction": "Order a network service after network-online.target.",
+    "output": "[Unit]\nDescription=Downloader\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nExecStart=/usr/local/bin/downloader"
+  },
+  {
+    "instruction": "Add a requirement on a mount unit.",
+    "output": "[Unit]\nDescription=Data processor\nRequires=mnt-data.mount\nAfter=mnt-data.mount\n\n[Service]\nExecStart=/usr/local/bin/process-data"
+  },
+  {
+    "instruction": "Use Conflicts to prevent two services running at once.",
+    "output": "[Unit]\nDescription=Blue deployment\nConflicts=app-green.service\n\n[Service]\nExecStart=/usr/local/bin/app --color blue"
+  },
+  {
+    "instruction": "Order a service after a socket unit it uses.",
+    "output": "[Unit]\nDescription=Socket client\nAfter=app.socket\nRequires=app.socket\n\n[Service]\nExecStart=/usr/local/bin/socket-client"
+  },
+  {
+    "instruction": "Use RequiresMountsFor to ensure a path is mounted before start.",
+    "output": "[Unit]\nDescription=Log shipper\n\n[Service]\nRequiresMountsFor=/var/log/app\nExecStart=/usr/local/bin/shipper"
+  },
+  {
+    "instruction": "Set up ordering so a cleanup runs after the main service stops.",
+    "output": "[Unit]\nDescription=Cleanup\nAfter=app.service\nPartOf=app.service\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStop=/usr/local/bin/cleanup"
+  },
+  {
+    "instruction": "Depend on another target with WantedBy in [Install].",
+    "output": "[Unit]\nDescription=Batch job\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/batch\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Order multiple services in a defined sequence.",
+    "output": "[Unit]\nDescription=Third stage\nAfter=stage2.service\nRequires=stage2.service\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/stage3"
+  },
+  {
+    "instruction": "Allow a service to start on boot only when another is enabled.",
+    "output": "[Unit]\nDescription=Dependent task\nAfter=primary.service\nWants=primary.service\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/task\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Prevent start when a network condition is unmet.",
+    "output": "[Unit]\nDescription=Cloud sync\nAfter=network-online.target\nWants=network-online.target\n\n[Service]\nExecStart=/usr/local/bin/cloud-sync\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  {
+    "instruction": "Use Requires and After to depend on a device unit.",
+    "output": "[Unit]\nDescription=USB printer daemon\nRequires=dev-bus-usb-001.device\nAfter=dev-bus-usb-001.device\n\n[Service]\nExecStart=/usr/local/bin/printerd"
+  },
+  {
+    "instruction": "Depend on a timer's service and order them correctly.",
+    "output": "[Unit]\nDescription=Reports service\nAfter=reports.timer\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/reports"
+  },
+  {
+    "instruction": "Avoid a common ordering pitfall: describe why After alone is insufficient.",
+    "output": "[Unit]\nDescription=Db client\n# After= only orders; it does NOT pull in the dependency.\n# Use Requires= or Wants= to actually start the other unit.\nAfter=postgresql.service\nRequires=postgresql.service\n\n[Service]\nExecStart=/usr/local/bin/db-client"
+  },
+  {
+    "instruction": "Set a job timeout for a slow dependency startup.",
+    "output": "[Unit]\nDescription=Slow starter\nAfter=db.service\nRequires=db.service\nJobTimeoutSec=300\n\n[Service]\nExecStart=/usr/local/bin/slow-starter"
+  }
+]

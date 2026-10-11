@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Flask app started with os.environ indexing in its config class.\n\nTraceback (most recent call last):\n  File \"/app/app.py\", line 18, in <module>\n    app.config[\"SECRET_KEY\"] = os.environ[\"SECRET_KEY\"]\n  File \"/usr/lib/python3.11/os.py\", line 680, in __getitem__\nKeyError: 'SECRET_KEY'",
+    "output": "**Root cause:** `SECRET_KEY` is not exported in the process environment (the `.env` file is not loaded in this environment), and `os.environ[]` raises on a missing key.\n**Fix:** Load the env file explicitly (`load_dotenv()`), fail fast with a clear message, and never hard-code the secret in source."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: service reading an INI file with configparser.\n\nTraceback (most recent call last):\n  File \"/app/config.py\", line 44, in get_db_url\n    cp[\"database\"][\"url\"]\n  File \"/usr/lib/python3.11/configparser.py\", line 446, in __getitem__\nconfigparser.NoSectionError: No section: 'database'",
+    "output": "**Root cause:** the loaded file has no `[database]` section (the app parsed `app.example.ini` instead of `app.ini`, or the section header is misspelled).\n**Fix:** Verify the file path and section names at startup, and raise an actionable error listing the sections that are present."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Jinja template rendering a site built with a config object that was never passed in.\n\njinja2.exceptions.UndefinedError: 'config' is undefined\n  File \"/app/templates/base.html\", line 3, in top-level template code\n    <link rel=\"icon\" href=\"{{ config.FAVICON }}\">",
+    "output": "**Root cause:** `config` is not in the template context (the view did not pass it and no global was registered), so the name resolves to Undefined.\n**Fix:** Pass `config` into `render_template(...)`, or register a safe global and make `FAVICON` optional with `| default('/favicon.ico')`."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Spring Boot app booting with placeholder-driven datasource settings.\n\njava.lang.IllegalArgumentException: Could not resolve placeholder 'DB_URL' in value \"${DB_URL}\"\n\tat org.springframework.util.PlaceholderResolutionHelper.resolvePlaceholder(PlaceholderResolutionHelper.java:65)\n\tat com.acme.config.DataSourceConfig.buildUrl(DataSourceConfig.java:31)",
+    "output": "**Root cause:** no property `DB_URL` exists in any PropertySource (missing env var or `application-*.yml` entry), so the placeholder cannot be resolved.\n**Fix:** Provide `DB_URL` in the deployment environment (or a profile-specific config file) and give it a default with `${DB_URL:jdbc:...}` where appropriate."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Spring DataSource autoconfiguration with no URL in the environment.\n\n***************************\nAPPLICATION FAILED TO START\n***************************\n\nDescription:\n\nFailed to configure a DataSource; 'url' attribute is not specified and no embedded datasource could be configured.\n\nAction:\n\nConsider defining an embedded datasource for 'spring.datasource' or exclude DataSourceAutoConfiguration.",
+    "output": "**Root cause:** `spring.datasource.url` (and credentials) are absent, and without an embedded database fallback there is nothing to connect to.\n**Fix:** Supply `spring.datasource.url/username/password` (env vars or a config file), or exclude `DataSourceAutoConfiguration` if no DB is intended."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Node service loading its typed config module on boot.\n\nError: Environment variable \"MONGODB_URI\" is not defined.\n    at readConfig (/app/config/index.js:19:11)\n    at Object.<anonymous> (/app/config/index.js:46:18)\n    at Module._compile (node:internal/modules/cjs/loader:1318:14)",
+    "output": "**Root cause:** the config module requires `MONGODB_URI` and throws when `process.env` lacks it - the variable was never exported for this process.\n**Fix:** Export it in the service unit/compose file (`.env`), and validate all required variables at startup with one aggregated error."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: app expecting a local override file at runtime.\n\nError: Cannot find module '/app/config/local.json'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1072:15)\n    at Module._load (node:internal/modules/cjs/loader:927:27)\n    at Object.<anonymous> (/app/config/load.js:8:16)",
+    "output": "**Root cause:** the deployment does not ship `local.json` (it is git-ignored), but the loader requires it unconditionally.\n**Fix:** Treat the override as optional (`existsSync` check + defaults) or provide a `local.example.json` that gets copied during image build."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Go service using spf13/viper to find its config at startup.\n\n2026/05/14 09:22:11 Config File \"config\" Not Found in \"[/app /etc/app ./config]\"",
+    "output": "**Root cause:** viper searched its search paths and found no `config.yaml` (the ConfigMap is mounted at `/etc/config`, which is not on the search path).\n**Fix:** `viper.AddConfigPath(\"/etc/config\")` (match the mount) or set the file explicitly with `viper.SetConfigFile(...)`, then log the paths searched on failure."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Go binary using a custom mustGet helper for required variables.\n\npanic: required environment variable \"PORT\" is not set\n\ngoroutine 1 [running]:\nmain.mustGet({0x4a7d30, 0x4})\n\t/app/env.go:14 +0x85\nmain.main()\n\t/app/main.go:21 +0x1f",
+    "output": "**Root cause:** the process started without `PORT`, and `mustGet` intentionally panics when a required variable is absent (the unit file forgot `Environment=PORT=...`).\n**Fix:** Set the variable in the service/compose definition, or fall back to a documented default for optional settings."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Kubernetes pod stuck in container creation.\n\nkubectl get pods:\nNAME           READY   STATUS                       RESTARTS   AGE\napi-6f7d9-xk   0/1     CreateContainerConfigError   0          74s\n\nkubectl describe pod api-6f7d9-xk:\n  Warning  Failed  CreateContainerConfigError  secret \"db-credentials\" not found",
+    "output": "**Root cause:** the container references a Secret named `db-credentials` in `envFrom`/`valueFrom`, but no such Secret exists in the namespace (it was never created or was renamed).\n**Fix:** Create the secret (`kubectl create secret generic db-credentials --from-literal=...`) or correct the name in the deployment spec."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: second pod in the deployment cannot start after a rename.\n\nkubectl describe pod worker-5c8:\n  Warning  FailedCreateContainerConfigError  configmap \"app-config\" not found\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  90s   default-scheduler  Successfully assigned default/worker-5c8 to node-3",
+    "output": "**Root cause:** the pod mounts ConfigMap `app-config`, but the ConfigMap in this namespace is named `app-config-v2`, so kubelet cannot resolve the volume.\n**Fix:** Align the `configMapRef`/`volumes.name` with the actual ConfigMap, or create `app-config` (and roll the deployment)."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: terraform plan run in CI for a fresh workspace.\n\nError: No value for required variable\n\n  on variables.tf line 3:\n   3: variable \"region\" {\n\nThe root module requires a variable \"region\", but no value was passed for it. Call the variable with -var or -var-file, or define an environment variable TF_VAR_region.",
+    "output": "**Root cause:** `region` has no default and CI passed neither `-var`/`-var-file` nor the `TF_VAR_region` environment variable.\n**Fix:** Pass `-var=\"region=eu-west-1\"` in CI, export `TF_VAR_region`, or add a default to the variable block."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: shell script running with `set -u` to catch mistakes.\n\n$ ./deploy.sh\n./deploy.sh: line 14: DB_HOST: unbound variable\n",
+    "output": "**Root cause:** `set -u` makes references to unset variables fatal, and `DB_HOST` was never exported (only documented in the README).\n**Fix:** Export the variable in the job environment (`export DB_HOST=db.internal`), or use `${DB_HOST:?DB_HOST must be set}` for a clear message."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: first git commit in a fresh container.\n\nfatal: empty ident name (for <>) not allowed\n",
+    "output": "**Root cause:** `user.name`/`user.email` are unset in this environment, so git has no identity to record on the commit.\n**Fix:** Run `git config --global user.name \"...\"` and `user.email \"...\"` in the image/CI setup (or set `GIT_AUTHOR_NAME`/`GIT_COMMITTER_EMAIL`)."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: AWS SDK client created without a configured region.\n\nUnrecognizedClientException: The security token included in the request is invalid\nmissing region in config: {\"region\":\"\"}\n    at EndpointRegionUtils.getRegion (/app/node_modules/@aws-sdk/...)",
+    "output": "**Root cause:** `AWS_REGION` is empty, so the SDK builds a request with no region (and without credentials it can only fail).\n**Fix:** Set `AWS_REGION` (or pass `region` in the client config) and validate required settings at client construction."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Go binary using the AWS SDK with no credentials chain available.\n\noperation error S3: ListObjectsV2, https response error StatusCode: 403, api error AccessDenied: Access Denied\ncaused by: aws: no valid providers in chain: Failed to get credentials from default chain: environment profile, shared config, IAM role",
+    "output": "**Root cause:** no credentials are resolvable - no `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, no shared `~/.aws/credentials`, and no instance role.\n**Fix:** Provide credentials via environment variables, an attached instance/IRSA role, or a credentials file, and verify with `aws sts get-caller-identity`."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: app failing while parsing its YAML configuration file.\n\nTraceback (most recent call last):\n  File \"/app/settings.py\", line 29, in load\n    cfg = yaml.safe_load(fh)\n  File \"/usr/lib/python3.11/site-packages/yaml/__init__.py\", line 81, in safe_load\nyaml.constructor.MarkedYAMLError: could not find expected key\n  in \"/etc/app/config.yaml\", line 18, column 3\n    timeout: 30\n      ^",
+    "output": "**Root cause:** `timeout` is indented under the wrong parent (line 17's key was not closed), so the parser expected a sibling key at column 3 and failed.\n**Fix:** Correct the indentation to match the parent mapping, and validate the file (`python -c \"yaml.safe_load(open(...))\"`) in CI."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Java service deployed as a systemd unit where variables are not inherited.\n\nException in thread \"main\" java.lang.NullPointerException: Cannot invoke \"String.trim()\" because the return value of System.getenv(\"API_KEY\") is null\n\tat com.acme.client.SigningKey.of(SigningKey.java:22)\n\tat com.acme.App.main(App.java:37)",
+    "output": "**Root cause:** `API_KEY` is not in the service's environment (`EnvironmentFile` missing or the variable not exported), so `System.getenv` returns null and the code trims it.\n**Fix:** Add `EnvironmentFile=/etc/app/env` to the unit (or `Environment=API_KEY=...`) and null-check `getenv` with a clear startup failure."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: pydantic-settings app config validated at import time.\n\n1 validation error for Settings\nDATABASE_URL\n  field required (type=value_error.missing)",
+    "output": "**Root cause:** the `Settings` model declares `DATABASE_URL` as required with no default and no environment variable supplied to the process.\n**Fix:** Export `DATABASE_URL` in the runtime environment (or `.env` next to the app with `env_file=`), or supply a safe default for local development."
+  },
+  {
+    "instruction": "Root cause this configuration failure.\nContext: Django project booting in a staging environment.\n\ndjango.core.exceptions.ImproperlyConfigured: The SECRET_KEY setting must not be empty.",
+    "output": "**Root cause:** `settings.SECRET_KEY` evaluates to an empty string (an unset env var defaulted to `\"\"`), and Django refuses to start without a key.\n**Fix:** Set a real secret in the environment (`SECRET_KEY=<random>`) and fail deployment checks when it is empty; rotate if it was ever committed."
+  }
+]

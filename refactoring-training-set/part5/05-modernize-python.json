@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by replacing %-style formatting with f-strings:\n\ndef greet(name):\n    return 'Hello, %s! You have %d new messages.' % (name, count)\n\ndef path_msg(p):\n    return 'File %s size=%s' % (p, os.path.getsize(p))",
+    "output": "def greet(name):\n    return f'Hello, {name}! You have {count} new messages.'\n\ndef path_msg(p):\n    return f'File {p} size={os.path.getsize(p)}'\n\nWhat changed: %-formatting became f-strings; interpolation now happens where the expression lives, with editor support and no format-specifier mismatch risk."
+  },
+  {
+    "instruction": "Refactor this code by converting os.path string handling to pathlib:\n\nimport os\n\ndef ensure_out(path):\n    if not os.path.isdir(path):\n        os.makedirs(path)\n    target = os.path.join(path, 'out.txt')\n    base = os.path.basename(target)\n    with open(target, 'w') as f:\n        f.write(base)",
+    "output": "from pathlib import Path\n\ndef ensure_out(path):\n    target = Path(path) / 'out.txt'\n    target.parent.mkdir(parents=True, exist_ok=True)\n    target.write_text(target.name)\n\nWhat changed: os.path + string concatenation became Path objects with join (/), mkdir and write_text; no manual separator handling remains."
+  },
+  {
+    "instruction": "Refactor this code by modernizing the has_key and keys() idioms:\n\ndef lookup(cfg, key):\n    if cfg.has_key(key):\n        return cfg[key]\n    keys = cfg.keys()\n    for k in keys:\n        if k.startswith('x_'):\n            return cfg[k]\n    return None",
+    "output": "def lookup(cfg, key):\n    if key in cfg:\n        return cfg[key]\n    for k in cfg:\n        if k.startswith('x_'):\n            return cfg[k]\n    return None\n\nWhat changed: has_key() (Python 2) became `in`, and iterating cfg.keys() became iterating the dict directly; both are the modern, faster idioms."
+  },
+  {
+    "instruction": "Refactor this code by replacing dynamic type checks and type() comparisons with isinstance:\n\ndef coerce(v):\n    if type(v) == str:\n        return v.strip()\n    elif type(v) == int or type(v) == float:\n        return v * 2\n    elif type(v) == list:\n        return list(v)\n    return v",
+    "output": "def coerce(v):\n    if isinstance(v, str):\n        return v.strip()\n    if isinstance(v, (int, float)):\n        return v * 2\n    if isinstance(v, list):\n        return list(v)\n    return v\n\nWhat changed: type(v) == X became isinstance (subclass- and bool-int-aware), the elif chain became early returns, and the tuple form replaced repeated comparisons."
+  },
+  {
+    "instruction": "Refactor this code by converting the namedtuple configuration to a dataclass:\n\nfrom collections import namedtuple\n\nConfig = namedtuple('Config', ['host', 'port', 'debug'])\n\ndef make_config():\n    import os\n    return Config(os.environ.get('HOST', 'localhost'), int(os.environ.get('PORT', '8080')), os.environ.get('DEBUG') == '1')",
+    "output": "from dataclasses import dataclass\nimport os\n\n@dataclass(frozen=True)\nclass Config:\n    host: str = 'localhost'\n    port: int = 8080\n    debug: bool = False\n\ndef make_config():\n    return Config(\n        host=os.environ.get('HOST', 'localhost'),\n        port=int(os.environ.get('PORT', '8080')),\n        debug=os.environ.get('DEBUG') == '1',\n    )\n\nWhat changed: a positional namedtuple became a frozen dataclass with types, defaults and keyword construction, so fields can no longer be mis-ordered."
+  },
+  {
+    "instruction": "Refactor this code by replacing the manual first-element pattern with modern iteration:\n\ndef first_item(items):\n    if len(items) > 0:\n        return items[0]\n    return None\n\ndef first_line(path):\n    f = open(path)\n    line = f.readline()\n    f.close()\n    return line",
+    "output": "def first_item(items):\n    return next(iter(items), None)\n\ndef first_line(path):\n    with open(path) as f:\n        return f.readline()\n\nWhat changed: the len()+[0] idiom became next(iter(...), None), and manual open/readline/close became a `with` block (modern resource handling)."
+  },
+  {
+    "instruction": "Refactor this code by turning the hand-rolled state class into a dataclass with defaults:\n\nclass Point:\n    def __init__(self, x, y, label=None, visible=True):\n        self.x = x\n        self.y = y\n        self.label = label\n        self.visible = visible\n    def __repr__(self):\n        return 'Point(%r, %r, %r, %r)' % (self.x, self.y, self.label, self.visible)",
+    "output": "from dataclasses import dataclass, field\n\n@dataclass\nclass Point:\n    x: float\n    y: float\n    label: str | None = None\n    visible: bool = True\n\nWhat changed: __init__ and __repr__ boilerplate vanished; defaults, repr and equality come from the dataclass decorator, and annotations document the fields."
+  },
+  {
+    "instruction": "Refactor this code by replacing the reduce-based summation with built-ins:\n\nfrom functools import reduce\n\ndef total(rows):\n    return reduce(lambda acc, r: acc + r['amount'], rows, 0)\n\ndef joined(items):\n    return reduce(lambda s, i: s + ',' + i, items, '')",
+    "output": "def total(rows):\n    return sum(r['amount'] for r in rows)\n\ndef joined(items):\n    return ','.join(items)\n\nWhat changed: reduce+lambda became sum() and str.join, which are clearer, faster and handle the empty-input edge cases correctly."
+  },
+  {
+    "instruction": "Refactor this code by modernizing the deprecated time and logging APIs:\n\nimport time\nimport logging\n\ndef timed(fn):\n    start = time.clock()\n    result = fn()\n    logging.warn('took %s', time.clock() - start)\n    return result",
+    "output": "import time\nimport logging\n\ndef timed(fn):\n    start = time.perf_counter()\n    result = fn()\n    logging.warning('took %s', time.perf_counter() - start)\n    return result\n\nWhat changed: time.clock() (removed in 3.12) became time.perf_counter() for durations and logger.warn became logger.warning."
+  },
+  {
+    "instruction": "Refactor this code by replacing the deprecated unittest assertion alias:\n\nimport unittest\n\nclass TestCalc(unittest.TestCase):\n    def test_sum(self):\n        self.assertEquals(2 + 2, 4)\n    def test_none(self):\n        self.assertRegexpMatches('abc', 'b')",
+    "output": "import unittest\n\nclass TestCalc(unittest.TestCase):\n    def test_sum(self):\n        self.assertEqual(2 + 2, 4)\n    def test_none(self):\n        self.assertRegex('abc', 'b')\n\nWhat changed: assertEquals/assertRegexpMatches (deprecated aliases slated for removal) became assertEqual/assertRegex."
+  },
+  {
+    "instruction": "Refactor this code by replacing OrderedDict with the standard dict and dict comprehension:\n\nfrom collections import OrderedDict\n\ndef index(rows):\n    d = OrderedDict()\n    for r in rows:\n        d[r['id']] = r\n    return d\n\ndef pairs(d):\n    out = []\n    for k, v in d.items():\n        out.append((k, v))\n    return out",
+    "output": "def index(rows):\n    return {r['id']: r for r in rows}\n\ndef pairs(d):\n    return list(d.items())\n\nWhat changed: since Python 3.7 dicts keep insertion order, OrderedDict is unnecessary; manual loops became a dict comprehension and list(d.items())."
+  },
+  {
+    "instruction": "Refactor this code by replacing the optparse CLI with argparse:\n\nimport optparse\n\nparser = optparse.OptionParser()\nparser.add_option('-u', '--user', dest='user')\nparser.add_option('-n', '--dry-run', action='store_true', dest='dry')\nopts, args = parser.parse_args()\nif opts.user is None:\n    parser.error('--user is required')",
+    "output": "import argparse\n\nparser = argparse.ArgumentParser()\nparser.add_argument('-u', '--user', required=True)\nparser.add_argument('-n', '--dry-run', action='store_true')\nargs = parser.parse_args()\n# args.user is guaranteed present; no manual None check\n\nWhat changed: optparse (frozen since 2.7) became argparse with required=True, which removes the manual error branch and adds subcommands/mutually exclusive groups for free."
+  },
+  {
+    "instruction": "Refactor this code by replacing shell-string subprocess calls with list arguments:\n\nimport subprocess\n\ndef compress(src, dst):\n    subprocess.call('gzip -c %s > %s' % (src, dst), shell=True)\n\ndef disk_free():\n    out = subprocess.check_output('df -h')\n    return out",
+    "output": "import subprocess\n\ndef compress(src, dst):\n    with open(dst, 'wb') as f:\n        subprocess.run(['gzip', '-c', src], stdout=f, check=True)\n\ndef disk_free():\n    out = subprocess.check_output(['df', '-h'], text=True)\n    return out\n\nWhat changed: shell=True string interpolation became argument lists (no quoting/injection issues) and check_output uses text=True for a str result."
+  },
+  {
+    "instruction": "Refactor this code by replacing naive utcnow with timezone-aware datetimes:\n\ndef stamp():\n    return datetime.utcnow().isoformat()\n\ndef is_expired(created):\n    return datetime.utcnow() - created > timedelta(hours=24)",
+    "output": "from datetime import datetime, timezone, timedelta\n\ndef stamp():\n    return datetime.now(timezone.utc).isoformat()\n\ndef is_expired(created):\n    return datetime.now(timezone.utc) - created > timedelta(hours=24)\n\nWhat changed: datetime.utcnow() (deprecated, returns a naive datetime) became now(timezone.utc); timestamps are now offset-aware and compare safely."
+  },
+  {
+    "instruction": "Refactor this code by replacing the pkg_resources entry-point lookup with importlib.metadata:\n\nfrom pkg_resources import load_entry_point\n\ndef get_version():\n    return load_entry_point('myapp', 'myapp.version', 'get_version')()\n\ndef plugins():\n    return [ep.name for ep in load_entry_point.iter_entry_points('myapp.plugins')]",
+    "output": "from importlib.metadata import entry_points, version\n\ndef get_version():\n    return version('myapp')\n\ndef plugins():\n    eps = entry_points(group='myapp.plugins')\n    return [ep.name for ep in eps]\n\nWhat changed: pkg_resources (slow to import, setuptools-dependent) was replaced by stdlib importlib.metadata, and version() replaced a roundabout entry point."
+  },
+  {
+    "instruction": "Refactor this code by replacing the manual class-level cache with functools.cache:\n\nclass Tax:\n    _table = None\n    @classmethod\n    def table(cls):\n        if cls._table is None:\n            cls._table = load_tax_table()\n        return cls._table",
+    "output": "from functools import cache\n\n@cache\ndef tax_table():\n    return load_tax_table()\n\n# usage: tax_table()[region]\n\nWhat changed: hand-written lazy-init cache replaced by functools.cache; no class-level mutable state, thread-ordering pitfalls or per-method boilerplate."
+  },
+  {
+    "instruction": "Refactor this code by converting the sentinel/None pattern to modern optional chaining equivalents:\n\ndef nickname(user):\n    p = user.get('profile')\n    if p is None:\n        return None\n    n = p.get('nick')\n    if n is None or n == '':\n        return None\n    return n\n\ndef city_of(user):\n    p = user.get('profile')\n    if p is None:\n        return None\n    c = p.get('address')\n    if c is None:\n        return None\n    return c.get('city')",
+    "output": "def nickname(user):\n    nick = (user.get('profile') or {}).get('nick')\n    return nick or None\n\ndef city_of(user):\n    address = (user.get('profile') or {}).get('address')\n    return (address or {}).get('city')\n\nWhat changed: two-step None ladders became `(x or {})` chains; empty strings collapse to None via `or`, keeping behavior while halving the branches."
+  },
+  {
+    "instruction": "Refactor this code by replacing manual iteration with enumerate and zip modern forms:\n\ndef pairs(a, b):\n    out = []\n    i = 0\n    while i < len(a):\n        out.append((i, a[i], b[i]))\n        i += 1\n    return out\n\ndef numbered(items):\n    out = []\n    i = 0\n    while i < len(items):\n        out.append((i, items[i]))\n        i += 1\n    return out",
+    "output": "def pairs(a, b):\n    return [(i, x, y) for i, (x, y) in enumerate(zip(a, b))]\n\ndef numbered(items):\n    return list(enumerate(items))\n\nWhat changed: manual while+index loops became enumerate/zip comprehensions; index bookkeeping (and its off-by-one risk) disappeared."
+  },
+  {
+    "instruction": "Refactor this code by using the modern struct-based or stdlib alternatives to hand-rolled utilities:\n\nimport json\n\ndef to_json(obj):\n    s = json.dumps(obj, sort_keys=True, indent=2)\n    return s + '\\n'\n\ndef from_json(text):\n    if text.endswith('\\n'):\n        text = text[:-1]\n    return json.loads(text)",
+    "output": "import json\n\ndef to_json(obj):\n    return json.dumps(obj, sort_keys=True, indent=2) + '\\n'\n\ndef from_json(text):\n    return json.loads(text.strip())\n\nWhat changed: manual newline slicing became str.strip(); the helpers remain but no longer reimplement trimming with fragile index arithmetic."
+  },
+  {
+    "instruction": "Refactor this code by replacing the hand-written __new__ singleton with a module-level instance pattern:\n\nclass Settings:\n    _inst = None\n    def __new__(cls):\n        if cls._inst is None:\n            cls._inst = super().__new__(cls)\n            cls._inst.data = {}\n        return cls._inst",
+    "output": "from dataclasses import dataclass, field\n\n@dataclass\nclass Settings:\n    data: dict = field(default_factory=dict)\n\nsettings = Settings()   # single shared instance, explicit at import\n\nWhat changed: the __new__ singleton boilerplate became a plain dataclass plus one named module instance; testability improves because you can construct fresh Settings() when needed."
+  }
+]

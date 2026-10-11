@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\ndef login(user, pw):\n    row = db.get('SELECT * FROM users WHERE username=?', (user,))\n    return row and row['password'] == pw",
+    "output": "**Vulnerability:** Plaintext password storage\n**Severity:** Critical\n**Why:** Passwords are compared in cleartext, so a DB leak exposes every password.\n**Exploit:** Read the DB (backup/SQLi) and reuse passwords elsewhere.\n**Fix:**\nimport bcrypt\nif row and bcrypt.checkpw(pw.encode(), row['password_hash']):\n    return row"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nif username == 'admin' and password == 'admin123':\n    grant_admin()",
+    "output": "**Vulnerability:** Hardcoded default credentials\n**Severity:** Critical\n**Why:** A fixed admin/admin123 backdoor exists in code.\n**Exploit:** Anyone who reads the source or guesses defaults gains admin.\n**Fix:**\n# Remove hardcoded creds; store a bcrypt/argon2 hash and require setup:\nif bcrypt.checkpw(password.encode(), stored_hash):\n    grant_admin()"
+  },
+  {
+    "instruction": "Audit this code for security issues (JWT):\n\npayload = jwt.decode(token, key, algorithms=['HS256', 'none'])",
+    "output": "**Vulnerability:** JWT `none` algorithm accepted\n**Severity:** Critical\n**Why:** Allowing the `none` algorithm lets an attacker forge an unsigned token.\n**Exploit:** Change the header to `{\"alg\":\"none\"}` and drop the signature to impersonate a user.\n**Fix:**\npayload = jwt.decode(token, key, algorithms=['HS256'])  # pin exactly one"
+  },
+  {
+    "instruction": "Audit this code for security issues (session cookie):\n\nresponse.set_cookie('session', sid, httponly=False, secure=False, samesite=None)",
+    "output": "**Vulnerability:** Insecure session cookie flags\n**Severity:** High\n**Why:** Without HttpOnly, Secure and SameSite, the cookie is exposed to JS and sent over HTTP.\n**Exploit:** XSS reads `document.cookie`; a network attacker intercepts it; CSRF is possible.\n**Fix:**\nresponse.set_cookie('session', sid, httponly=True, secure=True, samesite='Lax')"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nSECRET_KEY = 'dev'",
+    "output": "**Vulnerability:** Weak/committed secret key\n**Severity:** High\n**Why:** A hardcoded, guessable signing key lets attackers forge signed values (sessions, tokens).\n**Exploit:** Use the known 'dev' key to sign an admin session.\n**Fix:**\nimport os\nSECRET_KEY = os.environ['SECRET_KEY']  # 32+ random bytes, stored in a secret manager"
+  },
+  {
+    "instruction": "Audit this code for security issues (password reset):\n\ntoken = request.args['token']\nif User.objects.filter(reset_token=token).exists():\n    user.set_password(new_pw); user.save()",
+    "output": "**Vulnerability:** Insecure reset token handling\n**Severity:** High\n**Why:** Tokens are not time-limited or single-use, and may be guessable/short; also password set without validation.\n**Exploit:** Reuse a leaked token indefinitely or brute-force weak tokens.\n**Fix:**\n# Use a signed, expiring token bound to the user:\nfrom itsdangerous import URLSafeTimedSerializer\ns = URLSafeTimedSerializer(SECRET_KEY)\ndata = s.loads(token, max_age=900)  # 15 minutes, single use\nuser = User.objects.get(pk=data['uid'])\nuser.set_password(new_pw); user.save()"
+  },
+  {
+    "instruction": "Audit this code for security issues (session fixation):\n\nsession['user_id'] = user.id  # same session id before and after login",
+    "output": "**Vulnerability:** Session fixation\n**Severity:** High\n**Why:** The session identifier is not rotated on login, so an attacker who set it pre-login keeps access.\n**Exploit:** Attacker plants a known session id, victim logs in, attacker uses it.\n**Fix:**\n# Regenerate the session id on authentication:\nsession.clear()\nsession.regenerate()  # framework-specific, e.g. Flask-Login login_user() does this\nsession['user_id'] = user.id"
+  },
+  {
+    "instruction": "Audit this code for security issues (JWT expiry):\n\ntoken = jwt.encode({'uid': u.id}, key, algorithm='HS256')\n# no exp claim",
+    "output": "**Vulnerability:** Non-expiring tokens\n**Severity:** Medium\n**Why:** Without `exp` (and ideally `iat`/`jti`), stolen tokens remain valid forever.\n**Exploit:** A leaked token grants permanent access.\n**Fix:**\nimport time\ntoken = jwt.encode({'uid': u.id, 'exp': int(time.time()) + 900}, key, algorithm='HS256')"
+  },
+  {
+    "instruction": "Audit this code for security issues:\n\nif user.role == 'admin' or 'admin' in request.args:\n    delete_all()",
+    "output": "**Vulnerability:** Broken access control\n**Severity:** Critical\n**Why:** The `or 'admin' in request.args` clause bypasses the role check entirely.\n**Exploit:** `?admin=1` deletes everything.\n**Fix:**\nif user.role == 'admin':\n    delete_all()\nelse:\n    abort(403)"
+  },
+  {
+    "instruction": "Audit this code for security issues (bcrypt misuse):\n\nh = hashlib.md5(password.encode()).hexdigest()\nuser.password = h",
+    "output": "**Vulnerability:** Use of MD5 for passwords\n**Severity:** High\n**Why:** MD5 is fast and unsalted, making password cracking trivial and enabling rainbow tables.\n**Exploit:** Crack hashes offline at billions/sec; identical passwords share hashes.\n**Fix:**\nimport bcrypt\nuser.password = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))"
+  },
+  {
+    "instruction": "Audit this code for security issues (remember-me cookie):\n\nuser = User.objects.get(id=request.cookies['uid'])  # trusts a plain cookie",
+    "output": "**Vulnerability:** Insecure remember-me / auth by cookie\n**Severity:** Critical\n**Why:** The cookie is an unauthenticated, guessable user id — no signature or server check.\n**Exploit:** Set `uid=1` to become user 1.\n**Fix:**\n# Sign the cookie and bind it to a server-side session/token:\nfrom itsdangerous import BadSignature, URLSafeSerializer\ns = URLSafeSerializer(SECRET_KEY)\nuid = s.loads(request.cookies['remember'])  # raises on tampering"
+  },
+  {
+    "instruction": "Audit this code for security issues (2FA):\n\nif otp == request.args.get('code'):\n    allow_login()",
+    "output": "**Vulnerability:** Insecure 2FA comparison\n**Severity:** High\n**Why:** The code is compared in plain text (timing leak) and is not rate-limited or bound to the session.\n**Exploit:** Brute-force the 6-digit code; timing side-channel narrows guesses.\n**Fix:**\nimport hmac\nif hmac.compare_digest(otp, request.form['code']) and not too_many_attempts(session):\n    allow_login()\n# Enforce attempt limits and code expiry server-side."
+  },
+  {
+    "instruction": "Audit this code for security issues (password policy):\n\nif len(password) >= 4:\n    set_password(password)",
+    "output": "**Vulnerability:** Weak password policy\n**Severity:** Medium\n**Why:** A 4-character minimum with no checks permits trivially guessable passwords.\n**Exploit:** Brute-force or dictionary attack succeeds quickly.\n**Fix:**\n# Enforce length and check against a breach list:\nif len(password) < 12 or is_breached(password):\n    raise ValueError('password too weak')\nset_password(password)"
+  },
+  {
+    "instruction": "Audit this code for security issues (token in URL):\n\nreset_link = f'https://app.example.com/reset?token={token}'\nemail.send(user.email, reset_link)",
+    "output": "**Vulnerability:** Sensitive token in URL\n**Severity:** Medium\n**Why:** URLs leak via logs, Referer headers, and browser history.\n**Exploit:** A proxy/log captures the token and resets the account.\n**Fix:**\n# Send the token in a POST body or one-time form field, and make it\n# short-lived and single-use; avoid putting it in the query string."
+  },
+  {
+    "instruction": "Audit this code for security issues (authorization):\n\n@app.get('/invoices/<id>')\ndef invoice(id):\n    return Invoice.objects.get(id=id).to_dict()",
+    "output": "**Vulnerability:** Broken object-level authorization (IDOR)\n**Severity:** High\n**Why:** No check that the invoice belongs to the current user.\n**Exploit:** Increment `id` to read other customers' invoices.\n**Fix:**\ninv = get_object_or_404(Invoice, id=id, owner=current_user)\nreturn inv.to_dict()"
+  },
+  {
+    "instruction": "Audit this code for security issues (timing):\n\ndef check_token(provided):\n    return provided == SERVER_TOKEN",
+    "output": "**Vulnerability:** Timing side-channel in secret comparison\n**Severity:** Medium\n**Why:** `==` short-circuits, leaking how many leading bytes matched.\n**Exploit:** Measure response times to guess the token byte by byte.\n**Fix:**\nimport hmac\nreturn hmac.compare_digest(provided, SERVER_TOKEN)"
+  },
+  {
+    "instruction": "Audit this code for security issues (account enumeration):\n\ndef login(user, pw):\n    if not User.objects.filter(username=user).exists():\n        return 'No such user'\n    if not check_pw(user, pw):\n        return 'Wrong password'",
+    "output": "**Vulnerability:** Account enumeration\n**Severity:** Medium\n**Why:** Distinguishing \"no such user\" from \"wrong password\" reveals valid usernames.\n**Exploit:** Probe usernames to build a target list.\n**Fix:**\nreturn 'Invalid username or password'  # identical message and timing for both cases"
+  },
+  {
+    "instruction": "Audit this code for security issues (sudo/admin flag from client):\n\nis_admin = request.json.get('is_admin', False)\nif is_admin:\n    grant_admin(user)",
+    "output": "**Vulnerability:** Privilege escalation via client-controlled field\n**Severity:** Critical\n**Why:** The client decides its own privilege level.\n**Exploit:** POST `{\"is_admin\": true}` to self-promote.\n**Fix:**\n# Ignore client privilege fields; derive role server-side:\nif current_user.role == 'admin':\n    grant_admin(user)"
+  },
+  {
+    "instruction": "Audit this code for security issues (CSRF token):\n\n@app.post('/transfer')\ndef transfer():\n    do_transfer(request.form['to'], request.form['amount'])",
+    "output": "**Vulnerability:** Missing CSRF protection\n**Severity:** High\n**Why:** A state-changing POST trusts ambient cookies with no anti-CSRF token.\n**Exploit:** A malicious page auto-submits the transfer form in the victim's browser.\n**Fix:**\n@app.post('/transfer')\ndef transfer():\n    if not verify_csrf(request.form.get('csrf_token')):\n        abort(403)\n    do_transfer(request.form['to'], request.form['amount'])"
+  },
+  {
+    "instruction": "Audit this code for security issues (logout):\n\n@app.get('/logout')\ndef logout():\n    del session['user_id']",
+    "output": "**Vulnerability:** Incomplete session termination\n**Severity:** Medium\n**Why:** Only one key is removed; the server-side session and other auth artifacts persist.\n**Exploit:** A captured session id may still authenticate after \"logout\".\n**Fix:**\nsession.clear()          # drop all client-side data\nsession.regenerate()     # new id\n# also invalidate server-side session/token records"
+  }
+]

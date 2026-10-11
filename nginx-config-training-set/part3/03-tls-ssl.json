@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Enable HTTPS for example.com using the Let's Encrypt certificate and key, and redirect plain HTTP to HTTPS.",
+    "output": "server {\n    listen 80;\n    server_name example.com;\n    return 301 https://$host$request_uri;\n}\nserver {\n    listen 443 ssl;\n    server_name example.com;\n    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;\n    root /var/www/example;\n    index index.html;\n}"
+  },
+  {
+    "instruction": "Configure the Mozilla intermediate TLS profile for shop.example.com: TLS 1.2 and 1.3 with modern AEAD cipher suites.",
+    "output": "server {\n    listen 443 ssl;\n    server_name shop.example.com;\n    ssl_certificate /etc/nginx/tls/shop.pem;\n    ssl_certificate_key /etc/nginx/tls/shop.key;\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;\n    ssl_prefer_server_ciphers off;\n}"
+  },
+  {
+    "instruction": "Restrict a high-security vhost to TLS 1.3 only for secure.internal.example, pinning the TLS 1.3 cipher suites explicitly.",
+    "output": "server {\n    listen 443 ssl;\n    server_name secure.internal.example;\n    ssl_certificate /etc/nginx/tls/secure.pem;\n    ssl_certificate_key /etc/nginx/tls/secure.key;\n    ssl_protocols TLSv1.3;\n    ssl_conf_command Ciphersuites TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;\n}"
+  },
+  {
+    "instruction": "Enable HTTP Strict Transport Security with a one year max-age, includeSubDomains and preload for www.bank.example.",
+    "output": "server {\n    listen 443 ssl;\n    server_name www.bank.example;\n    ssl_certificate /etc/nginx/tls/bank.pem;\n    ssl_certificate_key /etc/nginx/tls/bank.key;\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\" always;\n}"
+  },
+  {
+    "instruction": "Enable OCSP stapling with the Let's Encrypt chain file for api.example.com and resolve the OCSP responder through Cloudflare DNS.",
+    "output": "server {\n    listen 443 ssl;\n    server_name api.example.com;\n    ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;\n    ssl_trusted_certificate /etc/letsencrypt/live/api.example.com/chain.pem;\n    ssl_stapling on;\n    ssl_stapling_verify on;\n    resolver 1.1.1.1 8.8.8.8 valid=300s;\n    resolver_timeout 5s;\n}"
+  },
+  {
+    "instruction": "Configure a shared TLS session cache of 10 MB with a 1 day timeout and tickets disabled for all HTTPS servers on this host.",
+    "output": "http {\n    ssl_session_cache shared:SSL:10m;\n    ssl_session_timeout 1d;\n    ssl_session_tickets off;\n    server {\n        listen 443 ssl;\n        server_name www.example.com;\n        ssl_certificate /etc/nginx/tls/www.pem;\n        ssl_certificate_key /etc/nginx/tls/www.key;\n    }\n}"
+  },
+  {
+    "instruction": "Set up a self-signed certificate for the development host dev.local in a server block listening on port 443.",
+    "output": "server {\n    listen 443 ssl;\n    server_name dev.local;\n    ssl_certificate /etc/nginx/certs/dev-local.crt;\n    ssl_certificate_key /etc/nginx/certs/dev-local.key;\n    ssl_protocols TLSv1.2 TLSv1.3;\n    root /var/www/dev;\n}"
+  },
+  {
+    "instruction": "Require client certificates signed by the internal CA for admin.example.com on port 443.",
+    "output": "server {\n    listen 443 ssl;\n    server_name admin.example.com;\n    ssl_certificate /etc/nginx/tls/admin.pem;\n    ssl_certificate_key /etc/nginx/tls/admin.key;\n    ssl_client_certificate /etc/nginx/tls/internal-ca.pem;\n    ssl_verify_client on;\n    ssl_verify_depth 2;\n    root /var/www/admin;\n}"
+  },
+  {
+    "instruction": "Enable HTTP/2 over TLS for docs.example.com using the modern http2 directive instead of the deprecated listen flag.",
+    "output": "server {\n    listen 443 ssl;\n    server_name docs.example.com;\n    http2 on;\n    ssl_certificate /etc/nginx/tls/docs.pem;\n    ssl_certificate_key /etc/nginx/tls/docs.key;\n    root /var/www/docs;\n}"
+  },
+  {
+    "instruction": "Serve dual RSA and ECDSA certificates on one listener so cdn.example.com works with both cipher families.",
+    "output": "server {\n    listen 443 ssl;\n    server_name cdn.example.com;\n    ssl_certificate /etc/nginx/tls/cdn-rsa.pem;\n    ssl_certificate_key /etc/nginx/tls/cdn-rsa.key;\n    ssl_certificate /etc/nginx/tls/cdn-ecdsa.pem;\n    ssl_certificate_key /etc/nginx/tls/cdn-ecdsa.key;\n    ssl_protocols TLSv1.2 TLSv1.3;\n}"
+  },
+  {
+    "instruction": "Enforce PCI DSS settings on pci.example.com: TLS 1.2 only with a strong cipher list and server cipher preference.",
+    "output": "server {\n    listen 443 ssl;\n    server_name pci.example.com;\n    ssl_certificate /etc/nginx/tls/pci.pem;\n    ssl_certificate_key /etc/nginx/tls/pci.key;\n    ssl_protocols TLSv1.2;\n    ssl_ciphers ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS;\n    ssl_prefer_server_ciphers on;\n}"
+  },
+  {
+    "instruction": "Disable TLS session tickets for perfect forward secrecy on pfs.example.com while keeping a shared session cache.",
+    "output": "server {\n    listen 443 ssl;\n    server_name pfs.example.com;\n    ssl_certificate /etc/nginx/tls/pfs.pem;\n    ssl_certificate_key /etc/nginx/tls/pfs.key;\n    ssl_session_cache shared:pfs:10m;\n    ssl_session_timeout 1d;\n    ssl_session_tickets off;\n}"
+  },
+  {
+    "instruction": "Run two HTTPS sites, a.example.com and b.example.com, each with its own certificate on port 443.",
+    "output": "server {\n    listen 443 ssl;\n    server_name a.example.com;\n    ssl_certificate /etc/nginx/tls/a.pem;\n    ssl_certificate_key /etc/nginx/tls/a.key;\n    root /var/www/a;\n}\nserver {\n    listen 443 ssl;\n    server_name b.example.com;\n    ssl_certificate /etc/nginx/tls/b.pem;\n    ssl_certificate_key /etc/nginx/tls/b.key;\n    root /var/www/b;\n}"
+  },
+  {
+    "instruction": "Use the wildcard certificate *.example.net for the www vhost and set a modern ECDH curve.",
+    "output": "server {\n    listen 443 ssl;\n    server_name www.example.net;\n    ssl_certificate /etc/nginx/tls/wildcard-example-net.pem;\n    ssl_certificate_key /etc/nginx/tls/wildcard-example-net.key;\n    ssl_ecdh_curve X25519:secp384r1;\n    ssl_protocols TLSv1.2 TLSv1.3;\n}"
+  },
+  {
+    "instruction": "Configure nginx to use a pre-generated 4096-bit DH parameters file for the strong.example.com server block.",
+    "output": "server {\n    listen 443 ssl;\n    server_name strong.example.com;\n    ssl_certificate /etc/nginx/tls/strong.pem;\n    ssl_certificate_key /etc/nginx/tls/strong.key;\n    ssl_dhparam /etc/nginx/tls/dhparam4096.pem;\n    ssl_protocols TLSv1.2 TLSv1.3;\n}"
+  },
+  {
+    "instruction": "Configure nginx to terminate TLS for the bare IP address 203.0.113.10 that has an IP SAN certificate and no hostname.",
+    "output": "server {\n    listen 443 ssl;\n    server_name 203.0.113.10;\n    ssl_certificate /etc/nginx/tls/ip-203-0-113-10.pem;\n    ssl_certificate_key /etc/nginx/tls/ip-203-0-113-10.key;\n    root /var/www/ip-site;\n}"
+  },
+  {
+    "instruction": "Load an encrypted private key protected by a password file for secrets.example.com on port 443.",
+    "output": "server {\n    listen 443 ssl;\n    server_name secrets.example.com;\n    ssl_certificate /etc/nginx/tls/secrets.pem;\n    ssl_certificate_key /etc/nginx/tls/secrets.key;\n    ssl_password_file /etc/nginx/tls/secrets.pass;\n}"
+  },
+  {
+    "instruction": "Enable QUIC and HTTP/3 for speed.example.com alongside TLS 1.3 and advertise HTTP/3 with an Alt-Svc header.",
+    "output": "server {\n    listen 443 ssl;\n    listen 443 quic reuseport;\n    http2 on;\n    http3 on;\n    server_name speed.example.com;\n    ssl_certificate /etc/nginx/tls/speed.pem;\n    ssl_certificate_key /etc/nginx/tls/speed.key;\n    ssl_protocols TLSv1.3;\n    add_header Alt-Svc 'h3=\":443\"; ma=86400' always;\n    root /var/www/speed;\n}"
+  },
+  {
+    "instruction": "Create a hardened shared TLS baseline in the http block: intermediate protocols, shared session cache, tickets off and OCSP stapling on.",
+    "output": "http {\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_session_cache shared:TLS:10m;\n    ssl_session_timeout 1d;\n    ssl_session_tickets off;\n    ssl_stapling on;\n    ssl_stapling_verify on;\n    ssl_trusted_certificate /etc/nginx/tls/chain.pem;\n    resolver 1.1.1.1 valid=300s;\n    server {\n        listen 443 ssl;\n        server_name www.example.org;\n        ssl_certificate /etc/nginx/tls/www.pem;\n        ssl_certificate_key /etc/nginx/tls/www.key;\n    }\n}"
+  },
+  {
+    "instruction": "Set generous session resumption for m.example.com so flaky mobile clients can reuse TLS sessions for 12 hours.",
+    "output": "server {\n    listen 443 ssl;\n    server_name m.example.com;\n    ssl_certificate /etc/nginx/tls/m.pem;\n    ssl_certificate_key /etc/nginx/tls/m.key;\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_session_cache shared:m:5m;\n    ssl_session_timeout 12h;\n    ssl_session_tickets on;\n}"
+  }
+]

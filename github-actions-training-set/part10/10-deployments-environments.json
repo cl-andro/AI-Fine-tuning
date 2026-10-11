@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Deploy to the staging environment in a job that depends on the test job.",
+    "output": "name: deploy-staging\non:\n  push:\n    branches: [main]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test\n  deploy-staging:\n    needs: test\n    runs-on: ubuntu-latest\n    environment: staging\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh staging"
+  },
+  {
+    "instruction": "Define a production environment job with a URL that shows up in the deployment UI.",
+    "output": "name: production-env-url\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment:\n      name: production\n      url: https://app.example.com\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh production"
+  },
+  {
+    "instruction": "Assume an AWS IAM role with GitHub OIDC and sync a static site to S3.",
+    "output": "name: aws-oidc-s3\non:\n  push:\n    branches: [main]\npermissions:\n  id-token: write\n  contents: read\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - uses: aws-actions/configure-aws-credentials@v4\n        with:\n          role-to-assume: arn:aws:iam::123456789012:role/github-deploy\n          aws-region: us-east-1\n      - run: aws s3 sync build/ s3://example-static-site --delete"
+  },
+  {
+    "instruction": "Deploy a static site to GitHub Pages with the official Pages actions.",
+    "output": "name: github-pages\non:\n  push:\n    branches: [main]\npermissions:\n  contents: read\n  pages: write\n  id-token: write\nconcurrency:\n  group: pages\n  cancel-in-progress: false\njobs:\n  deploy:\n    environment:\n      name: github-pages\n      url: ${{ steps.deployment.outputs.page_url }}\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/configure-pages@v5\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: ./dist\n      - id: deployment\n        uses: actions/deploy-pages@v4"
+  },
+  {
+    "instruction": "Log in to Azure with workload identity federation and deploy with the Azure CLI.",
+    "output": "name: azure-federated\non:\n  push:\n    branches: [main]\npermissions:\n  id-token: write\n  contents: read\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - uses: azure/login@v2\n        with:\n          client-id: ${{ secrets.AZURE_CLIENT_ID }}\n          tenant-id: ${{ secrets.AZURE_TENANT_ID }}\n          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}\n      - run: az webapp deploy --resource-group my-rg --name my-app --src-path build.zip --type zip"
+  },
+  {
+    "instruction": "Authenticate to Google Cloud with workload identity and deploy files to a Cloud Storage bucket.",
+    "output": "name: gcp-wif-deploy\non:\n  push:\n    branches: [main]\npermissions:\n  id-token: write\n  contents: read\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: google-github-actions/auth@v2\n        with:\n          workload_identity_provider: projects/123/locations/global/workloadIdentityPools/gh/providers/github\n          service_account: deployer@project.iam.gserviceaccount.com\n      - uses: google-github-actions/setup-gcloud@v2\n      - run: gcloud storage rsync ./build gs://example-app --delete"
+  },
+  {
+    "instruction": "Apply Kubernetes manifests to a cluster using a kubeconfig stored as a secret.",
+    "output": "name: kubectl-apply\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - name: Set up kubeconfig\n        run: echo \"${{ secrets.KUBE_CONFIG }}\" | base64 -d > \"$HOME/.kube/config\"\n      - run: kubectl apply -f k8s/ -n production\n      - run: kubectl rollout status deployment/webapp -n production --timeout=180s"
+  },
+  {
+    "instruction": "Upgrade a Helm chart in the cluster with values from the repository.",
+    "output": "name: helm-upgrade\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: staging\n    steps:\n      - uses: actions/checkout@v4\n      - name: Set up kubeconfig\n        run: echo \"${{ secrets.KUBE_CONFIG }}\" | base64 -d > \"$HOME/.kube/config\"\n      - run: helm upgrade --install webapp ./charts/webapp --namespace staging --values ./charts/webapp/values-staging.yaml --wait"
+  },
+  {
+    "instruction": "Deploy over SSH by writing a deploy key from secrets and running a remote update script.",
+    "output": "name: ssh-remote\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - name: Install SSH key\n        run: |\n          mkdir -p ~/.ssh\n          echo \"${{ secrets.DEPLOY_SSH_KEY }}\" > ~/.ssh/id_ed25519\n          chmod 600 ~/.ssh/id_ed25519\n          ssh-keyscan app.example.com >> ~/.ssh/known_hosts\n      - run: rsync -az --delete build/ deploy@app.example.com:/srv/www/current/\n      - run: ssh deploy@app.example.com 'sudo systemctl restart webapp'"
+  },
+  {
+    "instruction": "Publish the deployment URL from a step output and expose it on the environment.",
+    "output": "name: env-url-output\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment:\n      name: preview\n      url: ${{ steps.deploy.outputs.url }}\n    steps:\n      - uses: actions/checkout@v4\n      - id: deploy\n        run: echo \"url=https://pr-${{ github.run_number }}.preview.example.com\" >> \"$GITHUB_OUTPUT\""
+  },
+  {
+    "instruction": "Deploy to staging and then production as two sequential environment jobs.",
+    "output": "name: staging-then-prod\non:\n  push:\n    branches: [main]\njobs:\n  staging:\n    runs-on: ubuntu-latest\n    environment: staging\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh staging\n  production:\n    needs: staging\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh production"
+  },
+  {
+    "instruction": "Deploy a preview build to Vercel with a token secret on every pull request.",
+    "output": "name: vercel-preview\non: pull_request\njobs:\n  vercel:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci && npm run build\n      - name: Deploy preview\n        env:\n          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}\n          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}\n          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}\n        run: npx vercel deploy --token \"$VERCEL_TOKEN\" --yes"
+  },
+  {
+    "instruction": "Deploy a site to Netlify with an auth token and the production branch.",
+    "output": "name: netlify\non:\n  push:\n    branches: [main]\njobs:\n  netlify:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci && npm run build\n      - name: Deploy to Netlify\n        env:\n          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}\n          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}\n        run: npx netlify-cli deploy --dir=dist --prod --auth \"$NETLIFY_AUTH_TOKEN\" --site \"$NETLIFY_SITE_ID\""
+  },
+  {
+    "instruction": "Deploy to Cloudflare Pages with wrangler-action.",
+    "output": "name: cloudflare-pages\non:\n  push:\n    branches: [main]\njobs:\n  pages:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci && npm run build\n      - uses: cloudflare/wrangler-action@v3\n        with:\n          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          command: pages deploy dist --project-name=webapp"
+  },
+  {
+    "instruction": "Update an ECS service after building the image and pushing it with a commit tag.",
+    "output": "name: ecs-update\non:\n  push:\n    branches: [main]\npermissions:\n  id-token: write\n  contents: read\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - uses: aws-actions/configure-aws-credentials@v4\n        with:\n          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}\n          aws-region: us-east-1\n      - run: aws ecs update-service --cluster production --service webapp --force-new-deployment\n      - run: aws ecs wait services-stable --cluster production --service webapp"
+  },
+  {
+    "instruction": "Update a Lambda function package and wait for it to become active.",
+    "output": "name: lambda-update\non:\n  push:\n    tags: ['v*']\npermissions:\n  id-token: write\n  contents: read\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - run: cd lambda && zip -r function.zip .\n      - uses: aws-actions/configure-aws-credentials@v4\n        with:\n          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}\n          aws-region: us-east-1\n      - run: aws lambda update-function-code --function-name processor --zip-file fileb://lambda/function.zip\n      - run: aws lambda wait function-updated --function-name processor"
+  },
+  {
+    "instruction": "Plan and apply Terraform with OIDC credentials and a non-interactive backend.",
+    "output": "name: terraform-apply\non:\n  push:\n    branches: [main]\npermissions:\n  id-token: write\n  contents: read\njobs:\n  terraform:\n    runs-on: ubuntu-latest\n    environment: production\n    defaults:\n      run:\n        working-directory: infra\n    steps:\n      - uses: actions/checkout@v4\n      - uses: hashicorp/setup-terraform@v3\n      - uses: aws-actions/configure-aws-credentials@v4\n        with:\n          role-to-assume: ${{ secrets.AWS_TF_ROLE_ARN }}\n          aws-region: us-east-1\n      - run: terraform init -input=false\n      - run: terraform plan -out=tfplan -input=false\n      - run: terraform apply -auto-approve tfplan"
+  },
+  {
+    "instruction": "Deploy to several environments with a matrix of environment names.",
+    "output": "name: matrix-environments\non:\n  workflow_dispatch:\n    inputs:\n      version:\n        description: Version to deploy\n        required: true\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        environment: [dev, staging, production]\n      max-parallel: 1\n    environment: ${{ matrix.environment }}\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh ${{ matrix.environment }} ${{ inputs.version }}"
+  },
+  {
+    "instruction": "Redeploy the previous known-good version when the health check fails after a deploy.",
+    "output": "name: rollback-job\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - id: deploy\n        run: ./scripts/deploy.sh production ${{ github.sha }}\n  healthcheck:\n    needs: deploy\n    runs-on: ubuntu-latest\n    steps:\n      - run: curl -sf https://app.example.com/health\n  rollback:\n    needs: [deploy, healthcheck]\n    if: failure()\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/rollback.sh production"
+  },
+  {
+    "instruction": "Serialize production deployments with a concurrency group and environment approval.",
+    "output": "name: serialized-deploy\non:\n  push:\n    branches: [main]\nconcurrency:\n  group: production-deploy\n  cancel-in-progress: false\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh production"
+  }
+]

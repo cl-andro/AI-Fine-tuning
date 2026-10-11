@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Convert this CSV file to a JSON array of objects:\n\nname,age,city\nAda,36,London\nGrace,45,New York",
+    "output": "import csv, json\n\nwith open(\"people.csv\", newline=\"\") as f:\n    rows = list(csv.DictReader(f))\nprint(json.dumps(rows, indent=2))"
+  },
+  {
+    "instruction": "Convert this JSON array to a CSV file:\n\n[\n  {\"name\": \"Ada\", \"age\": 36},\n  {\"name\": \"Grace\", \"age\": 45}\n]",
+    "output": "import csv, json\n\ndata = json.loads('[{\"name\": \"Ada\", \"age\": 36}, {\"name\": \"Grace\", \"age\": 45}]')\nwith open(\"people.csv\", \"w\", newline=\"\") as f:\n    writer = csv.DictWriter(f, fieldnames=[\"name\", \"age\"])\n    writer.writeheader()\n    writer.writerows(data)"
+  },
+  {
+    "instruction": "Convert this CSV file to a Markdown table:\n\nid,product,price\n1,Keyboard,49.99\n2,Mouse,19.99",
+    "output": "import csv\n\nwith open(\"products.csv\", newline=\"\") as f:\n    rows = list(csv.reader(f))\nheader, body = rows[0], rows[1:]\nprint(\"| \" + \" | \".join(header) + \" |\")\nprint(\"| \" + \" | \".join(\"---\" for _ in header) + \" |\")\nfor row in body:\n    print(\"| \" + \" | \".join(row) + \" |\")"
+  },
+  {
+    "instruction": "Convert this Markdown table to a CSV file:\n\n| id | product | price |\n| --- | --- | --- |\n| 1 | Keyboard | 49.99 |\n| 2 | Mouse | 19.99 |",
+    "output": "import csv\n\ntext = \"\"\"| id | product | price |\n| --- | --- | --- |\n| 1 | Keyboard | 49.99 |\n| 2 | Mouse | 19.99 |\"\"\"\nlines = [l.strip() for l in text.strip().splitlines()]\nparse = lambda l: [c.strip() for c in l.strip(\"|\").split(\"|\")]\nheader, body = parse(lines[0]), lines[2:]\nwith open(\"products.csv\", \"w\", newline=\"\") as f:\n    w = csv.writer(f)\n    w.writerow(header)\n    for line in body:\n        w.writerow(parse(line))"
+  },
+  {
+    "instruction": "Convert this tab-separated file to JSON:\n\nname\tscore\nlin\t91\nsam\t84",
+    "output": "import csv, json\n\nwith open(\"scores.tsv\", newline=\"\") as f:\n    rows = list(csv.DictReader(f, delimiter=\"\\t\"))\nprint(json.dumps(rows, indent=2))"
+  },
+  {
+    "instruction": "Convert this JSON array to a tab-separated file:\n\n[\n  {\"name\": \"lin\", \"score\": 91},\n  {\"name\": \"sam\", \"score\": 84}\n]",
+    "output": "import csv, json\n\ndata = json.loads('[{\"name\": \"lin\", \"score\": 91}, {\"name\": \"sam\", \"score\": 84}]')\nwith open(\"scores.tsv\", \"w\", newline=\"\") as f:\n    w = csv.DictWriter(f, fieldnames=[\"name\", \"score\"], delimiter=\"\\t\")\n    w.writeheader()\n    w.writerows(data)"
+  },
+  {
+    "instruction": "Convert this CSV file to an HTML table:\n\nname,qty\nBolts,120\nNuts,340",
+    "output": "import csv, html\n\nwith open(\"stock.csv\", newline=\"\") as f:\n    rows = list(csv.reader(f))\nparts = [\"<table>\", \"<thead><tr>\" + \"\".join(f\"<th>{html.escape(c)}</th>\" for c in rows[0]) + \"</tr></thead>\", \"<tbody>\"]\nfor row in rows[1:]:\n    parts.append(\"<tr>\" + \"\".join(f\"<td>{html.escape(c)}</td>\" for c in row) + \"</tr>\")\nparts += [\"</tbody>\", \"</table>\"]\nprint(\"\\n\".join(parts))"
+  },
+  {
+    "instruction": "Convert this simple HTML table to a CSV file:\n\n<table>\n  <tr><th>city</th><th>pop</th></tr>\n  <tr><td>Tokyo</td><td>14000000</td></tr>\n  <tr><td>Lima</td><td>10000000</td></tr>\n</table>",
+    "output": "import csv\nimport re\n\nhtml = \"\"\"<table>\n  <tr><th>city</th><th>pop</th></tr>\n  <tr><td>Tokyo</td><td>14000000</td></tr>\n  <tr><td>Lima</td><td>10000000</td></tr>\n</table>\"\"\"\ncells = re.findall(r\"<t[hd]>(.*?)</t[hd]>\", html)\nwidth = len(re.findall(r\"<th>\", html))\nrows = [cells[i:i + width] for i in range(0, len(cells), width)]\nwith open(\"cities.csv\", \"w\", newline=\"\") as f:\n    csv.writer(f).writerows(rows)"
+  },
+  {
+    "instruction": "Convert this CSV file into a dictionary keyed by the first column:\n\nsku,qty\nA-1,10\nA-2,7\nA-1,3",
+    "output": "import csv\n\nstock = {}\nwith open(\"stock.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        stock[row[\"sku\"]] = stock.get(row[\"sku\"], 0) + int(row[\"qty\"])\nprint(stock)"
+  },
+  {
+    "instruction": "Convert this nested JSON to a flat CSV file:\n\n[\n  {\"user\": {\"name\": \"Ada\"}, \"orders\": 3},\n  {\"user\": {\"name\": \"Grace\"}, \"orders\": 8}\n]",
+    "output": "import csv, json\n\ndata = json.loads('[{\"user\": {\"name\": \"Ada\"}, \"orders\": 3}, {\"user\": {\"name\": \"Grace\"}, \"orders\": 8}]')\nwith open(\"orders.csv\", \"w\", newline=\"\") as f:\n    w = csv.writer(f)\n    w.writerow([\"name\", \"orders\"])\n    for row in data:\n        w.writerow([row[\"user\"][\"name\"], row[\"orders\"]])"
+  },
+  {
+    "instruction": "Convert this CSV with numeric columns to typed JSON:\n\nid,price,in_stock\n1,49.99,true\n2,19.50,false",
+    "output": "import csv, json\n\nrows = []\nwith open(\"items.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        rows.append({\n            \"id\": int(row[\"id\"]),\n            \"price\": float(row[\"price\"]),\n            \"in_stock\": row[\"in_stock\"].lower() == \"true\",\n        })\nprint(json.dumps(rows, indent=2))"
+  },
+  {
+    "instruction": "Convert this JSON records array to a Markdown table:\n\n[\n  {\"lang\": \"Python\", \"year\": 1991},\n  {\"lang\": \"JavaScript\", \"year\": 1995}\n]",
+    "output": "import json\n\ndata = json.loads('[{\"lang\": \"Python\", \"year\": 1991}, {\"lang\": \"JavaScript\", \"year\": 1995}]')\nheader = list(data[0].keys())\nprint(\"| \" + \" | \".join(header) + \" |\")\nprint(\"| \" + \" | \".join(\"---\" for _ in header) + \" |\")\nfor row in data:\n    print(\"| \" + \" | \".join(str(row[c]) for c in header) + \" |\")"
+  },
+  {
+    "instruction": "Convert this pipe-delimited file to CSV:\n\nid|name\n1|Ada Lovelace\n2|Grace Hopper",
+    "output": "import csv\n\nwith open(\"people.psv\") as f, open(\"people.csv\", \"w\", newline=\"\") as out:\n    reader = csv.reader(f, delimiter=\"|\")\n    csv.writer(out).writerows(reader)"
+  },
+  {
+    "instruction": "Convert this CSV file to column-oriented JSON:\n\nname,age\nAda,36\nGrace,45",
+    "output": "import csv, json\n\ncolumns = {}\nwith open(\"people.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        for key, value in row.items():\n            columns.setdefault(key, []).append(value)\nprint(json.dumps(columns, indent=2))"
+  },
+  {
+    "instruction": "Convert this JSON object of arrays to a CSV file:\n\n{\n  \"name\": [\"Ada\", \"Grace\"],\n  \"age\": [36, 45]\n}",
+    "output": "import csv, json\n\ndata = json.loads('{\"name\": [\"Ada\", \"Grace\"], \"age\": [36, 45]}')\nwith open(\"people.csv\", \"w\", newline=\"\") as f:\n    w = csv.writer(f)\n    w.writerow(data.keys())\n    w.writerows(zip(*data.values()))"
+  },
+  {
+    "instruction": "Convert this CSV file to a nested JSON grouped by a column:\n\ndept,name,role\neng,Ada,dev\neng,Grace,dev\nhr,Sam,recruiter",
+    "output": "import csv, json\nfrom collections import defaultdict\n\ngrouped = defaultdict(list)\nwith open(\"staff.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        grouped[row[\"dept\"]].append({\"name\": row[\"name\"], \"role\": row[\"role\"]})\nprint(json.dumps(dict(grouped), indent=2))"
+  },
+  {
+    "instruction": "Convert this Markdown table to a JSON array keyed by header names:\n\n| city | country |\n| --- | --- |\n| Oslo | Norway |\n| Lima | Peru |",
+    "output": "import json\n\ntext = \"\"\"| city | country |\n| --- | --- |\n| Oslo | Norway |\n| Lima | Peru |\"\"\"\nlines = [l for l in text.strip().splitlines() if l.strip()]\nparse = lambda l: [c.strip() for c in l.strip(\"|\").split(\"|\")]\nheader = parse(lines[0])\nrows = [dict(zip(header, parse(line))) for line in lines[2:]]\nprint(json.dumps(rows, indent=2))"
+  },
+  {
+    "instruction": "Convert this JSON array of arrays (first row = header) to CSV:\n\n[\n  [\"id\", \"city\"],\n  [1, \"Oslo\"],\n  [2, \"Lima\"]\n]",
+    "output": "import csv, json\n\ndata = json.loads('[[\"id\", \"city\"], [1, \"Oslo\"], [2, \"Lima\"]]')\nwith open(\"cities.csv\", \"w\", newline=\"\") as f:\n    csv.writer(f).writerows(data)"
+  },
+  {
+    "instruction": "Convert this CSV file to a JSON object mapping one column to another:\n\nlang,creator\nPython,Guido\nJavaScript,Brendan",
+    "output": "import csv, json\n\nmapping = {}\nwith open(\"langs.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        mapping[row[\"lang\"]] = row[\"creator\"]\nprint(json.dumps(mapping, indent=2))"
+  },
+  {
+    "instruction": "Convert this CSV file to a printable aligned text table:\n\nid,name\n1,Ada\n10,Grace Hopper",
+    "output": "import csv\n\nwith open(\"people.csv\", newline=\"\") as f:\n    rows = list(csv.reader(f))\nwidths = [max(len(r[i]) for r in rows) for i in range(len(rows[0]))]\nfor i, row in enumerate(rows):\n    print(\"  \".join(c.ljust(widths[j]) for j, c in enumerate(row)))\n    if i == 0:\n        print(\"  \".join(\"-\" * w for w in widths))"
+  }
+]

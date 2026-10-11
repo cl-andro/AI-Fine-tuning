@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a decorator that measures a function's execution time with time.perf_counter and prints the elapsed milliseconds, preserving the wrapped function's metadata.",
+    "output": "import functools, time\n\ndef timed(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        elapsed_ms = (time.perf_counter() - start) * 1000\n        print(f'{func.__name__} took {elapsed_ms:.2f} ms')\n        return result\n    return wrapper\n\n@timed\ndef slow_sum(n):\n    return sum(range(n))\n\nprint(slow_sum(100000))"
+  },
+  {
+    "instruction": "Write a retry decorator that retries a failing function up to max_retries times with exponential backoff, then re-raises the last exception.",
+    "output": "import functools, time\n\ndef retry(max_retries=3, base_delay=0.1, exceptions=(Exception,)):\n    def decorator(func):\n        @functools.wraps(func)\n        def wrapper(*args, **kwargs):\n            last_exc = None\n            for attempt in range(max_retries + 1):\n                try:\n                    return func(*args, **kwargs)\n                except exceptions as exc:\n                    last_exc = exc\n                    if attempt < max_retries:\n                        time.sleep(base_delay * 2 ** attempt)\n            raise last_exc\n        return wrapper\n    return decorator\n\n@retry(max_retries=2, base_delay=0)\ndef flaky(x):\n    raise ConnectionError('network down')\n\ntry:\n    flaky(1)\nexcept ConnectionError as exc:\n    print('gave up:', exc)"
+  },
+  {
+    "instruction": "Write a memoization decorator that caches function results keyed by the hashable arguments, with a cache_clear helper and support for a max size using an LRU policy.",
+    "output": "import functools\n\ndef memoize_lru(maxsize=128):\n    def decorator(func):\n        cache = {}\n        order = []\n\n        @functools.wraps(func)\n        def wrapper(*args):\n            if args in cache:\n                return cache[args]\n            result = func(*args)\n            cache[args] = result\n            order.append(args)\n            if len(cache) > maxsize:\n                del cache[order.pop(0)]\n            return result\n\n        def cache_clear():\n            cache.clear()\n            order.clear()\n\n        wrapper.cache_clear = cache_clear\n        wrapper.cache_info = lambda: {'size': len(cache), 'maxsize': maxsize}\n        return wrapper\n    return decorator\n\n@memoize_lru(maxsize=10)\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\n\nprint(fib(40), fib.cache_info())"
+  },
+  {
+    "instruction": "Write a rate_limit decorator that allows at most n calls per period seconds, raising RuntimeError when the limit is exceeded.",
+    "output": "import time\n\ndef rate_limit(n, period):\n    def decorator(func):\n        calls = []\n\n        def wrapper(*args, **kwargs):\n            now = time.monotonic()\n            calls[:] = [t for t in calls if now - t < period]\n            if len(calls) >= n:\n                raise RuntimeError('rate limit exceeded')\n            calls.append(now)\n            return func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@rate_limit(2, 60)\ndef ping(host):\n    return f'pong {host}'\n\nprint(ping('a'), ping('b'))\ntry:\n    ping('c')\nexcept RuntimeError as exc:\n    print(exc)"
+  },
+  {
+    "instruction": "Write a decorator that logs a function call with its arguments and return value using the logging module, redacting parameters whose names contain 'password' or 'token'.",
+    "output": "import functools, logging\n\nlogger = logging.getLogger('api')\n\ndef log_call(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        safe_kwargs = {k: '***' if any(s in k.lower() for s in ('password', 'token')) else v for k, v in kwargs.items()}\n        logger.info('calling %s args=%r kwargs=%r', func.__name__, args, safe_kwargs)\n        result = func(*args, **kwargs)\n        logger.info('%s returned %r', func.__name__, result)\n        return result\n    return wrapper\n\n@log_call\ndef login(user, password=''):\n    return f'welcome {user}'\n\nprint(login('ann', password='s3cret'))"
+  },
+  {
+    "instruction": "Write a deprecated decorator that emits a DeprecationWarning naming the replacement function and still forwards calls to the old implementation.",
+    "output": "import functools, warnings\n\ndef deprecated(since, use_instead):\n    def decorator(func):\n        @functools.wraps(func)\n        def wrapper(*args, **kwargs):\n            warnings.warn(\n                f'{func.__name__} is deprecated since {since}; use {use_instead} instead',\n                DeprecationWarning,\n                stacklevel=2,\n            )\n            return func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@deprecated(since='2.1', use_instead='get_user')\ndef find_user(user_id):\n    return {'id': user_id}\n\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    find_user(1)\n    print(str(caught[0].message))"
+  },
+  {
+    "instruction": "Write a type_check decorator that validates keyword and positional argument types against the function's annotations, raising TypeError on mismatch before the call executes.",
+    "output": "import functools, inspect\n\ndef type_check(func):\n    sig = inspect.signature(func)\n\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        bound = sig.bind(*args, **kwargs)\n        bound.apply_defaults()\n        for name, value in bound.arguments.items():\n            expected = sig.parameters[name].annotation\n            if expected is not inspect.Parameter.empty and not isinstance(value, expected):\n                raise TypeError(f'{name} must be {expected.__name__}, got {type(value).__name__}')\n        return func(*args, **kwargs)\n    return wrapper\n\n@type_check\ndef greet(name: str, times: int = 1):\n    return ' '.join(['hello ' + name] * times)\n\nprint(greet('ann', times=2))\ntry:\n    greet('bob', times='two')\nexcept TypeError as exc:\n    print(exc)"
+  },
+  {
+    "instruction": "Write a run_once decorator that executes the wrapped function only on the first call, caching and returning the result for every subsequent call.",
+    "output": "import functools\n\ndef run_once(func):\n    cache = {}\n\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        if 'result' not in cache:\n            cache['result'] = func(*args, **kwargs)\n        return cache['result']\n    return wrapper\n\n@run_once\ndef connect():\n    print('connecting...')\n    return {'socket': 42}\n\nprint(connect())\nprint(connect())"
+  },
+  {
+    "instruction": "Write a context manager (using contextlib.contextmanager) that acquires a threading.Lock for the duration of the with-block and releases it even if the body raises.",
+    "output": "import contextlib, threading\n\nlock = threading.Lock()\n\n@contextlib.contextmanager\ndef locked(target_lock):\n    target_lock.acquire()\n    try:\n        yield\n    finally:\n        target_lock.release()\n\nwith locked(lock):\n    print('lock held:', lock.locked())\nprint('lock held:', lock.locked())"
+  },
+  {
+    "instruction": "Write a context manager that redirects sys.stdout to a StringIO buffer during the with-block and captures whatever was printed into a returned string.",
+    "output": "import contextlib, io, sys\n\nclass Captured:\n    def __init__(self):\n        self.output = ''\n\n    def __enter__(self):\n        self._buffer = io.StringIO()\n        self._old = sys.stdout\n        sys.stdout = self._buffer\n        return self\n\n    def __exit__(self, exc_type, exc, tb):\n        sys.stdout = self._old\n        self.output = self._buffer.getvalue()\n        return False\n\nwith Captured() as cap:\n    print('hello inside')\nprint(repr(cap.output))"
+  },
+  {
+    "instruction": "Write a stopwatch context manager that records wall-clock duration of a block and exposes the elapsed seconds as an attribute after the block exits.",
+    "output": "import time\n\nclass Stopwatch:\n    def __init__(self, label='block'):\n        self.label = label\n        self.elapsed = None\n\n    def __enter__(self):\n        self._start = time.perf_counter()\n        return self\n\n    def __exit__(self, exc_type, exc, tb):\n        self.elapsed = time.perf_counter() - self._start\n        print(f'{self.label}: {self.elapsed:.6f}s')\n        return False\n\nwith Stopwatch('sum loop') as sw:\n    total = sum(range(200000))\nprint('elapsed recorded:', sw.elapsed is not None)"
+  },
+  {
+    "instruction": "Write a context manager that temporarily changes the current working directory and restores it afterwards, even when the block raises an exception.",
+    "output": "import os\n\nclass chdir:\n    def __init__(self, path):\n        self.path = path\n\n    def __enter__(self):\n        self.old = os.getcwd()\n        os.chdir(self.path)\n        return os.getcwd()\n\n    def __exit__(self, exc_type, exc, tb):\n        os.chdir(self.old)\n        return False\n\nwith chdir('/tmp') as cwd:\n    print(cwd)\nprint('restored to:', os.getcwd())"
+  },
+  {
+    "instruction": "Write a suppress-style context manager implemented from scratch that catches only the given exception types and records whether an exception was suppressed.",
+    "output": "class Suppress:\n    def __init__(self, *exceptions):\n        self.exceptions = exceptions\n        self.suppressed = False\n\n    def __enter__(self):\n        return self\n\n    def __exit__(self, exc_type, exc, tb):\n        if exc_type is not None and issubclass(exc_type, self.exceptions):\n            self.suppressed = True\n            return True\n        return False\n\nwith Suppress(ZeroDivisionError, ValueError) as ctx:\n    1 / 0\nprint('suppressed:', ctx.suppressed)"
+  },
+  {
+    "instruction": "Write a compose function that combines multiple decorators into one, applying them right-to-left like functools.partial chains.",
+    "output": "import functools\n\ndef compose(*decorators):\n    def apply(func):\n        for dec in reversed(decorators):\n            func = dec(func)\n        return func\n    return apply\n\ndef bold(func):\n    @functools.wraps(func)\n    def wrapper(*a, **kw):\n        return f'<b>{func(*a, **kw)}</b>'\n    return wrapper\n\ndef exclaim(func):\n    @functools.wraps(func)\n    def wrapper(*a, **kw):\n        return func(*a, **kw) + '!'\n    return wrapper\n\n@compose(bold, exclaim)\ndef greet(name):\n    return f'hi {name}'\n\nprint(greet('ann'))"
+  },
+  {
+    "instruction": "Write a decorator factory make_cache that caches results for TTL seconds using time.monotonic, so stale entries are recomputed on the next call.",
+    "output": "import functools, time\n\ndef make_cache(ttl=60.0):\n    def decorator(func):\n        store = {}\n\n        @functools.wraps(func)\n        def wrapper(*args):\n            entry = store.get(args)\n            if entry and time.monotonic() - entry[1] < ttl:\n                return entry[0]\n            result = func(*args)\n            store[args] = (result, time.monotonic())\n            return result\n        return wrapper\n    return decorator\n\n@make_cache(ttl=5)\ndef fetch(url):\n    print('fetching', url)\n    return url.upper()\n\nprint(fetch('a.com'))\nprint(fetch('a.com'))"
+  },
+  {
+    "instruction": "Write a validate_args decorator that checks positional argument count and rejects unknown keyword arguments using the wrapped function's signature.",
+    "output": "import functools, inspect\n\ndef validate_args(func):\n    sig = inspect.signature(func)\n\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        try:\n            sig.bind(*args, **kwargs)\n        except TypeError as exc:\n            raise TypeError(f'{func.__name__}: {exc}') from None\n        return func(*args, **kwargs)\n    return wrapper\n\n@validate_args\ndef connect(host, port=22):\n    return f'{host}:{port}'\n\nprint(connect('db.local', port=5432))\ntry:\n    connect('db.local', timeout=5)\nexcept TypeError as exc:\n    print(exc)"
+  },
+  {
+    "instruction": "Write a context manager that provides a temporary directory of files from a dict of filename to content, deleting the directory on exit.",
+    "output": "import os, tempfile, shutil\n\nclass temp_files:\n    def __init__(self, files):\n        self.files = files\n\n    def __enter__(self):\n        self.root = tempfile.mkdtemp(prefix='tmpproj-')\n        for name, content in self.files.items():\n            path = os.path.join(self.root, name)\n            os.makedirs(os.path.dirname(path) or self.root, exist_ok=True)\n            mode = 'wb' if isinstance(content, bytes) else 'w'\n            with open(path, mode) as f:\n                f.write(content)\n        return self.root\n\n    def __exit__(self, exc_type, exc, tb):\n        shutil.rmtree(self.root, ignore_errors=True)\n        return False\n\nwith temp_files({'a.txt': 'one', 'sub/b.txt': 'two'}) as root:\n    print(sorted(os.listdir(root)))\nprint('exists after:', os.path.exists(root))"
+  },
+  {
+    "instruction": "Write a decorator assert_positive that wraps numeric-returning functions and raises AssertionError when the return value is not greater than zero.",
+    "output": "import functools\n\ndef assert_positive(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        result = func(*args, **kwargs)\n        if result <= 0:\n            raise AssertionError(f'{func.__name__} returned non-positive value {result!r}')\n        return result\n    return wrapper\n\n@assert_positive\ndef divide(a, b=1):\n    return a / b\n\nprint(divide(10, 2))\ntry:\n    divide(-4, 2)\nexcept AssertionError as exc:\n    print(exc)"
+  },
+  {
+    "instruction": "Write a trace decorator that prints the function name with arguments on entry and the return value on exit, including when the function raises.",
+    "output": "import functools, traceback\n\ndef trace(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        print(f'-> {func.__name__}{args} kwargs={kwargs}')\n        try:\n            result = func(*args, **kwargs)\n        except Exception:\n            print(f'<- {func.__name__} raised')\n            raise\n        print(f'<- {func.__name__} returned {result!r}')\n        return result\n    return wrapper\n\n@trace\ndef risky(n):\n    if n < 0:\n        raise ValueError('negative')\n    return n * 2\n\nrisky(21)\ntry:\n    risky(-1)\nexcept ValueError:\n    pass"
+  },
+  {
+    "instruction": "Write a memoize decorator supporting unhashable list arguments by converting them to a canonical tuple key, falling back to repr for nested structures.",
+    "output": "import functools\n\ndef freeze(value):\n    if isinstance(value, list):\n        return tuple(freeze(v) for v in value)\n    if isinstance(value, dict):\n        return tuple(sorted((k, freeze(v)) for k, v in value.items()))\n    return value\n\ndef memoize(func):\n    cache = {}\n\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        key = (freeze(args), freeze(kwargs))\n        if key not in cache:\n            cache[key] = func(*args, **kwargs)\n        return cache[key]\n    return wrapper\n\n@memoize\ndef total(rows):\n    return sum(r['amount'] for r in rows)\n\nprint(total([{'amount': 5}, {'amount': 7}]))\nprint(total([{'amount': 5}, {'amount': 7}]))"
+  }
+]

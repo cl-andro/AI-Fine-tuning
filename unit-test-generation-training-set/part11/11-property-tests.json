@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Hypothesis property test showing that reversing a string twice returns the original string.\n\ndef reverse_string(s):\n    return s[::-1]",
+    "output": "from hypothesis import given, strategies as st\nfrom strings import reverse_string\n\n@given(st.text())\ndef test_reverse_twice_is_identity(s):\n    assert reverse_string(reverse_string(s)) == s"
+  },
+  {
+    "instruction": "Write a property test verifying that sorting a list is idempotent and produces a non-decreasing sequence.\n\ndef sort_list(items):\n    return sorted(items)",
+    "output": "from hypothesis import given, strategies as st\nfrom seq import sort_list\n\n@given(st.lists(st.integers()))\ndef test_sort_idempotent(items):\n    once = sort_list(items)\n    assert sort_list(once) == once\n\n@given(st.lists(st.integers()))\ndef test_sort_is_ordered(items):\n    result = sort_list(items)\n    assert all(result[i] <= result[i + 1] for i in range(len(result) - 1))"
+  },
+  {
+    "instruction": "Write a property test stating that filtering never grows a list.\n\ndef keep_positive(numbers):\n    return [n for n in numbers if n > 0]",
+    "output": "from hypothesis import given, strategies as st\nfrom seq import keep_positive\n\n@given(st.lists(st.integers()))\ndef test_filter_does_not_grow_list(numbers):\n    result = keep_positive(numbers)\n    assert len(result) <= len(numbers)\n\n@given(st.lists(st.integers()))\ndef test_filtered_items_all_positive(numbers):\n    assert all(n > 0 for n in keep_positive(numbers))"
+  },
+  {
+    "instruction": "Write a JSON round-trip property test: dumps then loads returns an equal structure for arbitrary nested data.\n\nimport json\n\ndef roundtrip(obj):\n    return json.loads(json.dumps(obj))",
+    "output": "from hypothesis import given, strategies as st\nimport json\n\njson_data = st.recursive(\n    st.none() | st.booleans() | st.integers() | st.text(),\n    lambda children: st.lists(children) | st.dictionaries(st.text(), children),\n    max_leaves=30)\n\n@given(json_data)\ndef test_json_roundtrip(obj):\n    assert json.loads(json.dumps(obj)) == obj"
+  },
+  {
+    "instruction": "Write a property test that addition of integers is commutative and associative.\n\ndef add(a, b):\n    return a + b",
+    "output": "from hypothesis import given, strategies as st\nfrom calc import add\n\n@given(st.integers(), st.integers())\ndef test_add_commutative(a, b):\n    assert add(a, b) == add(b, a)\n\n@given(st.integers(), st.integers(), st.integers())\ndef test_add_associative(a, b, c):\n    assert add(add(a, b), c) == add(a, add(b, c))"
+  },
+  {
+    "instruction": "Write a property test: lowercasing then uppercasing ASCII text yields the same string as uppercasing directly.\n\ndef to_lower(s):\n    return s.lower()\n\ndef to_upper(s):\n    return s.upper()",
+    "output": "from hypothesis import given, strategies as st\nfrom casing import to_lower, to_upper\n\n@given(st.text(alphabet=st.characters(whitelist_categories=('Ll', 'Lu', 'Nd'))))\ndef test_lower_then_upper_matches_upper(s):\n    assert to_upper(to_lower(s)) == to_upper(s)"
+  },
+  {
+    "instruction": "Write a property test showing strptime/strftime round-trips ISO dates through a list of supported formats.\n\nfrom datetime import datetime\n\ndef parse_iso_date(text):\n    return datetime.strptime(text, '%Y-%m-%d')",
+    "output": "from hypothesis import given, strategies as st\nfrom datetime import datetime, timedelta\nfrom dates import parse_iso_date\n\n@given(st.dates(min_value=datetime(1900, 1, 1).date(), max_value=datetime(2100, 12, 31).date()))\ndef test_iso_date_roundtrip(date):\n    text = date.isoformat()\n    assert parse_iso_date(text).date() == date\n\ndef test_strptime_parse():\n    assert parse_iso_date('2024-02-29').year == 2024"
+  },
+  {
+    "instruction": "Write a base64 round-trip property test for arbitrary bytes.\n\nimport base64\n\ndef encode(data):\n    return base64.b64encode(data).decode('ascii')\n\ndef decode(text):\n    return base64.b64decode(text)",
+    "output": "from hypothesis import given, strategies as st\nimport base64\nfrom b64 import encode, decode\n\n@given(st.binary())\ndef test_base64_roundtrip(data):\n    assert decode(encode(data)) == data\n\n@given(st.binary())\ndef test_encode_is_ascii(data):\n    encoded = encode(data)\n    assert all(ord(ch) < 128 for ch in encoded)"
+  },
+  {
+    "instruction": "Write property tests for set union/intersection: results contain exactly the expected membership for arbitrary sets.\n\ndef union(a, b):\n    return a | b\n\ndef intersection(a, b):\n    return a & b",
+    "output": "from hypothesis import given, strategies as st\nfrom setops import union, intersection\n\nint_sets = st.sets(st.integers(), max_size=20)\n\n@given(int_sets, int_sets)\ndef test_union_membership(a, b):\n    result = union(a, b)\n    for x in list(a) + list(b):\n        assert x in result\n\n@given(int_sets, int_sets)\ndef test_intersection_membership(a, b):\n    result = intersection(a, b)\n    assert all((x in a) == (x in b) == (x in result) for x in result)"
+  },
+  {
+    "instruction": "Write a property test that shuffling preserves the multiset of elements (same elements and frequencies).\n\nimport random\n\ndef shuffle(items, seed=0):\n    result = list(items)\n    random.Random(seed).shuffle(result)\n    return result",
+    "output": "from hypothesis import given, strategies as st\nfrom collections import Counter\nfrom shuffle import shuffle\n\n@given(st.lists(st.integers()), st.integers())\ndef test_shuffle_preserves_multiset(items, seed):\n    assert Counter(shuffle(items, seed)) == Counter(items)"
+  },
+  {
+    "instruction": "Write a property test proving gcd(a, b) always divides both a and b for non-zero integers.\n\nfrom math import gcd\n\ndef common_divisor(a, b):\n    return gcd(a, b)",
+    "output": "from hypothesis import given, strategies as st\nfrom math import gcd\nfrom numberutils import common_divisor\n\n@given(st.integers(min_value=1, max_value=10**6), st.integers(min_value=1, max_value=10**6))\ndef test_gcd_divides_both(a, b):\n    d = common_divisor(a, b)\n    assert a % d == 0\n    assert b % d == 0\n\ndef test_gcd_known_value():\n    assert common_divisor(54, 24) == 6"
+  },
+  {
+    "instruction": "Write a property test for the roman numeral round trip: int -> roman -> int returns the original number.\n\ndef int_to_roman(n): ...\ndef roman_to_int(s): ...",
+    "output": "from hypothesis import given, strategies as st\nfrom romans import int_to_roman, roman_to_int\n\n@given(st.integers(min_value=1, max_value=3999))\ndef test_roman_roundtrip(n):\n    assert roman_to_int(int_to_roman(n)) == n"
+  },
+  {
+    "instruction": "Write a URL-encoding round-trip property test for arbitrary query parameter dictionaries with simple string values.\n\nfrom urllib.parse import urlencode, parse_qs\n\ndef roundtrip_params(params):\n    return parse_qs(urlencode(params))",
+    "output": "from hypothesis import given, strategies as st\nfrom urllib.parse import urlencode, parse_qs\nfrom urlhelpers import roundtrip_params\n\nparams_strategy = st.dictionaries(\n    st.text(alphabet=st.characters(whitelist_categories=('Ll', 'Nd')), min_size=1, max_size=10),\n    st.text(alphabet=st.characters(whitelist_categories=('Ll', 'Nd')), min_size=1, max_size=20),\n    max_size=5)\n\n@given(params_strategy)\ndef test_query_params_roundtrip(params):\n    result = roundtrip_params(params)\n    assert result == {k: [v] for k, v in params.items()}"
+  },
+  {
+    "instruction": "Write a property test stating that sorted output is a permutation of its input.\n\ndef sort_list(items):\n    return sorted(items)",
+    "output": "from hypothesis import given, strategies as st\nfrom collections import Counter\nfrom seq import sort_list\n\n@given(st.lists(st.integers()))\ndef test_sorted_is_permutation(items):\n    assert Counter(sort_list(items)) == Counter(items)"
+  },
+  {
+    "instruction": "Write property tests for a trim function: output has no leading/trailing whitespace and trimming is idempotent.\n\ndef trim(text):\n    return text.strip()",
+    "output": "from hypothesis import given, strategies as st\nfrom textops import trim\n\nwhitespace = ' \\t\\n\\r\\x0b\\x0c'\n@given(st.text(alphabet=st.characters(blacklist_categories=('Cs',)) | st.sampled_from(whitespace)))\ndef test_trim_removes_edges_and_is_idempotent(text):\n    once = trim(text)\n    assert once == once.strip()\n    assert trim(once) == once"
+  },
+  {
+    "instruction": "Write a CSV write/read round-trip property test using pandas or the csv module for simple string fields.\n\nimport csv, io\n\ndef roundtrip_rows(rows):\n    buffer = io.StringIO()\n    writer = csv.DictWriter(buffer, fieldnames=list(rows[0]))\n    writer.writeheader()\n    writer.writerows(rows)\n    buffer.seek(0)\n    return list(csv.DictReader(buffer))",
+    "output": "from hypothesis import given, strategies as st\nimport csv, io\nfrom csvio import roundtrip_rows\n\nfields = st.text(alphabet=st.characters(whitelist_categories=('Ll', 'Nd')), min_size=1, max_size=8)\nrow_strategy = st.fixed_dictionaries({'name': fields, 'value': fields})\n@given(st.lists(row_strategy, min_size=1, max_size=10))\ndef test_csv_roundtrip(rows):\n    assert roundtrip_rows(rows) == rows"
+  },
+  {
+    "instruction": "Write a property test for md5 hex digests: always 32 lowercase hex characters for arbitrary input.\n\nimport hashlib\n\ndef md5_hex(data):\n    return hashlib.md5(data).hexdigest()",
+    "output": "import hashlib\nfrom hypothesis import given, strategies as st\nimport re\nfrom hashing import md5_hex\n\n@given(st.binary())\ndef test_md5_shape(data):\n    digest = md5_hex(data)\n    assert re.fullmatch(r'[0-9a-f]{32}', digest)\n\ndef test_md5_known_value():\n    assert md5_hex(b'') == 'd41d8cd98f00b204e9800998ecf8427e'"
+  },
+  {
+    "instruction": "Write a property test proving clamp always returns a value within [low, high] for any input and valid bounds.\n\ndef clamp(value, low, high):\n    return max(low, min(value, high))",
+    "output": "from hypothesis import given, strategies as st\nfrom mathops import clamp\n\n@given(\n    st.integers(),\n    st.integers(max_value=0).map(lambda x: x),\n    st.integers(min_value=1))\ndef test_clamp_within_bounds(value, low, high):\n    # ensure low <= high by construction: low <= 0 < high\n    result = clamp(value, low, high)\n    assert low <= result <= high\n\n@given(st.integers(), st.integers(), st.integers())\ndef test_clamp_idempotent(value, low, high):\n    if low > high:\n        low, high = high, low\n    once = clamp(value, low, high)\n    assert clamp(once, low, high) == once"
+  },
+  {
+    "instruction": "Write a property test for chunking: concatenating all chunks of a list returns the original list, and no chunk exceeds the size.\n\ndef chunk(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]",
+    "output": "from hypothesis import given, strategies as st\nfrom seq import chunk\n\n@given(st.lists(st.integers()), st.integers(min_value=1, max_value=50))\ndef test_chunk_concatenates_back(items, size):\n    parts = chunk(items, size)\n    assert [x for part in parts for x in part] == items\n    assert all(len(part) <= size for part in parts)"
+  },
+  {
+    "instruction": "Write a property test: merging sorted intervals always yields sorted, non-overlapping intervals.\n\ndef merge_intervals(intervals):\n    merged = []\n    for start, end in sorted(intervals):\n        if merged and start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged",
+    "output": "from hypothesis import given, strategies as st\nfrom intervals import merge_intervals\n\ninterval_lists = st.lists(\n    st.tuples(st.integers(-100, 100), st.integers(-100, 100)).map(list),\n    max_size=15)\n\n@given(interval_lists)\ndef test_merged_is_sorted_and_disjoint(intervals):\n    merged = merge_intervals([list(p) for p in intervals])\n    for i in range(len(merged) - 1):\n        assert merged[i][1] < merged[i + 1][0]\n    assert all(start <= end for start, end in merged)"
+  }
+]

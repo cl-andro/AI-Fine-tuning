@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Small pings work but large ones fail across a VPN. Diagnose MTU/PMTUD.",
+    "output": "**Diagnose:**\nping -M do -s 1472 <peer>\nping -M do -s 1400 <peer>\nip link show tun0\ntracepath --mtu <peer>\n**Interpretation:** 1472 payload + 28 header = 1500 MTU. If 1472 fails but a smaller size succeeds, the path MTU is below 1500 and ICMP fragmentation-needed is likely blocked, so PMTUD fails.\n**Fix:** Lower the tunnel/interface MTU to the discovered value (e.g `ip link set tun0 mtu 1400`), enable MSS clamping, and allow ICMP type 3 code 4. Verify with `ping -M do` at the new size."
+  },
+  {
+    "instruction": "TCP sessions hang after the TLS handshake. Diagnose MSS/MTU black hole.",
+    "output": "**Diagnose:**\ntcpdump -ni eth0 'tcp port 443' -c 30\nping -M do -s 1472 <server>\nsysctl net.ipv4.tcp_mtu_probing\nsysctl net.ipv4.ip_no_pmtu_disc\n**Interpretation:** The handshake uses small packets and succeeds, but the first large data packet is dropped because the path MTU is smaller and the ICMP-too-big is filtered (PMTU black hole). tcpdump shows retransmissions with no ACK.\n**Fix:** Enable `net.ipv4.tcp_mtu_probing=1` on endpoints, clamp MSS on the router (`iptables ... -j TCPMSS --clamp-mss-to-pmtu`), and fix the MTU. Verify large transfers complete."
+  },
+  {
+    "instruction": "An interface has a reduced MTU that no one set recently. Diagnose.",
+    "output": "**Diagnose:**\nip link show eth0\nip -d link show eth0\nnetworkctl status eth0 2>/dev/null\ngrep -rn mtu /etc/netplan /etc/network/interfaces 2>/dev/null\n**Interpretation:** The MTU may come from DHCP option 26, a netplan stanza, a systemd-networkd config, or a container default. A mismatched MTU between ends causes drops.\n**Fix:** Set a consistent MTU via netplan/`ip link set` and persist it, and align both ends of the link. If DHCP supplies it, override. Verify with `ip link` on both hosts."
+  },
+  {
+    "instruction": "Fragmented packets are dropped by a firewall, breaking large UDP. Diagnose.",
+    "output": "**Diagnose:**\nsudo iptables -L -n -v | grep -i -E 'frag|fragment'\nsudo tcpdump -ni eth0 'ip[6:2] & 0x1fff != 0' -c 20\nping -M do -s 2000 <host>\n**Interpretation:** tcpdump shows fragments arriving, but a `-f` match or fragment drop rule discards later fragments so large UDP payloads never reassemble. Small packets work.\n**Fix:** Allow related fragments via conntrack and remove blanket fragment drops: rely on `--ctstate ESTABLISHED,RELATED` and drop only invalid combinations. Verify large UDP succeeds."
+  },
+  {
+    "instruction": "Path MTU differs per route and some destinations fail. Diagnose with tracepath.",
+    "output": "**Diagnose:**\ntracepath --mtu <A>\ntracepath --mtu <B>\nip route get <A>; ip route get <B>\nping -M do -s 1472 <A>; ping -M do -s 1472 <B>\n**Interpretation:** Different paths can have different MTUs (tunnels, PPPoE). If A works at 1500 and B fails, B's path has a lower MTU. tracepath reports the MTU per hop.\n**Fix:** Apply MSS clamping on egress so TCP adapts per flow, or set the interface MTU to the minimum common value. Allow PMTUD ICMP. Verify both destinations accept large packets."
+  },
+  {
+    "instruction": "PPPoE connections have reduced MTU breaking some sites. Diagnose.",
+    "output": "**Diagnose:**\nip link show ppp0\nping -M do -s 1472 <site>\nping -M do -s 1464 <site>\n/usr/sbin/pppoe-discovery -I eth0 2>/dev/null\n**Interpretation:** PPPoE adds 8 bytes of overhead (1492 usable MTU). A 1500 MTU on the interface causes drops; sites that return large responses (TLS) fail while small pages work.\n**Fix:** Set the PPPoE interface MTU to 1492 and clamp MSS to PMTU on the router. Verify with `ping -M do -s 1464` (1472-8) succeeding and large sites loading."
+  },
+  {
+    "instruction": "ICMP is fully blocked so PMTUD cannot work. Diagnose and work around.",
+    "output": "**Diagnose:**\nping -c2 <gw>\nsudo tcpdump -ni eth0 icmp\nping -M do -s 1472 <remote>\nsysctl net.ipv4.tcp_mtu_probing\n**Interpretation:** If all ICMP is blocked, the router cannot send fragmentation-needed messages, so PMTUD silently fails and large packets vanish. Blocking all ICMP is a common misconfiguration.\n**Fix:** Allow ICMP type 3 code 4 (fragmentation needed) through firewalls, and enable `tcp_mtu_probing=1` on endpoints as a fallback. Verify large transfers complete without drops."
+  },
+  {
+    "instruction": "A GRE/IPsec tunnel causes fragmentation and poor performance. Diagnose.",
+    "output": "**Diagnose:**\nip -s link show gre0\nping -M do -s 1400 <peer>\nethtool -k eth0 | grep -i -E 'gso|gro|tso'\nsysctl net.ipv4.ip_forward\n**Interpretation:** Tunnel overhead (GRE 24, IPsec ~50-73 bytes) reduces usable MTU; if the tunnel interface MTU stays 1500, packets must fragment or drop. Offload features can also interfere with encapsulated packets.\n**Fix:** Set the tunnel MTU to 1500 minus overhead, clamp MSS, and disable TSO/GSO on the tunnel interface if it corrupts encapsulated frames. Verify with `ping -M do` and iperf."
+  },
+  {
+    "instruction": "You need to discover the correct MTU for a path. Diagnose with binary search.",
+    "output": "**Diagnose:**\nping -M do -s 1472 <dest>\nping -M do -s 1400 <dest>\nping -M do -s 1360 <dest>\ntracepath --mtu <dest>\n**Interpretation:** Binary search on the payload size with the DF bit finds the largest non-fragmented size; the MTU is payload + 28 (IPv4/ICMP). 'Frag needed' messages report the next-hop MTU directly.\n**Fix:** Record the discovered MTU and configure interfaces/MSS accordingly. Verify a packet at the found size passes without the DF error."
+  },
+  {
+    "instruction": "A specific protocol breaks over a lower-MTU link. Diagnose protocol overhead.",
+    "output": "**Diagnose:**\nip link show eth0\nping -M do -s 1472 <peer>\ntcpdump -ni eth0 -c 30 -v\n**Interpretation:** Overhead varies: TCP options, VLAN tags, VXLAN (50 bytes), or TLS record overhead reduce effective payload. A link that works for plain TCP may break VXLAN/encapsulated traffic.\n**Fix:** Compute the encapsulation overhead, lower the underlay MTU accordingly, and clamp MSS for the encapsulated flows. Verify the specific protocol passes large payloads."
+  },
+  {
+    "instruction": "Fragmentation is happening on the network and hurting throughput. Diagnose.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 'ip[6:2] & 0x1fff != 0' -c 50\nsudo nstat -az | grep -i -E 'FragOKs|FragFails|ReasmFails'\nip -s link show eth0\n**Interpretation:** Seeing nonzero offsets in the IP flags field means fragmentation is occurring. FragFails/ReasmFails rising indicates drops. Fragmentation increases overhead and risk of loss.\n**Fix:** Reduce the MTU/MSS so packets fit the path without fragmenting, ideally enabling PMTUD and MSS clamping. Verify fragment counters stop increasing and throughput improves."
+  },
+  {
+    "instruction": "A cloud provider's overlay network has a non-standard MTU. Diagnose.",
+    "output": "**Diagnose:**\nip link show eth0\nping -M do -s 1400 <peer-in-overlay>\nping -M do -s 1472 <peer-in-overlay>\nictables/firewall status 2>/dev/null\n**Interpretation:** Overlay networks (VXLAN, Geneve) commonly use 1450 or lower MTU. If the host MTU is 1500, encapsulated packets exceed the underlay and are dropped, causing intermittent hangs for large traffic.\n**Fix:** Set the interface MTU to the provider's documented overlay MTU (e.g 1450), and clamp MSS for TCP. Verify with `ping -M do` at the correct size and normal large transfers."
+  },
+  {
+    "instruction": "A router must be told to clamp MSS. Diagnose the need.",
+    "output": "**Diagnose:**\nping -M do -s 1472 <client-behind-router>\nsudo iptables -t mangle -S\ntcpdump -ni eth0 'tcp[tcpflags] & tcp-syn != 0' -c 5 -v\n**Interpretation:** If endpoints advertise a 1460 MSS but the path MTU is lower, the SYN shows an MSS too large and data packets drop. Clamping rewrites the MSS to fit.\n**Fix:** Add `iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu`. Verify the SYN MSS drops and large transfers work."
+  },
+  {
+    "instruction": "Jumbo frames cause connectivity failure with some hosts. Diagnose.",
+    "output": "**Diagnose:**\nip link show eth0\nethtool eth0 | grep -i mtu\nping -M do -s 8972 <peer>\nping -M do -s 1472 <peer>\n**Interpretation:** If a jumbo (9000 MTU) host talks to a 1500-MTU host, large packets drop unless both and every switch support jumbo frames end-to-end. Small pings work, large fail.\n**Fix:** Standardize MTU across the L2 domain, or keep 1500 everywhere. If jumbo is required, enable it on all switches/NICs. Verify with `ping -M do` at 8972 both ways."
+  },
+  {
+    "instruction": "You need to fix PMTU discovery on a firewall that blocks ICMP. Diagnose.",
+    "output": "**Diagnose:**\nsudo iptables -L -n -v | grep icmp\nping -M do -s 1472 <remote>\nsudo tcpdump -ni eth0 'icmp and icmp[icmptype]==3 and icmp[icmpcode]==4'\n**Interpretation:** Blocking ICMP prevents the router from delivering fragmentation-needed, so the sender never lowers its packet size. tcpdump shows no type-3 code-4 messages because they are dropped.\n**Fix:** Allow ICMP type 3 code 4 in the firewall and avoid blanket `-p icmp -j DROP`. Verify the frag-needed message now reaches the sender and large transfers work."
+  },
+  {
+    "instruction": "A load balancer in front of a lower-MTU backend causes stalls. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v -w 'total:%{time_total}\\n' -o /dev/null -s https://lb/\nping -M do -s 1472 <backend>\nip link show <lb-if>\ntcpdump -ni any 'tcp port 443' -c 30 -v\n**Interpretation:** If the LB path MTU is 1500 but the backend link is lower, large responses stall. The handshake succeeds but bulk data retransmits, and time_total is high.\n**Fix:** Align MTUs across the LB-backend link and clamp MSS at the LB. Verify large responses complete and time_total normalizes."
+  },
+  {
+    "instruction": "An application sets IP_MTU_DISCOVER off and sends oversized UDP. Diagnose.",
+    "output": "**Diagnose:**\ntcpdump -ni eth0 'udp and ip[6:2] & 0x3fff != 0' -c 20\nping -M do -s 1472 <peer>\nss -ulnp -m\n**Interpretation:** With DF disabled, the OS fragments large UDP datagrams; if any fragment is lost the whole datagram is dropped, causing mysterious UDP loss. Fragment counters rise.\n**Fix:** Fix the application to size datagrams to the path MTU or enable fragmentation awareness, and lower the interface MTU. Verify UDP loss drops and fragment counters stay flat."
+  },
+  {
+    "instruction": "ICMP 'frag needed' reports a very small MTU causing poor performance. Diagnose.",
+    "output": "**Diagnose:**\nping -M do -s 1300 <remote>\ntracepath --mtu <remote>\nsudo tcpdump -ni eth0 icmp -c 20\n**Interpretation:** A router advertising a small MTU (e.g 576 or 1280) forces tiny segments, tanking throughput. This can come from a misconfigured tunnel or a conservative default.\n**Fix:** Correct the tunnel/router MTU to the true path value, and allow proper PMTUD. If a middlebox truly has a small MTU, clamp MSS accordingly. Verify the advertised MTU and throughput recover."
+  },
+  {
+    "instruction": "TCP connections from a container to an external service fail on large responses only. Diagnose.",
+    "output": "**Diagnose:**\ndocker exec ctr ip link show eth0\ndocker exec ctr ping -M do -s 1472 <dest>\ndocker exec ctr ping -M do -s 1400 <dest>\nsudo tcpdump -ni docker0 host <dest> -c 20\n**Interpretation:** The container's bridge or overlay MTU is often lower (1450), but if it is misconfigured to 1500 while the host path is lower, large responses drop. Small handshakes succeed.\n**Fix:** Set the container/bridge MTU to match the underlay and clamp MSS. Verify large responses complete from inside the container."
+  },
+  {
+    "instruction": "A network link requires fragmentation but packets have the DF bit set. Diagnose.",
+    "output": "**Diagnose:**\ntcpdump -ni eth0 'ip[6:2] & 0x40 != 0' -c 20\nping -M do -s 1472 <peer>\nip link show eth0\nsysctl net.ipv4.ip_no_pmtu_disc\n**Interpretation:** The DF bit (0x4000) prevents fragmentation. If the link needs fragmentation and cannot signal PMTUD, packets are dropped. Applications may set DF by default.\n**Fix:** Enable PMTUD (allow ICMP too-big) and clamp MSS, or reduce the MTU so DF packets fit. Avoid disabling PMTUD globally. Verify packets traverse and downloads work."
+  }
+]

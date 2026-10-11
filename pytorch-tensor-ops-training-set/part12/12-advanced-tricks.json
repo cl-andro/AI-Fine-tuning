@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Compile a model with torch.compile to speed up training and inference.",
+    "output": "import torch\nmodel = torch.compile(model)"
+  },
+  {
+    "instruction": "Train in mixed precision using autocast together with a gradient scaler.",
+    "output": "import torch\nscaler = torch.amp.GradScaler('cuda')\nwith torch.amp.autocast('cuda', dtype=torch.float16):\n    loss = criterion(model(xb), yb)\nscaler.scale(loss).backward()\nscaler.step(optimizer)\nscaler.update()"
+  },
+  {
+    "instruction": "Accumulate gradients over 4 mini-batches before taking an optimizer step.",
+    "output": "for i, (xb, yb) in enumerate(loader):\n    loss = criterion(model(xb), yb) / 4\n    loss.backward()\n    if (i + 1) % 4 == 0:\n        optimizer.step()\n        optimizer.zero_grad(set_to_none=True)"
+  },
+  {
+    "instruction": "Maintain an exponential moving average of the model weights.",
+    "output": "from copy import deepcopy\nema = deepcopy(model).eval()\nfor p, q in zip(model.parameters(), ema.parameters()):\n    q.mul_(0.99).add_(p.detach(), alpha=0.01)"
+  },
+  {
+    "instruction": "Checkpoint the activations of a large block so backpropagation uses less memory.",
+    "output": "from torch.utils.checkpoint import checkpoint\nout = checkpoint(block, x, use_reentrant=False)"
+  },
+  {
+    "instruction": "Enable TF32 matrix multiplication on Ampere or newer GPUs.",
+    "output": "import torch\ntorch.backends.cuda.matmul.allow_tf32 = True"
+  },
+  {
+    "instruction": "Set the float32 matmul precision to high to trade a little accuracy for speed.",
+    "output": "import torch\ntorch.set_float32_matmul_precision('high')"
+  },
+  {
+    "instruction": "Train with the channels_last memory format for convolutional networks.",
+    "output": "model = model.to(memory_format=torch.channels_last)\nx = xb.to(memory_format=torch.channels_last)"
+  },
+  {
+    "instruction": "Profile a model's forward pass with torch.profiler.",
+    "output": "import torch\nwith torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU]) as prof:\n    model(x)\nprint(prof.key_averages().table())"
+  },
+  {
+    "instruction": "Use torch.vmap to evaluate a per-sample loss on a whole batch at once.",
+    "output": "import torch\ndef loss_row(xi, yi):\n    return (model(xi) - yi).pow(2).mean()\nbatched_loss = torch.vmap(loss_row)(xb, yb)"
+  },
+  {
+    "instruction": "Force deterministic algorithms so that repeated runs give identical results.",
+    "output": "import torch\ntorch.use_deterministic_algorithms(True)"
+  },
+  {
+    "instruction": "Avoid restarting DataLoader workers between epochs.",
+    "output": "from torch.utils.data import DataLoader\nloader = DataLoader(ds, batch_size=32, num_workers=4, persistent_workers=True)"
+  },
+  {
+    "instruction": "Clip gradients in the scaled backward pass while using AMP.",
+    "output": "import torch\nscaler.unscale_(optimizer)\ntorch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)\nscaler.step(optimizer)\nscaler.update()"
+  },
+  {
+    "instruction": "Use a fused AdamW kernel on CUDA for a faster optimizer update.",
+    "output": "import torch.optim as optim\noptimizer = optim.AdamW(model.parameters(), lr=1e-3, fused=True)"
+  },
+  {
+    "instruction": "Apply mixup to a batch before computing the loss.",
+    "output": "import torch\nlam = 0.4\nidx = torch.randperm(xb.size(0))\nmixed = lam * xb + (1 - lam) * xb[idx]\nloss = lam * criterion(model(mixed), yb) + (1 - lam) * criterion(model(mixed), yb[idx])"
+  },
+  {
+    "instruction": "Keep the loss computation in float32 even when the forward pass ran in float16.",
+    "output": "with torch.amp.autocast('cuda', dtype=torch.float16):\n    logits = model(xb).float()\nloss = criterion(logits, yb)"
+  },
+  {
+    "instruction": "Tell the compiler that dimension 0 of an input may change size between calls.",
+    "output": "import torch\ntorch._dynamo.mark_dynamic(x, 0)"
+  },
+  {
+    "instruction": "Compile a model with reduce-overhead mode to minimize kernel launch overhead.",
+    "output": "import torch\nmodel = torch.compile(model, mode='reduce-overhead')"
+  },
+  {
+    "instruction": "Compute per-sample gradients of a loss with torch.func.",
+    "output": "import torch\nfrom torch.func import functional_call, grad, vmap\nparams = dict(model.named_parameters())\ndef loss_fn(params, x, y):\n    pred = functional_call(model, params, (x,))\n    return (pred - y).pow(2).mean()\ngradients = vmap(grad(loss_fn), in_dims=(None, 0, 0))(params, xb, yb)"
+  },
+  {
+    "instruction": "Let cuDNN autotune convolution algorithms for fixed input sizes.",
+    "output": "import torch\ntorch.backends.cudnn.benchmark = True"
+  }
+]

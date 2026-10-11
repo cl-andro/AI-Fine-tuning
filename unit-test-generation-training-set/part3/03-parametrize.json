@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Rewrite these tests using pytest.mark.parametrize to cover many add() cases concisely.\n\ndef add(a, b):\n    return a + b\n\ndef test_add():\n    assert add(1, 2) == 3\n    assert add(-1, 1) == 0",
+    "output": "import pytest\nfrom calc import add\n\n@pytest.mark.parametrize('a, b, expected', [\n    (1, 2, 3),\n    (-1, 1, 0),\n    (0, 0, 0),\n    (100, 25, 125),\n    (2.5, 2.5, 5.0),\n])\ndef test_add(a, b, expected):\n    assert add(a, b) == expected"
+  },
+  {
+    "instruction": "Write parametrized pytest tests for is_palindrome covering true cases, false cases and edge cases with ids for readability.\n\ndef is_palindrome(s):\n    return s == s[::-1]",
+    "output": "import pytest\nfrom text import is_palindrome\n\n@pytest.mark.parametrize('value', ['racecar', 'madam', '', 'a'], ids=['racecar', 'madam', 'empty', 'single'])\ndef test_palindromes(value):\n    assert is_palindrome(value) is True\n\n@pytest.mark.parametrize('value', ['hello', 'python', 'ab'], ids=['hello', 'python', 'ab'])\ndef test_non_palindromes(value):\n    assert is_palindrome(value) is False"
+  },
+  {
+    "instruction": "Write parametrized tests for divide() that cover successful division and ZeroDivisionError, using ids to name the error case.\n\ndef divide(a, b):\n    return a / b",
+    "output": "import pytest\nfrom calc import divide\n\n@pytest.mark.parametrize('a, b, expected', [(10, 2, 5.0), (9, 3, 3.0), (-8, 4, -2.0)], ids=['simple', 'exact', 'negative'])\ndef test_divide_ok(a, b, expected):\n    assert divide(a, b) == expected\n\n@pytest.mark.parametrize('b', [0, 0.0], ids=['int-zero', 'float-zero'])\ndef test_divide_by_zero(b):\n    with pytest.raises(ZeroDivisionError):\n        divide(1, b)"
+  },
+  {
+    "instruction": "Write a parametrized test suite for slugify covering spaces, punctuation, mixed case and already-slugified input.\n\nimport re\n\ndef slugify(text):\n    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')",
+    "output": "import pytest\nfrom slugs import slugify\n\n@pytest.mark.parametrize('text, expected', [\n    ('Hello World', 'hello-world'),\n    ('Already-Slugged', 'already-slugged'),\n    ('Special! @Chars# 42', 'special-chars-42'),\n    ('Multiple   spaces', 'multiple-spaces'),\n    ('---edge---', 'edge'),\n])\ndef test_slugify(text, expected):\n    assert slugify(text) == expected"
+  },
+  {
+    "instruction": "Write parametrized pytest tests for parse_date that accept several valid formats with descriptive ids, plus one invalid format case.\n\nfrom datetime import datetime\n\ndef parse_date(text):\n    for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%b %d %Y'):\n        try:\n            return datetime.strptime(text, fmt).date()\n        except ValueError:\n            continue\n    raise ValueError(text)",
+    "output": "import pytest\nfrom dates import parse_date\n\n@pytest.mark.parametrize('text, expected', [\n    ('2024-03-15', '2024-03-15'),\n    ('15/03/2024', '2024-03-15'),\n    ('Mar 15 2024', '2024-03-15'),\n], ids=['iso', 'european', 'abbrev-month'])\ndef test_parse_valid_dates(text, expected):\n    assert parse_date(text).isoformat() == expected\n\ndef test_parse_invalid_date():\n    with pytest.raises(ValueError):\n        parse_date('not-a-date')"
+  },
+  {
+    "instruction": "Write a parametrized test table for a password validator checking length, digit, uppercase and special-character rules.\n\ndef is_strong_password(pw):\n    return (len(pw) >= 8 and any(c.isdigit() for c in pw)\n            and any(c.isupper() for c in pw)\n            and any(not c.isalnum() for c in pw))",
+    "output": "import pytest\nfrom security import is_strong_password\n\n@pytest.mark.parametrize('password, expected', [\n    ('Abcdef1!', True),\n    ('short1A', False),\n    ('alllowercase1!', False),\n    ('NOLOWERCASE1!', False),\n    ('NoDigits!!', False),\n    ('NoSpecial1', False),\n], ids=['ok', 'too-short', 'no-upper', 'no-lower', 'no-digit', 'no-special'])\ndef test_is_strong_password(password, expected):\n    assert is_strong_password(password) is expected"
+  },
+  {
+    "instruction": "Write parametrized tests for is_prime over a range of primes, composites and invalid inputs.\n\ndef is_prime(n):\n    if n < 2:\n        return False\n    return all(n % i for i in range(2, int(n ** 0.5) + 1))",
+    "output": "import pytest\nfrom primes import is_prime\n\n@pytest.mark.parametrize('n', [2, 3, 5, 7, 11, 7919], ids=lambda n: f'prime-{n}')\ndef test_primes(n):\n    assert is_prime(n) is True\n\n@pytest.mark.parametrize('n', [4, 6, 9, 100, 1024], ids=lambda n: f'composite-{n}')\ndef test_composites(n):\n    assert is_prime(n) is False\n\n@pytest.mark.parametrize('n', [0, 1, -7], ids=lambda n: f'invalid-{n}')\ndef test_invalid(n):\n    assert is_prime(n) is False"
+  },
+  {
+    "instruction": "Write parametrized pytest tests for roman_to_int with classic examples and boundary values.\n\ndef roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        total += vals[ch]\n        if i + 1 < len(s) and vals[ch] < vals[s[i + 1]]:\n            total -= 2 * vals[ch]\n    return total",
+    "output": "import pytest\nfrom romans import roman_to_int\n\n@pytest.mark.parametrize('roman, value', [\n    ('I', 1), ('III', 3), ('IV', 4), ('IX', 9),\n    ('LVIII', 58), ('MCMXCIV', 1994), ('MMMCMXCIX', 3999),\n])\ndef test_roman_to_int(roman, value):\n    assert roman_to_int(roman) == value"
+  },
+  {
+    "instruction": "Write a parametrized test suite for is_valid_url covering http, https, missing scheme and bad characters.\n\nfrom urllib.parse import urlparse\n\ndef is_valid_url(url):\n    parsed = urlparse(url)\n    return parsed.scheme in ('http', 'https') and bool(parsed.netloc)",
+    "output": "import pytest\nfrom urls import is_valid_url\n\n@pytest.mark.parametrize('url, expected', [\n    ('http://example.com', True),\n    ('https://example.com/path?q=1', True),\n    ('ftp://example.com', False),\n    ('example.com', False),\n    ('https://', False),\n    ('not a url', False),\n], ids=['http', 'https-query', 'ftp', 'no-scheme', 'no-host', 'spaces'])\ndef test_is_valid_url(url, expected):\n    assert is_valid_url(url) is expected"
+  },
+  {
+    "instruction": "Write parametrized tests for round_money covering banker's vs half-up expectations for values like 2.675 and 2.5.\n\nfrom decimal import Decimal, ROUND_HALF_UP\n\ndef round_money(amount):\n    return float(Decimal(str(amount)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))",
+    "output": "import pytest\nfrom money import round_money\n\n@pytest.mark.parametrize('amount, expected', [\n    (2.675, 2.68),\n    (2.674, 2.67),\n    (2.5, 2.50),\n    (0.005, 0.01),\n    (10, 10.00),\n], ids=['half-up-2.675', 'below', 'exact-half', 'small-half', 'integer'])\ndef test_round_money(amount, expected):\n    assert round_money(amount) == pytest.approx(expected)"
+  },
+  {
+    "instruction": "Write parametrized tests for categorize_age producing age-group labels for boundary ages.\n\ndef categorize_age(age):\n    if age < 13:\n        return 'child'\n    if age < 20:\n        return 'teen'\n    if age < 65:\n        return 'adult'\n    return 'senior'",
+    "output": "import pytest\nfrom ages import categorize_age\n\n@pytest.mark.parametrize('age, group', [\n    (0, 'child'), (12, 'child'),\n    (13, 'teen'), (19, 'teen'),\n    (20, 'adult'), (64, 'adult'),\n    (65, 'senior'), (100, 'senior'),\n], ids=['age-0', 'age-12', 'age-13', 'age-19', 'age-20', 'age-64', 'age-65', 'age-100'])\ndef test_categorize_age(age, group):\n    assert categorize_age(age) == group"
+  },
+  {
+    "instruction": "Write a parametrized test using tuple argnames to test a zip_two(a, b) helper that pairs items with a default fill.\n\ndef zip_two(a, b, fill=None):\n    length = max(len(a), len(b))\n    return [(a[i] if i < len(a) else fill, b[i] if i < len(b) else fill) for i in range(length)]",
+    "output": "import pytest\nfrom pairs import zip_two\n\n@pytest.mark.parametrize('a, b, fill, expected', [\n    ([1, 2], ['x', 'y'], None, [(1, 'x'), (2, 'y')]),\n    ([1], ['x', 'y', 'z'], '-', [(1, 'x'), ('-', 'y'), ('-', 'z')]),\n    ([], [1, 2], 0, [(0, 1), (0, 2)]),\n    ([], [], None, []),\n], ids=['equal', 'a-shorter', 'a-empty', 'both-empty'])\ndef test_zip_two(a, b, fill, expected):\n    assert zip_two(a, b, fill) == expected"
+  },
+  {
+    "instruction": "Write parametrized tests for parse_hex that accept valid hex colors and reject invalid ones, with readable case ids.\n\ndef parse_hex(value):\n    if not value.startswith('#') or len(value) not in (4, 7):\n        raise ValueError(value)\n    int(value[1:], 16)\n    return value.upper()",
+    "output": "import pytest\nfrom color import parse_hex\n\n@pytest.mark.parametrize('value', ['#fff', '#00FF00', '#123abc'], ids=['short', 'upper', 'mixed'])\ndef test_valid_hex(value):\n    assert parse_hex(value).startswith('#')\n\n@pytest.mark.parametrize('value', ['fff', '#12345', 'red', '#zzz'], ids=['no-hash', 'wrong-len', 'named', 'bad-digits'])\ndef test_invalid_hex(value):\n    with pytest.raises(ValueError):\n        parse_hex(value)"
+  },
+  {
+    "instruction": "Write a parametrized test for state transitions in a turnstile FSM: locked + coin -> unlocked, unlocked + push -> locked, etc.\n\ndef turnstile(state, event):\n    if state == 'locked' and event == 'coin':\n        return 'unlocked'\n    if state == 'unlocked' and event == 'push':\n        return 'locked'\n    return state",
+    "output": "import pytest\nfrom turnstile import turnstile\n\n@pytest.mark.parametrize('start, event, expected', [\n    ('locked', 'coin', 'unlocked'),\n    ('unlocked', 'push', 'locked'),\n    ('locked', 'push', 'locked'),\n    ('unlocked', 'coin', 'unlocked'),\n], ids=['coin-unlocks', 'push-locks', 'push-ignored-when-locked', 'extra-coin-ok'])\ndef test_turnstile(start, event, expected):\n    assert turnstile(start, event) == expected"
+  },
+  {
+    "instruction": "Write a parametrized temperature conversion table test for fahrenheit_to_celsius with expected values rounded to one decimal.\n\ndef fahrenheit_to_celsius(f):\n    return round((f - 32) * 5 / 9, 1)",
+    "output": "import pytest\nfrom temps import fahrenheit_to_celsius\n\n@pytest.mark.parametrize('fahrenheit, celsius', [\n    (32, 0.0),\n    (212, 100.0),\n    (98.6, 37.0),\n    (0, -17.8),\n    (-40, -40.0),\n], ids=['freezing', 'boiling', 'body', 'zero-f', 'crosses-zero'])\ndef test_fahrenheit_to_celsius(fahrenheit, celsius):\n    assert fahrenheit_to_celsius(fahrenheit) == pytest.approx(celsius)"
+  },
+  {
+    "instruction": "Write parametrized tests that assert error messages from validate_age for out-of-range and wrong-type inputs, using match strings.\n\ndef validate_age(age):\n    if not isinstance(age, int):\n        raise TypeError('age must be int')\n    if not 0 <= age <= 150:\n        raise ValueError('age out of range')\n    return age",
+    "output": "import pytest\nfrom ages import validate_age\n\n@pytest.mark.parametrize('age', [0, 21, 150], ids=['zero', 'adult', 'max'])\ndef test_valid_age(age):\n    assert validate_age(age) == age\n\n@pytest.mark.parametrize('age, exc, msg', [\n    (-1, ValueError, 'age out of range'),\n    (151, ValueError, 'age out of range'),\n    ('21', TypeError, 'age must be int'),\n    (21.5, TypeError, 'age must be int'),\n], ids=['negative', 'too-big', 'string', 'float'])\ndef test_invalid_age(age, exc, msg):\n    with pytest.raises(exc, match=msg):\n        validate_age(age)"
+  },
+  {
+    "instruction": "Write a parametrized test for format_bytes covering 0 bytes, 1023, 1024 and multi-gigabyte values.\n\ndef format_bytes(n):\n    units = ['B', 'KB', 'MB', 'GB']\n    size = float(n)\n    for unit in units:\n        if size < 1024 or unit == units[-1]:\n            return f'{size:.0f} {unit}' if unit == 'B' else f'{size:.1f} {unit}'\n        size /= 1024",
+    "output": "import pytest\nfrom humanize import format_bytes\n\n@pytest.mark.parametrize('n, expected', [\n    (0, '0 B'),\n    (512, '512 B'),\n    (1024, '1.0 KB'),\n    (1536, '1.5 KB'),\n    (1048576, '1.0 MB'),\n    (5 * 1024 ** 3, '5.0 GB'),\n], ids=['zero', 'bytes', 'one-kb', 'kilo', 'mega', 'giga'])\ndef test_format_bytes(n, expected):\n    assert format_bytes(n) == expected"
+  },
+  {
+    "instruction": "Write parametrized tests for a batch rename helper that replaces spaces with underscores and lowercases, including unicode input.\n\ndef rename_file(name):\n    return name.replace(' ', '_').lower()",
+    "output": "import pytest\nfrom filenames import rename_file\n\n@pytest.mark.parametrize('name, expected', [\n    ('Report Final.pdf', 'report_final.pdf'),\n    ('multiple   spaces.txt', 'multiple___spaces.txt'),\n    ('already_ok.csv', 'already_ok.csv'),\n    ('Ünïcode Name.png', 'ünïcode_name.png'),\n], ids=['title', 'multi-space', 'already', 'unicode'])\ndef test_rename_file(name, expected):\n    assert rename_file(name) == expected"
+  },
+  {
+    "instruction": "Write a parametrized test that checks a scoring function returns correct points for word lengths in a word-game ruleset.\n\ndef word_score(word):\n    base = {3: 1, 4: 2, 5: 3}.get(len(word), 4)\n    return base * (2 if word.isupper() else 1)",
+    "output": "import pytest\nfrom game import word_score\n\n@pytest.mark.parametrize('word, expected', [\n    ('cat', 1),\n    ('fish', 2),\n    ('apple', 3),\n    ('elephant', 4),\n    ('DOG', 2),\n    ('WOW', 2),\n], ids=['len3', 'len4', 'len5', 'len8', 'double-4', 'double-3'])\ndef test_word_score(word, expected):\n    assert word_score(word) == expected"
+  },
+  {
+    "instruction": "Write parametrized tests for parse_kv pairs like 'k=v' with whitespace tolerance, covering malformed lines.\n\ndef parse_kv(text):\n    if '=' not in text:\n        raise ValueError(text)\n    key, _, value = text.partition('=')\n    return key.strip(), value.strip()",
+    "output": "import pytest\nfrom config import parse_kv\n\n@pytest.mark.parametrize('text, expected', [\n    ('a=1', ('a', '1')),\n    ('  spaced = value  ', ('spaced', 'value')),\n    ('empty=', ('empty', '')),\n    ('multi=part=value', ('multi', 'part=value')),\n], ids=['simple', 'spaces', 'empty-value', 'extra-equals'])\ndef test_parse_kv(text, expected):\n    assert parse_kv(text) == expected\n\ndef test_parse_kv_malformed():\n    with pytest.raises(ValueError):\n        parse_kv('no-equals-sign')"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Run pytest on Python 3.12 with pip dependency caching.",
+    "output": "name: pytest\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: pytest -v"
+  },
+  {
+    "instruction": "Run the test suite across Python 3.10, 3.11, and 3.12 with a matrix.",
+    "output": "name: python-matrix-tests\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python: ['3.10', '3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python }}\n          cache: pip\n      - run: pip install -e '.[test]'\n      - run: pytest"
+  },
+  {
+    "instruction": "Enforce formatting and style with black and flake8 before running the tests.",
+    "output": "name: black-flake8\non: push\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install black flake8\n      - run: black --check .\n      - run: flake8 src tests"
+  },
+  {
+    "instruction": "Lint and format-check the project with ruff.",
+    "output": "name: ruff\non: push\njobs:\n  ruff:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install ruff\n      - run: ruff check .\n      - run: ruff format --check ."
+  },
+  {
+    "instruction": "Install the project with Poetry and run pytest.",
+    "output": "name: poetry-pytest\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - name: Install Poetry\n        run: pipx install poetry\n      - run: poetry install --no-interaction\n      - run: poetry run pytest -q"
+  },
+  {
+    "instruction": "Run the project's tox environments on every push.",
+    "output": "name: tox\non: push\njobs:\n  tox:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      - run: pip install tox\n      - run: tox -p auto"
+  },
+  {
+    "instruction": "Measure coverage with pytest-cov and upload the report to Codecov.",
+    "output": "name: coverage-upload\non: push\njobs:\n  coverage:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements.txt pytest pytest-cov\n      - run: pytest --cov=src --cov-report=xml\n      - uses: codecov/codecov-action@v4\n        with:\n          files: coverage.xml"
+  },
+  {
+    "instruction": "Install pinned requirements and run the unittest discovery suite.",
+    "output": "name: unittest\non: push\njobs:\n  unit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n          cache: pip\n      - run: pip install -r requirements.txt\n      - run: python -m unittest discover -s tests -v"
+  },
+  {
+    "instruction": "Build an sdist and wheel with the build package and validate them with twine.",
+    "output": "name: build-dist\non:\n  push:\n    tags: ['v*']\njobs:\n  dist:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install build twine\n      - run: python -m build\n      - run: twine check dist/*"
+  },
+  {
+    "instruction": "Create a virtualenv, install the package in editable mode, and run the smoke tests.",
+    "output": "name: venv-smoke\non: push\njobs:\n  smoke:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: python -m venv .venv\n      - run: .venv/bin/pip install -e .\n      - run: .venv/bin/python -m pytest tests/smoke -q"
+  },
+  {
+    "instruction": "Run Django tests against a PostgreSQL 15 service container.",
+    "output": "name: django-postgres\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    services:\n      db:\n        image: postgres:15\n        env:\n          POSTGRES_DB: app\n          POSTGRES_USER: app\n          POSTGRES_PASSWORD: app\n        ports:\n          - 5432:5432\n        options: >-\n          --health-cmd pg_isready\n          --health-interval 10s\n          --health-timeout 5s\n          --health-retries 5\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements.txt\n      - run: python manage.py test --parallel 2\n        env:\n          DATABASE_URL: postgresql://app:app@localhost:5432/app"
+  },
+  {
+    "instruction": "Install dependencies with uv, sync the lockfile, and run pytest.",
+    "output": "name: uv-pytest\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - name: Install uv\n        run: pip install uv\n      - run: uv sync --frozen\n      - run: uv run pytest"
+  },
+  {
+    "instruction": "Parallelize the pytest run with pytest-xdist.",
+    "output": "name: pytest-xdist\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: pytest -n auto --dist=loadfile"
+  },
+  {
+    "instruction": "Type-check the package with mypy in strict mode.",
+    "output": "name: mypy-strict\non: push\njobs:\n  mypy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install mypy\n      - run: mypy --strict src/"
+  },
+  {
+    "instruction": "Install and run pre-commit hooks across the whole repository.",
+    "output": "name: pre-commit\non: pull_request\njobs:\n  precommit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install pre-commit\n      - run: pre-commit run --all-files --show-diff-on-failure"
+  },
+  {
+    "instruction": "Install development requirements from a dedicated requirements file and run pytest.",
+    "output": "name: dev-requirements\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n          cache: pip\n          cache-dependency-path: requirements/dev.txt\n      - run: pip install -r requirements/base.txt -r requirements/dev.txt\n      - run: pytest -q --maxfail=1"
+  },
+  {
+    "instruction": "Fail the pipeline when line coverage drops below 80 percent.",
+    "output": "name: coverage-gate\non: push\njobs:\n  coverage:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: coverage run -m pytest\n      - run: coverage report --fail-under=80"
+  },
+  {
+    "instruction": "Import the installed package as a smoke test across two Python versions.",
+    "output": "name: import-smoke\non: push\njobs:\n  import:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python: ['3.11', '3.12']\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python }}\n      - run: pip install .\n      - run: python -c \"import mypackage; print(mypackage.__version__)\""
+  },
+  {
+    "instruction": "Upload a JUnit XML test report as an artifact after the pytest run.",
+    "output": "name: pytest-junit\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements-dev.txt\n      - run: pytest --junitxml=junit.xml\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: pytest-report\n          path: junit.xml"
+  },
+  {
+    "instruction": "Publish the package to TestPyPI with twine when a version tag is pushed.",
+    "output": "name: testpypi\non:\n  push:\n    tags: ['v*']\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install build twine\n      - run: python -m build\n      - run: twine upload --repository testpypi -u __token__ -p ${{ secrets.PYPI_TEST_TOKEN }} dist/*"
+  }
+]

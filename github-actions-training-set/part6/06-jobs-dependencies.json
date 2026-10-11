@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Make a test job run only after a build job finishes using the needs keyword.",
+    "output": "name: build-then-test\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test"
+  },
+  {
+    "instruction": "Chain three jobs: build, test, then deploy, each waiting for the previous one.",
+    "output": "name: three-stage\non:\n  push:\n    branches: [main]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    steps:\n      - run: ./scripts/deploy.sh"
+  },
+  {
+    "instruction": "Pass a version output from the build job into the test job with the needs context.",
+    "output": "name: job-output-pass\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    outputs:\n      version: ${{ steps.meta.outputs.version }}\n    steps:\n      - id: meta\n        run: echo \"version=2.3.1\" >> \"$GITHUB_OUTPUT\"\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Testing version ${{ needs.build.outputs.version }}\""
+  },
+  {
+    "instruction": "Run a deploy job only when the upstream test job succeeded, using needs with an if condition.",
+    "output": "name: conditional-deploy\non:\n  push:\n    branches: [main]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test\n  deploy:\n    needs: test\n    if: needs.test.result == 'success'\n    runs-on: ubuntu-latest\n    steps:\n      - run: ./scripts/deploy.sh"
+  },
+  {
+    "instruction": "Add a cleanup job with if: always() that runs even when earlier jobs fail.",
+    "output": "name: always-cleanup\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  cleanup:\n    needs: build\n    if: always()\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Releasing runner resources\""
+  },
+  {
+    "instruction": "Send a notification job when the build job fails using if: failure().",
+    "output": "name: failure-notify\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  notify:\n    needs: build\n    if: failure()\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Build failed for run ${{ github.run_id }}\""
+  },
+  {
+    "instruction": "Fan out to two parallel jobs and join them in an aggregator job that needs both.",
+    "output": "name: fan-in\non: push\njobs:\n  unit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make unit\n  integration:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make integration\n  report:\n    needs: [unit, integration]\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"All suites finished\""
+  },
+  {
+    "instruction": "Create a release job that waits for both the linux and macos test jobs.",
+    "output": "name: multi-needs\non:\n  push:\n    branches: [main]\njobs:\n  test-linux:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test-linux\n  test-macos:\n    runs-on: macos-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test-macos\n  release:\n    needs: [test-linux, test-macos]\n    runs-on: ubuntu-latest\n    steps:\n      - run: ./scripts/release.sh"
+  },
+  {
+    "instruction": "Chain a version job into a build job that consumes the computed version string.",
+    "output": "name: version-chain\non: push\njobs:\n  version:\n    runs-on: ubuntu-latest\n    outputs:\n      semver: ${{ steps.bump.outputs.semver }}\n    steps:\n      - id: bump\n        run: echo \"semver=$(date +1.%Y.%m.%d)\" >> \"$GITHUB_OUTPUT\"\n  build:\n    needs: version\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build VERSION=${{ needs.version.outputs.semver }}"
+  },
+  {
+    "instruction": "Gate a publish job on the ref being a tag while depending on the test job.",
+    "output": "name: tag-publish-gate\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make test\n  publish:\n    needs: test\n    if: startsWith(github.ref, 'refs/tags/v')\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/publish.sh"
+  },
+  {
+    "instruction": "Run unit and end-to-end suites in parallel and finish with a summary job that always runs.",
+    "output": "name: parallel-then-summary\non: push\njobs:\n  unit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm run test:unit\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm run test:e2e\n  summary:\n    needs: [unit, e2e]\n    if: always()\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"unit=${{ needs.unit.result }} e2e=${{ needs.e2e.result }}\""
+  },
+  {
+    "instruction": "Hand an artifact from a build job to an integration test job with needs and download-artifact.",
+    "output": "name: needs-artifact\non: push\njobs:\n  package:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make package\n      - uses: actions/upload-artifact@v4\n        with:\n          name: bundle\n          path: bin/\n  integration:\n    needs: package\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: bundle\n          path: bin/\n      - run: ./bin/integration-tests"
+  },
+  {
+    "instruction": "Continue with a reporting job even if the upstream job was skipped.",
+    "output": "name: skipped-guard\non: push\njobs:\n  prepare:\n    runs-on: ubuntu-latest\n    outputs:\n      ready: 'true'\n    steps:\n      - run: echo \"ready=true\" >> \"$GITHUB_OUTPUT\"\n  work:\n    needs: prepare\n    if: needs.prepare.outputs.ready == 'true'\n    runs-on: ubuntu-latest\n    steps:\n      - run: make work\n  report:\n    needs: work\n    if: always() && needs.work.result != 'skipped'\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Work completed\""
+  },
+  {
+    "instruction": "Create a failure-analysis job that runs only when the build job fails and inspects its result.",
+    "output": "name: analyze-failure\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  analyze:\n    needs: build\n    if: always() && needs.build.result == 'failure'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: logs\n          path: logs/\n        continue-on-error: true\n      - run: echo \"Investigating failed build ${{ github.run_id }}\""
+  },
+  {
+    "instruction": "Expose an artifact digest from a build job and use it in a deploy job through needs outputs.",
+    "output": "name: digest-pass\non:\n  push:\n    branches: [main]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    outputs:\n      digest: ${{ steps.build.outputs.digest }}\n    steps:\n      - uses: actions/checkout@v4\n      - id: build\n        run: echo \"digest=$(sha256sum app.tar.gz | cut -d' ' -f1)\" >> \"$GITHUB_OUTPUT\"\n  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"Deploying digest ${{ needs.build.outputs.digest }}\""
+  },
+  {
+    "instruction": "Run two independent jobs first and start a release job that requires both to succeed.",
+    "output": "name: dual-needs-release\non: push\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make lint\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make scan\n  release:\n    needs: [lint, security-scan]\n    if: success()\n    runs-on: ubuntu-latest\n    steps:\n      - run: ./scripts/tag-release.sh"
+  },
+  {
+    "instruction": "Build a four-stage pipeline where each job consumes an output from the previous stage.",
+    "output": "name: four-stage\non: push\njobs:\n  plan:\n    runs-on: ubuntu-latest\n    outputs:\n      scope: ${{ steps.plan.outputs.scope }}\n    steps:\n      - id: plan\n        run: echo \"scope=full\" >> \"$GITHUB_OUTPUT\"\n  build:\n    needs: plan\n    runs-on: ubuntu-latest\n    outputs:\n      artifact: app-${{ needs.plan.outputs.scope }}\n    steps:\n      - run: make build SCOPE=${{ needs.plan.outputs.scope }}\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: make test ARTIFACT=${{ needs.build.outputs.artifact }}\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    steps:\n      - run: make deploy ARTIFACT=${{ needs.build.outputs.artifact }}"
+  },
+  {
+    "instruction": "Restrict a dependent lint-fix job on pull requests to runs where lint succeeded.",
+    "output": "name: pr-dependent\non: pull_request\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make lint\n  autofix:\n    needs: lint\n    if: github.event_name == 'pull_request' && needs.lint.result == 'success'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/autofix.sh"
+  },
+  {
+    "instruction": "Wire a deploy job that runs after build and test and writes a deployment URL as an output.",
+    "output": "name: deploy-url-output\non:\n  push:\n    branches: [main]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: make test\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    outputs:\n      url: ${{ steps.deploy.outputs.url }}\n    steps:\n      - id: deploy\n        run: echo \"url=https://app.example.com/run/${{ github.run_number }}\" >> \"$GITHUB_OUTPUT\"\n  verify:\n    needs: deploy\n    runs-on: ubuntu-latest\n    steps:\n      - run: curl -sf \"${{ needs.deploy.outputs.url }}\""
+  },
+  {
+    "instruction": "Cancel overlapping workflow runs with a concurrency group while jobs still use needs ordering.",
+    "output": "name: concurrency-with-needs\non:\n  push:\n    branches: [main]\nconcurrency:\n  group: deploy-${{ github.ref }}\n  cancel-in-progress: false\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - run: ./scripts/deploy.sh"
+  }
+]

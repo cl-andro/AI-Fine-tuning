@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by replacing the bare except with specific, typed handling:\n\ndef parse_port(s):\n    try:\n        return int(s)\n    except:\n        return None",
+    "output": "class ConfigError(ValueError):\n    pass\n\ndef parse_port(s):\n    try:\n        return int(s)\n    except (TypeError, ValueError) as e:\n        raise ConfigError(f'invalid port: {s!r}') from e\n\nWhat changed: a bare except became a typed ConfigError chained to the original; callers can catch config problems without catching KeyboardInterrupt."
+  },
+  {
+    "instruction": "Refactor this code by replacing the None-on-failure pattern with an exception:\n\ndef get_user(uid):\n    row = db.find(uid)\n    if row is None:\n        return None\n    return row\n\ndef handle(uid):\n    u = get_user(uid)\n    if u is None:\n        return {'error': 'user lookup failed'}\n    return {'name': u['name']}",
+    "output": "class UserNotFound(LookupError):\n    def __init__(self, uid):\n        self.uid = uid\n        super().__init__(f'user {uid} not found')\n\ndef get_user(uid):\n    row = db.find(uid)\n    if row is None:\n        raise UserNotFound(uid)\n    return row\n\ndef handle(uid):\n    u = get_user(uid)\n    return {'name': u['name']}\n\nWhat changed: failure is an exception with the uid attached; the happy path no longer carries an error branch that every caller forgets."
+  },
+  {
+    "instruction": "Refactor this code by removing sys.exit from library code:\n\ndef load_config(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except IOError:\n        print('cannot open ' + path)\n        sys.exit(1)",
+    "output": "class ConfigError(Exception):\n    pass\n\ndef load_config(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except OSError as e:\n        raise ConfigError(f'cannot open {path}') from e\n\n# only the CLI entry point may exit:\ndef main():\n    try:\n        cfg = load_config('config.json')\n    except ConfigError as e:\n        print(e)\n        return 1\n    return 0\n\nWhat changed: the library raises ConfigError and only main() decides to exit, so the loader is testable and reusable in notebooks/services."
+  },
+  {
+    "instruction": "Refactor this code by collecting failures instead of swallowing them per item:\n\ndef import_rows(rows):\n    for r in rows:\n        try:\n            db.insert(r)\n        except Exception:\n            pass",
+    "output": "class BatchImportError(RuntimeError):\n    def __init__(self, failures):\n        self.failures = failures\n        super().__init__(f'{len(failures)} rows failed: {failures[:3]}')\n\ndef import_rows(rows):\n    failures = []\n    for i, r in enumerate(rows):\n        try:\n            db.insert(r)\n        except Exception as e:\n            failures.append((i, e))\n    if failures:\n        raise BatchImportError(failures)\n\nWhat changed: swallowed per-row errors are gathered and raised once as BatchImportError, carrying the failed indices for repair."
+  },
+  {
+    "instruction": "Refactor this code by replacing string error codes with an exception hierarchy:\n\ndef withdraw(amount):\n    if amount <= 0:\n        return 'ERR_BAD_AMOUNT'\n    if amount > balance:\n        return 'ERR_INSUFFICIENT'\n    balance -= amount\n    return 'OK'\n\ndef transfer(amount, target):\n    r = withdraw(amount)\n    if r != 'OK':\n        return r\n    credit(target, amount)\n    return 'OK'",
+    "output": "class BankingError(Exception):\n    pass\nclass BadAmount(BankingError):\n    pass\nclass InsufficientFunds(BankingError):\n    def __init__(self, amount, balance):\n        super().__init__(f'need {amount}, have {balance}')\n\ndef withdraw(amount):\n    if amount <= 0:\n        raise BadAmount(amount)\n    if amount > balance:\n        raise InsufficientFunds(amount, balance)\n    global balance\n    balance -= amount\n\ndef transfer(amount, target):\n    withdraw(amount)\n    credit(target, amount)\n\nWhat changed: magic strings became a small exception hierarchy; callers catch InsufficientFunds specifically and messages carry real numbers."
+  },
+  {
+    "instruction": "Refactor this code by replacing assert-based validation with explicit checks:\n\ndef create_order(payload):\n    assert 'item' in payload\n    assert payload['qty'] > 0\n    return db.save(payload)",
+    "output": "def create_order(payload):\n    if 'item' not in payload:\n        raise ValueError('missing item')\n    if payload['qty'] <= 0:\n        raise ValueError('qty must be positive')\n    return db.save(payload)\n\nWhat changed: asserts (deleted under python -O) became ValueError raises that survive optimization and name the offending field."
+  },
+  {
+    "instruction": "Refactor this code by replacing sentinel return codes with exceptions:\n\ndef divide(a, b):\n    if b == 0:\n        return -1\n    return a / b\n\ndef ratio(a, b):\n    r = divide(a, b)\n    if r == -1:\n        return None\n    return r * 100",
+    "output": "def divide(a, b):\n    if b == 0:\n        raise ZeroDivisionError('b must not be zero')\n    return a / b\n\ndef ratio(a, b):\n    return divide(a, b) * 100\n\nWhat changed: the -1/None sentinels disappeared; failures propagate as real exceptions and ratio() keeps its happy-path-only body."
+  },
+  {
+    "instruction": "Refactor this code by converting manual cleanup into a context manager:\n\ndef process(path):\n    f = open(path)\n    data = f.read()\n    if not data:\n        f.close()\n        return None\n    result = transform(data)\n    f.close()\n    return result",
+    "output": "from contextlib import contextmanager\n\n@contextmanager\ndef open_file(path):\n    f = open(path)\n    try:\n        yield f\n    finally:\n        f.close()\n\ndef process(path):\n    with open_file(path) as f:\n        data = f.read()\n    if not data:\n        return None\n    return transform(data)\n\nWhat changed: cleanup moved into a with-statement context manager, so every exit path closes the file exactly once."
+  },
+  {
+    "instruction": "Refactor this code by narrowing the generic Exception catch to domain errors:\n\ndef book(hotel_id):\n    try:\n        return inventory.reserve(hotel_id)\n    except Exception:\n        return None",
+    "output": "from inventory import AlreadyBooked, InventoryUnavailable\n\ndef book(hotel_id):\n    try:\n        return inventory.reserve(hotel_id)\n    except (AlreadyBooked, InventoryUnavailable):\n        return None\n\n# programming errors (AttributeError, TypeError, ...) now propagate\n\nWhat changed: only known booking failures are converted to None; unexpected bugs surface instead of vanishing behind a catch-all."
+  },
+  {
+    "instruction": "Refactor this code by extracting the repeated try/except into a decorator:\n\ndef get_user(uid):\n    try:\n        return api.get(f'/users/{uid}')\n    except TimeoutError:\n        log.warning('timeout')\n        raise DomainError('user lookup timed out')\n\ndef get_orders(uid):\n    try:\n        return api.get(f'/users/{uid}/orders')\n    except TimeoutError:\n        log.warning('timeout')\n        raise DomainError('orders lookup timed out')",
+    "output": "from functools import wraps\n\ndef translate_timeout(message):\n    def deco(fn):\n        @wraps(fn)\n        def wrapper(*args, **kwargs):\n            try:\n                return fn(*args, **kwargs)\n            except TimeoutError as e:\n                raise DomainError(message) from e\n        return wrapper\n    return deco\n\n@translate_timeout('user lookup timed out')\ndef get_user(uid):\n    return api.get(f'/users/{uid}')\n\n@translate_timeout('orders lookup timed out')\ndef get_orders(uid):\n    return api.get(f'/users/{uid}/orders')\n\nWhat changed: the timeout-to-domain translation lives in one decorator; each function keeps only its own message and request."
+  },
+  {
+    "instruction": "Refactor this code by preserving the original traceback when re-raising:\n\ndef parse(data):\n    try:\n        return json.loads(data)\n    except Exception:\n        raise ValueError('parse failed')",
+    "output": "import json\n\ndef parse(data):\n    try:\n        return json.loads(data)\n    except json.JSONDecodeError as e:\n        raise ValueError('parse failed') from e\n\nWhat changed: `from e` chains the JSONDecodeError under the ValueError, so the traceback shows both the wrapper context and the true cause."
+  },
+  {
+    "instruction": "Refactor this code by validating up front instead of failing deep inside:\n\ndef charge(order, card):\n    total = order['items'][0]['price'] * order['qty']\n    if card is None:\n        return None\n    total = total * order.get('discount', 1)\n    return gateway.charge(card, total)",
+    "output": "def validate(order, card):\n    if not order.get('items'):\n        raise ValueError('order has no items')\n    if card is None:\n        raise ValueError('card is required')\n\ndef charge(order, card):\n    validate(order, card)\n    total = order['items'][0]['price'] * order['qty']\n    total = total * order.get('discount', 1)\n    return gateway.charge(card, total)\n\nWhat changed: an explicit validate() runs first, so missing cards and empty orders fail with a clear message instead of an IndexError mid-formula."
+  },
+  {
+    "instruction": "Refactor this code by giving the retry loop backoff and a terminal error:\n\ndef fetch(url):\n    while True:\n        try:\n            return requests.get(url).json()\n        except Exception:\n            time.sleep(0.1)",
+    "output": "import time\nimport requests\n\nclass FetchFailed(RuntimeError):\n    pass\n\ndef fetch(url, attempts=5, base_delay=0.2):\n    for attempt in range(attempts):\n        try:\n            return requests.get(url, timeout=5).json()\n        except requests.RequestException as e:\n            if attempt == attempts - 1:\n                raise FetchFailed(f'{url} failed after {attempts} attempts') from e\n            time.sleep(base_delay * 2 ** attempt)\n\nWhat changed: bounded attempts, exponential backoff and a terminal FetchFailed chained to the last error replace the infinite swallow-loop."
+  },
+  {
+    "instruction": "Refactor this code by making the JSON fallback explicit instead of silent:\n\ndef read_cache(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except Exception:\n        return {'version': 1, 'entries': {}}",
+    "output": "import logging, json\n\nlogger = logging.getLogger(__name__)\n\ndef read_cache(path):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except FileNotFoundError:\n        logger.info('cache %s absent; starting empty', path)\n        return {'version': 1, 'entries': {}}\n    except json.JSONDecodeError as e:\n        logger.warning('cache %s corrupt (%s); starting empty', path, e)\n        return {'version': 1, 'entries': {}}\n\nWhat changed: 'missing file' and 'corrupt file' are now distinct, logged branches; other OSErrors still propagate instead of being renamed 'empty cache'."
+  },
+  {
+    "instruction": "Refactor this code by moving cleanup out of the except block:\n\ndef transform(path):\n    try:\n        f = open(path)\n        data = f.read()\n    except IOError:\n        if f:\n            f.close()\n        raise\n    return do_work(data)",
+    "output": "def transform(path):\n    with open(path) as f:\n        data = f.read()\n    return do_work(data)\n\nWhat changed: the with-statement guarantees close on success, failure and return; the hand-written except-cleanup (which could itself fail when open() errored) is gone."
+  },
+  {
+    "instruction": "Refactor this code by converting the error-first callback style to exceptions:\n\nfunction loadUser(id, cb) {\n  db.find(id, (err, user) => {\n    if (err) { cb(err); return; }\n    if (!user) { cb(new Error('missing')); return; }\n    cb(null, user.name);\n  });\n}",
+    "output": "async function loadUser(id) {\n  const user = await db.find(id);\n  if (!user) throw new Error('missing');\n  return user.name;\n}\n\ntry {\n  console.log(await loadUser(7));\n} catch (err) {\n  console.error('failed', err);\n}\n\nWhat changed: two nested callbacks and manual error propagation became plain throws with a single try/catch at the edge."
+  },
+  {
+    "instruction": "Refactor this code by replacing print-based error reporting with logging:\n\ndef read_key(path):\n    try:\n        return open(path).read().strip()\n    except Exception as e:\n        print('ERROR: ' + str(e))\n        return 'default'",
+    "output": "import logging\n\nlogger = logging.getLogger(__name__)\n\ndef read_key(path):\n    try:\n        with open(path) as f:\n            return f.read().strip()\n    except OSError:\n        logger.exception('cannot read key file %s', path)\n        return 'default'\n\nWhat changed: prints became logger.exception with structured arguments, preserving the traceback for the ops pipeline instead of stdout."
+  },
+  {
+    "instruction": "Refactor this code by removing the nested except that loses the original error:\n\ndef save(record):\n    try:\n        db.insert(record)\n    except Exception as e:\n        try:\n            raise StorageError(str(e))\n        except StorageError:\n            pass\n    return True",
+    "output": "class StorageError(RuntimeError):\n    pass\n\ndef save(record):\n    try:\n        db.insert(record)\n    except StorageError:\n        raise\n    except Exception as e:\n        raise StorageError(f'could not insert {record.get(\"id\")}') from e\n\nWhat changed: one except with `from e` replaces the nested raise-and-swallow; StorageError only wraps what it does not already own."
+  },
+  {
+    "instruction": "Refactor this code by giving the custom exception a proper message contract:\n\nclass MyError(Exception):\n    pass\n\ndef process(step, payload):\n    if payload is None:\n        raise MyError('step ' + step + ' failed')\n    return run(step, payload)",
+    "output": "class ProcessError(RuntimeError):\n    def __init__(self, step, cause=None):\n        self.step = step\n        self.cause = cause\n        msg = f'processing step {step!r} failed'\n        if cause:\n            msg += f': {cause}'\n        super().__init__(msg)\n\ndef process(step, payload):\n    if payload is None:\n        raise ProcessError(step)\n    return run(step, payload)\n\nWhat changed: the exception carries `step` and `cause` as attributes and builds its message centrally, so handlers can inspect failures without string parsing."
+  },
+  {
+    "instruction": "Refactor this code by converting the silent except-pass into intentional ignoring:\n\ndef emit(event, payload):\n    try:\n        bus.publish(event, payload)\n    except:\n        pass",
+    "output": "import logging\n\nlogger = logging.getLogger(__name__)\n\nclass PublishError(RuntimeError):\n    pass\n\ndef emit(event, payload):\n    try:\n        bus.publish(event, payload)\n    except PublishError as e:\n        logger.warning('dropped event %s: %s', event, e)\n        return False\n    return True\n\nWhat changed: the catch-all became a typed PublishError that is logged and reported via a boolean; genuine bugs still crash instead of passing silently."
+  }
+]

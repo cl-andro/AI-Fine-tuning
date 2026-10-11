@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Implement binary search on a sorted array to find the index of a target value, or -1 if absent.\n\nExample: arr = [1,3,5,7,9], target = 7 -> 3",
+    "output": "def binary_search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        if arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n\n# Example: binary_search([1,3,5,7,9], 7) -> 3\n# Time: O(log n), Space: O(1). Classic iterative binary search."
+  },
+  {
+    "instruction": "Implement binary search using recursion on a sorted array, returning the index or -1.\n\nExample: arr = [2,4,6,8,10], target = 8 -> 3",
+    "output": "def binary_search_recursive(arr, target, lo=0, hi=None):\n    if hi is None:\n        hi = len(arr) - 1\n    if lo > hi:\n        return -1\n    mid = (lo + hi) // 2\n    if arr[mid] == target:\n        return mid\n    if arr[mid] < target:\n        return binary_search_recursive(arr, target, mid + 1, hi)\n    return binary_search_recursive(arr, target, lo, mid - 1)\n\n# Example: binary_search_recursive([2,4,6,8,10], 8) -> 3\n# Time: O(log n), Space: O(log n) recursion stack. Recursive divide and conquer."
+  },
+  {
+    "instruction": "Given a sorted array with duplicates, find the first occurrence index of the target (lower bound), or -1.\n\nExample: arr = [1,2,2,2,3], target = 2 -> 1",
+    "output": "def first_occurrence(arr, target):\n    lo, hi = 0, len(arr) - 1\n    result = -1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            result = mid\n            hi = mid - 1\n        elif arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return result\n\n# Example: first_occurrence([1,2,2,2,3], 2) -> 1\n# Time: O(log n), Space: O(1). Continue searching left after a match."
+  },
+  {
+    "instruction": "Given a sorted array with duplicates, find the last occurrence index of the target (upper bound - 1), or -1.\n\nExample: arr = [1,2,2,2,3], target = 2 -> 3",
+    "output": "def last_occurrence(arr, target):\n    lo, hi = 0, len(arr) - 1\n    result = -1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            result = mid\n            lo = mid + 1\n        elif arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return result\n\n# Example: last_occurrence([1,2,2,2,3], 2) -> 3\n# Time: O(log n), Space: O(1). Continue searching right after a match."
+  },
+  {
+    "instruction": "Search for a target in a rotated sorted array (no duplicates). Return the index or -1.\n\nExample: arr = [4,5,6,7,0,1,2], target = 0 -> 4",
+    "output": "def search_rotated(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        if arr[lo] <= arr[mid]:\n            if arr[lo] <= target < arr[mid]:\n                hi = mid - 1\n            else:\n                lo = mid + 1\n        else:\n            if arr[mid] < target <= arr[hi]:\n                lo = mid + 1\n            else:\n                hi = mid - 1\n    return -1\n\n# Example: search_rotated([4,5,6,7,0,1,2], 0) -> 4\n# Time: O(log n), Space: O(1). Identify sorted half each iteration and recurse into it."
+  },
+  {
+    "instruction": "Search in a sorted 2D matrix (each row sorted, first of next row > last of prev row) for a target. Return True or False.\n\nExample: matrix = [[1,3,5],[7,9,11],[13,15,17]], target = 9 -> True",
+    "output": "def search_2d(matrix, target):\n    m, n = len(matrix), len(matrix[0])\n    lo, hi = 0, m * n - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        val = matrix[mid // n][mid % n]\n        if val == target:\n            return True\n        if val < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return False\n\n# Example: search_2d([[1,3,5],[7,9,11],[13,15,17]], 9) -> True\n# Time: O(log(m*n)), Space: O(1). Virtual 1D binary search over the flattened matrix."
+  },
+  {
+    "instruction": "Find the square root of a non-negative integer x, rounded down, without using built-in sqrt. Implement in O(log x).\n\nExample: x = 8 -> 2; x = 4 -> 2",
+    "output": "def int_sqrt(x):\n    if x < 2:\n        return x\n    lo, hi = 1, x // 2\n    result = 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        square = mid * mid\n        if square == x:\n            return mid\n        if square < x:\n            result = mid\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return result\n\n# Example: int_sqrt(8) -> 2\n# Time: O(log x), Space: O(1). Binary search over [1, x//2] tracking last valid mid."
+  },
+  {
+    "instruction": "Given a sorted array of distinct integers where every element is doubled except one, find the element that is not doubled (the array remains sorted).\n\nExample: arr = [1,2,4,8,16] (some values doubled) — implement finding a single non-duplicated element in a sorted array of pairs.\n\nExample better: arr = [1,1,3,3,4,4,7,8,8] -> 7 (the only unpaired value)",
+    "output": "def single_element_sorted(arr):\n    lo, hi = 0, len(arr) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if mid % 2 == 1:\n            mid -= 1\n        if arr[mid] == arr[mid + 1]:\n            lo = mid + 2\n        else:\n            hi = mid\n    return arr[lo]\n\n# Example: single_element_sorted([1,1,3,3,4,4,7,8,8]) -> 7\n# Time: O(log n), Space: O(1). Align mid to even index; pairs start at even positions."
+  },
+  {
+    "instruction": "Given a mountain array (strictly increasing then strictly decreasing), return the index of the peak element.\n\nExample: arr = [1,3,5,4,2] -> 2 (value 5)",
+    "output": "def peak_index_in_mountain(arr):\n    lo, hi = 0, len(arr) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] < arr[mid + 1]:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n\n# Example: peak_index_in_mountain([1,3,5,4,2]) -> 2\n# Time: O(log n), Space: O(1). Binary search while slope is still rising."
+  },
+  {
+    "instruction": "Find the smallest letter in a sorted list of characters that is lexicographically greater than a target letter (circular wrap not required; return first if none greater).\n\nExample: letters = ['c','f','j'], target = 'a' -> 'c'",
+    "output": "def next_greatest_letter(letters, target):\n    lo, hi = 0, len(letters) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if letters[mid] <= target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return letters[lo]\n\n# Example: next_greatest_letter(['c','f','j'], 'a') -> 'c'\n# Time: O(log n), Space: O(1). Lower-bound search for the first letter > target."
+  },
+  {
+    "instruction": "Given a sorted array of integers, find any peak element index (element greater than its neighbors). Assume arr[-1] = arr[n] = -infinity.\n\nExample: arr = [1,2,3,1] -> 2",
+    "output": "def find_peak(arr):\n    lo, hi = 0, len(arr) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] < arr[mid + 1]:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n\n# Example: find_peak([1,2,3,1]) -> 2\n# Time: O(log n), Space: O(1). Move toward the higher neighbor until a peak is reached."
+  },
+  {
+    "instruction": "Given a 2D array where each row is sorted and columns are sorted, search for a target in O(m+n).\n\nExample: matrix = [[1,4,7],[2,5,8],[3,6,9]], target = 5 -> True",
+    "output": "def search_sorted_2d(matrix, target):\n    if not matrix or not matrix[0]:\n        return False\n    m, n = len(matrix), len(matrix[0])\n    r, c = 0, n - 1\n    while r < m and c >= 0:\n        if matrix[r][c] == target:\n            return True\n        if matrix[r][c] > target:\n            c -= 1\n        else:\n            r += 1\n    return False\n\n# Example: search_sorted_2d([[1,4,7],[2,5,8],[3,6,9]], 5) -> True\n# Time: O(m+n), Space: O(1). Staircase search from top-right corner."
+  },
+  {
+    "instruction": "Given a sorted array of integers and a target, find the index of the target or the insertion position to keep the array sorted (lower bound). Implement in O(log n).\n\nExample: arr = [1,3,5,6], target = 2 -> 1",
+    "output": "def lower_bound(arr, target):\n    lo, hi = 0, len(arr)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n\n# Example: lower_bound([1,3,5,6], 2) -> 1\n# Time: O(log n), Space: O(1). Standard lower-bound binary search."
+  },
+  {
+    "instruction": "Find the k-th smallest element in a row-wise and column-wise sorted matrix (each row and column ascending).\n\nExample: matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8 -> 13",
+    "output": "import heapq\n\ndef kth_smallest_matrix(matrix, k):\n    m, n = len(matrix), len(matrix[0])\n    heap = [(matrix[i][0], i, 0) for i in range(min(k, m))]\n    heapq.heapify(heap)\n    val = 0\n    for _ in range(k):\n        val, r, c = heapq.heappop(heap)\n        if c + 1 < n:\n            heapq.heappush(heap, (matrix[r][c+1], r, c + 1))\n    return val\n\n# Example: kth_smallest_matrix([[1,5,9],[10,11,13],[12,13,15]], 8) -> 13\n# Time: O(k log m), Space: O(m). Min-heap over row pointers advances across columns."
+  },
+  {
+    "instruction": "Given a sorted array with elements first increasing then decreasing (unimodal), find the maximum element.\n\nExample: arr = [1,3,8,12,4,2] -> 12",
+    "output": "def find_maximum_unimodal(arr):\n    lo, hi = 0, len(arr) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] < arr[mid + 1]:\n            lo = mid + 1\n        else:\n            hi = mid\n    return arr[lo]\n\n# Example: find_maximum_unimodal([1,3,8,12,4,2]) -> 12\n# Time: O(log n), Space: O(1). Same as peak search, returning the value."
+  },
+  {
+    "instruction": "Given a sorted circular linked list (head points to any node), find the minimum element.\n\nExample: circular list values in order from head: [3,4,5,1,2] -> 1",
+    "output": "def find_min_circular(head):\n    if not head:\n        return None\n    result = head.val\n    cur = head.next\n    while cur is not head:\n        result = min(result, cur.val)\n        cur = cur.next\n    return result\n\n# Example: find_min_circular(node of circular 3->4->5->1->2->back to 3) -> 1\n# Time: O(n), Space: O(1). Single traversal comparing against running minimum."
+  },
+  {
+    "instruction": "Given a sorted array of integers and a target, find the ceil (smallest element >= target). Return the value or -1 if none.\n\nExample: arr = [1,2,8,10,10,12,19], target = 5 -> 8",
+    "output": "def find_ceil(arr, target):\n    lo, hi = 0, len(arr) - 1\n    result = -1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] >= target:\n            result = arr[mid]\n            hi = mid - 1\n        else:\n            lo = mid + 1\n    return result\n\n# Example: find_ceil([1,2,8,10,10,12,19], 5) -> 8\n# Time: O(log n), Space: O(1). Track last candidate >= target while moving left."
+  },
+  {
+    "instruction": "Given a sorted array of integers and a target, find the floor (largest element <= target). Return the value or -1 if none.\n\nExample: arr = [1,2,8,10,10,12,19], target = 5 -> 2",
+    "output": "def find_floor(arr, target):\n    lo, hi = 0, len(arr) - 1\n    result = -1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] <= target:\n            result = arr[mid]\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return result\n\n# Example: find_floor([1,2,8,10,10,12,19], 5) -> 2\n# Time: O(log n), Space: O(1). Track last candidate <= target while moving right."
+  },
+  {
+    "instruction": "Given a sorted array of integers with a target, find two numbers that add to the target using binary search, returning indices or [-1,-1].\n\nExample: arr = [2,7,11,15], target = 9 -> [0,1]",
+    "output": "def two_sum_sorted(arr, target):\n    for i in range(len(arr)):\n        complement = target - arr[i]\n        lo, hi = i + 1, len(arr) - 1\n        while lo <= hi:\n            mid = (lo + hi) // 2\n            if arr[mid] == complement:\n                return [i, mid]\n            if arr[mid] < complement:\n                lo = mid + 1\n            else:\n                hi = mid - 1\n    return [-1, -1]\n\n# Example: two_sum_sorted([2,7,11,15], 9) -> [0, 1]\n# Time: O(n log n), Space: O(1). For each index, binary-search the complement in the rest."
+  },
+  {
+    "instruction": "Given a sorted array where each element appears once except one element that appears twice (in sorted order as adjacent pair), find the duplicate.\n\nExample: arr = [1,3,4,4,5,6,7] -> 4",
+    "output": "def find_duplicate_sorted(arr):\n    lo, hi = 0, len(arr) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == arr[mid + 1]:\n            return arr[mid]\n        if (mid - lo + 1) <= (arr[mid] - arr[lo] + 1):\n            lo = mid + 1\n        else:\n            hi = mid\n    return arr[lo]\n\n# Example: find_duplicate_sorted([1,3,4,4,5,6,7]) -> 4\n# Time: O(log n), Space: O(1). Compare mid with neighbor and count-vs-value to pick the side."
+  }
+]

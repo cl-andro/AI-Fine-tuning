@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that splits a list into chunks of a given size, with the last chunk possibly shorter.",
+    "output": "def chunk_list(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]\n\nprint(chunk_list([1, 2, 3, 4, 5, 6, 7], 3))"
+  },
+  {
+    "instruction": "Write a Python function that flattens an arbitrarily nested list into a single flat list.",
+    "output": "def flatten(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flatten(item))\n        else:\n            result.append(item)\n    return result\n\nprint(flatten([1, [2, [3, 4], 5], 6]))"
+  },
+  {
+    "instruction": "Write a Python function that merges overlapping intervals like [[1,3],[2,6],[8,10]] into a minimal set of disjoint intervals.",
+    "output": "def merge_intervals(intervals):\n    merged = []\n    for start, end in sorted(intervals):\n        if merged and start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged\n\nprint(merge_intervals([[1, 3], [2, 6], [8, 10], [15, 18]]))"
+  },
+  {
+    "instruction": "Write a Python function that rotates a list to the left by k positions without using extra list slicing for the rotation result.",
+    "output": "def rotate_left(items, k):\n    if not items:\n        return []\n    k %= len(items)\n    return items[k:] + items[:k]\n\nprint(rotate_left([1, 2, 3, 4, 5], 2))"
+  },
+  {
+    "instruction": "Write a Python function that moves all zeros in a list to the end while preserving the relative order of the non-zero elements.",
+    "output": "def move_zeros(items):\n    result = [x for x in items if x != 0]\n    result.extend([0] * sum(1 for x in items if x == 0))\n    return result\n\nprint(move_zeros([0, 1, 0, 3, 12]))"
+  },
+  {
+    "instruction": "Write a Python function that returns the indices of two distinct numbers in a list that add up to a target, or None if no such pair exists.",
+    "output": "def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i\n    return None\n\nprint(two_sum([2, 7, 11, 15], 9))"
+  },
+  {
+    "instruction": "Write a Python function that removes duplicates from a list while preserving the original order of first occurrences.",
+    "output": "def dedupe_preserving_order(items):\n    seen = set()\n    out = []\n    for x in items:\n        if x not in seen:\n            seen.add(x)\n            out.append(x)\n    return out\n\nprint(dedupe_preserving_order([3, 1, 3, 2, 1, 4]))"
+  },
+  {
+    "instruction": "Write a Python function that performs binary search on a sorted list and returns the index of the target, or -1 when absent.",
+    "output": "def binary_search(items, target):\n    lo, hi = 0, len(items) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if items[mid] == target:\n            return mid\n        if items[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n\nprint(binary_search([1, 3, 5, 7, 9], 7))"
+  },
+  {
+    "instruction": "Write a Python function that returns the maximum value in every sliding window of size w over a list.",
+    "output": "from collections import deque\n\ndef sliding_window_max(nums, w):\n    if not nums or w == 0:\n        return []\n    dq, out = deque(), []\n    for i, n in enumerate(nums):\n        while dq and dq[0] <= i - w:\n            dq.popleft()\n        while dq and nums[dq[-1]] <= n:\n            dq.pop()\n        dq.append(i)\n        if i >= w - 1:\n            out.append(nums[dq[0]])\n    return out\n\nprint(sliding_window_max([1, 3, -1, -3, 5, 3, 6, 7], 3))"
+  },
+  {
+    "instruction": "Write a Python function that interleaves two lists element by element, appending any leftovers from the longer list at the end.",
+    "output": "def interleave(a, b):\n    result = []\n    for i in range(max(len(a), len(b))):\n        if i < len(a):\n            result.append(a[i])\n        if i < len(b):\n            result.append(b[i])\n    return result\n\nprint(interleave(['a', 'b', 'c'], [1, 2]))"
+  },
+  {
+    "instruction": "Write a Python function that inserts a value into a sorted list while keeping the list sorted (use the bisect module).",
+    "output": "import bisect\n\ndef insert_sorted(items, value):\n    bisect.insort(items, value)\n    return items\n\nprint(insert_sorted([1, 3, 5, 7], 4))"
+  },
+  {
+    "instruction": "Write a Python function that groups a list of strings by their length, returning a dict mapping length to the words of that length (order preserved).",
+    "output": "def group_by_length(words):\n    groups = {}\n    for w in words:\n        groups.setdefault(len(w), []).append(w)\n    return groups\n\nprint(group_by_length(['a', 'to', 'be', 'the', 'ant']))"
+  },
+  {
+    "instruction": "Write a Python function that transforms a list of integers in place into its next lexicographic permutation, or reverses it when already the greatest permutation.",
+    "output": "def next_permutation(nums):\n    i = len(nums) - 2\n    while i >= 0 and nums[i] >= nums[i + 1]:\n        i -= 1\n    if i >= 0:\n        j = len(nums) - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    left, right = i + 1, len(nums) - 1\n    while left < right:\n        nums[left], nums[right] = nums[right], nums[left]\n        left += 1\n        right -= 1\n    return nums\n\nprint(next_permutation([1, 2, 3]))"
+  },
+  {
+    "instruction": "Write a Python function that computes the length of the longest strictly increasing subsequence of a list of integers.",
+    "output": "import bisect\n\ndef longest_increasing_subsequence(nums):\n    tails = []\n    for n in nums:\n        i = bisect.bisect_left(tails, n)\n        if i == len(tails):\n            tails.append(n)\n        else:\n            tails[i] = n\n    return len(tails)\n\nprint(longest_increasing_subsequence([10, 9, 2, 5, 3, 7, 101, 18]))"
+  },
+  {
+    "instruction": "Write a Python function that shuffles a list in place using the Fisher-Yates algorithm with a reproducible random seed.",
+    "output": "import random\n\ndef seeded_shuffle(items, seed=42):\n    rng = random.Random(seed)\n    for i in range(len(items) - 1, 0, -1):\n        j = rng.randint(0, i)\n        items[i], items[j] = items[j], items[i]\n    return items\n\nprint(seeded_shuffle([1, 2, 3, 4, 5, 6]))"
+  },
+  {
+    "instruction": "Write a Python function that transposes a rectangular matrix represented as a list of lists.",
+    "output": "def transpose(matrix):\n    if not matrix:\n        return []\n    return [list(row) for row in zip(*matrix)]\n\nprint(transpose([[1, 2, 3], [4, 5, 6]]))"
+  },
+  {
+    "instruction": "Write a Python function that zips two lists of possibly different lengths using a fill value for the shorter list, like itertools.zip_longest.",
+    "output": "def zip_longest(a, b, fill=None):\n    length = max(len(a), len(b))\n    out = []\n    for i in range(length):\n        out.append((a[i] if i < len(a) else fill, b[i] if i < len(b) else fill))\n    return out\n\nprint(zip_longest([1, 2, 3], ['a', 'b'], fill=-1))"
+  },
+  {
+    "instruction": "Write a Python function that merges two sorted lists into one sorted list without calling sort on the result.",
+    "output": "def merge_sorted(a, b):\n    i = j = 0\n    merged = []\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            merged.append(a[i])\n            i += 1\n        else:\n            merged.append(b[j])\n            j += 1\n    merged.extend(a[i:])\n    merged.extend(b[j:])\n    return merged\n\nprint(merge_sorted([1, 4, 7], [2, 3, 9]))"
+  },
+  {
+    "instruction": "Write a Python function that returns the k most frequently occurring elements of a list.",
+    "output": "from collections import Counter\n\ndef top_k_frequent(items, k):\n    return [item for item, _ in Counter(items).most_common(k)]\n\nprint(top_k_frequent([1, 1, 1, 2, 2, 3], 2))"
+  },
+  {
+    "instruction": "Write a Python function that draws a random sample of k items from an iterable in a single pass using reservoir sampling.",
+    "output": "import random\n\ndef reservoir_sample(iterable, k, seed=7):\n    rng = random.Random(seed)\n    sample = []\n    for i, item in enumerate(iterable):\n        if i < k:\n            sample.append(item)\n        else:\n            j = rng.randint(0, i)\n            if j < k:\n                sample[j] = item\n    return sample\n\nprint(reservoir_sample(range(100), 5))"
+  }
+]

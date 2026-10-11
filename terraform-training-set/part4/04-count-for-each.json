@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create three buckets from a list variable using count and the index in each name.",
+    "output": "variable \"environments\" {\n  type    = list(string)\n  default = [\"dev\", \"staging\", \"prod\"]\n}\n\nresource \"aws_s3_bucket\" \"env\" {\n  count = length(var.environments)\n\n  bucket = \"acme-${var.environments[count.index]}-data\"\n\n  tags = {\n    Environment = var.environments[count.index]\n  }\n}"
+  },
+  {
+    "instruction": "Create one bucket per key in a map variable with for_each.",
+    "output": "variable \"buckets\" {\n  type = map(string)\n  default = {\n    uploads   = \"acme-uploads\"\n    archives  = \"acme-archives\"\n    logs      = \"acme-logs\"\n  }\n}\n\nresource \"aws_s3_bucket\" \"this\" {\n  for_each = var.buckets\n\n  bucket = each.value\n\n  tags = {\n    Purpose = each.key\n  }\n}"
+  },
+  {
+    "instruction": "Conditionally create a single monitoring topic with a boolean toggle and count.",
+    "output": "variable \"enable_monitoring\" {\n  type    = bool\n  default = true\n}\n\nresource \"aws_sns_topic\" \"monitoring\" {\n  count = var.enable_monitoring ? 1 : 0\n\n  name = \"monitoring-alerts\"\n}"
+  },
+  {
+    "instruction": "Create SQS queues for every region name supplied in a list variable.",
+    "output": "variable \"regions\" {\n  type    = list(string)\n  default = [\"us-east-1\", \"eu-west-1\"]\n}\n\nresource \"aws_sqs_queue\" \"regional\" {\n  for_each = toset(var.regions)\n\n  name = \"events-${each.key}\"\n}"
+  },
+  {
+    "instruction": "Launch EC2 instances with different types from a list, naming each with count.index.",
+    "output": "variable \"instance_types\" {\n  type    = list(string)\n  default = [\"t3.micro\", \"t3.small\", \"t3.medium\"]\n}\n\nresource \"aws_instance\" \"workers\" {\n  count = length(var.instance_types)\n\n  ami           = var.ami_id\n  instance_type = var.instance_types[count.index]\n\n  tags = {\n    Name = \"worker-${count.index}\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create an IAM user for each name in a set variable with for_each.",
+    "output": "variable \"user_names\" {\n  type    = set(string)\n  default = [\"alice\", \"bob\", \"carol\"]\n}\n\nresource \"aws_iam_user\" \"this\" {\n  for_each = var.user_names\n\n  name = each.key\n\n  tags = {\n    Team = \"data\"\n  }\n}"
+  },
+  {
+    "instruction": "Toggle creation of a Route53 record with a count of zero or one.",
+    "output": "variable \"create_dns_record\" {\n  type    = bool\n  default = false\n}\n\nvariable \"app_hostname\" {\n  type    = string\n  default = \"app.example.com\"\n}\n\nresource \"aws_route53_record\" \"app\" {\n  count = var.create_dns_record ? 1 : 0\n\n  zone_id = var.zone_id\n  name    = var.app_hostname\n  type    = \"A\"\n  ttl     = 300\n  records = [var.app_ip]\n}\n\nvariable \"zone_id\" {\n  type = string\n}\n\nvariable \"app_ip\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create a public access block for every bucket produced by another resource collection.",
+    "output": "resource \"aws_s3_bucket\" \"data\" {\n  for_each = toset([\"images\", \"videos\", \"documents\"])\n\n  bucket = \"acme-${each.key}\"\n}\n\nresource \"aws_s3_bucket_public_access_block\" \"data\" {\n  for_each = aws_s3_bucket.data\n\n  bucket = each.value.id\n\n  block_public_acls       = true\n  block_public_policy     = true\n  ignore_public_acls      = true\n  restrict_public_buckets = true\n}"
+  },
+  {
+    "instruction": "Filter a local list down to enabled items and create resources with count over the result.",
+    "output": "variable \"features\" {\n  type = list(object({\n    name    = string\n    enabled = bool\n  }))\n  default = [\n    { name = \"beta-search\", enabled = true },\n    { name = \"legacy-sync\", enabled = false },\n    { name = \"new-billing\", enabled = true },\n  ]\n}\n\nlocals {\n  enabled_features = [for f in var.features : f.name if f.enabled]\n}\n\nresource \"aws_sns_topic\" \"feature\" {\n  count = length(local.enabled_features)\n\n  name = \"feature-${local.enabled_features[count.index]}\"\n}"
+  },
+  {
+    "instruction": "Create a CloudWatch log group for every service defined in a local map.",
+    "output": "locals {\n  services = {\n    api     = \"info\"\n    worker  = \"debug\"\n    cron    = \"warn\"\n  }\n}\n\nresource \"aws_cloudwatch_log_group\" \"services\" {\n  for_each = local.services\n\n  name              = \"/services/${each.key}\"\n  retention_in_days = 7\n\n  tags = {\n    LogLevel = each.value\n  }\n}"
+  },
+  {
+    "instruction": "Create one SQS queue per topic map entry and read limits from the value object.",
+    "output": "variable \"topics\" {\n  type = map(object({\n    visibility = number\n    retention  = number\n  }))\n  default = {\n    orders = {\n      visibility = 60\n      retention  = 345600\n    }\n    refunds = {\n      visibility = 120\n      retention  = 86400\n    }\n  }\n}\n\nresource \"aws_sqs_queue\" \"topic\" {\n  for_each = var.topics\n\n  name                       = \"${each.key}-queue\"\n  visibility_timeout_seconds = each.value.visibility\n  message_retention_seconds  = each.value.retention\n}"
+  },
+  {
+    "instruction": "Use count on a local module to create one instance of it per environment.",
+    "output": "variable \"environments\" {\n  type    = list(string)\n  default = [\"dev\", \"prod\"]\n}\n\nmodule \"env\" {\n  count   = length(var.environments)\n  source  = \"./modules/env-stack\"\n\n  environment = var.environments[count.index]\n  bucket_name = \"acme-${var.environments[count.index]}-state-copy\"\n}"
+  },
+  {
+    "instruction": "Use for_each on a module so each map entry becomes an isolated stack.",
+    "output": "variable \"workloads\" {\n  type = map(object({\n    domain = string\n  }))\n  default = {\n    storefront = { domain = \"shop.example.com\" }\n    checkout   = { domain = \"pay.example.com\" }\n  }\n}\n\nmodule \"workload\" {\n  for_each = var.workloads\n  source   = \"./modules/workload\"\n\n  name   = each.key\n  domain = each.value.domain\n}"
+  },
+  {
+    "instruction": "Run a fixed number of instances and keep names sequential with count.index.",
+    "output": "variable \"instance_count\" {\n  type    = number\n  default = 3\n}\n\nresource \"aws_instance\" \"batch\" {\n  count = var.instance_count\n\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  tags = {\n    Name = format(\"batch-%02d\", count.index + 1)\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create one security group rule per CIDR entry with for_each over a map of rules.",
+    "output": "variable \"ingress_rules\" {\n  type = map(object({\n    cidr  = string\n    port  = number\n    proto = string\n  }))\n  default = {\n    https = { cidr = \"0.0.0.0/0\", port = 443, proto = \"tcp\" }\n    ssh   = { cidr = \"10.0.0.0/8\", port = 22, proto = \"tcp\" }\n  }\n}\n\nresource \"aws_vpc_security_group_ingress_rule\" \"this\" {\n  for_each = var.ingress_rules\n\n  security_group_id = var.security_group_id\n  cidr_ipv4         = each.value.cidr\n  from_port         = each.value.port\n  to_port           = each.value.port\n  ip_protocol       = each.value.proto\n}\n\nvariable \"security_group_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Create one IAM policy per JSON file found in a policies directory using fileset and for_each.",
+    "output": "resource \"aws_iam_policy\" \"file\" {\n  for_each = fileset(\"./policies\", \"*.json\")\n\n  name   = replace(each.value, \".json\", \"\")\n  policy = file(\"./policies/${each.value}\")\n}"
+  },
+  {
+    "instruction": "Build one bucket per environment entry where each entry carries its own versioning flag.",
+    "output": "variable \"environment_buckets\" {\n  type = map(object({\n    name       = string\n    versioning = bool\n  }))\n  default = {\n    dev = { name = \"acme-dev-data\", versioning = false }\n    prod = { name = \"acme-prod-data\", versioning = true }\n  }\n}\n\nresource \"aws_s3_bucket\" \"env\" {\n  for_each = var.environment_buckets\n\n  bucket = each.value.name\n\n  tags = {\n    Environment = each.key\n    Versioning  = tostring(each.value.versioning)\n  }\n}\n\nresource \"aws_s3_bucket_versioning\" \"env\" {\n  for_each = { for k, v in var.environment_buckets : k => v if v.versioning }\n\n  bucket = aws_s3_bucket.env[each.key].id\n\n  versioning_configuration {\n    status = \"Enabled\"\n  }\n}"
+  },
+  {
+    "instruction": "Create a NAT gateway only when the enable_nat variable is true.",
+    "output": "variable \"enable_nat\" {\n  type    = bool\n  default = false\n}\n\nresource \"aws_nat_gateway\" \"this\" {\n  count = var.enable_nat ? 1 : 0\n\n  allocation_id = var.nat_eip_id\n  subnet_id     = var.public_subnet_id\n\n  tags = {\n    Name = \"shared-nat\"\n  }\n}\n\nvariable \"nat_eip_id\" {\n  type = string\n}\n\nvariable \"public_subnet_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Combine one count-based resource and one for_each-based resource in the same configuration.",
+    "output": "variable \"static_names\" {\n  type    = list(string)\n  default = [\"primary\", \"secondary\"]\n}\n\nvariable \"dynamic_queues\" {\n  type    = map(number)\n  default = {\n    low    = 30\n    medium = 60\n    high   = 120\n  }\n}\n\nresource \"aws_sqs_queue\" \"static\" {\n  count = length(var.static_names)\n\n  name = \"${var.static_names[count.index]}-queue\"\n}\n\nresource \"aws_sqs_queue\" \"dynamic\" {\n  for_each = var.dynamic_queues\n\n  name                       = \"${each.key}-queue\"\n  visibility_timeout_seconds = each.value\n}"
+  },
+  {
+    "instruction": "Create IAM group memberships for users grouped by team with for_each over a nested map.",
+    "output": "variable \"teams\" {\n  type = map(list(string))\n  default = {\n    platform = [\"alice\", \"dave\"]\n    data     = [\"bob\", \"erin\"]\n  }\n}\n\nresource \"aws_iam_group\" \"this\" {\n  for_each = var.teams\n\n  name = each.key\n}\n\nresource \"aws_iam_group_membership\" \"this\" {\n  for_each = var.teams\n\n  name = each.key\n  users = each.value\n  group = aws_iam_group.this[each.key].name\n}"
+  }
+]

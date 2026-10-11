@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Save the state_dict of a model to disk.",
+    "output": "import torch\ntorch.save(model.state_dict(), 'model.pt')"
+  },
+  {
+    "instruction": "Load a saved state_dict back into a model.",
+    "output": "import torch\nstate = torch.load('model.pt', weights_only=True)\nmodel.load_state_dict(state)"
+  },
+  {
+    "instruction": "Save the model, the optimizer and the epoch together in one checkpoint dict.",
+    "output": "import torch\ntorch.save({\n    'epoch': 12,\n    'model': model.state_dict(),\n    'optimizer': optimizer.state_dict(),\n}, 'ckpt.pt')"
+  },
+  {
+    "instruction": "Resume training by loading a full checkpoint into model and optimizer.",
+    "output": "import torch\nckpt = torch.load('ckpt.pt', weights_only=True)\nstart_epoch = ckpt['epoch'] + 1\nmodel.load_state_dict(ckpt['model'])\noptimizer.load_state_dict(ckpt['optimizer'])"
+  },
+  {
+    "instruction": "Save weights in a CPU-portable file that can be opened on a machine without a GPU.",
+    "output": "import torch\ncpu_state = {k: v.cpu() for k, v in model.state_dict().items()}\ntorch.save(cpu_state, 'portable.pt')"
+  },
+  {
+    "instruction": "Load a checkpoint that was saved on a GPU onto a CPU-only machine.",
+    "output": "import torch\nstate = torch.load('ckpt.pt', map_location='cpu', weights_only=True)\nmodel.load_state_dict(state)"
+  },
+  {
+    "instruction": "Save a single tensor to disk and read it back.",
+    "output": "import torch\nt = torch.arange(4)\ntorch.save(t, 'tensor.pt')\nprint(torch.load('tensor.pt', weights_only=True))"
+  },
+  {
+    "instruction": "Write a checkpoint only when the validation loss improves.",
+    "output": "import torch\nif val_loss < best_loss:\n    best_loss = val_loss\n    torch.save(model.state_dict(), 'best.pt')"
+  },
+  {
+    "instruction": "Load a file with weights_only=True so that arbitrary code cannot be unpickled.",
+    "output": "import torch\nstate = torch.load('model.pt', weights_only=True)"
+  },
+  {
+    "instruction": "Copy all weights from a trained model into a freshly constructed architecture.",
+    "output": "fresh = SameArchitecture()\nfresh.load_state_dict(trained.state_dict())"
+  },
+  {
+    "instruction": "Print the keys contained in a checkpoint file.",
+    "output": "import torch\nckpt = torch.load('ckpt.pt', weights_only=True)\nprint(list(ckpt.keys()))"
+  },
+  {
+    "instruction": "Extract only the model weights from a checkpoint that also holds optimizer state.",
+    "output": "import torch\nckpt = torch.load('ckpt.pt', weights_only=True)\nmodel.load_state_dict(ckpt['model'])"
+  },
+  {
+    "instruction": "Save the optimizer state in its own file, separate from the model weights.",
+    "output": "import torch\ntorch.save(optimizer.state_dict(), 'optimizer.pt')"
+  },
+  {
+    "instruction": "Write a checkpoint atomically by saving to a temp file and then replacing the target.",
+    "output": "import torch, os\ntorch.save(model.state_dict(), 'model.pt.tmp')\nos.replace('model.pt.tmp', 'model.pt')"
+  },
+  {
+    "instruction": "Load a checkpoint when some parameter names differ, ignoring missing keys.",
+    "output": "import torch\nstate = torch.load('model.pt', weights_only=True)\nmodel.load_state_dict(state, strict=False)"
+  },
+  {
+    "instruction": "Store the training hyperparameters alongside the weights in the same file.",
+    "output": "import torch\ntorch.save({'model': model.state_dict(), 'hparams': {'lr': 1e-3, 'batch': 32}}, 'ckpt.pt')"
+  },
+  {
+    "instruction": "Verify that all parameters loaded correctly by comparing the total weight magnitude.",
+    "output": "import torch\nprint(sum(p.abs().sum().item() for p in model.parameters()))"
+  },
+  {
+    "instruction": "Move every tensor of a loaded checkpoint to the GPU.",
+    "output": "import torch\nstate = torch.load('ckpt.pt', weights_only=True)\nstate = {k: v.to('cuda') for k, v in state.items()}\nmodel.load_state_dict(state)"
+  },
+  {
+    "instruction": "Keep a rolling last.pt checkpoint that is overwritten at the end of every epoch.",
+    "output": "import torch\ntorch.save(model.state_dict(), 'last.pt')"
+  },
+  {
+    "instruction": "Load a saved tensor file and print its contents.",
+    "output": "import torch\nprint(torch.load('tensor.pt', weights_only=True))"
+  }
+]

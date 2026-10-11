@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a pytest test using pytest.raises for this function's ValueError on negative square roots, plus a passing case.\n\ndef sqrt_positive(n):\n    if n < 0:\n        raise ValueError('negative input')\n    return n ** 0.5",
+    "output": "import pytest\nfrom mathops import sqrt_positive\n\ndef test_sqrt_positive_value():\n    assert sqrt_positive(9) == pytest.approx(3.0)\n\ndef test_sqrt_negative_raises():\n    with pytest.raises(ValueError, match='negative'):\n        sqrt_positive(-4)"
+  },
+  {
+    "instruction": "Write pytest tests using pytest.raises with match= that assert the exact error message from parse_int.\n\ndef parse_int(text):\n    if not text.lstrip('-').isdigit():\n        raise ValueError(f'cannot parse integer from {text!r}')\n    return int(text)",
+    "output": "import pytest\nfrom parsing import parse_int\n\ndef test_parse_valid():\n    assert parse_int('-42') == -42\n\ndef test_parse_invalid_message():\n    with pytest.raises(ValueError, match=r'cannot parse integer'):\n        parse_int('abc')\n\ndef test_parse_empty_string():\n    with pytest.raises(ValueError, match=\"''\"):\n        parse_int('')"
+  },
+  {
+    "instruction": "Write pytest tests for a custom exception hierarchy: raise ValidationError when a user dict is missing the email key, and assert the exception type and payload.\n\nclass AppError(Exception):\n    pass\n\nclass ValidationError(AppError):\n    def __init__(self, field):\n        self.field = field\n        super().__init__(f'missing field: {field}')\n\ndef validate_user(user):\n    if 'email' not in user:\n        raise ValidationError('email')\n    return user",
+    "output": "import pytest\nfrom validation import AppError, ValidationError, validate_user\n\ndef test_valid_user_passes():\n    user = {'email': 'a@b.c'}\n    assert validate_user(user) is user\n\ndef test_missing_email_raises_validation_error():\n    with pytest.raises(ValidationError) as exc_info:\n        validate_user({'name': 'ann'})\n    assert exc_info.value.field == 'email'\n    assert isinstance(exc_info.value, AppError)"
+  },
+  {
+    "instruction": "Write pytest tests covering empty-list edge cases for min_max: it raises ValueError on empty input and works for single-element lists.\n\ndef min_max(values):\n    if not values:\n        raise ValueError('no values')\n    return min(values), max(values)",
+    "output": "import pytest\nfrom sequences import min_max\n\ndef test_min_max_normal():\n    assert min_max([3, 1, 2]) == (1, 3)\n\ndef test_min_max_single():\n    assert min_max([5]) == (5, 5)\n\ndef test_min_max_empty():\n    with pytest.raises(ValueError, match='no values'):\n        min_max([])"
+  },
+  {
+    "instruction": "Write pytest tests for last_element that handles negative numbers, duplicates, and raises IndexError on an empty list.\n\ndef last_element(items):\n    if not items:\n        raise IndexError('list is empty')\n    return items[-1]",
+    "output": "import pytest\nfrom sequences import last_element\n\ndef test_last_element_normal():\n    assert last_element([1, 2, 3]) == 3\n\ndef test_last_element_negative_number():\n    assert last_element([-5, -1]) == -1\n\ndef test_last_element_duplicates():\n    assert last_element([7, 7, 7]) == 7\n\ndef test_last_element_empty():\n    with pytest.raises(IndexError, match='empty'):\n        last_element([])"
+  },
+  {
+    "instruction": "Write pytest tests for get_nested that accepts None as the root and raises TypeError when traversing into a non-dict node.\n\ndef get_nested(data, path):\n    node = data\n    for part in path.split('.'):\n        if not isinstance(node, dict):\n            raise TypeError(f'not a dict at {part!r}')\n        node = node.get(part)\n        if node is None:\n            return None\n    return node",
+    "output": "import pytest\nfrom nested import get_nested\n\ndef test_get_nested_normal():\n    assert get_nested({'a': {'b': 3}}, 'a.b') == 3\n\ndef test_get_nested_none_root():\n    assert get_nested(None, 'a') is None\n\ndef test_get_nested_missing_key():\n    assert get_nested({'a': 1}, 'b') is None\n\ndef test_get_nested_traverses_non_dict():\n    with pytest.raises(TypeError):\n        get_nested({'a': 5}, 'a.b.c')"
+  },
+  {
+    "instruction": "Write pytest tests for sanitize that rejects None input with TypeError but accepts whitespace-only strings by returning an empty string.\n\ndef sanitize(text):\n    if text is None:\n        raise TypeError('text must not be None')\n    return text.strip()",
+    "output": "import pytest\nfrom textutil import sanitize\n\ndef test_sanitize_normal():\n    assert sanitize('  hi  ') == 'hi'\n\ndef test_sanitize_whitespace_only():\n    assert sanitize(' \\t\\n ') == ''\n\ndef test_sanitize_none():\n    with pytest.raises(TypeError, match='None'):\n        sanitize(None)"
+  },
+  {
+    "instruction": "Write pytest tests asserting ValueError for out-of-range grades and boundary acceptance for 0 and 100.\n\ndef set_grade(score):\n    if not 0 <= score <= 100:\n        raise ValueError('score out of range')\n    return score",
+    "output": "import pytest\nfrom grades import set_grade\n\ndef test_grade_boundaries_ok():\n    assert set_grade(0) == 0\n    assert set_grade(100) == 100\n\ndef test_grade_out_of_range():\n    with pytest.raises(ValueError, match='out of range'):\n        set_grade(101)\n    with pytest.raises(ValueError):\n        set_grade(-0.01)"
+  },
+  {
+    "instruction": "Write pytest tests for parse_bool that treats 'true'/'false' case-insensitively and raises ValueError for anything else, including None.\n\ndef parse_bool(text):\n    if not isinstance(text, str):\n        raise ValueError(f'expected string, got {type(text).__name__}')\n    lowered = text.strip().lower()\n    if lowered == 'true':\n        return True\n    if lowered == 'false':\n        return False\n    raise ValueError(f'not a boolean: {text!r}')",
+    "output": "import pytest\nfrom parsing import parse_bool\n\ndef test_parse_bool_variants():\n    assert parse_bool('True') is True\n    assert parse_bool(' FALSE ') is False\n\ndef test_parse_bool_invalid():\n    with pytest.raises(ValueError, match='not a boolean'):\n        parse_bool('yes')\n\ndef test_parse_bool_non_string():\n    with pytest.raises(ValueError, match='expected string'):\n        parse_bool(None)"
+  },
+  {
+    "instruction": "Write pytest tests for safe_divide returning None for division by zero instead of raising, covering normal division too.\n\ndef safe_divide(a, b):\n    if b == 0:\n        return None\n    return a / b",
+    "output": "from calc import safe_divide\n\ndef test_safe_divide_normal():\n    assert safe_divide(10, 4) == 2.5\n\ndef test_safe_divide_by_zero_returns_none():\n    assert safe_divide(5, 0) is None\n\ndef test_safe_divide_zero_over_zero():\n    assert safe_divide(0, 0) is None"
+  },
+  {
+    "instruction": "Write pytest tests for a factorial function on very large inputs (e.g. 100), verifying it returns an exact integer rather than overflowing.\n\ndef factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
+    "output": "from mathops import factorial\n\ndef test_factorial_large_exact():\n    assert factorial(20) == 2432902008176640000\n\ndef test_factorial_100_ends_with_zeros():\n    result = factorial(100)\n    assert str(result).endswith('0000000000')\n    assert len(str(result)) == 158"
+  },
+  {
+    "instruction": "Write pytest tests for clean_text covering unicode input, control characters, and the empty string result.\n\ndef clean_text(text):\n    return ''.join(ch for ch in text if ch.isprintable())",
+    "output": "from textutil import clean_text\n\ndef test_clean_text_keeps_unicode():\n    assert clean_text('héllo wörld') == 'héllo wörld'\n\ndef test_clean_text_strips_control_chars():\n    assert clean_text('a\\x00b\\x07c') == 'abc'\n\ndef test_clean_text_only_control_chars():\n    assert clean_text('\\x00\\x01') == ''"
+  },
+  {
+    "instruction": "Write a pytest test for to_int_strict that raises TypeError for bool input (since bool is a subclass of int) and for floats.\n\ndef to_int_strict(value):\n    if isinstance(value, bool) or not isinstance(value, int):\n        raise TypeError(f'expected int, got {type(value).__name__}')\n    return value",
+    "output": "import pytest\nfrom numstrict import to_int_strict\n\ndef test_int_accepted():\n    assert to_int_strict(42) == 42\n\ndef test_bool_rejected():\n    with pytest.raises(TypeError, match='expected int, got bool'):\n        to_int_strict(True)\n\ndef test_float_rejected():\n    with pytest.raises(TypeError):\n        to_int_strict(3.0)"
+  },
+  {
+    "instruction": "Write pytest tests for a bounded buffer: adding beyond capacity raises OverflowError and adding up to capacity succeeds.\n\nclass BoundedBuffer:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.items = []\n    def add(self, item):\n        if len(self.items) >= self.capacity:\n            raise OverflowError('buffer full')\n        self.items.append(item)",
+    "output": "import pytest\nfrom buffer import BoundedBuffer\n\ndef test_add_within_capacity():\n    buf = BoundedBuffer(2)\n    buf.add('a')\n    buf.add('b')\n    assert buf.items == ['a', 'b']\n\ndef test_add_beyond_capacity():\n    buf = BoundedBuffer(1)\n    buf.add('a')\n    with pytest.raises(OverflowError, match='buffer full'):\n        buf.add('b')"
+  },
+  {
+    "instruction": "Write pytest tests for unquote that handles strings with no percent-encoding, malformed sequences like '%zz', and valid encodings.\n\nfrom urllib.parse import unquote\n\ndef safe_unquote(text):\n    return unquote(text, errors='strict')",
+    "output": "from parsing import safe_unquote\n\ndef test_unquote_plain():\n    assert safe_unquote('plain text') == 'plain text'\n\ndef test_unquote_valid():\n    assert safe_unquote('hello%20world') == 'hello world'\n\ndef test_unquote_malformed_kept():\n    assert safe_unquote('%zz') == '%zz'"
+  },
+  {
+    "instruction": "Write pytest tests asserting IndexError bounds for a grid lookup helper with coordinates equal to size.\n\ndef grid_get(grid, row, col):\n    return grid[row][col]",
+    "output": "import pytest\nfrom grid import grid_get\n\ndef make_grid():\n    return [[1, 2], [3, 4]]\n\ndef test_grid_get_valid():\n    assert grid_get(make_grid(), 1, 0) == 3\n\ndef test_grid_get_row_out_of_bounds():\n    with pytest.raises(IndexError):\n        grid_get(make_grid(), 2, 0)\n\ndef test_grid_get_col_out_of_bounds():\n    with pytest.raises(IndexError):\n        grid_get(make_grid(), 0, 5)"
+  },
+  {
+    "instruction": "Write pytest tests for sum_floats handling NaN inputs: the function skips NaN values, and an all-NaN list returns 0.0.\n\ndef sum_floats(values):\n    total = 0.0\n    for v in values:\n        if v != v:\n            continue\n        total += v\n    return total",
+    "output": "import math\nfrom numerics import sum_floats\n\ndef test_sum_floats_normal():\n    assert sum_floats([1.5, 2.5]) == 4.0\n\ndef test_sum_floats_skips_nan():\n    assert sum_floats([1.0, float('nan'), 2.0]) == 3.0\n\ndef test_sum_floats_all_nan():\n    assert sum_floats([float('nan'), float('nan')]) == 0.0"
+  },
+  {
+    "instruction": "Write pytest tests for key_set_difference that raises TypeError when either argument is not a set (e.g. list or None).\n\ndef key_set_difference(a, b):\n    if not isinstance(a, set) or not isinstance(b, set):\n        raise TypeError('arguments must be sets')\n    return a - b",
+    "output": "import pytest\nfrom sets_ops import key_set_difference\n\ndef test_difference_ok():\n    assert key_set_difference({'a', 'b'}, {'b'}) == {'a'}\n\ndef test_difference_list_input():\n    with pytest.raises(TypeError, match='must be sets'):\n        key_set_difference(['a'], {'a'})\n\ndef test_difference_none_input():\n    with pytest.raises(TypeError):\n        key_set_difference(None, {'a'})"
+  },
+  {
+    "instruction": "Write pytest tests using pytest.warns for a deprecated function that emits a DeprecationWarning and still returns the computed value.\n\nimport warnings\n\ndef old_double(n):\n    warnings.warn('old_double is deprecated; use double', DeprecationWarning)\n    return n * 2",
+    "output": "import pytest\nfrom compat import old_double\n\ndef test_old_double_warns_and_returns():\n    with pytest.warns(DeprecationWarning, match='deprecated'):\n        assert old_double(21) == 42"
+  },
+  {
+    "instruction": "Write pytest tests for a parse_number function that raises ValueError on empty strings and returns float('inf') for 'inf' input.\n\ndef parse_number(text):\n    text = text.strip()\n    if not text:\n        raise ValueError('empty input')\n    return float(text)",
+    "output": "import pytest, math\nfrom parsing import parse_number\n\ndef test_parse_number_normal():\n    assert parse_number(' 3.5 ') == 3.5\n\ndef test_parse_number_empty():\n    with pytest.raises(ValueError, match='empty'):\n        parse_number('   ')\n\ndef test_parse_number_infinity():\n    assert math.isinf(parse_number('inf'))"
+  }
+]

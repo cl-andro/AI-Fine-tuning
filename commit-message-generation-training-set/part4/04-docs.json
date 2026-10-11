@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n@@ -20,6 +20,18 @@ ## Installation\n pip install -r requirements.txt\n \n+## Quickstart\n+\n+```bash\n+export DATABASE_URL=sqlite:///app.db\n+python -m app.migrate\n+python -m app.serve --port 8080\n+```\n+\n+Then open http://localhost:8080/healthz to confirm the service\n+is up. The default admin account is seeded as admin/changeme -\n+change it before deploying.",
+    "output": "docs(readme): add a quickstart section\n\nNew contributors can go from clone to a running server with three\ncommands, including the health-check URL and a warning about the\nseeded admin password."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/api/orders.md b/docs/api/orders.md\n--- a/docs/api/orders.md\n+++ b/docs/api/orders.md\n@@ -12,6 +12,16 @@ GET /orders\n | size  | int  | no   | 50    | page size, max 200 |\n \n+### Response\n+\n+```json\n+{\n+  \"items\": [ ... ],\n+  \"page\": 1,\n+  \"size\": 50,\n+  \"total\": 1337\n+}\n+```\n+\n+Errors return `{\"error\": \"...\"}` with 4xx/5xx status codes.",
+    "output": "docs(api): document the paginated orders response\n\nAdds the response envelope, field meanings, and the error shape\nthat clients should expect."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/CONTRIBUTING.md b/docs/CONTRIBUTING.md\n--- a/docs/CONTRIBUTING.md\n+++ b/docs/CONTRIBUTING.md\n@@ -30,6 +30,11 @@ Branches should be named `type/short-description`,\n e.g. `fix/login-redirect`.\n \n+## Commits\n+\n+We use Conventional Commits: `type(scope): summary` in the\n+imperative mood. Types: feat, fix, docs, refactor, test, chore,\n+perf, build, ci, style, revert. Bodies explain *why*.\n+\n ## Reviews",
+    "output": "docs(contributing): document the commit message convention\n\nStates the type/scope grammar and the imperative summary rule so\ncontributors stop sending free-form one-liners."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/architecture.md b/docs/architecture.md\n--- a/docs/architecture.md\n+++ b/docs/architecture.md\n@@ -1,4 +1,22 @@\n # Architecture\n \n-The service is a monolith.\n+## Components\n+\n+1. **API layer** (`src/api`) - HTTP routing, auth, serialization.\n+2. **Service layer** (`src/services`) - business rules; no I/O.\n+3. **Repository layer** (`src/repositories`) - persistence.\n+4. **Workers** (`src/workers`) - async jobs, consume the queue.\n+\n+Requests flow API -> service -> repository. Services never import\n+from `src.api`, and repositories never import from `src.services`.\n+Enforcement lives in `tests/test_layering.py`.",
+    "output": "docs(architecture): describe layering and dependency rules\n\nReplaces the placeholder monolith note with the four components,\nthe allowed dependency direction, and where the rule is enforced."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/cli.md b/docs/cli.md\n--- a/docs/cli.md\n+++ b/docs/cli.md\n@@ -15,3 +15,14 @@ appctl deploy <env>\n appctl status <env>\n+\n+## JSON output\n+\n+Pass `--json` to any command to print a single JSON document\n+instead of a table:\n+\n+```bash\n+appctl status prod --json | jq .services[].state\n+```\n+\n+Exit codes are unchanged: 0 success, 1 failure, 2 usage error.",
+    "output": "docs(cli): document the --json flag\n\nShows a jq example and confirms that switching formats does not\nchange exit codes, so scripts remain portable."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/SECURITY.md b/docs/SECURITY.md\n--- a/docs/SECURITY.md\n+++ b/docs/SECURITY.md\n@@ -8,4 +8,13 @@ Please do not open public issues for vulnerabilities.\n Report them to security@example.com and allow 90 days.\n \n+## Supported versions\n+\n+| Version | Supported |\n+| ------- | --------- |\n+| 2.x    | yes       |\n+| 1.x    | until 2026-06-30 |\n+\n+Backports are only provided for 2.x; upgrade before the 1.x\n+end-of-life date to keep receiving fixes.",
+    "output": "docs(security): add a supported-versions table\n\nClarifies which release lines still receive security patches and\nthe 1.x end-of-life date."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/faq.md b/docs/faq.md\n--- a/docs/faq.md\n+++ b/docs/faq.md\n@@ -40,3 +40,10 @@ A: Yes, set `RATE_LIMIT=0` to disable it.\n in non-production environments only.\n+\n+## Why did my job disappear from the queue?\n+\n+Jobs that fail five times move to the dead-letter topic and are\n+no longer visible in `appctl jobs list`. Inspect them with\n+`appctl jobs dead --last 20`, fix the cause, then requeue with\n+`appctl jobs requeue <id>`.",
+    "output": "docs(faq): explain dead-lettered jobs\n\nDocuments where failed jobs go, how to inspect them, and the\nrequeue path - the most common support question this month."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/CHANGELOG.md b/CHANGELOG.md\n--- a/CHANGELOG.md\n+++ b/CHANGELOG.md\n@@ -1,6 +1,14 @@\n # Changelog\n \n+## [2.3.0] - 2025-10-08\n+\n+### Added\n+- Paginated GET /orders (page, size, total).\n+- /healthz readiness endpoint.\n+\n+### Fixed\n+- Percentile index out of range at p=100.\n+\n ## [2.2.1] - 2025-09-14",
+    "output": "docs(changelog): add 2.3.0 release notes\n\nCaptures the pagination and health-check features plus the\npercentile fix shipped in this release."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/api/routes/health.py b/src/api/routes/health.py\n--- a/src/api/routes/health.py\n+++ b/src/api/routes/health.py\n@@ -1,5 +1,10 @@\n @app.get(\"/healthz\")\n def healthz():\n+    \"\"\"Return dependency pings.\n+\n+    200 when every dependency responds, 503 otherwise. No auth\n+    is required so load balancers can poll it anonymously.\n+    \"\"\"\n     checks = {\"db\": ping_database(), \"cache\": ping_cache()}",
+    "output": "docs(api): add a docstring to the healthz endpoint\n\nStates the status codes and that the route is intentionally\nunauthenticated, which reviewers had asked about twice."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/deployment.md b/docs/deployment.md\n--- a/docs/deployment.md\n+++ b/docs/deployment.md\n@@ -25,6 +25,16 @@ Rollbacks are one command:\n appctl rollback <env>\n \n+## Environment variables\n+\n+| Name | Required | Default | Notes |\n+| ---- | -------- | ------- | ----- |\n+| DATABASE_URL | yes | - | postgres:// only in prod |\n+| SECRET_KEY | yes | - | 32+ random bytes |\n+| PORT | no | 8080 | ignored behind the proxy |\n+| DEBUG | no | 0 | never set to 1 in prod |",
+    "output": "docs(deployment): document required environment variables\n\nTable lists required vs optional settings with defaults, closing\nthe gap that caused two failed deploys last sprint."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/examples/quickstart.py b/examples/quickstart.py\n--- a/examples/quickstart.py\n+++ b/examples/quickstart.py\n@@ -0,0 +1,12 @@\n+\"\"\"Minimal client usage example.\"\"\"\n+\n+from app import Client\n+\n+client = Client(base=\"http://localhost:8080\", token=\"dev-token\")\n+\n+orders = client.get(\"/orders\", params={\"size\": 5})\n+for o in orders[\"items\"]:\n+    print(o[\"id\"], o[\"status\"])\n+\n+# Error handling\n+try:\n+    client.get(\"/orders/nope\")\n+except client.NotFound:\n+    print(\"missing\")",
+    "output": "docs(examples): add a quickstart client script\n\nRunnable example covering auth, pagination params, iteration, and\nnot-found handling for new API consumers."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/glossary.md b/docs/glossary.md\n--- a/docs/glossary.md\n+++ b/docs/glossary.md\n@@ -0,0 +1,10 @@\n+# Glossary\n+\n+- **Job** - a unit of async work consumed by a worker.\n+- **Attempt** - one execution of a job; failures increment it.\n+- **Dead letter** - a job that exhausted its attempts.\n+- **Cursor** - an opaque pagination token tied to sort order.\n+- **Tenant** - an isolated customer namespace; API keys map 1:1.\n+- **Window** - the sliding interval used for rate limiting.",
+    "output": "docs: add project glossary\n\nDefines the domain vocabulary used in code comments and runbooks\nso newcomers stop guessing what 'attempt' and 'window' mean."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/api/authentication.md b/docs/api/authentication.md\n--- a/docs/api/authentication.md\n+++ b/docs/api/authentication.md\n@@ -6,4 +6,15 @@ Send the API key as a bearer token:\n Authorization: Bearer <key>\n \n+## Rotating keys\n+\n+1. Create a new key with `appctl keys create --name ci`.\n+2. Deploy the new key to the consuming service.\n+3. Revoke the old key with `appctl keys revoke <id>`.\n+\n+Revocation is immediate and cached for at most 30 seconds, so\n+allow a 30-second overlap when swapping keys in zero-downtime\n+deployments.",
+    "output": "docs(api): document API key rotation\n\nAdds the create/deploy/revoke order and the 30-second cache\nwindow that operators must respect to avoid 401 bursts."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/testing.md b/docs/testing.md\n--- a/docs/testing.md\n+++ b/docs/testing.md\n@@ -12,3 +12,12 @@ Run the suite:\n     pytest -q\n \n+## Test layout\n+\n+- `tests/unit/` - pure logic, no I/O, run in milliseconds.\n+- `tests/integration/` - repository and HTTP tests against the\n+  docker-compose Postgres.\n+- `tests/e2e/` - full-stack journeys; run nightly, not per PR.\n+\n+PRs must keep unit tests green; integration tests may be skipped\n+locally with `pytest -m 'not integration'`.",
+    "output": "docs(testing): explain the test tier layout\n\nDocuments unit/integration/e2e split and what a PR must run, plus\nthe marker for skipping docker-dependent tests."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/runbooks/incident.md b/docs/runbooks/incident.md\n--- a/docs/runbooks/incident.md\n+++ b/docs/runbooks/incident.md\n@@ -0,0 +1,14 @@\n+# Incident response\n+\n+1. Declare in #incidents and set the status page to investigating.\n+2. Identify the failing service with `appctl status prod`.\n+3. If a deploy correlates, roll back first: `appctl rollback prod`.\n+4. Capture evidence (logs, dashboards) before restarting anything.\n+5. Write a timeline as you go; the postmortem needs it.\n+\n+Severity guide:\n+- SEV1: money movement or total outage. Page the on-call lead.\n+- SEV2: major feature broken, workaround exists.\n+- SEV3: cosmetic or single-user impact. Fix in business hours.",
+    "output": "docs(runbooks): add an incident response runbook\n\nStep-by-step response with a severity guide, so the first 15\nminutes of an incident are not spent deciding who does what."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/config/settings.py b/src/config/settings.py\n--- a/src/config/settings.py\n+++ b/src/config/settings.py\n@@ -10,6 +10,10 @@ class Settings:\n     debug: bool = False\n+    \"\"\"Enable verbose logging and the Werkzeug debugger.\n+    Never enable in production deployments.\"\"\"\n+\n     secret_key: str = \"\"\n+    \"\"\"HMAC key for session cookies; must be at least 32 bytes.\"\"\"",
+    "output": "docs(config): document debug and secret_key settings\n\nInline docstrings surface in generated config docs and IDE hovers,\nrecording the production constraint on the debugger."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/migration/v2.md b/docs/migration/v2.md\n--- a/docs/migration/v2.md\n+++ b/docs/migration/v2.md\n@@ -0,0 +1,12 @@\n+# Migrating to v2\n+\n+v2 renames `timeout` to `request_timeout` and returns envelopes\n+from every endpoint.\n+\n+1. Install v2 and run `appctl migrate --dry-run`.\n+2. Replace `timeout=` with `request_timeout=` in client code.\n+3. Unwrap `{\"items\": [...]}` responses.\n+4. Remove the legacy paginator shim.\n+\n+The v1 line receives security fixes until 2026-06-30.",
+    "output": "docs(migration): write the v1 to v2 upgrade guide\n\nLists the breaking renames, response-envelope change, and the\ndeadline for v1 support."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/api/errors.md b/docs/api/errors.md\n--- a/docs/api/errors.md\n+++ b/docs/api/errors.md\n@@ -0,0 +1,16 @@\n+# Error format\n+\n+All non-2xx responses use this shape:\n+\n+```json\n+{\"error\": \"validation failed\", \"fields\": {\"email\": \"required\"}}\n+```\n+\n+| Status | Meaning |\n+| ------ | ------- |\n+| 400 | malformed request or cursor |\n+| 401 | missing or revoked API key |\n+| 404 | resource not found |\n+| 422 | validation failure (see `fields`) |\n+| 429 | rate limit exceeded (see `X-RateLimit-Remaining`) |",
+    "output": "docs(api): document the standard error envelope\n\nCentralises status-code meanings so clients can branch on status\nwithout parsing prose."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/README.zh.md b/docs/README.zh.md\n--- a/docs/README.zh.md\n+++ b/docs/README.zh.md\n@@ -0,0 +1,9 @@\n+# 应用程序快速入门\n+\n+安装：\n+\n+    pip install -r requirements.txt\n+\n+启动：\n+\n+    python -m app.serve",
+    "output": "docs(readme): add a Simplified Chinese quickstart\n\nStandalone translated getting-started page for the growing zh-CN\nuser base; commands are kept verbatim for copy-paste safety."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/docs/adr/0001-database-choice.md b/docs/adr/0001-database-choice.md\n--- /dev/null\n+++ b/docs/adr/0001-database-choice.md\n@@ -0,0 +1,16 @@\n+# ADR 0001: PostgreSQL for primary storage\n+\n+Status: accepted (2025-09-01)\n+\n+## Context\n+We need transactions, JSONB columns, and point-in-time recovery.\n+SQLite is too limited for concurrent writes in production.\n+\n+## Decision\n+Postgres 16 is the system of record; SQLite stays for unit tests.\n+\n+## Consequences\n+- Deployments must run migrations against Postgres only.\n+- CI needs a Postgres service for integration tests.\n+- Forks must not depend on SQLite-only behaviour.",
+    "output": "docs(adr): record the PostgreSQL storage decision\n\nCaptures why Postgres was chosen, the alternatives considered, and\nthe constraints it puts on deployments and CI."
+  }
+]

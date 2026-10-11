@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Parse this Docker json-file log into JSON with message, stream and time (drop the trailing newline):\n{\"log\": \"request handled\\n\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:07.123456789Z\"}",
+    "output": "{\"message\": \"request handled\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:07.123456789Z\"}"
+  },
+  {
+    "instruction": "Parse this CRI container log line into JSON with time, stream, partial flag and message:\n2023-10-12T14:05:07.123456789Z stdout F GET /healthz 200",
+    "output": "{\"time\": \"2023-10-12T14:05:07.123456789Z\", \"stream\": \"stdout\", \"partial\": false, \"message\": \"GET /healthz 200\"}"
+  },
+  {
+    "instruction": "This CRI line is a partial (continuation) line. Parse it into JSON and set partial to true:\n2023-10-12T14:05:08.123456789Z stderr P connecting to backend 10.0.0.",
+    "output": "{\"time\": \"2023-10-12T14:05:08.123456789Z\", \"stream\": \"stderr\", \"partial\": true, \"message\": \"connecting to backend 10.0.0.\"}"
+  },
+  {
+    "instruction": "Parse this prefixed pod log line into JSON with timestamp, pod and message:\n2023-10-12T14:05:09Z [api-7d9f-abc12] INFO listening on :8080",
+    "output": "{\"timestamp\": \"2023-10-12T14:05:09Z\", \"pod\": \"api-7d9f-abc12\", \"level\": \"INFO\", \"message\": \"listening on :8080\"}"
+  },
+  {
+    "instruction": "Parse this kubelet klog line into JSON with level, pid, source, message, pod and containerID:\nI1012 14:05:11.123456   1234 kubelet.go:123] \"Container terminated\" pod=\"default/api-1\" containerID=\"docker://abc123\"",
+    "output": "{\"level\": \"info\", \"timestamp\": \"1012 14:05:11.123456\", \"pid\": 1234, \"source\": \"kubelet.go:123\", \"message\": \"Container terminated\", \"pod\": \"default/api-1\", \"containerID\": \"docker://abc123\"}"
+  },
+  {
+    "instruction": "Parse this Kubernetes event JSON into JSON with type, reason, namespace, pod and count:\n{\"type\": \"Warning\", \"reason\": \"BackOff\", \"object\": {\"kind\": \"Pod\", \"namespace\": \"default\", \"name\": \"api-1\"}, \"message\": \"Back-off restarting failed container\", \"count\": 5, \"firstTimestamp\": \"2023-10-12T14:05:12Z\"}",
+    "output": "{\"type\": \"Warning\", \"reason\": \"BackOff\", \"namespace\": \"default\", \"pod\": \"api-1\", \"count\": 5, \"message\": \"Back-off restarting failed container\"}"
+  },
+  {
+    "instruction": "From these Kubernetes events, return a JSON array of the messages whose reason indicates an OOM kill:\n{\"reason\": \"Started\", \"message\": \"Started container api\"}\n{\"reason\": \"OOMKilled\", \"message\": \"Container api was OOM killed\"}\n{\"reason\": \"Pulled\", \"message\": \"Successfully pulled image\"}\n{\"reason\": \"OOMKilled\", \"message\": \"Container worker was OOM killed\"}",
+    "output": "[\"Container api was OOM killed\", \"Container worker was OOM killed\"]"
+  },
+  {
+    "instruction": "Parse these three application log lines from kubectl logs into a JSON array with ts, level and message:\n2023-10-12T14:05:13Z INFO boot completed\n2023-10-12T14:05:14Z WARN slow request took 2.5s\n2023-10-12T14:05:15Z ERROR db connection lost",
+    "output": "[{\"ts\": \"2023-10-12T14:05:13Z\", \"level\": \"INFO\", \"message\": \"boot completed\"}, {\"ts\": \"2023-10-12T14:05:14Z\", \"level\": \"WARN\", \"message\": \"slow request took 2.5s\"}, {\"ts\": \"2023-10-12T14:05:15Z\", \"level\": \"ERROR\", \"message\": \"db connection lost\"}]"
+  },
+  {
+    "instruction": "This CRI-O json log carries a kubernetes object. Extract pod, container and namespace as JSON:\n{\"log_type\": \"stdout\", \"log\": \"order created\\n\", \"kubernetes\": {\"pod_name\": \"checkout-5f8d-xyz\", \"container_name\": \"app\", \"namespace\": \"shop\", \"pod_id\": \"9f2c4a1b\"}}",
+    "output": "{\"pod\": \"checkout-5f8d-xyz\", \"container\": \"app\", \"namespace\": \"shop\", \"pod_id\": \"9f2c4a1b\", \"message\": \"order created\"}"
+  },
+  {
+    "instruction": "Write a Python function that parses a Docker json-file log line and returns time, stream and the trimmed message",
+    "output": "import json\n\ndef parse_docker_line(line):\n    line = line.strip()\n    if not line:\n        return None\n    try:\n        obj = json.loads(line)\n    except (json.JSONDecodeError, ValueError):\n        return None\n    return {\"time\": obj.get(\"time\"), \"stream\": obj.get(\"stream\"),\n            \"message\": obj.get(\"log\", \"\").rstrip(\"\\n\")}\n\ndef parse_file(path):\n    out = []\n    with open(path) as fh:\n        for line in fh:\n            rec = parse_docker_line(line)\n            if rec:\n                out.append(rec)\n    return out"
+  },
+  {
+    "instruction": "Parse this plain Docker log line into JSON with ts, app, pid and message:\n2023-10-12 14:05:17 app[4321]: listening on 0.0.0.0:8080",
+    "output": "{\"ts\": \"2023-10-12 14:05:17\", \"app\": \"app\", \"pid\": 4321, \"message\": \"listening on 0.0.0.0:8080\"}"
+  },
+  {
+    "instruction": "This klog line is an error. Return JSON with level set to error, source, message and err:\nE1012 14:05:18.123456   1234 kubelet.go:245] \"Pod container health check failed\" err=\"HTTP probe failed with statuscode: 500\"",
+    "output": "{\"level\": \"error\", \"timestamp\": \"1012 14:05:18.123456\", \"pid\": 1234, \"source\": \"kubelet.go:245\", \"message\": \"Pod container health check failed\", \"err\": \"HTTP probe failed with statuscode: 500\"}"
+  },
+  {
+    "instruction": "Count stdout and stderr lines in these Docker json logs and return the counts as JSON:\n{\"log\": \"a\\n\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:19Z\"}\n{\"log\": \"b\\n\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:20Z\"}\n{\"log\": \"c\\n\", \"stream\": \"stderr\", \"time\": \"2023-10-12T14:05:21Z\"}\n{\"log\": \"d\\n\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:22Z\"}\n{\"log\": \"e\\n\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:23Z\"}",
+    "output": "{\"stdout\": 4, \"stderr\": 1}"
+  },
+  {
+    "instruction": "These log lines belong to different containers. Return a JSON array of the messages from container api only:\n{\"container\": \"api\", \"msg\": \"handled order 1\"}\n{\"container\": \"worker\", \"msg\": \"job started\"}\n{\"container\": \"api\", \"msg\": \"handled order 2\"}",
+    "output": "[\"handled order 1\", \"handled order 2\"]"
+  },
+  {
+    "instruction": "Parse this kubelet stop line into JSON with event, container, pod and node:\nOct 12 14:05:20 ip-10-0-1-5 kubelet[900]: Stopping container api (api-7d9f-abc12) on node ip-10-0-1-5",
+    "output": "{\"event\": \"Stopping container\", \"container\": \"api\", \"pod\": \"api-7d9f-abc12\", \"node\": \"ip-10-0-1-5\", \"pid\": 900}"
+  },
+  {
+    "instruction": "Parse this containerd log line into JSON with level, msg, id and image:\n2023-10-12T14:05:21.123Z level=info msg=\"starting container\" id=abc123 image=registry.example.com/api:v1.2.3",
+    "output": "{\"level\": \"info\", \"msg\": \"starting container\", \"id\": \"abc123\", \"image\": \"registry.example.com/api:v1.2.3\"}"
+  },
+  {
+    "instruction": "Write a grok pattern that parses a CRI container log line into time, stream, flag and message",
+    "output": "%{TIMESTAMP_ISO8601:time} %{WORD:stream} %{WORD:flag} %{GREEDYDATA:message}"
+  },
+  {
+    "instruction": "Parse this Fluentd style kubernetes log JSON and return the bare log message as JSON:\n{\"log\": \"GET /health 200\", \"stream\": \"stdout\", \"time\": \"2023-10-12T14:05:33.123456789Z\", \"kubernetes\": {\"pod_name\": \"api-7d9f-abc12\", \"container_name\": \"app\", \"namespace\": \"default\"}}",
+    "output": "{\"message\": \"GET /health 200\", \"pod\": \"api-7d9f-abc12\", \"container\": \"app\", \"namespace\": \"default\", \"time\": \"2023-10-12T14:05:33.123456789Z\"}"
+  },
+  {
+    "instruction": "Parse this docker syslog driver line into JSON with time, container and message:\nOct 12 14:05:34 ip-10-0-1-5 docker[1234]: time=\"2023-10-12T14:05:34Z\" level=info container=api message=\"container healthy\"",
+    "output": "{\"timestamp\": \"Oct 12 14:05:34\", \"host\": \"ip-10-0-1-5\", \"app\": \"docker\", \"pid\": 1234, \"log_time\": \"2023-10-12T14:05:34Z\", \"level\": \"info\", \"container\": \"api\", \"message\": \"container healthy\"}"
+  },
+  {
+    "instruction": "Write a Python function that extracts the message part of a CRI log line (time, stream, flag, message)",
+    "output": "def parse_cri(line):\n    parts = line.split(\" \", 3)\n    if len(parts) != 4:\n        return None\n    time, stream, flag, message = parts\n    return {\"time\": time, \"stream\": stream, \"partial\": flag == \"P\",\n            \"message\": message.rstrip(\"\\n\") if flag == \"F\" else message}"
+  }
+]

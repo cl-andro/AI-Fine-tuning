@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Users in one region report slow response times while others are fine. Diagnose network latency.",
+    "output": "**Diagnose:**\nmtr -rwzbc 20 app.example.com\nping -c 20 app.example.com\ntraceroute -n app.example.com\ncurl -w 'dns:%{time_namelookup} conn:%{time_connect} ttfb:%{time_starttransfer} total:%{time_total}\\n' -o /dev/null -s https://app.example.com/\n**Interpretation:** mtr shows per-hop latency and loss. High latency only on the last hop with no loss means distance/ISP routing. Loss on a middle hop that persists to the end means a congested link. Compare regions to localize.\n**Fix:** Use a CDN/edge or regional deployment closer to users, or work with the ISP on routing. If loss is on a specific hop, escalate to the carrier. Confirm improvement with mtr before/after."
+  },
+  {
+    "instruction": "Throughput to a server is far below link speed. Diagnose with iperf3.",
+    "output": "**Diagnose:**\niperf3 -s\niperf3 -c <server> -P 4 -t 20\niperf3 -c <server> -u -b 100M\nss -tni | grep -i retrans\nethtool -S eth0 | grep -i -E 'err|drop'\n**Interpretation:** If single-stream is slow but 4 parallel streams are much faster, a single TCP flow is window/RTT limited. High retransmits indicate loss; `ethtool -S` drops suggest a NIC/link problem.\n**Fix:** Increase TCP window/autotuning (`net.ipv4.tcp_rmem/wmem`), fix loss (MTU, cabling, duplex), and use multiple streams where appropriate. Verify with `iperf3 -P 4`."
+  },
+  {
+    "instruction": "An application has high latency but ping is fast. Diagnose where the delay is.",
+    "output": "**Diagnose:**\ncurl -w 'dns:%{time_namelookup} conn:%{time_connect} tls:%{time_appconnect} ttfb:%{time_starttransfer} total:%{time_total}\\n' -o /dev/null -s https://app/\nstrace -p <app-pid> -T -f -e trace=network 2>&1 | head\nss -tni\n**Interpretation:** Fast ping/RTT but slow app response means the delay is above the network: DNS, TLS, server processing, or the app waiting on a dependency. The curl timing breakdown localizes it.\n**Fix:** Cache DNS, enable TLS resumption/keep-alive (drop connect cost), and optimize the slow component (DB, external API). For repeated calls, use connection pooling. Re-measure the timing breakdown."
+  },
+  {
+    "instruction": "Packet loss is visible on a specific hop in mtr. Diagnose whether it is real.",
+    "output": "**Diagnose:**\nmtr -rwzbc 50 <dest>\nmtr -u -P 53 -rwzbc 50 <dest>\nping -c 50 <dest>\n**Interpretation:** ICMP rate-limiting on a router shows loss at that hop, but if the loss does not continue to the destination it is cosmetic. Only loss that persists to the final hop affects traffic. Compare TCP/UDP mtr with ICMP.\n**Fix:** If loss persists to the end, escalate the congested link with the provider. If it is only the intermediate hop and the destination is clean, no action needed. Verify with end-to-end ping/loss counters."
+  },
+  {
+    "instruction": "A WAN link shows high jitter breaking VoIP. Diagnose.",
+    "output": "**Diagnose:**\nping -c 100 -i 0.02 <voip-peer> | tail\niperf3 -c <peer> -u -b 5M --get-server-output\nmtr -rwzbc 50 <voip-peer>\nethtool -S eth0 | grep -i drop\n**Interpretation:** Jitter is the variation in latency; a high standard deviation in ping or the iperf UDP report hurts real-time media. Bufferbloat on a saturated uplink is a common cause.\n**Fix:** Enable QoS/SQM (fq_codel/cake) on the WAN to control bufferbloat, prioritize VoIP (DSCP EF), and ensure the link is not saturated. Verify jitter drops with the same ping/iperf test."
+  },
+  {
+    "instruction": "DNS or TLS setup dominates page load time. Diagnose the breakdown.",
+    "output": "**Diagnose:**\ncurl -w 'dns:%{time_namelookup} conn:%{time_connect} tls:%{time_appconnect} ttfb:%{time_starttransfer} total:%{time_total}\\n' -o /dev/null -s https://example.com/\nfor i in 1 2 3; do curl -w 'dns:%{time_namelookup}\\n' -o /dev/null -s https://example.com/; done\n**Interpretation:** High time_namelookup means slow DNS; high time_appconnect minus time_connect means TLS setup (unresumed, no stapling, distant server). Repeated requests showing high DNS each time means no caching.\n**Fix:** Improve DNS (closer resolver, caching, prefetch), enable TLS 1.3 and session resumption, and serve via a CDN. Re-run the breakdown to confirm each component shrank."
+  },
+  {
+    "instruction": "iptables/conntrack tracking limits throughput on a busy gateway. Diagnose.",
+    "output": "**Diagnose:**\ncat /proc/sys/net/netfilter/nf_conntrack_count\ncat /proc/sys/net/netfilter/nf_conntrack_max\ndmesg | grep -i conntrack\nss -s\nconntrack -S 2>/dev/null\n**Interpretation:** If nf_conntrack_count is near max and dmesg logs 'table full, dropping packet', the gateway drops packets under load, capping throughput and causing retransmits.\n**Fix:** Raise `net.netfilter.nf_conntrack_max` (and hashsize), shorten timeouts, and offload or bypass conntrack for high-volume flows (e.g NOTRACK for a known tunnel). Persist in sysctl.d and reload."
+  },
+  {
+    "instruction": "A TCP transfer is much slower than UDP on the same link. Diagnose.",
+    "output": "**Diagnose:**\niperf3 -c <host> -t 20\niperf3 -c <host> -u -b 100M -t 20\nss -tni\ntc -s qdisc show dev eth0\n**Interpretation:** TCP is loss/window sensitive; if UDP reaches high rates but TCP stalls, there is loss or a small window inducing congestion control backoff. A shallow qdisc buffer or bloated buffer also matters.\n**Fix:** Fix the loss (MTU, cabling, duplex), enable/patch congestion control (BBR), and tune window autotuning. Verify with `ss -tni` showing retransmits falling and `iperf3` TCP nearing UDP rates."
+  },
+  {
+    "instruction": "Latency spikes every few seconds. Diagnose periodic network or system contention.",
+    "output": "**Diagnose:**\nping -c 200 -i 0.05 <host>\nmtr -rwzbc 100 <host>\nvmstat 1 10\nsar -n DEV 1 10\n**Interpretation:** Regular periodic spikes often come from another cron/backup/scan saturating the link, or CPU/IRQ contention. Correlating the ping spikes with vmstat/sar timestamps localizes it.\n**Fix:** Move bulk transfers off peak hours, rate-limit them (tc), and fix CPU/IRQ contention (RPS/RSS, pinning). If it is a neighbor, apply QoS. Confirm spikes stop after the change."
+  },
+  {
+    "instruction": "A load balancer adds significant latency compared to hitting backends directly. Diagnose.",
+    "output": "**Diagnose:**\ncurl -w 'total:%{time_total}\\n' -o /dev/null -s https://lb.example.com/\ncurl -w 'total:%{time_total}\\n' -o /dev/null -s --resolve lb.example.com:443:<backend-ip> https://lb.example.com/\nss -s\n**Interpretation:** If direct backend is fast and via LB is slow, the LB itself is the bottleneck: TLS re-encryption, health-check load, or connection churn. High `ss -s` TIME_WAIT or CPU on the LB confirms.\n**Fix:** Scale/optimize the LB (more workers, keep-alive to backends, use L4 where possible, enable TLS session resumption). Re-measure both paths to confirm the LB overhead drops."
+  },
+  {
+    "instruction": "A file transfer over the internet is slow due to a high BDP. Diagnose window scaling.",
+    "output": "**Diagnose:**\nsysctl net.ipv4.tcp_window_scaling net.ipv4.tcp_rmem net.ipv4.tcp_wmem\nss -tni dst <remote>\niperf3 -c <remote> -w 1M -t 20\n**Interpretation:** With a high bandwidth-delay product, a small receive window caps throughput regardless of link speed. `ss -tni` shows the send/recv windows; if they are small relative to BDP, that is the limit.\n**Fix:** Ensure window scaling is on, raise `net.ipv4.tcp_rmem`/`tcp_wmem` max values, and enable autotuning. For very long paths consider parallel streams or a WAN optimizer. Verify throughput rises with a larger window."
+  },
+  {
+    "instruction": "VoIP/RTP traffic has one-way audio. Diagnose the asymmetric path.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni any 'udp portrange 10000-20000' -c 50\nmtr -rwzbc 20 <peer>\nconntrack -L | grep udp\nip route get <peer>\n**Interpretation:** One-way audio means RTP is sent but the return path is blocked or asymmetric through NAT. tcpdump on both ends shows packets leaving one side but not arriving at the other, localizing the drop.\n**Fix:** Allow the UDP port range bidirectionally on all firewalls, fix NAT to preserve the return path, and correct asymmetric routing. Verify RTP flows both directions with tcpdump on both endpoints."
+  },
+  {
+    "instruction": "Network throughput drops sharply after a few seconds of full speed. Diagnose.",
+    "output": "**Diagnose:**\niperf3 -c <host> -t 30\nss -tni dst <host>\ndmesg | grep -i -E 'throttle|drop'\nethtool -S eth0 | grep -i -E 'discard|drop'\n**Interpretation:** A fast start then collapse is classic buffer bloat plus congestion collapse, or an interface/port rate-limit kicking in. Counters like tx drops or policer discards confirm.\n**Fix:** Apply a proper qdisc (fq_codel/cake) and remove or raise the policer if it is misconfigured. Fix duplex mismatch. Confirm sustained throughput with a longer iperf3 run."
+  },
+  {
+    "instruction": "DNS resolution is fast but establishing TCP to a distant host is slow. Diagnose RTT.",
+    "output": "**Diagnose:**\nping -c 5 <host>\ncurl -w 'conn:%{time_connect} ttfb:%{time_starttransfer}\\n' -o /dev/null -s https://<host>/\ntraceroute -n <host>\n**Interpretation:** `time_connect` approximates one RTT; a large value reveals physical distance. TLS then adds 1-2 more RTTs and HTTP another. High RTT to a far region is expected physics, not a fault.\n**Fix:** Deploy servers/CDN closer to users, use persistent connections (keep-alive, pooling), and TLS 1.3 to cut handshake RTTs. Confirm effective latency drops rather than raw ping."
+  },
+  {
+    "instruction": "A server reports high TCP retransmissions. Diagnose.",
+    "output": "**Diagnose:**\nnstat -az | grep -i -E 'Retrans|RetransSegs'\nss -tni | grep -i retrans\nnetstat -s | grep -i retransmit\n**Interpretation:** A retransmission rate above ~0.1% indicates loss on the path or an MTU issue. ss -tni per-socket shows if it is localized to specific flows. High retransmits suppress throughput via congestion control.\n**Fix:** Identify the lossy segment (mtr/tcpdump), then fix cabling, duplex, MTU, or the congested link. Consider BBR to tolerate loss. Re-check retransmit counters after the fix."
+  },
+  {
+    "instruction": "Global server latency metrics look good but some users still complain. Diagnose tail latency.",
+    "output": "**Diagnose:**\nfor i in $(seq 1 50); do curl -s -o /dev/null -w '%{time_total}\\n' https://example.com/; done | sort -n | tail -5\nmtr -rwzbc 30 example.com\n**Interpretation:** Average latency hides tail latency (p95/p99). A few slow requests come from connection setup, GC pauses, or packet loss on some paths. The sorted top-5 curl times and mtr reveal the outliers.\n**Fix:** Optimize the p99 path: enable keep-alive to avoid setup cost, tune app GC/thread pools, and fix loss. Add proper p95/p99 monitoring instead of averages. Re-measure the tail."
+  },
+  {
+    "instruction": "A data center interconnect shows packet loss only under high load. Diagnose.",
+    "output": "**Diagnose:**\niperf3 -c <peer> -t 60 --get-server-output\niperf3 -c <peer> -u -b 1G\nmtr -rwzbc 100 <peer>\nethtool -S eth0 | grep -i -E 'drop|err'\ntc -s qdisc show dev eth0\n**Interpretation:** Loss appearing only as load rises indicates link/port saturation with insufficient buffering or a policer. Interface discard counters and tc drops confirm which side.\n**Fix:** Add capacity (upgrade the link or add a bundle), tune qdisc buffers, and ensure policing/QoS matches the contract. Re-test under the same load to confirm loss is gone."
+  },
+  {
+    "instruction": "Application threads block on network calls because the DNS resolver is slow. Diagnose.",
+    "output": "**Diagnose:**\ntime dig +short api.example.com\nstrace -f -e trace=sendto,recvfrom -p <pid> 2>&1 | grep -A2 53\ncat /etc/resolv.conf\n**Interpretation:** If dig is slow or strace shows repeated resolver waits behind a mutex, the app stalls on DNS. A down nameserver (5s timeout) or no local caching multiplies the delay across threads.\n**Fix:** Add a caching resolver on the host (systemd-resolved/nscd), point at fast nameservers, and reduce timeout. Use an app-level DNS cache with a reasonable TTL. Verify resolution latency drops below a few ms."
+  },
+  {
+    "instruction": "VPN throughput is low compared to the underlying link. Diagnose encryption overhead.",
+    "output": "**Diagnose:**\niperf3 -c <peer>   # inside tunnel\nping -c 5 -M do -s 1400 <peer>\nip -s link show tun0\nethtool -S eth0 | grep -i -E 'err|drop'\n**Interpretation:** Encryption/encapsulation adds overhead and reduces the usable MTU, causing fragmentation or segmentation. If MTU probes fail at 1400, the tunnel MTU is too high for the path, hurting throughput.\n**Fix:** Set the tunnel MTU to the path MTU minus overhead (e.g 1400 for IPsec), enable MSS clamping, and ensure hardware crypto offload is used. Re-test iperf3 and MTU probes."
+  },
+  {
+    "instruction": "Packet delay varies widely with load (bufferbloat). Diagnose.",
+    "output": "**Diagnose:**\nping -c 100 <gateway>\nping -f -c 10000 <gateway> 2>/dev/null &\nping -c 100 <gateway>\ntc -s qdisc show dev eth0\n**Interpretation:** If latency jumps from 5ms to hundreds of ms under load, the upstream qdisc buffers too much (bufferbloat). The idle vs loaded ping comparison shows the delta.\n**Fix:** Replace the default/fifo qdisc with fq_codel or cake (`tc qdisc replace dev eth0 root cake bandwidth 100Mbit`), especially on the WAN egress. Verify loaded latency stays low."
+  }
+]

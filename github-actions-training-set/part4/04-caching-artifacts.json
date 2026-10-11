@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Cache the pip download directory keyed on requirements.txt with actions/cache@v4.",
+    "output": "name: pip-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/pip\n          key: pip-${{ hashFiles('requirements.txt') }}\n          restore-keys: |\n            pip-\n      - run: pip install -r requirements.txt\n      - run: pytest"
+  },
+  {
+    "instruction": "Use the built-in pip cache option of actions/setup-python@v5 instead of a manual cache step.",
+    "output": "name: setup-python-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n          cache: pip\n      - run: pip install -r requirements.txt && pytest"
+  },
+  {
+    "instruction": "Enable npm caching through actions/setup-node@v4 with the cache option.",
+    "output": "name: node-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - run: npm ci\n      - run: npm test"
+  },
+  {
+    "instruction": "Cache ~/.npm manually with a key based on the package-lock.json hash.",
+    "output": "name: manual-npm-cache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - uses: actions/cache@v4\n        with:\n          path: ~/.npm\n          key: npm-${{ hashFiles('package-lock.json') }}\n      - run: npm ci\n      - run: npm run build"
+  },
+  {
+    "instruction": "Cache the Yarn package directory using the yarn.lock file hash and a custom cache-dependency-path.",
+    "output": "name: yarn-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: yarn\n          cache-dependency-path: yarn.lock\n      - run: yarn install --frozen-lockfile\n      - run: yarn test"
+  },
+  {
+    "instruction": "Set up pnpm with pnpm/action-setup@v4 and cache the pnpm store between runs.",
+    "output": "name: pnpm-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 9\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm test"
+  },
+  {
+    "instruction": "Cache the local Maven repository at ~/.m2/repository for a Java build.",
+    "output": "name: maven-cache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: 21\n      - uses: actions/cache@v4\n        with:\n          path: ~/.m2/repository\n          key: maven-${{ hashFiles('**/pom.xml') }}\n      - run: mvn -B -ntp verify"
+  },
+  {
+    "instruction": "Cache both the Gradle dependency cache and wrapper for a Gradle project with setup-java caching.",
+    "output": "name: gradle-cache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: 17\n          cache: gradle\n      - run: ./gradlew --no-daemon build"
+  },
+  {
+    "instruction": "Cache Go module downloads with actions/setup-go@v5 by turning on its cache option.",
+    "output": "name: go-mod-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-go@v5\n        with:\n          go-version: '1.22'\n          cache: true\n      - run: go test ./..."
+  },
+  {
+    "instruction": "Cache the Cargo registry and git checkouts for a Rust project keyed on Cargo.lock.",
+    "output": "name: cargo-cache\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/cache@v4\n        with:\n          path: |\n            ~/.cargo/registry\n            ~/.cargo/git\n          key: cargo-${{ hashFiles('Cargo.lock') }}\n      - run: cargo build --release\n      - run: cargo test"
+  },
+  {
+    "instruction": "Cache the C++ compiler cache directory so repeated builds reuse object files.",
+    "output": "name: ccache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/ccache\n          key: ccache-${{ hashFiles('**/*.{c,cc,cpp,h}') }}\n          restore-keys: ccache-\n      - run: cmake -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache && cmake --build build"
+  },
+  {
+    "instruction": "Configure restore-keys fallback so a partial cache can be reused when the lockfile changes.",
+    "output": "name: restore-keys\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/cache@v4\n        with:\n          path: node_modules\n          key: modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}\n          restore-keys: |\n            modules-${{ runner.os }}-\n      - run: npm ci\n      - run: npm run build"
+  },
+  {
+    "instruction": "Upload the build output as an artifact that is kept for 7 days.",
+    "output": "name: artifact-retention\non: push\njobs:\n  package:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: build-output\n          path: build/\n          retention-days: 7"
+  },
+  {
+    "instruction": "Download the artifact produced by the build job in a separate test job that depends on it.",
+    "output": "name: artifact-handoff\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make build\n      - uses: actions/upload-artifact@v4\n        with:\n          name: app\n          path: dist/\n  test:\n    needs: build\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: app\n          path: dist/\n      - run: ./scripts/smoke-test.sh dist/"
+  },
+  {
+    "instruction": "Upload a test report artifact even when the test step fails, warning if no files match.",
+    "output": "name: artifact-warn\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: pytest --junitxml=report.xml\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: junit-report\n          path: report.xml\n          if-no-files-found: warn"
+  },
+  {
+    "instruction": "Cache node_modules keyed by the lockfile hash so installs skip unchanged packages.",
+    "output": "name: node-modules-cache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - uses: actions/cache@v4\n        with:\n          path: node_modules\n          key: node-modules-${{ hashFiles('package-lock.json') }}\n      - run: npm ci\n      - run: npm run build"
+  },
+  {
+    "instruction": "Cache Bazel state to speed up repeated native builds of a monorepo.",
+    "output": "name: bazel-cache\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/bazel\n          key: bazel-${{ hashFiles('WORKSPACE', '**/*.bzl') }}\n          restore-keys: bazel-\n      - run: bazel build //..."
+  },
+  {
+    "instruction": "Archive Go test results as an artifact even when tests fail.",
+    "output": "name: junit-artifact\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: go test ./... -json > test-results.json\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: test-results\n          path: test-results.json\n          retention-days: 3"
+  },
+  {
+    "instruction": "Cache the Playwright browser binaries keyed on the Playwright version declared in package.json.",
+    "output": "name: playwright-cache\non: push\njobs:\n  e2e:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: npm\n      - uses: actions/cache@v4\n        with:\n          path: ~/.cache/ms-playwright\n          key: playwright-${{ hashFiles('package.json') }}\n      - run: npx playwright install --with-deps\n      - run: npx playwright test"
+  },
+  {
+    "instruction": "Split a build across two jobs where the first uploads compiled files and the second bundles them.",
+    "output": "name: two-job-artifacts\non: push\njobs:\n  compile:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: make compile\n      - uses: actions/upload-artifact@v4\n        with:\n          name: compiled\n          path: out/\n  bundle:\n    needs: compile\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/download-artifact@v4\n        with:\n          name: compiled\n          path: out/\n      - run: tar -czf bundle.tar.gz out/ && ls -lh bundle.tar.gz"
+  }
+]

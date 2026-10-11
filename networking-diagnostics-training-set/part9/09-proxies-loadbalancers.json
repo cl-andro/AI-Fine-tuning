@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "A reverse proxy returns 502 for one upstream but others work. Diagnose the backend.",
+    "output": "**Diagnose:**\ncurl -v --resolve app.example.com:443:<bad-backend-ip> https://app.example.com/\nsudo tail -f /var/log/nginx/error.log\nss -tlnp | grep <backend-port>\nip route get <backend-ip>\n**Interpretation:** Hitting the bad backend directly fails while others succeed, localizing the fault to that node (service down, port mismatch, or firewall). Nginx logs 'connect() failed (111: Connection refused)'.\n**Fix:** Start/fix the backend service, correct its port, or remove it from the upstream pool. Add active health checks so the LB stops routing to it. Verify each backend directly and through the LB."
+  },
+  {
+    "instruction": "A load balancer sends all traffic to one backend. Diagnose stickiness or weights.",
+    "output": "**Diagnose:**\nsudo tail -f /var/log/nginx/access.log | awk '{print $1}'\nsudo ipvsadm -Ln 2>/dev/null\ncat /etc/haproxy/haproxy.cfg | grep -A5 backend\nss -tn state established | awk '{print $5}' | sort | uniq -c\n**Interpretation:** If connections all hit one node, sticky sessions or an unbalanced weight is set, or health checks marked others down. Access logs show backend selection; ipvsadm/haproxy stats show weights and states.\n**Fix:** Correct the balancing algorithm/weights, fix health checks that wrongly fail nodes, or relax stickiness. For HAProxy check `balance` and `weight`; for LVS `ipvsadm -e`. Verify distribution with repeated connections."
+  },
+  {
+    "instruction": "A forward proxy is required for outbound but apps ignore it. Diagnose proxy env/config.",
+    "output": "**Diagnose:**\nenv | grep -i proxy\ncurl -v https://example.com\ncurl -v -x http://proxy:3128 https://example.com\ncat /etc/environment /etc/profile.d/*proxy* 2>/dev/null\n**Interpretation:** If direct curl fails but -x works, the apps are not configured with the proxy. Many tools read `http_proxy`/`https_proxy` but some (Java, git, docker) need their own settings.\n**Fix:** Export the proxy vars system-wide (/etc/environment, profile.d) and configure per-app settings: git `http.proxy`, Java `-Dhttps.proxyHost`, docker `~/.docker/config.json` or the service env. Verify each tool."
+  },
+  {
+    "instruction": "TLS-terminating LB forwards plain HTTP but the app thinks it is HTTP. Diagnose X-Forwarded-Proto.",
+    "output": "**Diagnose:**\ncurl -v https://app.example.com/\ncurl -v -H 'X-Forwarded-Proto: https' https://app.example.com/\ncat /var/log/nginx/access.log | tail\ngrep -r X-Forwarded-Proto /etc/nginx/\n**Interpretation:** The LB terminates TLS and talks HTTP to the backend, so the app sees http and may generate insecure redirects or links. The missing X-Forwarded-Proto/Forwarded header is the cause.\n**Fix:** Set `proxy_set_header X-Forwarded-Proto $scheme;` (and X-Forwarded-For/Host) at the TLS terminator and configure the app to trust it. Verify redirects now use https."
+  },
+  {
+    "instruction": "A load balancer health check flaps, marking healthy nodes down. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v http://localhost/health\nsudo tail -f /var/log/nginx/error.log\nwatch -n1 'curl -s -o /dev/null -w \"%{http_code}\\n\" http://<node>/health'\nsudo ipvsadm -Ln 2>/dev/null\n**Interpretation:** Flapping usually means the health endpoint is slow, timeout is too tight, or the check path returns intermittent errors. A response near the timeout threshold causes random failures.\n**Fix:** Make the health endpoint fast and dependency-light, raise the check timeout/interval and unhealthy threshold, and return a clear status. Remove heavy logic from /health. Verify nodes stay up under load."
+  },
+  {
+    "instruction": "Proxy adds latency for every request. Diagnose buffering and hops.",
+    "output": "**Diagnose:**\ncurl -w 'conn:%{time_connect} ttfb:%{time_starttransfer} total:%{time_total}\\n' -o /dev/null -s https://app/\ncurl -w 'total:%{time_total}\\n' -o /dev/null -s --resolve app:443:<backend> https://app/\nss -s\n**Interpretation:** Larger times through the proxy than direct indicate proxy overhead: TLS re-encryption, buffering, or connection setup per request. High TIME_WAIT on the proxy shows no upstream keep-alive.\n**Fix:** Enable upstream connection pooling/keep-alive in the proxy, use L4 where TLS inspection is unneeded, and tune worker counts. Verify the proxy vs direct timing gap shrinks."
+  },
+  {
+    "instruction": "A proxy strips or rewrites a critical header. Diagnose header mangling.",
+    "output": "**Diagnose:**\ncurl -v -H 'X-Custom: value' https://app.example.com/echo\nsudo tcpdump -A -ni any port 80 | grep -i x-custom\ngrep -r proxy_set_header /etc/nginx/\n**Interpretation:** If the client sends a header but the backend does not receive it, the proxy is not forwarding it. Underscores in header names are dropped by default in nginx.\n**Fix:** Add `proxy_set_header X-Custom $http_x_custom;` or enable `underscores_in_headers on;`. For HAProxy set `http-request set-header`. Reload and verify the backend sees the header."
+  },
+  {
+    "instruction": "WebSocket connections fail through a reverse proxy. Diagnose upgrade handling.",
+    "output": "**Diagnose:**\ncurl -v -H 'Connection: Upgrade' -H 'Upgrade: websocket' https://app.example.com/ws\ngrep -r -i upgrade /etc/nginx/\nsudo tcpdump -ni any port 80 | head\n**Interpretation:** Proxies must forward the Connection/Upgrade headers and set HTTP/1.1. Without `proxy_set_header Upgrade $http_upgrade;` and `proxy_http_version 1.1;`, the upgrade fails and the client sees a 400/502.\n**Fix:** Add the WebSocket proxy block with `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection \"upgrade\";` and a long read timeout. Reload and test the handshake."
+  },
+  {
+    "instruction": "A proxy caches authenticated responses and leaks data across users. Diagnose cache keys.",
+    "output": "**Diagnose:**\ncurl -sI https://app.example.com/profile\ncurl -sI -H 'Authorization: Bearer A' https://app.example.com/profile | grep -i -E 'age|x-cache|cache-control'\ncurl -sI -H 'Authorization: Bearer B' https://app.example.com/profile | grep -i x-cache\ngrep -r -i proxy_cache /etc/nginx/\n**Interpretation:** A shared cache ignoring Authorization or Vary leaks one user's data to another. X-Cache: HIT on a private endpoint is a red flag.\n**Fix:** Do not cache authenticated/private responses: `proxy_no_cache`/`proxy_cache_bypass` on Authorization, set `Cache-Control: private, no-store` for those endpoints, and add proper Vary. Verify each user gets their own data."
+  },
+  {
+    "instruction": "A load balancer drops long-lived connections at a fixed interval. Diagnose idle timeout.",
+    "output": "**Diagnose:**\nss -o state established dst <lb> | head\nsysctl net.ipv4.tcp_keepalive_time\nsudo conntrack -L | grep <lb>\ngrep -i timeout /etc/haproxy/haproxy.cfg 2>/dev/null\n**Interpretation:** An idle timeout on the LB/conntrack closes quiet connections (e.g database or MQTT) at a fixed interval, breaking them. Keep-alives longer than the timeout prevent this.\n**Fix:** Enable application-level keep-alives shorter than the idle timeout, or raise the LB/firewall idle timeout. For HAProxy tune `timeout client/server`. Verify connections persist beyond the old interval."
+  },
+  {
+    "instruction": "Proxy passes requests but the backend sees the wrong Host header. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v https://app.example.com/echo-host\ngrep -r proxy_set_header /etc/nginx/\nsudo tcpdump -A -ni any port 80 | grep -i host\n**Interpretation:** By default nginx sets Host to the proxy_pass host, so the backend may not see the original virtual host, breaking name-based vhosts or TLS SNI upstream.\n**Fix:** Add `proxy_set_header Host $host;` (or `$http_host`) and, for TLS upstream, `proxy_ssl_server_name on;` with the right name. Reload and verify the backend receives the intended Host."
+  },
+  {
+    "instruction": "A load balancer in DSR/L4 mode loses return traffic. Diagnose direct server return.",
+    "output": "**Diagnose:**\nipvsadm -Ln\nip addr show\nsysctl net.ipv4.conf.all.arp_ignore net.ipv4.conf.all.arp_announce\ntcpdump -ni any host <client>\n**Interpretation:** In DSR, the real server must own the VIP on a loopback and not answer ARP for it; wrong arp_ignore/announce causes ARP conflicts and dropped replies. The client receives no response despite the request reaching a backend.\n**Fix:** Configure the VIP on lo with `arp_ignore=1` and `arp_announce=2` on the real servers, and ensure the LB does not NAT the return. Verify with ipvsadm stats and client connectivity."
+  },
+  {
+    "instruction": "Proxy connection pool is exhausted under load. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v -w 'total:%{time_total}\\n' -o /dev/null -s https://app/\nss -tn state established '( dport = :80 )' | wc -l\ngrep -i -E 'keepalive|max_conns' /etc/nginx/nginx.conf /etc/nginx/conf.d/*.conf 2>/dev/null\n**Interpretation:** If requests queue and latency climbs under load while upstream connections hit a cap, the proxy's connection pool to the backend is exhausted (keepalive pool or max_conns).\n**Fix:** Raise the upstream `keepalive` pool and any `max_conns` limits, tune worker_processes/worker_connections, and scale the backend. Verify latency stabilizes under the same load."
+  },
+  {
+    "instruction": "A transparent proxy silently redirects HTTP to a block page. Diagnose interception.",
+    "output": "**Diagnose:**\ncurl -v http://example.com/\ncurl -v http://<known-bad-domain>/\ntraceroute -T -p 80 example.com\nopenssl s_client -connect example.com:443 -servername example.com\n**Interpretation:** If the page content is a block notice or the TLS issuer is your organization's CA, traffic is intercepted by a transparent proxy. Response headers (Via, X-Proxy) may reveal it.\n**Fix:** For legitimate business policy, configure the client to use the proxy explicitly. If interception should not apply, work with network/security to exempt the host or adjust the policy. Verify by checking the TLS issuer."
+  },
+  {
+    "instruction": "An upstream returns 503 only through the load balancer. Diagnose connection limits.",
+    "output": "**Diagnose:**\nsudo tail -f /var/log/nginx/error.log\ncurl -v --resolve app:443:<backend> https://app/\ngrep -i -E 'limit_conn|max_conns|max_fails' /etc/nginx/ 2>/dev/null\n**Interpretation:** 503 from the LB while the backend is healthy points to LB-imposed limits: max_conns reached, the server marked down (max_fails), or all upstreams unavailable. Error log names 'no live upstreams' or 'limiting connections'.\n**Fix:** Raise max_conns/max_fails or fix the backend that trips health checks. Ensure the backend does not reject bursts. Reload and verify 503s disappear under load."
+  },
+  {
+    "instruction": "A load balancer must preserve client IP for logs and ACLs. Diagnose PROXY protocol.",
+    "output": "**Diagnose:**\ncurl -v https://app.example.com/whoami\ntail -f /var/log/nginx/access.log\ncurl -v --haproxy-protocol localhost 2>/dev/null\ngrep -r -i 'proxy_protocol\\|proxy_protocol' /etc/nginx/ /etc/haproxy/ 2>/dev/null\n**Interpretation:** In L4 mode the backend sees the LB's IP. PROXY protocol prepends the real client address, but the backend must be configured to parse it or it will reject the connection.\n**Fix:** Enable `send-proxy` on HAProxy and `proxy_protocol` on the nginx listen, then use `$proxy_protocol_addr` in logs. Reload and verify logs show the real client IP."
+  },
+  {
+    "instruction": "A proxy returns 400 Bad Request for requests with underscores in headers. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v -H 'X_My_Header: v' https://app.example.com/\ngrep -r underscores_in_headers /etc/nginx/\nsudo tail -f /var/log/nginx/error.log\n**Interpretation:** nginx rejects headers containing underscores by default per its strict parsing, returning 400. Applications or older clients may send them. The error log notes the invalid header.\n**Fix:** Enable `underscores_in_headers on;` in the http/server block if the app relies on them, or rename headers to use hyphens (the standard). Reload and re-test."
+  },
+  {
+    "instruction": "A load balancer routes by URL path but some paths 404. Diagnose path rewriting.",
+    "output": "**Diagnose:**\ncurl -v https://app.example.com/api/v1/users\ncurl -v https://app.example.com/v1/users\ngrep -r -E 'location|rewrite|proxy_pass' /etc/nginx/conf.d/ 2>/dev/null\n**Interpretation:** A missing or wrong `rewrite`/trailing slash in proxy_pass changes the path the backend sees. `proxy_pass http://backend/;` strips the location prefix; without the slash it does not.\n**Fix:** Correct the location/rewrite so the backend receives the intended path, and handle trailing slashes consistently. Reload and verify each route with curl."
+  },
+  {
+    "instruction": "A global load balancer fails over to a region with stale DNS. Diagnose geo-DNS failover.",
+    "output": "**Diagnose:**\ndig app.example.com @8.8.8.8\ndig app.example.com @1.1.1.1\ndig app.example.com @<gslb-resolver>\nfor i in 1 2 3; do dig +short app.example.com @8.8.8.8; done\n**Interpretation:** Failover updates the GSLB answer, but resolvers cache the old IP for the record's TTL, so some clients keep hitting the dead region. Low TTLs speed failover.\n**Fix:** Lower the failover record TTL well below the expected failover time, and configure the GSLB health checks to withdraw bad regions promptly. Verify answers change quickly across public resolvers after the event."
+  },
+  {
+    "instruction": "A proxy blocks large request bodies unexpectedly. Diagnose buffer limits.",
+    "output": "**Diagnose:**\ncurl -v -F 'file=@big.bin' https://app.example.com/upload\ngrep -r -E 'client_max_body_size|proxy_buffer|client_body_buffer' /etc/nginx/ 2>/dev/null\nsudo tail -f /var/log/nginx/error.log\n**Interpretation:** 413 from the proxy (client_max_body_size) or 502 from buffering a large body to disk that fails (proxy_buffer/client_body_buffer) breaks uploads even when the backend allows them.\n**Fix:** Raise `client_max_body_size` and size the body/proxy buffers, or stream the body (`proxy_request_buffering off;`) so it is not buffered. Reload and retest the upload."
+  }
+]

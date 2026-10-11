@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Load balance traffic across three app servers on ports 8001-8003 using round-robin.",
+    "output": "upstream app_servers {\n    server 127.0.0.1:8001;\n    server 127.0.0.1:8002;\n    server 127.0.0.1:8003;\n}\n\nserver {\n    listen 80;\n    server_name app.example.com;\n    location / {\n        proxy_pass http://app_servers;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n    }\n}"
+  },
+  {
+    "instruction": "Distribute requests to the backend least loaded using least_conn.",
+    "output": "upstream api {\n    least_conn;\n    server 10.0.0.11:8080;\n    server 10.0.0.12:8080;\n    server 10.0.0.13:8080;\n}\n\nserver {\n    listen 80;\n    server_name api.example.com;\n    location / {\n        proxy_pass http://api;\n    }\n}"
+  },
+  {
+    "instruction": "Keep clients pinned to the same backend using IP hashing.",
+    "output": "upstream sessions {\n    ip_hash;\n    server 10.0.0.21:8080;\n    server 10.0.0.22:8080;\n}\n\nserver {\n    listen 80;\n    server_name cart.example.com;\n    location / {\n        proxy_pass http://sessions;\n    }\n}"
+  },
+  {
+    "instruction": "Assign double weight to the newer, more powerful backend.",
+    "output": "upstream pool {\n    server 10.0.0.31:8080 weight=2;\n    server 10.0.0.32:8080 weight=1;\n}\n\nserver {\n    listen 80;\n    server_name pool.example.com;\n    location / {\n        proxy_pass http://pool;\n    }\n}"
+  },
+  {
+    "instruction": "Configure a backup server used only when the primary is down.",
+    "output": "upstream dbproxy {\n    server 10.0.0.41:5432;\n    server 10.0.0.42:5432 backup;\n}\n\nserver {\n    listen 5432;\n    proxy_pass http://dbproxy;\n}"
+  },
+  {
+    "instruction": "Retry the next upstream server on connect errors and 502/503/504, but not on POST.",
+    "output": "upstream retry_pool {\n    server 10.0.0.51:8080 max_fails=3 fail_timeout=30s;\n    server 10.0.0.52:8080 max_fails=3 fail_timeout=30s;\n}\n\nserver {\n    listen 80;\n    server_name retry.example.com;\n    location / {\n        proxy_pass http://retry_pool;\n        proxy_next_upstream error timeout http_502 http_503 http_504;\n        proxy_next_upstream_tries 3;\n    }\n}"
+  },
+  {
+    "instruction": "Enable keepalive connections from nginx to upstream backends.",
+    "output": "upstream keepalive_pool {\n    server 10.0.0.61:8080;\n    server 10.0.0.62:8080;\n    keepalive 32;\n}\n\nserver {\n    listen 80;\n    server_name keep.example.com;\n    location / {\n        proxy_pass http://keepalive_pool;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n    }\n}"
+  },
+  {
+    "instruction": "Load balance WebSocket clients by hash of the URL to stabilize long-lived connections.",
+    "output": "upstream ws_pool {\n    hash $request_uri consistent;\n    server 10.0.0.71:9000;\n    server 10.0.0.72:9000;\n}\n\nserver {\n    listen 80;\n    server_name ws.example.com;\n    location / {\n        proxy_pass http://ws_pool;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}"
+  },
+  {
+    "instruction": "Mark two backends as down for maintenance while keeping the third available.",
+    "output": "upstream maintenance_pool {\n    server 10.0.0.81:8080 down;\n    server 10.0.0.82:8080 down;\n    server 10.0.0.83:8080;\n}\n\nserver {\n    listen 80;\n    server_name maint.example.com;\n    location / {\n        proxy_pass http://maintenance_pool;\n    }\n}"
+  },
+  {
+    "instruction": "Load balance based on the client cookie named 'srv'.",
+    "output": "upstream cookie_pool {\n    server 10.0.0.91:8080;\n    server 10.0.0.92:8080;\n    sticky cookie srv expires=1h;\n}\n\nserver {\n    listen 80;\n    server_name cookie.example.com;\n    location / {\n        proxy_pass http://cookie_pool;\n    }\n}"
+  },
+  {
+    "instruction": "Resolve upstream hostnames dynamically through Docker's embedded DNS.",
+    "output": "resolver 127.0.0.11 valid=10s ipv6=off;\n\nserver {\n    listen 80;\n    server_name dynamic.example.com;\n    location / {\n        set $backend app:8080;\n        proxy_pass http://$backend;\n    }\n}"
+  },
+  {
+    "instruction": "Add slow-start so a newly added backend ramps up over 30 seconds.",
+    "output": "upstream ramp {\n    server 10.0.1.1:8080 slow_start=30s;\n    server 10.0.1.2:8080 slow_start=30s;\n}\n\nserver {\n    listen 80;\n    server_name ramp.example.com;\n    location / {\n        proxy_pass http://ramp;\n    }\n}"
+  },
+  {
+    "instruction": "Balance a gRPC service across two HTTP/2 backends.",
+    "output": "upstream grpc_backend {\n    server 10.0.2.1:50051;\n    server 10.0.2.2:50051;\n}\n\nserver {\n    listen 443 ssl http2;\n    server_name grpc.example.com;\n    location / {\n        grpc_pass grpc://grpc_backend;\n    }\n}"
+  },
+  {
+    "instruction": "Return 503 for all requests when every upstream is marked down.",
+    "output": "upstream critical {\n    server 10.0.3.1:8080 max_fails=2 fail_timeout=10s;\n    server 10.0.3.2:8080 max_fails=2 fail_timeout=10s;\n}\n\nserver {\n    listen 80;\n    server_name critical.example.com;\n    location / {\n        proxy_pass http://critical;\n    }\n    error_page 502 503 504 /maintenance.html;\n    location = /maintenance.html {\n        root /var/www/errors;\n        internal;\n    }\n}"
+  },
+  {
+    "instruction": "Route /api to one backend pool and /media to another on the same vhost.",
+    "output": "upstream api_pool {\n    server 10.0.4.1:8080;\n    server 10.0.4.2:8080;\n}\nupstream media_pool {\n    server 10.0.5.1:8090;\n    server 10.0.5.2:8090;\n}\n\nserver {\n    listen 80;\n    server_name split.example.com;\n    location /api/ {\n        proxy_pass http://api_pool;\n    }\n    location /media/ {\n        proxy_pass http://media_pool;\n    }\n}"
+  },
+  {
+    "instruction": "Preserve the original client scheme and host when proxying behind a load balancer.",
+    "output": "server {\n    listen 80;\n    server_name lb.example.com;\n    location / {\n        proxy_pass http://backend;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n}"
+  },
+  {
+    "instruction": "Load balance with consistent hashing on the request URI for cache affinity.",
+    "output": "upstream cache_affinity {\n    hash $request_uri consistent;\n    server 10.0.6.1:8080;\n    server 10.0.6.2:8080;\n    server 10.0.6.3:8080;\n}\n\nserver {\n    listen 80;\n    server_name cache.example.com;\n    location / {\n        proxy_pass http://cache_affinity;\n    }\n}"
+  },
+  {
+    "instruction": "Configure a health-check style passive monitoring with max_fails and fail_timeout.",
+    "output": "upstream monitored {\n    server 10.0.7.1:8080 max_fails=5 fail_timeout=15s;\n    server 10.0.7.2:8080 max_fails=5 fail_timeout=15s;\n    server 10.0.7.3:8080 backup;\n}\n\nserver {\n    listen 80;\n    server_name monitored.example.com;\n    location / {\n        proxy_pass http://monitored;\n    }\n}"
+  },
+  {
+    "instruction": "Use a map to send VIP clients to a dedicated upstream and everyone else to the default.",
+    "output": "map $http_x_vip $target {\n    default      default_pool;\n    \"yes\"        vip_pool;\n}\nupstream default_pool {\n    server 10.0.8.1:8080;\n}\nupstream vip_pool {\n    server 10.0.8.100:8080;\n}\n\nserver {\n    listen 80;\n    server_name tiered.example.com;\n    location / {\n        proxy_pass http://$target;\n    }\n}"
+  },
+  {
+    "instruction": "Add an upstream keepalive pool with a queue and no wait for busy backends.",
+    "output": "upstream queued {\n    server 10.0.9.1:8080 max_conns=200;\n    server 10.0.9.2:8080 max_conns=200;\n    keepalive 64;\n    keepalive_requests 1000;\n    keepalive_timeout 60s;\n    queue 100;\n}\n\nserver {\n    listen 80;\n    server_name queued.example.com;\n    location / {\n        proxy_pass http://queued;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n    }\n}"
+  }
+]

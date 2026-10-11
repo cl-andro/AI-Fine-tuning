@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Cache proxied responses for 10 minutes with a 100 MB zone.",
+    "output": "proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=static_cache:100m inactive=10m max_size=1g;\n\nserver {\n    listen 80;\n    server_name cache.example.com;\n    location / {\n        proxy_cache static_cache;\n        proxy_cache_valid 200 302 10m;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Bypass the cache for requests with an Authorization header.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=api_cache:50m inactive=5m;\n\nserver {\n    listen 80;\n    server_name api.example.com;\n    location / {\n        proxy_cache api_cache;\n        proxy_cache_bypass $http_authorization;\n        proxy_no_cache $http_authorization;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Serve stale content when the backend is down or busy.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=stale_cache:50m inactive=1h;\n\nserver {\n    listen 80;\n    server_name resilient.example.com;\n    location / {\n        proxy_cache stale_cache;\n        proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504 updating;\n        proxy_cache_background_update on;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Enable open_file_cache to reduce disk lookups for static files.",
+    "output": "http {\n    open_file_cache max=10000 inactive=30s;\n    open_file_cache_valid 60s;\n    open_file_cache_min_uses 2;\n    open_file_cache_errors on;\n    server {\n        listen 80;\n        server_name static.example.com;\n        location / {\n            root /var/www/static;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Add a cache-busting key that varies by host and request URI plus Accept-Encoding.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=vary_cache:50m;\n\nserver {\n    listen 80;\n    server_name vary.example.com;\n    location / {\n        proxy_cache vary_cache;\n        proxy_cache_key \"$scheme$host$request_uri$http_accept_encoding\";\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Set long browser cache expiry for images and JS/CSS assets.",
+    "output": "server {\n    listen 80;\n    server_name assets.example.com;\n    location ~* \\.(jpg|jpeg|png|gif|webp|svg|ico)$ {\n        root /var/www/assets;\n        expires 30d;\n        add_header Cache-Control \"public, immutable\";\n    }\n    location ~* \\.(css|js)$ {\n        root /var/www/assets;\n        expires 7d;\n        add_header Cache-Control \"public\";\n    }\n}"
+  },
+  {
+    "instruction": "Turn on sendfile and tcp_nopush for efficient static file delivery.",
+    "output": "http {\n    sendfile on;\n    tcp_nopush on;\n    tcp_nodelay on;\n    server {\n        listen 80;\n        server_name perf.example.com;\n        location / {\n            root /var/www/perf;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Compress text responses with gzip for the most common MIME types.",
+    "output": "http {\n    gzip on;\n    gzip_comp_level 5;\n    gzip_min_length 256;\n    gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;\n    server {\n        listen 80;\n        server_name gz.example.com;\n        location / {\n            root /var/www/gz;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Use Brotli if available, falling back to gzip.",
+    "output": "http {\n    gzip on;\n    gzip_types text/css application/javascript application/json;\n    brotli on;\n    brotli_comp_level 5;\n    brotli_types text/css application/javascript application/json;\n    server {\n        listen 80;\n        server_name br.example.com;\n        location / {\n            root /var/www/br;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Raise client_max_body_size for large uploads on a specific endpoint.",
+    "output": "server {\n    listen 80;\n    server_name uploads.example.com;\n    client_max_body_size 1g;\n    location /upload {\n        proxy_pass http://127.0.0.1:8080;\n        proxy_request_buffering off;\n    }\n}"
+  },
+  {
+    "instruction": "Enable fastcgi caching for a PHP app for 1 hour.",
+    "output": "fastcgi_cache_path /var/cache/nginx/fastcgi levels=1:2 keys_zone=php_cache:100m inactive=1h;\n\nserver {\n    listen 80;\n    server_name php.example.com;\n    root /var/www/php;\n    location ~ \\.php$ {\n        fastcgi_cache php_cache;\n        fastcgi_cache_valid 200 1h;\n        fastcgi_pass unix:/run/php/php8.2-fpm.sock;\n        include fastcgi_params;\n    }\n}"
+  },
+  {
+    "instruction": "Purge a cached object with a custom PURGE method.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=purge_cache:50m;\n\nserver {\n    listen 80;\n    server_name purge.example.com;\n    location / {\n        proxy_cache purge_cache;\n        proxy_pass http://127.0.0.1:8080;\n    }\n    location ~ /purge(/.*) {\n        allow 127.0.0.1;\n        deny all;\n        proxy_cache_purge purge_cache \"$scheme$host$1\";\n    }\n}"
+  },
+  {
+    "instruction": "Cache static assets at the edge but never cache HTML.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=mixed_cache:100m;\n\nserver {\n    listen 80;\n    server_name web.example.com;\n    location ~* \\.(css|js|png|jpg|woff2)$ {\n        proxy_cache mixed_cache;\n        proxy_cache_valid 200 7d;\n        proxy_pass http://127.0.0.1:8080;\n    }\n    location / {\n        proxy_pass http://127.0.0.1:8080;\n        proxy_no_cache 1;\n        add_header Cache-Control \"no-store\";\n    }\n}"
+  },
+  {
+    "instruction": "Add a debug header showing whether a response was a cache hit or miss.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=debug_cache:50m;\n\nserver {\n    listen 80;\n    server_name debug.example.com;\n    location / {\n        proxy_cache debug_cache;\n        add_header X-Cache-Status $upstream_cache_status;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Enable microcaching for 1 second to absorb traffic spikes.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=micro:10m inactive=10s;\n\nserver {\n    listen 80;\n    server_name micro.example.com;\n    location / {\n        proxy_cache micro;\n        proxy_cache_valid 200 1s;\n        proxy_cache_lock on;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Cache only GET and HEAD requests, never POST.",
+    "output": "proxy_cache_path /var/cache/nginx keys_zone=method_cache:50m;\n\nmap $request_method $cache_ok {\n    default 1;\n    POST    0;\n    PUT     0;\n}\n\nserver {\n    listen 80;\n    server_name method.example.com;\n    location / {\n        proxy_cache method_cache;\n        proxy_cache_bypass $cache_ok;\n        proxy_no_cache $cache_ok;\n        proxy_cache_valid 200 10m;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  },
+  {
+    "instruction": "Add Expires and Cache-Control for a download directory, forcing revalidation.",
+    "output": "server {\n    listen 80;\n    server_name downloads.example.com;\n    location /files/ {\n        root /var/www;\n        expires 1h;\n        add_header Cache-Control \"public, must-revalidate\";\n    }\n}"
+  },
+  {
+    "instruction": "Prefetch and cache upstream connections with a keepalive upstream.",
+    "output": "upstream cached_backend {\n    server 127.0.0.1:8080;\n    keepalive 32;\n}\n\nserver {\n    listen 80;\n    server_name keepcache.example.com;\n    location / {\n        proxy_pass http://cached_backend;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n    }\n}"
+  },
+  {
+    "instruction": "Disable logging of cached static asset requests to reduce disk I/O.",
+    "output": "server {\n    listen 80;\n    server_name quiet.example.com;\n    location ~* \\.(png|jpg|css|js|woff2)$ {\n        root /var/www/quiet;\n        access_log off;\n        expires 14d;\n    }\n}"
+  },
+  {
+    "instruction": "Use a memory-only cache zone and slice large range requests.",
+    "output": "proxy_cache_path /dev/shm/nginx_cache keys_zone=ram_cache:64m inactive=5m;\n\nserver {\n    listen 80;\n    server_name ranges.example.com;\n    location /media/ {\n        proxy_cache ram_cache;\n        proxy_cache_valid 200 206 1h;\n        slice 1m;\n        proxy_set_header Range $slice_range;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}"
+  }
+]

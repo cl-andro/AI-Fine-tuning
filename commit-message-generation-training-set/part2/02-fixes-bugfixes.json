@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/auth/session.py b/src/auth/session.py\n--- a/src/auth/session.py\n+++ b/src/auth/session.py\n@@ -41,7 +41,7 @@ def current_user(request):\n-    uid = request.cookies.get(\"sid\")\n-    return user_cache.get(uid)\n+    uid = request.cookies.get(\"sid\")\n+    if not uid:\n+        return None\n+    return user_cache.get(uid)",
+    "output": "fix(auth): return None for anonymous requests\n\nA missing session cookie previously produced a KeyError inside the\ncache lookup, crashing every logged-out page view."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/utils/timeparse.py b/src/utils/timeparse.py\n--- a/src/utils/timeparse.py\n+++ b/src/utils/timeparse.py\n@@ -17,7 +17,7 @@ def parse_iso(value):\n-    return datetime.strptime(value, \"%Y-%m-%dT%H:%M:%S\")\n+    if value.endswith(\"Z\"):\n+        value = value[:-1] + \"+00:00\"\n+    return datetime.fromisoformat(value)",
+    "output": "fix(utils): parse ISO timestamps ending in Z\n\nfromisoformat on Python < 3.11 rejected the trailing Z that our\nAPI returns; convert it to +00:00 before parsing."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/pagination/cursor.py b/src/pagination/cursor.py\n--- a/src/pagination/cursor.py\n+++ b/src/pagination/cursor.py\n@@ -9,8 +9,9 @@ def encode_cursor(row):\n def decode_cursor(cursor):\n-    return json.loads(base64.urlsafe_b64decode(cursor))\n+    try:\n+        return json.loads(base64.urlsafe_b64decode(cursor))\n+    except (ValueError, TypeError, json.JSONDecodeError):\n+        raise InvalidCursor(cursor)",
+    "output": "fix(pagination): reject malformed cursors cleanly\n\nHand-crafted or truncated cursors now raise InvalidCursor (400)\ninstead of bubbling a 500 from json.loads or b64decode."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/csv_import/mapper.py b/src/csv_import/mapper.py\n--- a/src/csv_import/mapper.py\n+++ b/src/csv_import/mapper.py\n@@ -22,7 +22,7 @@ def map_row(header, row):\n     record = {}\n     for i, key in enumerate(header):\n-        record[key] = row[i]\n+        record[key] = row[i] if i < len(row) else \"\"\n     return record",
+    "output": "fix(csv): tolerate rows shorter than the header\n\nTrailing empty fields are often dropped by exporters; rows now\npad with empty strings instead of raising IndexError."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/cache/ttl.py b/src/cache/ttl.py\n--- a/src/cache/ttl.py\n+++ b/src/cache/ttl.py\n@@ -14,7 +14,7 @@ def get(key):\n     entry = store.get(key)\n     if entry is None:\n         return None\n-    if entry.expires < now():\n+    if entry.expires <= now():\n         del store[key]\n         return None\n     return entry.value",
+    "output": "fix(cache): expire entries at the boundary second\n\nAn entry whose TTL ended exactly now() was still served; using <=\nmakes expiry inclusive as documented."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/math/stats.py b/src/math/stats.py\n--- a/src/math/stats.py\n+++ b/src/math/stats.py\n@@ -3,7 +3,7 @@ def mean(xs):\n def percentiles(xs, ps):\n     s = sorted(xs)\n-    return [s[int(p / 100 * len(s))] for p in ps]\n+    return [s[min(int(p / 100 * len(s)), len(s) - 1)] for p in ps]\n \n def median(xs):\n     return percentiles(xs, [50])[0]",
+    "output": "fix(stats): clamp percentile index to the last element\n\np=100 computed an index equal to len(s) and raised IndexError;\nclamp it so the maximum percentile returns the largest value."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/ui/Modal.jsx b/src/ui/Modal.jsx\n--- a/src/ui/Modal.jsx\n+++ b/src/ui/Modal.jsx\n@@ -30,7 +30,7 @@ export function Modal({ open, onClose, children }) {\n   useEffect(() => {\n-    window.addEventListener(\"keydown\", (e) => {\n-      if (e.key === \"Escape\") onClose();\n-    });\n+    const onKey = (e) => { if (e.key === \"Escape\") onClose(); };\n+    window.addEventListener(\"keydown\", onKey);\n+    return () => window.removeEventListener(\"keydown\", onKey);\n   }, [onClose]);",
+    "output": "fix(ui): remove stale Escape key listener on modal close\n\nThe handler was never unregistered, so after closing N modals\none Escape press called onClose N times and corrupted navigation."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/db/transactions.py b/src/db/transactions.py\n--- a/src/db/transactions.py\n+++ b/src/db/transactions.py\n@@ -11,7 +11,7 @@ def transfer(from_id, to_id, amount):\n     debit(from_id, amount)\n-    credit(to_id, amount)\n+    try:\n+        credit(to_id, amount)\n+    except Exception:\n+        rollback()\n+        raise\n     commit()",
+    "output": "fix(db): roll back the whole transfer when credit fails\n\nPreviously a failed credit left the debit applied; now both legs\ncommit or neither does."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/url/route.py b/src/url/route.py\n--- a/src/url/route.py\n+++ b/src/url/route.py\n@@ -7,7 +7,7 @@ def build(endpoint, **params):\n     path = ROUTES[endpoint]\n     for name, value in params.items():\n-        path = path.replace(f\":{name}\", value)\n+        path = path.replace(f\":{name}\", quote(str(value), safe=\"\"))\n     return path",
+    "output": "fix(url): percent-encode path parameters when building routes\n\nValues containing slashes or spaces previously produced broken or\nambiguous paths; encode them with quote()."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/date/range.py b/src/date/range.py\n--- a/src/date/range.py\n+++ b/src/date/range.py\n@@ -5,7 +5,7 @@ def daterange(start, end):\n     cur = start\n     while cur <= end:\n         yield cur\n-        cur += timedelta(days=1)\n+        cur = cur + timedelta(days=1)\n \n def months(start, end):\n     cur = start.replace(day=1)",
+    "output": "fix(dates): stop mutating the caller's datetime in daterange\n\n+= on a datetime mutated the shared reference; rebinding a new\nobject keeps the caller's start/end intact."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/media/thumb.py b/src/media/thumb.py\n--- a/src/media/thumb.py\n+++ b/src/media/thumb.py\n@@ -18,7 +18,8 @@ def make_thumb(path, size=(200, 200)):\n     img = Image.open(path)\n-    img.thumbnail(size)\n+    img = ImageOps.exif_transpose(img)\n+    img.thumbnail(size)\n     img.save(out, quality=85)",
+    "output": "fix(media): honor EXIF orientation when generating thumbnails\n\nPhone photos shot in portrait were saved on their side; apply\nexif_transpose before resizing."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/search/index.py b/src/search/index.py\n--- a/src/search/index.py\n+++ b/src/search/index.py\n@@ -12,7 +12,7 @@ def index_document(doc):\n     for token in tokenize(doc.body):\n-        postings[token].add(doc.id)\n+        postings.setdefault(token, set()).add(doc.id)",
+    "output": "fix(search): create the postings list for unseen tokens\n\nIndexing a document containing a word no other document had\nraised KeyError; initialise the set on demand."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/api/errors.py b/src/api/errors.py\n--- a/src/api/errors.py\n+++ b/src/api/errors.py\n@@ -20,7 +20,9 @@ def handle_404(err):\n def handle_validation(err):\n-    return jsonify({\"error\": str(err)}), 422\n+    return jsonify({\n+        \"error\": \"validation failed\",\n+        \"fields\": {f: m for f, m in err.field_errors.items()},\n+    }), 422",
+    "output": "fix(api): return field-level validation errors\n\nThe 422 body was a single string; clients could not tell which\nfield failed. Now each invalid field maps to its own message."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/workers/queue.py b/src/workers/queue.py\n--- a/src/workers/queue.py\n+++ b/src/workers/queue.py\n@@ -25,7 +25,7 @@ def requeue(job):\n-    pending.append(job)\n+    pending.append(job)\n+    job.state = \"queued\"\n+    notify_watchers()",
+    "output": "fix(workers): reset job state when requeueing\n\nRequeued jobs stayed marked 'failed', so the dashboard never\nshowed them and the scheduler skipped them on the next pass."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/template/filters.py b/src/template/filters.py\n--- a/src/template/filters.py\n+++ b/src/template/filters.py\n@@ -9,7 +9,7 @@ def slugify(text):\n-    s = text.lower().replace(\" \", \"-\")\n+    s = re.sub(r\"[^a-z0-9]+\", \"-\", text.lower()).strip(\"-\")",
+    "output": "fix(template): strip punctuation from slugs\n\nSlugs kept commas and exclamation marks, producing URLs like\n'hello,-world!'; collapse any run of non-alphanumerics instead."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/config/env.py b/src/config/env.py\n--- a/src/config/env.py\n+++ b/src/config/env.py\n@@ -4,7 +4,7 @@ def load():\n-    port = int(os.environ.get(\"PORT\", 8080))\n-    debug = os.environ.get(\"DEBUG\")\n+    port = int(os.environ.get(\"PORT\") or 8080)\n+    debug = os.environ.get(\"DEBUG\", \"\").lower() in {\"1\", \"true\", \"yes\"}",
+    "output": "fix(config): handle empty PORT and truthy DEBUG strings\n\nPORT= (empty) crashed int(), and DEBUG=false was truthy because\nnon-empty strings are true; normalise both."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/upload/virus.py b/src/upload/virus.py\n--- a/src/upload/virus.py\n+++ b/src/upload/virus.py\n@@ -6,7 +6,8 @@ def scan(path):\n     with open(path, \"rb\") as f:\n         head = f.read(8192)\n-    if b\"EICAR\" in head:\n+    with open(path, \"rb\") as f:\n+        data = f.read()\n+    if b\"EICAR-STANDARD-ANTIVIRUS-TEST-FILE\" in data:\n         raise MalwareDetected(path)",
+    "output": "fix(upload): scan the whole file for the EICAR test signature\n\nThe signature can appear past the first 8 KiB, and the short\n'EICAR' needle matched ordinary text; read the full file and\nmatch the complete test string."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/math/money.py b/src/math/money.py\n--- a/src/math/money.py\n+++ b/src/math/money.py\n@@ -2,7 +2,7 @@ def add(a, b):\n     return Money(a.amount + b.amount, a.currency)\n \n def allocate(money, ratios):\n-    cents = [int(money.amount * r / sum(ratios)) for r in ratios]\n+    total = sum(ratios)\n+    cents = [money.amount * r // total for r in ratios]\n+    cents[-1] += money.amount - sum(cents)\n     return [Money(c, money.currency) for c in cents]",
+    "output": "fix(money): stop losing cents when allocating amounts\n\nInteger truncation dropped remainder cents; assign the leftover\nto the last bucket so the parts always sum to the original."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/session/cart_cookie.py b/src/session/cart_cookie.py\n--- a/src/session/cart_cookie.py\n+++ b/src/session/cart_cookie.py\n@@ -11,7 +11,8 @@ def save_cart(resp, cart):\n-    resp.set_cookie(\"cart\", json.dumps(cart), max_age=3600)\n+    resp.set_cookie(\n+        \"cart\", json.dumps(cart), max_age=3600,\n+        samesite=\"Lax\", secure=True, httponly=True,\n+    )",
+    "output": "fix(session): harden the cart cookie flags\n\nThe cookie was readable by scripts and sent cross-site; mark it\nSecure, HttpOnly and SameSite=Lax so it cannot be exfiltrated."
+  },
+  {
+    "instruction": "Write a Conventional Commits message for this diff:\n\ndiff --git a/src/api/ratelimit_headers.py b/src/api/ratelimit_headers.py\n--- a/src/api/ratelimit_headers.py\n+++ b/src/api/ratelimit_headers.py\n@@ -8,7 +8,7 @@ def add_headers(resp, state):\n-    resp.headers[\"X-RateLimit-Remaining\"] = state.limit - state.used\n+    resp.headers[\"X-RateLimit-Remaining\"] = max(state.limit - state.used, 0)",
+    "output": "fix(api): never report a negative remaining rate budget\n\nAfter a burst, remaining went negative and confused clients;\nclamp it at zero."
+  }
+]

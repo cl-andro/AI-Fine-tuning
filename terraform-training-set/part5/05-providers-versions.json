@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Require Terraform 1.5 or newer and constrain the AWS provider to 5.x with a pessimistic constraint.",
+    "output": "terraform {\n  required_version = \">= 1.5.0\"\n\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 5.0\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = \"us-east-1\"\n}"
+  },
+  {
+    "instruction": "Configure an aliased AWS provider for a secondary region and tag a bucket with it.",
+    "output": "provider \"aws\" {\n  region = \"us-east-1\"\n}\n\nprovider \"aws\" {\n  alias  = \"eu\"\n  region = \"eu-west-1\"\n}\n\nresource \"aws_s3_bucket\" \"replica\" {\n  provider = aws.eu\n\n  bucket = \"acme-eu-replica\"\n}"
+  },
+  {
+    "instruction": "Apply default tags to every resource created by the primary AWS provider.",
+    "output": "provider \"aws\" {\n  region = \"us-west-2\"\n\n  default_tags {\n    tags = {\n      ManagedBy = \"terraform\"\n      Project   = \"acme\"\n      Owner     = \"platform\"\n    }\n  }\n}\n\nresource \"aws_sqs_queue\" \"tagged\" {\n  name = \"tagged-queue\"\n}"
+  },
+  {
+    "instruction": "Configure the AWS provider to assume a deployment role defined by a variable.",
+    "output": "variable \"deploy_role_arn\" {\n  type = string\n}\n\nprovider \"aws\" {\n  region = \"us-east-1\"\n\n  assume_role {\n    role_arn     = var.deploy_role_arn\n    session_name = \"terraform\"\n  }\n}"
+  },
+  {
+    "instruction": "Configure the Kubernetes and Helm providers to talk to a cluster via kubeconfig file.",
+    "output": "provider \"kubernetes\" {\n  config_path = \"~/.kube/config\"\n}\n\nprovider \"helm\" {\n  kubernetes {\n    config_path = \"~/.kube/config\"\n  }\n}\n\nresource \"kubernetes_namespace\" \"apps\" {\n  metadata {\n    name = \"apps\"\n  }\n}"
+  },
+  {
+    "instruction": "Pin the random provider in the required_providers block and create a password resource.",
+    "output": "terraform {\n  required_providers {\n    random = {\n      source  = \"hashicorp/random\"\n      version = \"3.6.0\"\n    }\n  }\n}\n\nresource \"random_password\" \"api\" {\n  length  = 32\n  special = false\n}"
+  },
+  {
+    "instruction": "Use two AWS providers so a replica bucket is created in a different region.",
+    "output": "provider \"aws\" {\n  region = \"us-east-1\"\n}\n\nprovider \"aws\" {\n  alias  = \"replica\"\n  region = \"ap-southeast-2\"\n}\n\nresource \"aws_s3_bucket\" \"primary\" {\n  bucket = \"acme-primary\"\n}\n\nresource \"aws_s3_bucket\" \"replica\" {\n  provider = aws.replica\n\n  bucket = \"acme-replica\"\n}"
+  },
+  {
+    "instruction": "Declare pessimistic version constraints for the AWS, random, and local providers.",
+    "output": "terraform {\n  required_version = \">= 1.6\"\n\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 5.40\"\n    }\n    random = {\n      source  = \"hashicorp/random\"\n      version = \"~> 3.6\"\n    }\n    local = {\n      source  = \"hashicorp/local\"\n      version = \"~> 2.5\"\n    }\n  }\n}"
+  },
+  {
+    "instruction": "Configure the local and archive providers and package a Lambda source directory.",
+    "output": "terraform {\n  required_providers {\n    archive = {\n      source  = \"hashicorp/archive\"\n      version = \"~> 2.4\"\n    }\n  }\n}\n\nresource \"archive_file\" \"lambda\" {\n  type        = \"zip\"\n  source_dir  = \"${path.module}/src\"\n  output_path = \"${path.module}/function.zip\"\n}\n\nresource \"local_file\" \"manifest\" {\n  filename        = \"${path.module}/build-info.json\"\n  content         = jsonencode({ artifact = archive_file.lambda.output_path })\n}"
+  },
+  {
+    "instruction": "Configure the GitHub provider with an owner and a token supplied through a variable.",
+    "output": "terraform {\n  required_providers {\n    github = {\n      source  = \"integrations/github\"\n      version = \"~> 6.0\"\n    }\n  }\n}\n\nvariable \"github_token\" {\n  type      = string\n  sensitive = true\n}\n\nprovider \"github\" {\n  owner = \"acme-corp\"\n  token = var.github_token\n}\n\nresource \"github_repository\" \"service\" {\n  name       = \"payments-service\"\n  visibility = \"private\"\n}"
+  },
+  {
+    "instruction": "Configure the Cloudflare provider with an API token variable.",
+    "output": "terraform {\n  required_providers {\n    cloudflare = {\n      source  = \"cloudflare/cloudflare\"\n      version = \"~> 4.30\"\n    }\n  }\n}\n\nvariable \"cloudflare_token\" {\n  type      = string\n  sensitive = true\n}\n\nprovider \"cloudflare\" {\n  api_token = var.cloudflare_token\n}\n\nresource \"cloudflare_record\" \"www\" {\n  zone_id = var.zone_id\n  name    = \"www\"\n  value   = \"192.0.2.10\"\n  type    = \"A\"\n  ttl     = 300\n}\n\nvariable \"zone_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Write a kitchen-sink terraform block with required_version and multiple pinned providers.",
+    "output": "terraform {\n  required_version = \">= 1.7.0\"\n\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 5.40\"\n    }\n    archive = {\n      source  = \"hashicorp/archive\"\n      version = \"~> 2.4\"\n    }\n    random = {\n      source  = \"hashicorp/random\"\n      version = \"~> 3.6\"\n    }\n    local = {\n      source  = \"hashicorp/local\"\n      version = \"~> 2.5\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = var.region\n}\n\nvariable \"region\" {\n  type    = string\n  default = \"us-east-1\"\n}"
+  },
+  {
+    "instruction": "Configure the Kubernetes provider with credentials passed in as variables.",
+    "output": "variable \"cluster_host\" {\n  type = string\n}\n\nvariable \"cluster_token\" {\n  type      = string\n  sensitive = true\n}\n\nvariable \"cluster_ca\" {\n  type      = string\n  sensitive = true\n}\n\nprovider \"kubernetes\" {\n  host                   = var.cluster_host\n  token                  = var.cluster_token\n  cluster_ca_certificate = base64decode(var.cluster_ca)\n}\n\nresource \"kubernetes_namespace\" \"monitoring\" {\n  metadata {\n    name = \"monitoring\"\n  }\n}"
+  },
+  {
+    "instruction": "Configure the Azure provider with the required features block.",
+    "output": "terraform {\n  required_providers {\n    azurerm = {\n      source  = \"hashicorp/azurerm\"\n      version = \"~> 3.100\"\n    }\n  }\n}\n\nprovider \"azurerm\" {\n  features {}\n}\n\nresource \"azurerm_resource_group\" \"main\" {\n  name     = \"acme-rg\"\n  location = \"West Europe\"\n}"
+  },
+  {
+    "instruction": "Configure the Google Cloud provider with project and region settings.",
+    "output": "terraform {\n  required_providers {\n    google = {\n      source  = \"hashicorp/google\"\n      version = \"~> 5.30\"\n    }\n  }\n}\n\nprovider \"google\" {\n  project = var.project_id\n  region  = \"us-central1\"\n}\n\nvariable \"project_id\" {\n  type = string\n}\n\nresource \"google_storage_bucket\" \"artifacts\" {\n  name     = \"acme-artifacts\"\n  location = \"US\"\n}"
+  },
+  {
+    "instruction": "Configure the Docker provider against the local Docker socket.",
+    "output": "terraform {\n  required_providers {\n    docker = {\n      source  = \"kreuzwerker/docker\"\n      version = \"~> 3.0\"\n    }\n  }\n}\n\nprovider \"docker\" {\n  host = \"unix:///var/run/docker.sock\"\n}\n\nresource \"docker_image\" \"api\" {\n  name = \"acme/api:latest\"\n}\n\nresource \"docker_container\" \"api\" {\n  image = docker_image.api.image_id\n  name  = \"api\"\n\n  ports {\n    internal = 8080\n    external = 8080\n  }\n}"
+  },
+  {
+    "instruction": "Assume a security-audit role with an external ID when configuring the AWS provider.",
+    "output": "variable \"audit_role_arn\" {\n  type = string\n}\n\nvariable \"external_id\" {\n  type = string\n}\n\nprovider \"aws\" {\n  region = \"us-east-1\"\n\n  assume_role {\n    role_arn     = var.audit_role_arn\n    session_name = \"terraform-audit\"\n    external_id  = var.external_id\n  }\n}"
+  },
+  {
+    "instruction": "Point the AWS provider at LocalStack endpoints for local development.",
+    "output": "provider \"aws\" {\n  region = \"us-east-1\"\n\n  endpoints {\n    s3      = \"http://localhost:4566\"\n    sqs     = \"http://localhost:4566\"\n    dynamodb = \"http://localhost:4566\"\n  }\n\n  skip_credentials_validation = true\n  skip_requesting_account_id  = true\n  skip_metadata_api_check     = true\n}\n\nresource \"aws_sqs_queue\" \"local\" {\n  name = \"localstack-demo\"\n}"
+  },
+  {
+    "instruction": "Declare a provider alias for a log-archive account and create the bucket with it.",
+    "output": "provider \"aws\" {\n  region = \"us-east-1\"\n}\n\nprovider \"aws\" {\n  alias  = \"logs\"\n  region = \"us-east-1\"\n\n  assume_role {\n    role_arn = \"arn:aws:iam::999999999999:role/LogWriter\"\n  }\n}\n\nresource \"aws_s3_bucket\" \"flow_logs\" {\n  provider = aws.logs\n\n  bucket = \"acme-flow-logs\"\n}"
+  },
+  {
+    "instruction": "Version every provider with upper bounds to avoid surprise major upgrades.",
+    "output": "terraform {\n  required_version = \">= 1.6.0, < 2.0.0\"\n\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \">= 5.40.0, < 6.0.0\"\n    }\n    random = {\n      source  = \"hashicorp/random\"\n      version = \">= 3.5.0, < 4.0.0\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = \"ca-central-1\"\n}"
+  }
+]

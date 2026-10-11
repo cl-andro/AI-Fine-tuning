@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Audit this code for security issues:\n\nurl = request.args['url']\nreturn requests.get(url).text",
+    "output": "**Vulnerability:** Server-Side Request Forgery (SSRF)\n**Severity:** High\n**Why:** The server fetches any attacker-supplied URL, including internal addresses.\n**Exploit:** `url=http://169.254.169.254/latest/meta-data/iam/security-credentials/` steals cloud credentials.\n**Fix:**\nfrom urllib.parse import urlparse\nimport ipaddress, socket\nhost = urlparse(url).hostname\nip = ipaddress.ip_address(socket.gethostbyname(host))\nif ip.is_private or ip.is_loopback or ip.is_link_local:\n    abort(403)\n# Also enforce scheme=http/https and re-check after redirects."
+  },
+  {
+    "instruction": "Audit this code for security issues (image proxy):\n\n@app.get('/proxy')\ndef proxy():\n    return requests.get(request.args['src']).content",
+    "output": "**Vulnerability:** SSRF via image proxy\n**Severity:** High\n**Why:** Any internal service can be reached through the proxy.\n**Exploit:** `src=http://internal-admin:8080/`.\n**Fix:**\n# Allow-list target hosts/domains, block private IP ranges, disable redirects,\n# and fetch with a short timeout and size cap."
+  },
+  {
+    "instruction": "Audit this code for security issues (webhook):\n\ntarget = request.json['callback_url']\nrequests.post(target, json=payload)",
+    "output": "**Vulnerability:** SSRF via user-supplied webhook\n**Severity:** High\n**Why:** The URL is fetched server-side with no restrictions.\n**Exploit:** Point it at `http://127.0.0.1:6379` or cloud metadata to probe/abuse internal systems.\n**Fix:**\n# Validate against an allow-list of domains, resolve and block private IPs,\n# and re-validate after any redirect."
+  },
+  {
+    "instruction": "Audit this code for security issues (URL preview):\n\nhtml = requests.get(user_url).text\nreturn extract_title(html)",
+    "output": "**Vulnerability:** SSRF via link preview\n**Severity:** Medium\n**Why:** The server requests arbitrary URLs, exposing internal networks.\n**Exploit:** Preview `http://169.254.169.254/` to read metadata.\n**Fix:**\n# Fetch via an isolated egress proxy that blocks RFC1918/link-local/\n# loopback and enforces http(s) with a response size limit."
+  },
+  {
+    "instruction": "Audit this code for security issues (fetch with redirects):\n\nresp = requests.get(url, allow_redirects=True)",
+    "output": "**Vulnerability:** SSRF bypass via redirect\n**Severity:** High\n**Why:** Even if the initial URL is validated, a redirect to an internal host bypasses the check.\n**Exploit:** Public URL 302-redirects to `http://10.0.0.5/admin`.\n**Fix:**\n# Disable auto-redirects and validate each hop:\nresp = requests.get(url, allow_redirects=False)\nif resp.is_redirect:\n    nxt = resp.headers['Location']\n    if not is_allowed(nxt):\n        abort(403)"
+  },
+  {
+    "instruction": "Audit this code for security issues (IPv6/decimal bypass):\n\nif 'localhost' in url or '127.0.0.1' in url:\n    abort(403)\nreturn requests.get(url)",
+    "output": "**Vulnerability:** SSRF allow/deny bypass\n**Severity:** High\n**Why:** String checks miss `127.1`, `0x7f.0.0.1`, `[::1]`, `2130706433`, and DNS rebinding.\n**Exploit:** `http://2130706433/` reaches localhost.\n**Fix:**\n# Resolve the hostname to an IP and check with ipaddress:\nip = ipaddress.ip_address(socket.gethostbyname(urlparse(url).hostname))\nif ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:\n    abort(403)"
+  },
+  {
+    "instruction": "Audit this code for security issues (PDF generator):\n\nhtml = requests.get(request.form['template_url']).text\nreturn render_pdf(html)",
+    "output": "**Vulnerability:** SSRF (and potential file inclusion)\n**Severity:** High\n**Why:** Fetching an attacker URL exposes internal services; the fetched HTML may also include local files/JS.\n**Exploit:** Point at internal endpoints or `file://` if scheme is unrestricted.\n**Fix:**\n# Restrict scheme to https, allow-list hosts, block private IPs, and\n# sandbox the renderer with no network access to internal ranges."
+  },
+  {
+    "instruction": "Audit this code for security issues (allow-list too broad):\n\nALLOWED = ['example.com']\nif any(d in url for d in ALLOWED):\n    return requests.get(url).text",
+    "output": "**Vulnerability:** SSRF via substring allow-list\n**Severity:** High\n**Why:** Substring checks match `example.com.evil.net` or `evil.com/example.com`.\n**Exploit:** `http://example.com.attacker.io/`.\n**Fix:**\nfrom urllib.parse import urlparse\nhost = urlparse(url).hostname or ''\nif host == 'example.com' or host.endswith('.example.com'):\n    return requests.get(url).text"
+  },
+  {
+    "instruction": "Audit this code for security issues (gopher):\n\n# url scheme not restricted\nresp = requests.get(request.args['u'])",
+    "output": "**Vulnerability:** SSRF with dangerous schemes\n**Severity:** High\n**Why:** Without a scheme allow-list, protocols like `file://`, `gopher://`, `ftp://` may be honored by some clients.\n**Exploit:** `gopher://` can speak to Redis/memcached to write keys.\n**Fix:**\nif urlparse(url).scheme not in ('http', 'https'):\n    abort(400)"
+  },
+  {
+    "instruction": "Audit this code for security issues (metadata):\n\n# fetches EC2 instance metadata for the client\nmeta = requests.get(request.json['meta_url']).json()",
+    "output": "**Vulnerability:** SSRF to cloud metadata\n**Severity:** Critical\n**Why:** The metadata endpoint (169.254.169.254) can return IAM credentials.\n**Exploit:** Fetch `/latest/meta-data/iam/security-credentials/<role>` for temporary AWS creds.\n**Fix:**\n# Block 169.254.0.0/16 and fd00:ec2::254; migrate to IMDSv2 (hop-limit 1)\n# and never proxy metadata requests from users."
+  },
+  {
+    "instruction": "Audit this code for security issues (import from URL):\n\ndata = yaml.safe_load(requests.get(request.form['url']).text)",
+    "output": "**Vulnerability:** SSRF (plus remote code/data injection)\n**Severity:** High\n**Why:** Arbitrary server-side fetch; also loading remote config the attacker controls.\n**Exploit:** Point to internal services or serve malicious content.\n**Fix:**\n# Restrict to allow-listed hosts and schemes; validate the parsed schema\n# strictly before use."
+  },
+  {
+    "instruction": "Audit this code for security issues (DNS rebinding gap):\n\nip = socket.gethostbyname(host)\nif is_public(ip):\n    requests.get(f'http://{host}/')  # resolves again!",
+    "output": "**Vulnerability:** SSRF via DNS rebinding (TOCTOU)\n**Severity:** High\n**Why:** The hostname is resolved twice; the second resolution can return an internal IP.\n**Exploit:** TTL-0 DNS returns a public IP for the check and a private IP for the fetch.\n**Fix:**\n# Resolve once, validate, then connect to the validated IP directly with\n# the Host header preserved, or use a vetted egress proxy."
+  },
+  {
+    "instruction": "Audit this code for security issues (port scanning):\n\nfor port in range(1, 1024):\n    requests.get(f'http://{user_host}:{port}/')",
+    "output": "**Vulnerability:** Internal port scanning via SSRF\n**Severity:** High\n**Why:** The server can probe internal ports and reveal services by timing/status.\n**Exploit:** Enumerate internal admin ports.\n**Fix:**\n# Restrict egress destinations to allow-listed hosts and standard ports;\n# block private ranges at the network/proxy layer."
+  },
+  {
+    "instruction": "Audit this code for security issues (fetch size):\n\nresp = requests.get(url, stream=True)\nreturn resp.raw.read()",
+    "output": "**Vulnerability:** Unbounded SSRF response (DoS)\n**Severity:** Medium\n**Why:** No size or time limit lets an attacker exhaust memory/time, e.g., hitting a huge internal file.\n**Exploit:** Point at `http://internal/bigfile` and OOM the server.\n**Fix:**\nresp = requests.get(url, stream=True, timeout=5)\nchunk = resp.raw.read(1024 * 1024)  # cap at 1 MB\nif resp.raw.read(1):\n    abort(413)"
+  },
+  {
+    "instruction": "Audit this code for security issues (redirect to file):\n\nreturn redirect(request.args['next'])",
+    "output": "**Vulnerability:** Open redirect (SSRF/phishing enabler)\n**Severity:** Medium\n**Why:** Unvalidated redirect target can send users to attacker sites and, in some flows, leak tokens.\n**Exploit:** `?next=https://evil.example/`.\n**Fix:**\nfrom urllib.parse import urlparse\nif urlparse(next_url).netloc:\n    next_url = '/'  # only relative paths\nreturn redirect(next_url)"
+  },
+  {
+    "instruction": "Audit this code for security issues (internal API):\n\nrequests.get('http://' + request.args['svc'] + '/health')",
+    "output": "**Vulnerability:** SSRF against internal service mesh\n**Severity:** High\n**Why:** `svc` can address arbitrary internal hosts/paths.\n**Exploit:** `svc=admin.internal:9090/actuator/env`.\n**Fix:**\n# Map a fixed service name to a known internal URL:\nservices = {'auth': 'http://auth.internal', 'billing': 'http://billing.internal'}\nbase = services.get(request.args['svc'])\nif not base:\n    abort(404)\nrequests.get(base + '/health')"
+  },
+  {
+    "instruction": "Audit this code for security issues (no timeout):\n\nrequests.get(request.json['url'])",
+    "output": "**Vulnerability:** SSRF with no timeout (DoS)\n**Severity:** Medium\n**Why:** A slow/hanging internal target ties up workers indefinitely.\n**Exploit:** Target a blackhole IP to exhaust the worker pool.\n**Fix:**\nrequests.get(url, timeout=(3, 5))  # connect, read timeouts"
+  },
+  {
+    "instruction": "Audit this code for security issues (XSS via fetched content):\n\nhtml = requests.get(user_url).text\nreturn Response(html, mimetype='text/html')",
+    "output": "**Vulnerability:** SSRF + reflected XSS\n**Severity:** High\n**Why:** Fetched content is served as HTML from your origin, enabling stored XSS in addition to SSRF.\n**Exploit:** Host a page with `<script>` on the attacker URL.\n**Fix:**\n# Never reflect fetched HTML. Download images only, validate content type,\n# and serve with a strict CSP and `Content-Disposition: attachment`."
+  },
+  {
+    "instruction": "Audit this code for security issues (unvalidated IP):\n\nhost = request.form['host']\nif host.startswith('10.'):\n    abort(403)\nrequests.get(f'http://{host}/')",
+    "output": "**Vulnerability:** Incomplete SSRF block (only 10.x)\n**Severity:** High\n**Why:** Misses 172.16/12, 192.168/16, 127.0.0.0/8, link-local, and IPv6.\n**Exploit:** `host=192.168.1.1` or `127.0.0.1`.\n**Fix:**\n# Use ipaddress to block ALL private/loopback/link-local/reserved ranges,\n# and resolve names to IPs before checking."
+  },
+  {
+    "instruction": "Audit this code for security issues (UrlFetch package):\n\nfrom urllib.request import urlopen\nurlopen(request.args['u']).read()",
+    "output": "**Vulnerability:** SSRF via standard library fetch\n**Severity:** High\n**Why:** `urlopen` follows redirects and supports `file://`, with no allow-list.\n**Exploit:** `u=file:///etc/passwd` or an internal URL.\n**Fix:**\n# Validate scheme == http/https, allow-list hosts, block private IPs,\n# and disable redirects on the underlying opener."
+  }
+]

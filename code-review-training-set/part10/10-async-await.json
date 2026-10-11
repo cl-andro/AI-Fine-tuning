@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\nasync def fetch_profile(uid):\n    time.sleep(2)\n    return db.query('SELECT * FROM users WHERE id = %s', uid)",
+    "output": "**Issue:** Blocking sleep and a blocking DB driver called inside a coroutine.\n**Why:** It freezes the entire event loop for 2 seconds; every other request on that loop stalls too.\n**Fix:**\nimport asyncio\n\nasync def fetch_profile(uid):\n    await asyncio.sleep(2)\n    return await asyncio.to_thread(db.query, 'SELECT * FROM users WHERE id = %s', uid)"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def get_page(url):\n    r = requests.get(url, timeout=10)\n    return r.text",
+    "output": "**Issue:** Synchronous requests.get inside async code.\n**Why:** requests blocks the loop for the full round trip, so N concurrent fetches take N * RTT instead of ~RTT.\n**Fix:**\nimport aiohttp\n\nasync def get_page(url):\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url, timeout=10) as r:\n            return await r.text()"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def process(uids):\n    for uid in uids:\n        await save_profile(uid)\n    print('done')",
+    "output": "**Issue:** Missing await: save_profile() is never awaited.\n**Why:** Calling an async function without await only creates a coroutine object; the work never runs and Python emits 'coroutine was never awaited' warning.\n**Fix:**\nasync def process(uids):\n    for uid in uids:\n        await save_profile(uid)\n    print('done')"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def warm_cache():\n    asyncio.create_task(rebuild_index())\n    asyncio.create_task(purge_stale())\n    return 'ok'",
+    "output": "**Issue:** Fire-and-forget tasks with no reference kept.\n**Why:** asyncio only keeps weak refs; the event loop may garbage-collect the task mid-flight, cancelling work silently and hiding its exceptions.\n**Fix:**\nasync def warm_cache():\n    tasks = [asyncio.create_task(rebuild_index()), asyncio.create_task(purge_stale())]\n    await asyncio.gather(*tasks)\n    return 'ok'"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def load_dashboard(user_ids):\n    users = []\n    for uid in user_ids:\n        users.append(await fetch_user(uid))\n    return users",
+    "output": "**Issue:** Sequential awaits where the calls are independent.\n**Why:** 50 users at 200ms each take 10 seconds; they should overlap and finish in ~200ms.\n**Fix:**\nasync def load_dashboard(user_ids):\n    return await asyncio.gather(*(fetch_user(uid) for uid in user_ids))"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def fetch_all(urls):\n    return await asyncio.gather(*(get(u) for u in urls))",
+    "output": "**Issue:** gather without return_exceptions: the first failure propagates and leaves the other tasks orphaned.\n**Why:** One bad URL discards all successful results and you cannot tell which URL failed.\n**Fix:**\nasync def fetch_all(urls):\n    results = await asyncio.gather(*(get(u) for u in urls), return_exceptions=True)\n    out = {}\n    for u, r in zip(urls, results):\n        if isinstance(r, Exception):\n            logger.warning('failed %s: %s', u, r)\n        else:\n            out[u] = r\n    return out"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def call_api():\n    data = await api.send(payload)\n    return data",
+    "output": "**Issue:** No timeout around the await.\n**Why:** If the peer never responds the coroutine awaits forever, leaking the task and the connection.\n**Fix:**\nasync def call_api():\n    async with asyncio.timeout(10):\n        data = await api.send(payload)\n    return data\n# or: data = await asyncio.wait_for(api.send(payload), timeout=10)"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def aggregate(rows):\n    total = 0\n    for r in rows:\n        total += heavy_transform(r)\n    return total",
+    "output": "**Issue:** CPU-bound work executed directly in the event loop.\n**Why:** Even though the function is async, heavy_transform blocks the loop; hundreds of ms of CPU starve every other connection.\n**Fix:**\nimport asyncio\n\nasync def aggregate(rows):\n    loop = asyncio.get_running_loop()\n    return sum(await asyncio.gather(*(loop.run_in_executor(None, heavy_transform, r) for r in rows)))"
+  },
+  {
+    "instruction": "Review this code:\n\ncache = {}\n\nasync def remember(key):\n    if key not in cache:\n        cache[key] = await load(key)\n    return cache[key]",
+    "output": "**Issue:** Shared dict mutated by concurrent tasks with no lock.\n**Why:** Two tasks can both miss and both call load(key); without an asyncio.Lock the check-then-set interleaves on every await.\n**Fix:**\nimport asyncio\nlock = asyncio.Lock()\n\nasync def remember(key):\n    if key not in cache:\n        async with lock:\n            if key not in cache:\n                cache[key] = await load(key)\n    return cache[key]"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def upload(path):\n    s = aiohttp.ClientSession()\n    try:\n        await s.post(URL, data=open(path, 'rb').read())\n    finally:\n        pass",
+    "output": "**Issue:** ClientSession is created but never closed (and the file object leaks too).\n**Why:** Unclosed sessions produce 'Unclosed client session' warnings, exhaust sockets, and keep the connector alive after the task ends.\n**Fix:**\nasync def upload(path):\n    async with aiohttp.ClientSession() as s:\n        with open(path, 'rb') as f:\n            async with s.post(URL, data=f.read()) as resp:\n                resp.raise_for_status()"
+  },
+  {
+    "instruction": "Review this code:\n\nimport asyncio\n\nasync def main():\n    await worker()\n\nasyncio.run(main())\n# this line lives inside another async function already",
+    "output": "**Issue:** asyncio.run() called from inside running async code.\n**Why:** It raises RuntimeError: asyncio.run() cannot be called from a running event loop and may create a second loop that never shuts down.\n**Fix:**\nasync def wrapper():\n    await worker()\n# just await it directly inside the existing loop\n# asyncio.run() is only for the synchronous entry point"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def shutdown(loop):\n    for t in all_tasks:\n        t.cancel()\n    loop.stop()",
+    "output": "**Issue:** The loop is stopped without waiting for cancelled tasks to finish.\n**Why:** Tasks die mid-await: files stay open, transactions roll back badly, and 'Task was destroyed but it is pending' is logged.\n**Fix:**\nasync def shutdown():\n    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]\n    for t in tasks:\n        t.cancel()\n    await asyncio.gather(*tasks, return_exceptions=True)"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def prompt():\n    name = input('name? ')\n    await save(name)",
+    "output": "**Issue:** Blocking input() inside a coroutine.\n**Why:** input() blocks the whole loop thread; no other task can run until the user presses Enter.\n**Fix:**\nasync def prompt():\n    loop = asyncio.get_running_loop()\n    name = await loop.run_in_executor(None, input, 'name? ')\n    await save(name)"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def read_chunks(path):\n    agen = produce(path)\n    first = await agen.__anext__()\n    return first\n# the async generator is left half-consumed",
+    "output": "**Issue:** Async generator abandoned without aclose().\n**Why:** The underlying resource (file, socket) stays open until GC; generators with finally blocks run their cleanup at an unpredictable time.\n**Fix:**\nasync def read_chunks(path):\n    agen = produce(path)\n    try:\n        return await agen.__anext__()\n    finally:\n        await agen.aclose()\n# or wrap usage in async with contextlib.aclosing(produce(path)) as agen:"
+  },
+  {
+    "instruction": "Review this code:\n\ndef run_query(q):\n    async def _inner():\n        return await db.execute(q)\n    loop = asyncio.new_event_loop()\n    return loop.run_until_complete(_inner())",
+    "output": "**Issue:** A brand-new event loop created per call.\n**Why:** Loop setup/teardown per query is expensive, loses loop-affine resources (connections, executors), and breaks when a loop already exists.\n**Fix:**\nasync def run_query(q):\n    return await db.execute(q)\n# one loop per process: asyncio.run(main()) at the entry point only"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def job(uid):\n    resp = await client.get(f'/users/{uid}')\n    await client.post('/log', json={'uid': uid, 'code': resp.status})\n\nfor uid in ids:\n    asyncio.ensure_future(job(uid))",
+    "output": "**Issue:** ensure_future results are never awaited or gathered.\n**Why:** Exceptions inside job vanish, and the caller cannot know when the batch is complete or limit concurrency.\n**Fix:**\nasync def job(uid):\n    resp = await client.get(f'/users/{uid}')\n    await client.post('/log', json={'uid': uid, 'code': resp.status})\n\nasync def run_all(ids):\n    await asyncio.gather(*(job(uid) for uid in ids))"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def serve(reader, writer):\n    data = reader.read(1024)\n    writer.write(b'ok')\n    writer.close()",
+    "output": "**Issue:** Non-awaitable stream calls used in an async protocol handler.\n**Why:** reader.read() without await returns nothing useful (or raises), and writer.close() without wait_closed races the flush, truncating the reply.\n**Fix:**\nasync def serve(reader, writer):\n    data = await reader.read(1024)\n    writer.write(b'ok')\n    await writer.drain()\n    writer.close()\n    await writer.wait_closed()"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def retry(fn):\n    for i in range(3):\n        try:\n            return await fn()\n        except Exception:\n            time.sleep(1)",
+    "output": "**Issue:** time.sleep inside the retry loop of a coroutine.\n**Why:** It blocks the event loop for a full second between attempts, turning a network retry into a server-wide outage.\n**Fix:**\nasync def retry(fn):\n    for i in range(3):\n        try:\n            return await fn()\n        except Exception:\n            if i == 2:\n                raise\n            await asyncio.sleep(1)"
+  },
+  {
+    "instruction": "Review this code:\n\nclass Router:\n    def __init__(self):\n        self.lock = threading.Lock()\n    async def dispatch(self, req):\n        with self.lock:\n            self.count += 1\n        return await self.handle(req)",
+    "output": "**Issue:** A threading.Lock used to guard state inside async handlers.\n**Why:** `with lock` blocks the event loop thread if another task holds it; in async code you need an asyncio.Lock that suspends instead of blocks.\n**Fix:**\nimport asyncio\n\nclass Router:\n    def __init__(self):\n        self.lock = asyncio.Lock()\n    async def dispatch(self, req):\n        async with self.lock:\n            self.count += 1\n        return await self.handle(req)"
+  },
+  {
+    "instruction": "Review this code:\n\nasync def run(jobs):\n    coros = [job(j) for j in jobs]\n    done, pending = await asyncio.wait(coros, timeout=30)\n    return done",
+    "output": "**Issue:** asyncio.wait() given bare coroutines.\n**Why:** Since Python 3.11 passing coroutines to wait() raises TypeError (tasks are required), and even before that the coroutines were wrapped without error handling.\n**Fix:**\nasync def run(jobs):\n    tasks = [asyncio.create_task(job(j)) for j in jobs]\n    done, pending = await asyncio.wait(tasks, timeout=30)\n    for t in pending:\n        t.cancel()\n    return {t.result() for t in done}"
+  }
+]

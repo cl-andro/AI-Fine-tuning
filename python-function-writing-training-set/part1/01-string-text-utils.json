@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a Python function that reverses the order of words in a sentence, keeping single spaces between words.",
+    "output": "def reverse_words(sentence):\n    words = sentence.split()\n    return ' '.join(reversed(words))\n\nprint(reverse_words('the quick brown fox'))"
+  },
+  {
+    "instruction": "Write a Python function that converts an arbitrary title into a URL-friendly slug (lowercase, hyphen separated, no punctuation).",
+    "output": "import re\n\ndef slugify(title):\n    slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')\n    return slug\n\nprint(slugify('Hello, World! Python 101'))"
+  },
+  {
+    "instruction": "Write a Python function that truncates text to a maximum length, appending an ellipsis and cutting at a word boundary when possible.",
+    "output": "def truncate(text, max_len=50, ellipsis='...'):\n    if len(text) <= max_len:\n        return text\n    cut = text[:max_len - len(ellipsis)]\n    if ' ' in cut:\n        cut = cut[:cut.rfind(' ')]\n    return cut.rstrip() + ellipsis\n\nprint(truncate('The quick brown fox jumps over the lazy dog', 20))"
+  },
+  {
+    "instruction": "Write a Python function that counts the vowels and consonants in a string, ignoring spaces, digits and punctuation.",
+    "output": "def count_vowels_consonants(text):\n    vowels = consonants = 0\n    for ch in text.lower():\n        if ch in 'aeiou':\n            vowels += 1\n        elif ch.isalpha():\n            consonants += 1\n    return {'vowels': vowels, 'consonants': consonants}\n\nprint(count_vowels_consonants('Hello, World 42!'))"
+  },
+  {
+    "instruction": "Write a Python function that converts a camelCase or PascalCase identifier to snake_case.",
+    "output": "import re\n\ndef camel_to_snake(name):\n    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()\n\nprint(camel_to_snake('parseHTTPResponse'))"
+  },
+  {
+    "instruction": "Write a Python function that converts a snake_case identifier to camelCase (lower camelCase).",
+    "output": "def snake_to_camel(name):\n    head, *rest = name.split('_')\n    return head + ''.join(w.capitalize() for w in rest)\n\nprint(snake_to_camel('get_user_profile'))"
+  },
+  {
+    "instruction": "Write a Python function that checks whether a string is a palindrome considering only alphanumeric characters and ignoring case.",
+    "output": "def is_palindrome(text):\n    cleaned = ''.join(ch.lower() for ch in text if ch.isalnum())\n    return cleaned == cleaned[::-1]\n\nprint(is_palindrome('A man, a plan, a canal: Panama'))"
+  },
+  {
+    "instruction": "Write a Python function that title-cases a sentence but keeps short articles and prepositions (a, an, the, of, in, on, and) lowercase unless they are the first word.",
+    "output": "def title_case(sentence):\n    small = {'a', 'an', 'the', 'of', 'in', 'on', 'and', 'or', 'to'}\n    words = sentence.lower().split()\n    out = [w.capitalize() for i, w in enumerate(words) if i == 0 or w not in small]\n    return ' '.join(out)\n\nprint(title_case('the history of time and space'))"
+  },
+  {
+    "instruction": "Write a Python function that run-length encodes a string, turning 'aaabbbcc' into '3a3b2c'.",
+    "output": "def run_length_encode(text):\n    if not text:\n        return ''\n    result, count, prev = [], 1, text[0]\n    for ch in text[1:]:\n        if ch == prev:\n            count += 1\n        else:\n            result.append(str(count) + prev)\n            prev, count = ch, 1\n    result.append(str(count) + prev)\n    return ''.join(result)\n\nprint(run_length_encode('aaabbbcc'))"
+  },
+  {
+    "instruction": "Write a Python function that strips HTML tags from a string and collapses the remaining whitespace.",
+    "output": "import re\n\ndef strip_html(html):\n    text = re.sub(r'<[^>]+>', '', html)\n    return re.sub(r'\\s+', ' ', text).strip()\n\nprint(strip_html('<p>Hello <b>world</b></p>'))"
+  },
+  {
+    "instruction": "Write a Python function that extracts all hashtags from a tweet-like string, without the leading '#'.",
+    "output": "import re\n\ndef extract_hashtags(text):\n    return re.findall(r'#(\\w+)', text)\n\nprint(extract_hashtags('Loving #Python and #pytest today! #python'))"
+  },
+  {
+    "instruction": "Write a Python function that greedily wraps a paragraph into lines of at most the given width, breaking on spaces.",
+    "output": "def wrap_text(text, width=40):\n    words, lines, current = text.split(), [], ''\n    for word in words:\n        if not current:\n            current = word\n        elif len(current) + 1 + len(word) <= width:\n            current += ' ' + word\n        else:\n            lines.append(current)\n            current = word\n    if current:\n        lines.append(current)\n    return '\\n'.join(lines)\n\nprint(wrap_text('the quick brown fox jumps over the lazy dog', 16))"
+  },
+  {
+    "instruction": "Write a Python function that computes the Levenshtein edit distance between two strings.",
+    "output": "def levenshtein(a, b):\n    if len(a) < len(b):\n        return levenshtein(b, a)\n    prev = list(range(len(b) + 1))\n    for i, ca in enumerate(a, 1):\n        cur = [i]\n        for j, cb in enumerate(b, 1):\n            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))\n        prev = cur\n    return prev[-1]\n\nprint(levenshtein('kitten', 'sitting'))"
+  },
+  {
+    "instruction": "Write a Python function that determines whether two strings are anagrams of each other (case-insensitive, ignoring spaces).",
+    "output": "def is_anagram(a, b):\n    clean = lambda s: sorted(ch.lower() for ch in s if ch.isalnum())\n    return clean(a) == clean(b)\n\nprint(is_anagram('Dormitory', 'Dirty Room'))"
+  },
+  {
+    "instruction": "Write a Python function that converts a block of text to sentence case: first letter of each sentence capitalized, the rest lowercased.",
+    "output": "import re\n\ndef sentence_case(text):\n    text = text.strip().lower()\n    return re.sub(r'(^|[.!?]\\s+)([a-z])', lambda m: m.group(1) + m.group(2).upper(), text)\n\nprint(sentence_case('hello there. this IS a test! done?'))"
+  },
+  {
+    "instruction": "Write a Python function that applies a Caesar cipher shift to alphabetic characters, leaving other characters unchanged.",
+    "output": "def caesar_cipher(text, shift):\n    out = []\n    for ch in text:\n        if ch.isalpha():\n            base = ord('A') if ch.isupper() else ord('a')\n            out.append(chr((ord(ch) - base + shift) % 26 + base))\n        else:\n            out.append(ch)\n    return ''.join(out)\n\nprint(caesar_cipher('Hello, World!', 3))"
+  },
+  {
+    "instruction": "Write a Python function that returns the longest common prefix shared by a list of strings.",
+    "output": "def longest_common_prefix(strs):\n    if not strs:\n        return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ''\n    return prefix\n\nprint(longest_common_prefix(['flower', 'flow', 'flight']))"
+  },
+  {
+    "instruction": "Write a Python function that masks a sensitive string (like a credit card number) so only the last four characters remain visible.",
+    "output": "def mask_string(value, visible=4, mask_char='*'):\n    if len(value) <= visible:\n        return mask_char * len(value)\n    return mask_char * (len(value) - visible) + value[-visible:]\n\nprint(mask_string('4111111111111234'))"
+  },
+  {
+    "instruction": "Write a Python function that normalizes whitespace in a text: strip the ends and collapse runs of spaces, tabs and newlines into single spaces.",
+    "output": "import re\n\ndef normalize_whitespace(text):\n    return re.sub(r'\\s+', ' ', text).strip()\n\nprint(normalize_whitespace('  too   many\\n\\t spaces '))"
+  },
+  {
+    "instruction": "Write a Python function that returns the k most frequent words in a text, breaking ties alphabetically.",
+    "output": "from collections import Counter\nimport re\n\ndef top_k_words(text, k=3):\n    words = re.findall(r'[a-z]+', text.lower())\n    counts = Counter(words)\n    return [w for w, _ in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:k]]\n\nprint(top_k_words('the cat sat on the mat and the cat laughed', 2))"
+  }
+]

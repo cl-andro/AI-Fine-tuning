@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Review this code:\n\ndef f(a, b, c, d):\n    r = []\n    for i in range(len(a)):\n        if a[i] > b:\n            r.append(c[i] * d)\n    return r",
+    "output": "**Issue:** Single-letter names and positional soup.\n**Why:** The reader must reverse-engineer that a=values, b=threshold, c=prices, d=rate; every call site repeats the puzzle.\n**Fix:**\ndef scaled_above_threshold(values, threshold, prices, rate):\n    return [price * rate for value, price in zip(values, prices)\n            if value > threshold]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef apply_discount(user, order):\n    if user:\n        if user.is_member:\n            if order.total > 100:\n                if not order.is_refunded:\n                    order.total *= 0.9\n    else:\n        raise ValueError('no user')",
+    "output": "**Issue:** Pyramid of nested ifs.\n**Why:** The happy path is buried four levels deep; adding a branch means another indent level and an easy-to-miss mismatched block.\n**Fix:**\ndef apply_discount(user, order):\n    if not user:\n        raise ValueError('no user')\n    if not user.is_member:\n        return\n    if order.total <= 100 or order.is_refunded:\n        return\n    order.total *= 0.9"
+  },
+  {
+    "instruction": "Review this code:\n\ndef is_eligible(age, tenure, score):\n    return age >= 18 and tenure >= 2 and score > 650 and not is_banned and months_since_claim > 12",
+    "output": "**Issue:** Magic numbers inline with no names.\n**Why:** Nobody knows why 18, 2, 650 or 12; the policy cannot be updated without decoding the expression.\n**Fix:**\nMIN_AGE = 18\nMIN_TENURE_YEARS = 2\nMIN_SCORE = 650\nCLAIM_COOLDOWN_MONTHS = 12\n\ndef is_eligible(age, tenure, score):\n    return (age >= MIN_AGE and tenure >= MIN_TENURE_YEARS and score > MIN_SCORE\n            and not is_banned and months_since_claim > CLAIM_COOLDOWN_MONTHS)"
+  },
+  {
+    "instruction": "Review this code:\n\ndef total(items):\n    t = 0\n    # for i in items:\n    #     t += i.price\n    #     t += i.tax\n    return sum(i.price for i in items)",
+    "output": "**Issue:** Commented-out code left next to the live version.\n**Why:** The reader cannot tell which is authoritative; if tax still matters the commented version documents a silent behavior change.\n**Fix:**\ndef total(items):\n    return sum(i.price for i in items)\n# use version control history for discarded implementations"
+  },
+  {
+    "instruction": "Review this code:\n\ndef check(u, p):\n    if u.is_ok and u.f_y and p.good:\n        return True\n    return False",
+    "output": "**Issue:** Booleans with opaque names (is_ok, f_y, good).\n**Why:** The condition reads as a riddle; the reader must open three other files to learn what each flag means.\n**Fix:**\ndef check(user, plan):\n    if user.email_verified and user.two_factor_enabled and plan.is_current:\n        return True\n    return False"
+  },
+  {
+    "instruction": "Review this code:\n\ndef label(row):\n    return 'high' if row['score'] > 80 else ('mid' if row['score'] > 50 else ('low' if row['score'] > 20 else 'critical'))",
+    "output": "**Issue:** Nested conditional expressions crammed into one line.\n**Why:** The else-chain of ternaries is hard to scan and easy to mis-order; precedence mistakes hide the real thresholds.\n**Fix:**\ndef label(row):\n    score = row['score']\n    if score > 80:\n        return 'high'\n    if score > 50:\n        return 'mid'\n    if score > 20:\n        return 'low'\n    return 'critical'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef evens(nums):\n    out = []\n    i = 0\n    while i < len(nums):\n        if nums[i] % 2 == 0:\n            out.append(nums[i])\n        i += 1\n    return out",
+    "output": "**Issue:** C-style index loop where iteration is obvious.\n**Why:** Manual index bookkeeping adds two lines of noise and a classic off-by-one risk for zero benefit.\n**Fix:**\ndef evens(nums):\n    return [n for n in nums if n % 2 == 0]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef active_users(users):\n    if (users is not None):\n        if ((len(users) > 0) and (all([(u.active == True) for u in users]))):\n            return (True)\n    return (False)",
+    "output": "**Issue:** Redundant parentheses and `== True` comparisons.\n**Why:** The noise obscures the real condition; `x == True` is a lint error and worse than a plain truthiness test.\n**Fix:**\ndef active_users(users):\n    if users and all(u.active for u in users):\n        return True\n    return False"
+  },
+  {
+    "instruction": "Review this code:\n\nfunction validate(age) {\n  if (age = 'minor') {\n    return true;\n  }\n  return false;\n}",
+    "output": "**Issue:** Assignment (=) used where comparison (===) was meant.\n**Why:** The if-condition always assigns and evaluates truthy, so validation never fails and the original age is clobbered.\n**Fix:**\nfunction validate(age) {\n  if (age === 'minor') {\n    return true;\n  }\n  return false;\n}"
+  },
+  {
+    "instruction": "Review this code:\n\ndef status(code):\n    if not (code == 200 or code == 201):\n        return 'not ok'\n    return 'ok'",
+    "output": "**Issue:** Negated boolean logic that must be mentally distributed.\n**Why:** `not (a or b)` makes reviewers pause for De Morgan's laws; positive conditions read directly.\n**Fix:**\ndef status(code):\n    if code in (200, 201):\n        return 'ok'\n    return 'not ok'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef greeting(name):\n    return \"Hello, \" + name + \"! You have \" + str(count) + \" messages.\"",
+    "output": "**Issue:** String concatenation with str() sprinkled in.\n**Why:** It breaks when values are not strings, and the interpolation is hard to scan in longer messages.\n**Fix:**\ndef greeting(name):\n    return f'Hello, {name}! You have {count} messages.'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef GetUserDataById(u_id):\n    userRecord = db_find(u_id)\n    user_record_cache[u_id] = userRecord\n    return userRecord",
+    "output": "**Issue:** Mixed naming styles (PascalCase function, camelCase variables) next to snake_case.\n**Why:** Inconsistent conventions make the API look like two libraries bolted together and hurt grep-ability.\n**Fix:**\ndef get_user_data_by_id(user_id):\n    user_record = db_find(user_id)\n    user_record_cache[user_id] = user_record\n    return user_record"
+  },
+  {
+    "instruction": "Review this code:\n\ndef chunks(items):\n    return list(map(lambda xs: list(map(lambda x: x * 2, xs)), items))",
+    "output": "**Issue:** Nested map/lambda one-liner used for plain transformation.\n**Why:** The reader must mentally unwrap two higher-order calls to see a double loop; the clever form buys nothing.\n**Fix:**\ndef chunks(items):\n    return [[x * 2 for x in group] for group in items]"
+  },
+  {
+    "instruction": "Review this code:\n\ndef process():\n    global state\n    state['count'] += 1\n    if state['count'] > LIMIT:\n        state = {}\n        return 'reset'\n    return 'ok'",
+    "output": "**Issue:** Global state used for control flow.\n**Why:** The function cannot be tested or reused; readers must audit the whole module to know what state it touches.\n**Fix:**\nclass Processor:\n    def __init__(self, limit):\n        self.state = {}\n        self.limit = limit\n    def process(self):\n        self.state['count'] += 1\n        if self.state['count'] > self.limit:\n            self.state = {}\n            return 'reset'\n        return 'ok'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef depth(node):\n    if node is None:\n        return 0\n    return 1 + max(depth(node.left), depth(node.right))",
+    "output": "**Issue:** Recursion for a tree walk with no depth guard in a language with a small stack.\n**Why:** It is harder to reason about the base case than a stack/queue loop, and deep trees raise RecursionError.\n**Fix:**\ndef depth(root):\n    if root is None:\n        return 0\n    level, frontier = 0, [root]\n    while frontier:\n        level += 1\n        frontier = [c for n in frontier for c in (n.left, n.right) if c]\n    return level"
+  },
+  {
+    "instruction": "Review this code:\n\ndef truncate(text, n):\n    if len(text) > n:\n        out = text[:n] + '...'\n        return out\n    else:\n        return text\n\n# duplicated for summary, title, preview with tiny variations",
+    "output": "**Issue:** Copy-pasted truncation logic with a redundant else after return.\n**Why:** Three near-identical blocks must be fixed in triplicate, and the else after an unconditional return adds a dead branch.\n**Fix:**\ndef truncate(text, n, suffix='...'):\n    if len(text) <= n:\n        return text\n    return text[:n] + suffix\n# reuse it for summary, title and preview"
+  },
+  {
+    "instruction": "Review this code:\n\ndef do_work(items):\n    print('starting do_work')\n    print('items:', items)\n    result = transform(items)\n    print('done', result)\n    return result",
+    "output": "**Issue:** Debug prints left in library code.\n**Why:** print writes to stdout regardless of log level, cannot be filtered or routed, and pollutes CLI output of anything importing this module.\n**Fix:**\nimport logging\nlogger = logging.getLogger(__name__)\n\ndef do_work(items):\n    logger.debug('starting do_work with %d items', len(items))\n    result = transform(items)\n    logger.debug('done: %s', result)\n    return result"
+  },
+  {
+    "instruction": "Review this code:\n\ndef days_between(a, b):\n    # compare timestamps in seconds then convert\n    delta = b - a\n    # delta is already in days from timedelta\n    return delta.days",
+    "output": "**Issue:** Comments that narrate or contradict the code.\n**Why:** The first comment says 'seconds' while the code uses timedelta days; stale comments are worse than none because readers trust them.\n**Fix:**\ndef days_between(a, b):\n    return (b - a).days"
+  },
+  {
+    "instruction": "Review this code:\n\ndef full_name(user):\n    return user.profile.contact.first_name + ' ' + user.profile.contact.last_name + ' (' + user.profile.contact.email + ')'",
+    "output": "**Issue:** Deep attribute chains repeated three times in one expression.\n**Why:** The reader tracks four levels of nesting in a single line and the object graph cannot change without editing every string.\n**Fix:**\ndef full_name(user):\n    contact = user.profile.contact\n    return f'{contact.first_name} {contact.last_name} ({contact.email})'"
+  },
+  {
+    "instruction": "Review this code:\n\ndef is_clear(flags):\n    return flags | FLAG_ERROR == 0\n\n# FLAG_ERROR = 4, called as is_clear(0)",
+    "output": "**Issue:** Operator precedence: == binds tighter than |, so this reads flags | (FLAG_ERROR == 0).\n**Why:** The expression evaluates to `flags | False` (i.e. flags), never a comparison; the check silently returns True for dirty flags.\n**Fix:**\ndef is_clear(flags):\n    return (flags & FLAG_ERROR) == 0"
+  }
+]

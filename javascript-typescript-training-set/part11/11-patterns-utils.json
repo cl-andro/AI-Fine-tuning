@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a JavaScript debounce(fn, wait) utility that delays invocation until calls stop for wait ms, preserving the last arguments.",
+    "output": "function debounce(fn, wait) {\n  let timerId;\n  return function (...args) {\n    clearTimeout(timerId);\n    timerId = setTimeout(() => fn.apply(this, args), wait);\n  };\n}\n\nconst log = debounce((v) => console.log(\"search:\", v), 200);\nlog(\"a\");\nlog(\"ab\");\nlog(\"abc\"); // only \"search: abc\" runs"
+  },
+  {
+    "instruction": "Write a JavaScript throttle(fn, limit) utility that guarantees at most one call per limit ms, firing a trailing call with the latest args.",
+    "output": "function throttle(fn, limit) {\n  let last = 0;\n  let timerId = null;\n  let lastArgs = null;\n\n  return function (...args) {\n    const now = Date.now();\n    const remaining = limit - (now - last);\n    lastArgs = args;\n    if (remaining <= 0) {\n      clearTimeout(timerId);\n      timerId = null;\n      last = now;\n      fn.apply(this, args);\n    } else if (!timerId) {\n      timerId = setTimeout(() => {\n        last = Date.now();\n        timerId = null;\n        fn.apply(this, lastArgs);\n      }, remaining);\n    }\n  };\n}"
+  },
+  {
+    "instruction": "Write a JavaScript memoize(fn) utility that caches results keyed by the first argument only, with a cache.size accessor.",
+    "output": "function memoize(fn) {\n  const cache = new Map();\n  const wrapped = (arg) => {\n    if (cache.has(arg)) return cache.get(arg);\n    const value = fn(arg);\n    cache.set(arg, value);\n    return value;\n  };\n  wrapped.cache = cache;\n  return wrapped;\n}\n\nconst fib = memoize((n) => (n < 2 ? n : fib(n - 1) + fib(n - 2)));\nconsole.log(fib(30));\nconsole.log(fib.cache.size);"
+  },
+  {
+    "instruction": "Write a JavaScript pub/sub class with subscribe(topic, handler) returning an unsubscribe function, and publish(topic, data).",
+    "output": "class PubSub {\n  #topics = new Map();\n\n  subscribe(topic, handler) {\n    if (!this.#topics.has(topic)) this.#topics.set(topic, new Set());\n    this.#topics.get(topic).add(handler);\n    return () => this.#topics.get(topic)?.delete(handler);\n  }\n\n  publish(topic, data) {\n    for (const handler of this.#topics.get(topic) || []) {\n      handler(data);\n    }\n  }\n}\n\nconst bus = new PubSub();\nconst unsub = bus.subscribe(\"user:login\", (user) => console.log(\"welcome\", user));\nbus.publish(\"user:login\", \"ada\");\nunsub();\nbus.publish(\"user:login\", \"grace\"); // no output"
+  },
+  {
+    "instruction": "Write a JavaScript createSingleton(getter) helper that returns the same instance from getter on every call.",
+    "output": "function createSingleton(factory) {\n  let instance;\n  let created = false;\n  return function () {\n    if (!created) {\n      instance = factory();\n      created = true;\n    }\n    return instance;\n  };\n}\n\nconst getInstance = createSingleton(() => ({ id: Math.random() }));\nconsole.log(getInstance() === getInstance()); // true"
+  },
+  {
+    "instruction": "Write a JavaScript factory function makeAnimal(type, name) that returns specialized objects (dog/cat) sharing a speak interface, without classes.",
+    "output": "function makeAnimal(type, name) {\n  const base = {\n    name,\n    describe() {\n      return `${this.name} the ${this.type}`;\n    },\n    type,\n  };\n  const speakers = {\n    dog: { speak: () => `${name} barks` },\n    cat: { speak: () => `${name} meows` },\n  };\n  return Object.assign(base, speakers[type] || { speak: () => `${name} makes a sound` });\n}\n\nconsole.log(makeAnimal(\"dog\", \"Rex\").speak()); // \"Rex barks\""
+  },
+  {
+    "instruction": "Write a JavaScript strategy pattern: a payment function that accepts a strategy object with creditCard, paypal or crypto methods and dispatches by name.",
+    "output": "const strategies = {\n  creditCard(amount) {\n    return `charged ${amount} to card`;\n  },\n  paypal(amount) {\n    return `charged ${amount} via paypal`;\n  },\n  crypto(amount) {\n    return `charged ${amount} in crypto`;\n  },\n};\n\nfunction pay(method, amount) {\n  const strategy = strategies[method];\n  if (!strategy) throw new Error(`unknown method: ${method}`);\n  return strategy(amount);\n}\n\nconsole.log(pay(\"paypal\", 50)); // \"charged 50 via paypal\""
+  },
+  {
+    "instruction": "Write the JavaScript module pattern using an IIFE to expose only selected functions from private internals.",
+    "output": "const math = (function () {\n  function gcd(a, b) {\n    while (b) [a, b] = [b, a % b];\n    return a;\n  }\n  function lcm(a, b) {\n    return Math.abs(a * b) / gcd(a, b);\n  }\n  return { lcm };\n})();\n\nconsole.log(math.lcm(4, 6)); // 12\n// gcd is not accessible from outside"
+  },
+  {
+    "instruction": "Write a JavaScript proxy-based validator: createValidator(schema) returns a Proxy that throws on unknown keys or wrong value types on assignment.",
+    "output": "function createValidator(schema) {\n  const target = {};\n  return new Proxy(target, {\n    set(obj, key, value) {\n      const expected = schema[key];\n      if (!expected) throw new Error(`unknown field: ${String(key)}`);\n      if (typeof value !== expected) {\n        throw new TypeError(`field ${String(key)} must be ${expected}`);\n      }\n      obj[key] = value;\n      return true;\n    },\n  });\n}\n\nconst user = createValidator({ name: \"string\", age: \"number\" });\nuser.name = \"Ada\";\nuser.age = 36;\ntry {\n  user.email = \"x\"; // throws: unknown field\n} catch (err) {\n  console.log(err.message);\n}"
+  },
+  {
+    "instruction": "Write JavaScript immutable update helpers: setIn(obj, path, value) returning a new object with one nested value replaced without mutation.",
+    "output": "function setIn(obj, path, value) {\n  const [key, ...rest] = path;\n  const child = obj[key];\n  return {\n    ...obj,\n    [key]: rest.length === 0 ? value : setIn(child || {}, rest, value),\n  };\n}\n\nconst state = { user: { profile: { name: \"Ada\" } } };\nconst next = setIn(state, [\"user\", \"profile\", \"name\"], \"Grace\");\nconsole.log(state.user.profile.name); // \"Ada\"\nconsole.log(next.user.profile.name); // \"Grace\""
+  },
+  {
+    "instruction": "Write JavaScript pipe(...fns) and compose(...fns) utility functions for unary functions, with examples.",
+    "output": "const pipe = (...fns) => (x) => fns.reduce((acc, fn) => fn(acc), x);\nconst compose = (...fns) => (x) => fns.reduceRight((acc, fn) => fn(acc), x);\n\nconst inc = (x) => x + 1;\nconst double = (x) => x * 2;\n\nconsole.log(pipe(inc, double)(3)); // 8\nconsole.log(compose(inc, double)(3)); // 7"
+  },
+  {
+    "instruction": "Write a JavaScript curryN(fn, arity) that curries a function of arbitrary arity.",
+    "output": "function curryN(fn, arity = fn.length) {\n  return function curried(...args) {\n    if (args.length >= arity) return fn.apply(this, args);\n    return (...more) => curried(...args, ...more);\n  };\n}\n\nconst volume = curryN((w, h, d) => w * h * d);\nconsole.log(volume(2)(3)(4)); // 24\nconsole.log(volume(2, 3)(4)); // 24"
+  },
+  {
+    "instruction": "Write a JavaScript deepClone(value) utility handling objects, arrays, Dates and Maps.",
+    "output": "function deepClone(value) {\n  if (value instanceof Date) return new Date(value.getTime());\n  if (value instanceof Map) {\n    return new Map([...value].map(([k, v]) => [deepClone(k), deepClone(v)]));\n  }\n  if (Array.isArray(value)) return value.map(deepClone);\n  if (value && typeof value === \"object\") {\n    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, deepClone(v)]));\n  }\n  return value;\n}\n\nconst original = { when: new Date(\"2024-01-01\"), tags: new Map([[\"a\", 1]]) };\nconst copy = deepClone(original);\ncopy.when.setFullYear(1999);\nconsole.log(original.when.getFullYear()); // 2024"
+  },
+  {
+    "instruction": "Write a JavaScript class-based EventEmitter with once(event, fn) that automatically unsubscribes after the first emit.",
+    "output": "class EventEmitter {\n  #handlers = new Map();\n\n  on(event, fn) {\n    if (!this.#handlers.has(event)) this.#handlers.set(event, new Set());\n    this.#handlers.get(event).add(fn);\n    return () => this.#handlers.get(event)?.delete(fn);\n  }\n\n  once(event, fn) {\n    const wrapped = (payload) => {\n      this.#handlers.get(event)?.delete(wrapped);\n      fn(payload);\n    };\n    return this.on(event, wrapped);\n  }\n\n  emit(event, payload) {\n    for (const fn of [...(this.#handlers.get(event) || [])]) fn(payload);\n  }\n}\n\nconst bus = new EventEmitter();\nbus.once(\"ready\", () => console.log(\"first\"));\nbus.once(\"ready\", () => console.log(\"never\")); // replaced below\nbus.emit(\"ready\"); // \"first\"\nbus.emit(\"ready\"); // nothing"
+  },
+  {
+    "instruction": "Write a JavaScript finite state machine createMachine(definition) supporting send(event) with transitions, initial state and a changed listener.",
+    "output": "function createMachine(definition) {\n  let current = definition.initial;\n  const listeners = new Set();\n\n  return {\n    get state() {\n      return current;\n    },\n    onChange(listener) {\n      listeners.add(listener);\n    },\n    send(event) {\n      const key = `${current}:${event}`;\n      const next = definition.states[current]?.on?.[event];\n      if (!next) return current;\n      current = next;\n      for (const listener of listeners) listener(current, key);\n      return current;\n    },\n  };\n}\n\nconst toggle = createMachine({\n  initial: \"off\",\n  states: { off: { on: { TOGGLE: \"on\" } }, on: { on: { TOGGLE: \"off\" } } },\n});\ntoggle.onChange((state) => console.log(\"now\", state));\ntoggle.send(\"TOGGLE\"); // \"now on\"\ntoggle.send(\"TOGGLE\"); // \"now off\""
+  },
+  {
+    "instruction": "Write a JavaScript repository pattern: createRepository(items) returning getAll, getById, add, remove methods over an in-memory array with generated ids.",
+    "output": "function createRepository() {\n  const items = [];\n  let nextId = 1;\n\n  return {\n    add(record) {\n      const item = { id: nextId++, ...record };\n      items.push(item);\n      return item;\n    },\n    getById(id) {\n      return items.find((item) => item.id === id) ?? null;\n    },\n    getAll() {\n      return [...items];\n    },\n    remove(id) {\n      const index = items.findIndex((item) => item.id === id);\n      if (index === -1) return false;\n      items.splice(index, 1);\n      return true;\n    },\n  };\n}\n\nconst repo = createRepository();\nrepo.add({ title: \"one\" });\nconsole.log(repo.getById(1));"
+  },
+  {
+    "instruction": "Write a JavaScript builder class QueryBuilder that chains where, orderBy and limit and produces a SQL-like string.",
+    "output": "class QueryBuilder {\n  #table;\n  #wheres = [];\n  #orderBy = null;\n  #limit = null;\n\n  constructor(table) {\n    this.#table = table;\n  }\n\n  where(column, value) {\n    this.#wheres.push(`${column} = '${value}'`);\n    return this;\n  }\n\n  orderBy(column, dir = \"ASC\") {\n    this.#orderBy = `${column} ${dir}`;\n    return this;\n  }\n\n  limit(n) {\n    this.#limit = n;\n    return this;\n  }\n\n  build() {\n    let sql = `SELECT * FROM ${this.#table}`;\n    if (this.#wheres.length) sql += ` WHERE ${this.#wheres.join(\" AND \")}`;\n    if (this.#orderBy) sql += ` ORDER BY ${this.#orderBy}`;\n    if (this.#limit != null) sql += ` LIMIT ${this.#limit}`;\n    return sql;\n  }\n}\n\nconsole.log(\n  new QueryBuilder(\"users\")\n    .where(\"active\", true)\n    .orderBy(\"name\")\n    .limit(10)\n    .build()\n);"
+  },
+  {
+    "instruction": "Write a JavaScript adapter pattern: an OldPrinter class with print(text) and a ModernDoc interface expecting printDoc(page); write an adapter and use it.",
+    "output": "class OldPrinter {\n  print(text) {\n    console.log(`OLD: ${text}`);\n  }\n}\n\nfunction createPrinterAdapter(oldPrinter) {\n  return {\n    printDoc(page) {\n      oldPrinter.print(page.body);\n    },\n  };\n}\n\nconst doc = { title: \"readme\", body: \"hello\" };\nconst adapter = createPrinterAdapter(new OldPrinter());\nadapter.printDoc(doc); // \"OLD: hello\""
+  },
+  {
+    "instruction": "Write a JavaScript middleware pipeline: runMiddleware(context, middlewares) that awaits each middleware in order, each getting a next() function.",
+    "output": "async function runMiddleware(context, middlewares) {\n  let index = -1;\n  async function dispatch(i) {\n    if (i <= index) throw new Error(\"next() called multiple times\");\n    index = i;\n    const middleware = middlewares[i];\n    if (!middleware) return;\n    await middleware(context, () => dispatch(i + 1));\n  }\n  await dispatch(0);\n  return context;\n}\n\nconst log = [];\nawait runMiddleware({ n: 0 }, [\n  async (ctx, next) => {\n    ctx.n += 1;\n    log.push(\"first\");\n    await next();\n  },\n  async (ctx, next) => {\n    ctx.n += 1;\n    log.push(\"second\");\n    await next();\n  },\n]);\nconsole.log(log); // [\"first\", \"second\"]"
+  },
+  {
+    "instruction": "Write JavaScript code implementing a simple cache with TTL: createTtlCache(ttlMs) with set, get (returning undefined when expired) and clear.",
+    "output": "function createTtlCache(ttlMs) {\n  const store = new Map();\n  return {\n    set(key, value) {\n      store.set(key, { value, expiresAt: Date.now() + ttlMs });\n    },\n    get(key) {\n      const entry = store.get(key);\n      if (!entry) return undefined;\n      if (Date.now() > entry.expiresAt) {\n        store.delete(key);\n        return undefined;\n      }\n      return entry.value;\n    },\n    clear() {\n      store.clear();\n    },\n  };\n}\n\nconst cache = createTtlCache(100);\ncache.set(\"a\", 1);\nconsole.log(cache.get(\"a\")); // 1\nsetTimeout(() => console.log(cache.get(\"a\")), 150); // undefined"
+  }
+]

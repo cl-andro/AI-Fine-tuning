@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Limit visitors to 10 requests per second per IP on www.example.com with a burst of 20.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=general:10m rate=10r/s;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n        location / {\n            limit_req zone=general burst=20 nodelay;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Return HTTP 429 instead of 503 when the rate limit is hit and log only warnings for www.news.example.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=web:10m rate=5r/s;\n    limit_req_status 429;\n    limit_req_log_level warn;\n    server {\n        listen 80;\n        server_name www.news.example;\n        root /var/www/news;\n        location / {\n            limit_req zone=web burst=10;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Protect the WordPress login page with a strict 1 request per second limit per IP.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;\n    server {\n        listen 80;\n        server_name www.blog.example;\n        root /var/www/blog;\n        location = /wp-login.php {\n            limit_req zone=login burst=5 delay=3;\n            fastcgi_pass 127.0.0.1:9000;\n            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n            include fastcgi_params;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Cap concurrent connections per IP at 50 across the whole site on filesrv.example.com.",
+    "output": "http {\n    limit_conn_zone $binary_remote_addr zone=conn:10m;\n    server {\n        listen 80;\n        server_name filesrv.example.com;\n        root /var/www/filesrv;\n        limit_conn conn 50;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Apply both a 30 requests per second rate and a 30 connection cap to the public /api/ endpoint.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;\n    limit_conn_zone $binary_remote_addr zone=api_conn:10m;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name api.example.com;\n        location /api/ {\n            limit_req zone=api burst=60 nodelay;\n            limit_conn api_conn 30;\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Whitelist the office subnet 10.10.0.0/24 from rate limiting while every other client is limited to 10r/s.",
+    "output": "geo $limit {\n    default 1;\n    10.10.0.0/24 0;\n}\nmap $limit $limit_key {\n    0 \"\";\n    1 $binary_remote_addr;\n}\nhttp {\n    limit_req_zone $limit_key zone=main:10m rate=10r/s;\n    server {\n        listen 80;\n        server_name www.example.com;\n        location / {\n            limit_req zone=main burst=20 nodelay;\n            root /var/www/site;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Rate limit by API key from the X-API-Key header instead of by IP address, allowing 30 requests per second per key.",
+    "output": "map $http_x_api_key $api_key {\n    default $http_x_api_key;\n    \"\" $binary_remote_addr;\n}\nhttp {\n    limit_req_zone $api_key zone=bykey:10m rate=30r/s;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name api.example.com;\n        location / {\n            limit_req zone=bykey burst=50 nodelay;\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Log rate-limit violations at error level and reject excess requests immediately with no delay queue on the support portal.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=strict:10m rate=5r/s;\n    limit_req_status 429;\n    limit_req_log_level error;\n    server {\n        listen 80;\n        server_name support.example.com;\n        location / {\n            limit_req zone=strict burst=3;\n            proxy_pass http://127.0.0.1:8090;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Allow at most 10 simultaneous downloads per IP under /downloads/ on mirror.example.com.",
+    "output": "http {\n    limit_conn_zone $binary_remote_addr zone=dl:10m;\n    server {\n        listen 80;\n        server_name mirror.example.com;\n        location /downloads/ {\n            limit_conn dl 10;\n            root /var/www/mirror;\n            try_files $uri =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Keep an AJAX-heavy admin dashboard responsive: 20 requests per second with a burst of 100 and no delay.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=dash:10m rate=20r/s;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name admin.example.com;\n        location / {\n            limit_req zone=dash burst=100 nodelay;\n            proxy_pass http://127.0.0.1:9000;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Rate limit per /24 subnet instead of per single IP so large office networks are not throttled too aggressively.",
+    "output": "map $binary_remote_addr $subnet24 {\n    \"~^(?P<d1>\\d+)\\.(?P<d2>\\d+)\\.(?P<d3>\\d+)\\.\\d+$\" $d1.$d2.$d3;\n}\nhttp {\n    limit_req_zone $subnet24 zone=by24:20m rate=100r/s;\n    server {\n        listen 80;\n        server_name www.forum.example;\n        location / {\n            limit_req zone=by24 burst=200;\n            root /var/www/forum;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Serve a branded 429 error page when visitors exceed the rate limit on shop.example.com.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=shop:10m rate=10r/s;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name shop.example.com;\n        root /var/www/shop;\n        error_page 429 /429.html;\n        location = /429.html {\n            internal;\n        }\n        location / {\n            limit_req zone=shop burst=30 nodelay;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Rate limit only POST write requests on the forms site while leaving GET traffic unlimited.",
+    "output": "map $request_method $write_key {\n    default \"\";\n    POST $binary_remote_addr;\n}\nhttp {\n    limit_req_zone $write_key zone=writes:10m rate=5r/s;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name forms.example.com;\n        location / {\n            limit_req zone=writes burst=10;\n            proxy_pass http://127.0.0.1:8081;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Exempt the load balancer health check path /healthz from rate limiting by giving it an empty key.",
+    "output": "map $uri $health_key {\n    default $binary_remote_addr;\n    ~^/healthz \"\";\n}\nhttp {\n    limit_req_zone $health_key zone=app:10m rate=20r/s;\n    server {\n        listen 80;\n        server_name app.example.com;\n        location / {\n            limit_req zone=app burst=40 nodelay;\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Answer with a Retry-After header whenever the API returns 429 because of rate limiting.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=api429:10m rate=15r/s;\n    limit_req_status 429;\n    server {\n        listen 80;\n        server_name api.example.com;\n        add_header Retry-After 30 always;\n        location / {\n            limit_req zone=api429 burst=30 nodelay;\n            proxy_pass http://127.0.0.1:8080;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Give the image thumbnail service a looser 100 requests per second limit than the rest of the site.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=site:10m rate=10r/s;\n    limit_req_zone $binary_remote_addr zone=img:10m rate=100r/s;\n    server {\n        listen 80;\n        server_name www.gallery.example;\n        root /var/www/gallery;\n        location /thumbs/ {\n            limit_req zone=img burst=200 nodelay;\n            try_files $uri =404;\n        }\n        location / {\n            limit_req zone=site burst=20;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Define a 20 MB limiting zone that can track about 100 thousand client IPs at 5 requests per second.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=big:20m rate=5r/s;\n    limit_req_status 429;\n    limit_req_log_level warn;\n    server {\n        listen 80;\n        server_name www.hightraffic.example;\n        root /var/www/hightraffic;\n        location / {\n            limit_req zone=big burst=15;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Lock down the /admin panel with 2 requests per second, a 5 connection cap and 429 responses.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=admin:10m rate=2r/s;\n    limit_conn_zone $binary_remote_addr zone=admin_conn:10m;\n    limit_req_status 429;\n    limit_conn_status 429;\n    server {\n        listen 80;\n        server_name www.example.com;\n        location /admin/ {\n            limit_req zone=admin burst=5;\n            limit_conn admin_conn 5;\n            proxy_pass http://127.0.0.1:9000;\n            proxy_set_header Host $host;\n        }\n        location / {\n            root /var/www/site;\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Globally cap each IP at 1000 simultaneous connections at http level with 429 status and info-level logging.",
+    "output": "http {\n    limit_conn_zone $binary_remote_addr zone=global:10m;\n    limit_conn_status 429;\n    limit_conn_log_level info;\n    server {\n        listen 80;\n        server_name www.example.com;\n        root /var/www/site;\n        limit_conn global 1000;\n        location / {\n            try_files $uri $uri/ =404;\n        }\n    }\n}"
+  },
+  {
+    "instruction": "Allow a burst of 50 login attempts spread over 10 seconds on the SSO portal without delaying legitimate users.",
+    "output": "http {\n    limit_req_zone $binary_remote_addr zone=sso:10m rate=5r/s;\n    limit_req_status 429;\n    server {\n        listen 443 ssl;\n        server_name sso.example.com;\n        ssl_certificate /etc/nginx/tls/sso.pem;\n        ssl_certificate_key /etc/nginx/tls/sso.key;\n        location / {\n            limit_req zone=sso burst=50;\n            proxy_pass http://127.0.0.1:9100;\n            proxy_set_header Host $host;\n        }\n    }\n}"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Implement bubble sort on a list of integers and return the sorted list in ascending order.\n\nExample: arr = [64,34,25,12,22,11,90] -> [11,12,22,25,34,64,90]",
+    "output": "def bubble_sort(arr):\n    a = arr[:]\n    n = len(a)\n    for i in range(n):\n        swapped = False\n        for j in range(0, n - i - 1):\n            if a[j] > a[j + 1]:\n                a[j], a[j + 1] = a[j + 1], a[j]\n                swapped = True\n        if not swapped:\n            break\n    return a\n\n# Example: bubble_sort([64,34,25,12,22,11,90]) -> [11,12,22,25,34,64,90]\n# Time: O(n^2) average/worst, O(n) best, Space: O(1). Adjacent swaps with early exit."
+  },
+  {
+    "instruction": "Implement selection sort on a list of integers and return the sorted list.\n\nExample: arr = [29,10,14,37,13] -> [10,13,14,29,37]",
+    "output": "def selection_sort(arr):\n    a = arr[:]\n    n = len(a)\n    for i in range(n):\n        min_idx = i\n        for j in range(i + 1, n):\n            if a[j] < a[min_idx]:\n                min_idx = j\n        a[i], a[min_idx] = a[min_idx], a[i]\n    return a\n\n# Example: selection_sort([29,10,14,37,13]) -> [10,13,14,29,37]\n# Time: O(n^2) always, Space: O(1). Repeatedly select the minimum of the unsorted suffix."
+  },
+  {
+    "instruction": "Implement insertion sort on a list of integers and return the sorted list.\n\nExample: arr = [12,11,13,5,6] -> [5,6,11,12,13]",
+    "output": "def insertion_sort(arr):\n    a = arr[:]\n    for i in range(1, len(a)):\n        key = a[i]\n        j = i - 1\n        while j >= 0 and a[j] > key:\n            a[j + 1] = a[j]\n            j -= 1\n        a[j + 1] = key\n    return a\n\n# Example: insertion_sort([12,11,13,5,6]) -> [5,6,11,12,13]\n# Time: O(n^2) average, O(n) best, Space: O(1). Shift larger elements right to insert key."
+  },
+  {
+    "instruction": "Implement merge sort on a list of integers and return the sorted list.\n\nExample: arr = [38,27,43,3,9,82,10] -> [3,9,10,27,38,43,82]",
+    "output": "def merge_sort(arr):\n    if len(arr) <= 1:\n        return arr[:]\n    mid = len(arr) // 2\n    left = merge_sort(arr[:mid])\n    right = merge_sort(arr[mid:])\n    result = []\n    i = j = 0\n    while i < len(left) and j < len(right):\n        if left[i] <= right[j]:\n            result.append(left[i])\n            i += 1\n        else:\n            result.append(right[j])\n            j += 1\n    result.extend(left[i:])\n    result.extend(right[j:])\n    return result\n\n# Example: merge_sort([38,27,43,3,9,82,10]) -> [3,9,10,27,38,43,82]\n# Time: O(n log n) always, Space: O(n). Divide and conquer with linear merge step."
+  },
+  {
+    "instruction": "Implement quicksort using the last element as pivot, returning the sorted list.\n\nExample: arr = [10,7,8,9,1,5] -> [1,5,7,8,9,10]",
+    "output": "def quicksort(arr):\n    if len(arr) <= 1:\n        return arr[:]\n    pivot = arr[-1]\n    less = [x for x in arr[:-1] if x < pivot]\n    equal = [x for x in arr if x == pivot]\n    greater = [x for x in arr[:-1] if x > pivot]\n    return quicksort(less) + equal + quicksort(greater)\n\n# Example: quicksort([10,7,8,9,1,5]) -> [1,5,7,8,9,10]\n# Time: O(n log n) average, O(n^2) worst, Space: O(n) list versions. Three-way partition around pivot."
+  },
+  {
+    "instruction": "Implement heap sort on a list of integers and return the sorted list.\n\nExample: arr = [12,11,13,5,6,7] -> [5,6,7,11,12,13]",
+    "output": "def heap_sort(arr):\n    a = arr[:]\n    n = len(a)\n    def heapify(size, root):\n        largest = root\n        left = 2 * root + 1\n        right = 2 * root + 2\n        if left < size and a[left] > a[largest]:\n            largest = left\n        if right < size and a[right] > a[largest]:\n            largest = right\n        if largest != root:\n            a[root], a[largest] = a[largest], a[root]\n            heapify(size, largest)\n    for i in range(n // 2 - 1, -1, -1):\n        heapify(n, i)\n    for i in range(n - 1, 0, -1):\n        a[0], a[i] = a[i], a[0]\n        heapify(i, 0)\n    return a\n\n# Example: heap_sort([12,11,13,5,6,7]) -> [5,6,7,11,12,13]\n# Time: O(n log n) always, Space: O(1) in-place. Build max-heap then extract maximums."
+  },
+  {
+    "instruction": "Implement counting sort for non-negative integers and return the sorted list. Report the time complexity.\n\nExample: arr = [4,2,2,8,3,3,1] -> [1,2,2,3,3,4,8]",
+    "output": "def counting_sort(arr):\n    if not arr:\n        return []\n    max_val = max(arr)\n    count = [0] * (max_val + 1)\n    for num in arr:\n        count[num] += 1\n    result = []\n    for value, c in enumerate(count):\n        result.extend([value] * c)\n    return result\n\n# Example: counting_sort([4,2,2,8,3,3,1]) -> [1,2,2,3,3,4,8]\n# Time: O(n + k) where k = max value, Space: O(k). Count frequencies then rebuild."
+  },
+  {
+    "instruction": "Implement radix sort (LSD) for non-negative integers and return the sorted list.\n\nExample: arr = [170,45,75,90,802,24,2,66] -> [2,24,45,66,75,90,170,802]",
+    "output": "def radix_sort(arr):\n    if not arr:\n        return []\n    a = arr[:]\n    max_val = max(a)\n    exp = 1\n    while max_val // exp > 0:\n        buckets = [[] for _ in range(10)]\n        for num in a:\n            digit = (num // exp) % 10\n            buckets[digit].append(num)\n        a = [num for bucket in buckets for num in bucket]\n        exp *= 10\n    return a\n\n# Example: radix_sort([170,45,75,90,802,24,2,66]) -> [2,24,45,66,75,90,170,802]\n# Time: O(d*(n+k)) with k=10 buckets and d digits, Space: O(n). Stable LSD digit passes."
+  },
+  {
+    "instruction": "Implement bucket sort for floating point numbers in [0, 1) and return the sorted list.\n\nExample: arr = [0.42, 0.32, 0.23, 0.52, 0.25, 0.47, 0.51] -> sorted ascending",
+    "output": "def bucket_sort(arr):\n    if not arr:\n        return []\n    n = len(arr)\n    buckets = [[] for _ in range(n)]\n    for num in arr:\n        index = min(int(num * n), n - 1)\n        buckets[index].append(num)\n    for bucket in buckets:\n        bucket.sort()\n    result = []\n    for bucket in buckets:\n        result.extend(bucket)\n    return result\n\n# Example: bucket_sort([0.42,0.32,0.23,0.52,0.25,0.47,0.51]) -> [0.23,0.25,0.32,0.42,0.47,0.51,0.52]\n# Time: O(n + k) average with uniform input, Space: O(n). Distribute to buckets by index, sort each."
+  },
+  {
+    "instruction": "Implement shell sort using Knuth's gap sequence and return the sorted list.\n\nExample: arr = [12,34,54,2,3] -> [2,3,12,34,54]",
+    "output": "def shell_sort(arr):\n    a = arr[:]\n    n = len(a)\n    gap = 1\n    while gap < n // 3:\n        gap = gap * 3 + 1\n    while gap >= 1:\n        for i in range(gap, n):\n            temp = a[i]\n            j = i\n            while j >= gap and a[j - gap] > temp:\n                a[j] = a[j - gap]\n                j -= gap\n            a[j] = temp\n        gap //= 3\n    return a\n\n# Example: shell_sort([12,34,54,2,3]) -> [2,3,12,34,54]\n# Time: O(n^(4/3)) typical with Knuth gaps (worst O(n^2)), Space: O(1). Gap-sequenced insertion sort."
+  },
+  {
+    "instruction": "Given an array of intervals where each interval is [start, end), assign rooms so no two meetings overlap, and return the minimum number of rooms needed.\n\nExample: intervals = [[0,30],[5,10],[15,20]] -> 2",
+    "output": "import heapq\n\ndef min_meeting_rooms(intervals):\n    if not intervals:\n        return 0\n    intervals.sort()\n    heap = []\n    for start, end in intervals:\n        if heap and heap[0] <= start:\n            heapq.heapreplace(heap, end)\n        else:\n            heapq.heappush(heap, end)\n    return len(heap)\n\n# Example: min_meeting_rooms([[0,30],[5,10],[15,20]]) -> 2\n# Time: O(n log n), Space: O(n). Min-heap of end times; reuse a room when earliest meeting ends."
+  },
+  {
+    "instruction": "Sort a list of strings by their frequency of occurrence (most frequent first). Ties broken alphabetically.\n\nExample: strs = ['b','a','b','c','a','b'] -> ['b','a','c']",
+    "output": "from collections import Counter\n\ndef frequency_sort_strings(strs):\n    count = Counter(strs)\n    return sorted(strs, key=lambda s: (-count[s], s))\n\n# Example: frequency_sort_strings(['b','a','b','c','a','b']) -> ['b','a','c']\n# Time: O(n log n), Space: O(k). Count then sort with (-freq, value) key (dedup via set for unique output)."
+  },
+  {
+    "instruction": "Given a list of integers, sort it such that even numbers come before odd numbers while maintaining relative order within evens and odds.\n\nExample: arr = [5,8,3,4,7] -> [8,4,5,3,7]",
+    "output": "def even_before_odd(arr):\n    evens = [x for x in arr if x % 2 == 0]\n    odds = [x for x in arr if x % 2 == 1]\n    return evens + odds\n\n# Example: even_before_odd([5,8,3,4,7]) -> [8,4,5,3,7]\n# Time: O(n), Space: O(n). Stable partition via two filtered lists."
+  },
+  {
+    "instruction": "Sort an array of 0s, 1s, and 2s in-place (Dutch national flag problem) and return it.\n\nExample: arr = [0,1,2,0,1,2,1,2,0,0,1] -> [0,0,0,1,1,1,1,2,2,2]",
+    "output": "def sort_colors(arr):\n    low = mid = 0\n    high = len(arr) - 1\n    while mid <= high:\n        if arr[mid] == 0:\n            arr[low], arr[mid] = arr[mid], arr[low]\n            low += 1\n            mid += 1\n        elif arr[mid] == 1:\n            mid += 1\n        else:\n            arr[mid], arr[high] = arr[high], arr[mid]\n            high -= 1\n    return arr\n\n# Example: sort_colors([0,1,2,0,1,2,1,2,0,0,1]) -> [0,0,0,1,1,1,1,2,2,2]\n# Time: O(n), Space: O(1). Three-way partition with low/mid/high pointers."
+  },
+  {
+    "instruction": "Sort a list of integers by their absolute value in ascending order (stable).\n\nExample: arr = [-5,-3,2,1,-1] -> [-1,1,-3,-5,2] (stable by |value|)",
+    "output": "def sort_by_absolute_value(arr):\n    return sorted(arr, key=lambda x: abs(x))\n\n# Example: sort_by_absolute_value([-5,-3,2,1,-1]) -> [-1,1,-3,-5,2]\n# Time: O(n log n), Space: O(n) for timsort. Key = abs value; Python's sort is stable."
+  },
+  {
+    "instruction": "Given a 2D matrix where each row is sorted, sort all elements of the matrix globally (row-wise sorted output).\n\nExample: matrix = [[5,4],[3,2]] -> [[2,3],[4,5]]",
+    "output": "def sort_matrix(matrix):\n    flat = [x for row in matrix for x in row]\n    flat.sort()\n    m = len(matrix)\n    n = len(matrix[0])\n    return [flat[i*n:(i+1)*n] for i in range(m)]\n\n# Example: sort_matrix([[5,4],[3,2]]) -> [[2,3],[4,5]]\n# Time: O(m*n log(m*n)), Space: O(m*n). Flatten, sort, rebuild rows."
+  },
+  {
+    "instruction": "Implement a stable sort using merge sort that sorts tuples by the second element only, preserving original order for ties.\n\nExample: data = [('a',3),('b',1),('c',3)] -> [('b',1),('a',3),('c',3)]",
+    "output": "def stable_sort_by_second(data):\n    if len(data) <= 1:\n        return data[:]\n    mid = len(data) // 2\n    left = stable_sort_by_second(data[:mid])\n    right = stable_sort_by_second(data[mid:])\n    result = []\n    i = j = 0\n    while i < len(left) and j < len(right):\n        if left[i][1] <= right[j][1]:\n            result.append(left[i])\n            i += 1\n        else:\n            result.append(right[j])\n            j += 1\n    result.extend(left[i:])\n    result.extend(right[j:])\n    return result\n\n# Example: stable_sort_by_second([('a',3),('b',1),('c',3)]) -> [('b',1),('a',3),('c',3)]\n# Time: O(n log n), Space: O(n). Merge sort with <= comparison preserves stability."
+  },
+  {
+    "instruction": "Given an array of integers, sort it using the least significant digit approach, but handle negative numbers by sorting by magnitude then partitioning signs.\n\nExample: arr = [-12,-11,13,5,-6,7] -> [-12,-11,-6,5,7,13]",
+    "output": "def radix_sort_with_negatives(arr):\n    if not arr:\n        return []\n    negatives = [-x for x in arr if x < 0]\n    non_negatives = [x for x in arr if x >= 0]\n    def lsd_radix(nums):\n        if not nums:\n            return nums\n        exp = 1\n        max_val = max(nums)\n        while max_val // exp > 0:\n            buckets = [[] for _ in range(10)]\n            for num in nums:\n                buckets[(num // exp) % 10].append(num)\n            nums = [num for b in buckets for num in b]\n            exp *= 10\n        return nums\n    sorted_neg = lsd_radix(negatives)\n    sorted_pos = lsd_radix(non_negatives)\n    return [-x for x in reversed(sorted_neg)] + sorted_pos\n\n# Example: radix_sort_with_negatives([-12,-11,13,5,-6,7]) -> [-12,-11,-6,5,7,13]\n# Time: O(d*(n+k)), Space: O(n). Split signs, radix-sort magnitudes, recombine."
+  },
+  {
+    "instruction": "Sort a linked list of integers using merge sort (convert to list, sort, return the values). Report the complexity.\n\nExample: values = [4,2,1,3] -> [1,2,3,4]",
+    "output": "def sort_values(values):\n    if len(values) <= 1:\n        return values[:]\n    mid = len(values) // 2\n    left = sort_values(values[:mid])\n    right = sort_values(values[mid:])\n    merged = []\n    i = j = 0\n    while i < len(left) and j < len(right):\n        if left[i] <= right[j]:\n            merged.append(left[i])\n            i += 1\n        else:\n            merged.append(right[j])\n            j += 1\n    merged.extend(left[i:])\n    merged.extend(right[j:])\n    return merged\n\n# Example: sort_values([4,2,1,3]) -> [1,2,3,4]\n# Time: O(n log n), Space: O(n). Merge sort applied to the list representation of the linked list."
+  },
+  {
+    "instruction": "Given a list of integers, implement quicksort in-place (mutate the original list) and return the list reference.\n\nExample: arr = [3,6,8,10,1,2,1] -> [1,1,2,3,6,8,10]",
+    "output": "def quicksort_inplace(arr, low=0, high=None):\n    if high is None:\n        high = len(arr) - 1\n    if low < high:\n        p = partition(arr, low, high)\n        quicksort_inplace(arr, low, p - 1)\n        quicksort_inplace(arr, p + 1, high)\n    return arr\n\ndef partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] <= pivot:\n            i += 1\n            arr[i], arr[j] = arr[j], arr[i]\n    arr[i + 1], arr[high] = arr[high], arr[i + 1]\n    return i + 1\n\n# Example: quicksort_inplace([3,6,8,10,1,2,1]) -> [1,1,2,3,6,8,10]\n# Time: O(n log n) average, O(n^2) worst, Space: O(log n) recursion. Lomuto partition in-place."
+  }
+]

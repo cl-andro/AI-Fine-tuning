@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write a PromQL query computing filesystem usage ratio for the root mount by dividing available by size",
+    "output": "node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}"
+  },
+  {
+    "instruction": "Write a PromQL query computing container CPU usage as a fraction of its CPU request using group_left",
+    "output": "container_cpu_usage_seconds_total / on(namespace, pod) group_left kube_pod_container_resource_requests{resource=\"cpu\"}"
+  },
+  {
+    "instruction": "Write a PromQL query dividing the grouped 5xx rate by the overall rate while ignoring the status label",
+    "output": "sum by (instance, status) (rate(http_requests_total{status=~\"5..\"}[5m])) / ignoring(status) group_left sum by (instance) (rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Write a PromQL query using and with on() to keep CPU metrics only for targets that are currently up",
+    "output": "node_cpu_seconds_total and on(instance) (up == 1)"
+  },
+  {
+    "instruction": "Write a PromQL query using or as a fallback that returns MemAvailable when present and MemFree otherwise",
+    "output": "node_memory_MemAvailable_bytes or node_memory_MemFree_bytes"
+  },
+  {
+    "instruction": "Write a PromQL query using unless to drop container memory series that belong to succeeded pods",
+    "output": "container_memory_usage_bytes unless on(namespace, pod) (kube_pod_status_phase{phase=\"Succeeded\"} == 1)"
+  },
+  {
+    "instruction": "Write a PromQL query that returns 1 when a target is down and 0 otherwise using the bool modifier",
+    "output": "up == bool 0"
+  },
+  {
+    "instruction": "Write a PromQL query multiplying request rates by a build_info metric to attach the version label",
+    "output": "rate(http_requests_total[5m]) * on(instance) group_left(version) app_build_info"
+  },
+  {
+    "instruction": "Write a PromQL query comparing this week's request rate against the same rate from last week",
+    "output": "rate(http_requests_total[5m]) > rate(http_requests_total[5m] offset 1w)"
+  },
+  {
+    "instruction": "Write a PromQL query showing each path's share of total traffic as a ratio",
+    "output": "sum by (path) (rate(http_requests_total[5m])) / ignoring(path) group_left sum(rate(http_requests_total[5m]))"
+  },
+  {
+    "instruction": "Write a PromQL query joining pod memory usage with the node label coming from kube_pod_info",
+    "output": "container_memory_usage_bytes * on(namespace, pod) group_left(node) kube_pod_info"
+  },
+  {
+    "instruction": "Write a PromQL query using unless to exclude instances that are currently down from the up vector",
+    "output": "up unless on(instance) (up == 0)"
+  },
+  {
+    "instruction": "Write a PromQL query using or to merge the node and blackbox scrape jobs into one up vector",
+    "output": "up{job=\"node\"} or up{job=\"blackbox\"}"
+  },
+  {
+    "instruction": "Write a PromQL query producing a 1 or 0 health flag with the bool modifier on a >= comparison",
+    "output": "up >= bool 1"
+  },
+  {
+    "instruction": "Write a PromQL query multiplying a metric by a scalar to express 90 percent of total memory",
+    "output": "node_memory_MemTotal_bytes * 0.9"
+  },
+  {
+    "instruction": "Write a PromQL query limiting a computed request rate to at most 5 per second",
+    "output": "clamp_max(rate(http_requests_total[5m]), 5)"
+  },
+  {
+    "instruction": "Write a PromQL query dividing a metric that carries extra labels by one without them, matching on no labels",
+    "output": "rate(redis_commands_total[5m]) / on() rate(redis_operations_total[5m])"
+  },
+  {
+    "instruction": "Write a PromQL query dividing the per-second request rate by the number of healthy replicas",
+    "output": "rate(http_requests_total[5m]) / on() group_left count(up{job=\"api\"})"
+  },
+  {
+    "instruction": "Write a PromQL query keeping container memory usage only for pods that have a positive memory limit",
+    "output": "container_memory_usage_bytes and on(namespace, pod, container) (container_spec_memory_limit_bytes > 0)"
+  },
+  {
+    "instruction": "Write a PromQL query attaching a team label from a job mapping metric onto aggregated request rates",
+    "output": "sum by (job) (rate(http_requests_total[5m])) * on(job) group_left(team) job_team_mapping"
+  }
+]

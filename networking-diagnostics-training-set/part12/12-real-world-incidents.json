@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "On-call: checkout API latency jumped from 50ms to 2s at 02:00 with no deploy. Diagnose.",
+    "output": "**Diagnose:**\ncurl -w 'dns:%{time_namelookup} conn:%{time_connect} tls:%{time_appconnect} ttfb:%{time_starttransfer}\\n' -o /dev/null -s https://api/checkout\nmtr -rwzbc 50 api.example.com\nss -s\nkubectl top pods 2>/dev/null || ps aux --sort=-%cpu | head\n**Interpretation:** A sudden latency jump with no deploy often means an infrastructure or dependency change: DNS/TLS degradation, network loss, or a noisy neighbor at 02:00 (backup/scan). The curl breakdown and mtr localize network versus app.\n**Fix:** If network loss/latency, reroute or QoS the noisy link; if DNS/TLS, fix the resolver/cert. If the app, scale or fix the dependency. Confirm p95/p99 return to baseline and add an alert."
+  },
+  {
+    "instruction": "Incident: DNS resolution fails company-wide after a router firmware upgrade. Diagnose.",
+    "output": "**Diagnose:**\ndig example.com @<internal-resolver>\ndig @8.8.8.8 example.com\ntcpdump -ni eth0 port 53\nping -c2 <internal-resolver>\nip route get <internal-resolver>\n**Interpretation:** If external resolvers work but the internal one fails, the router (acting as DNS forwarder/DHCP) broke. tcpdump shows queries leaving but no answers, or no queries at all if DHCP handed a bad resolver.\n**Fix:** Point clients/DHCP option 6 at a working resolver (`resolvectl dns` or DHCP config), or roll back the firmware. Verify resolution across a sample of clients."
+  },
+  {
+    "instruction": "Incident: a bad firewall rule locked out all SSH to production at 03:00. Diagnose and recover.",
+    "output": "**Diagnose:**\nsudo iptables -S\nsudo nft list ruleset\nsudo ufw status verbose\njournalctl -u ssh -n 30\nip route\n**Interpretation:** Since SSH is the access path, recovery must use a console/out-of-band or a scheduled rollback. The rule set shows a default DROP or a missing port-22 accept added recently.\n**Fix:** From the console: `iptables -I INPUT 1 -p tcp --dport 22 -j ACCEPT` (and established rule), then fix the offending rule. Keep a console fallback and change control for firewall edits. Verify SSH from the admin network."
+  },
+  {
+    "instruction": "Incident: a load balancer health check bug took down all backends. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v http://<backend>/health\nsudo tail -f /var/log/nginx/error.log\nsudo ipvsadm -Ln 2>/dev/null\nfor b in b1 b2 b3; do curl -s -o /dev/null -w \"$b %{http_code}\\n\" http://$b/health; done\n**Interpretation:** If every backend reports unhealthy simultaneously, either the health endpoint itself has a shared dependency (DB/DNS) or the check config changed. Its failure cascades to a full outage.\n**Fix:** Make the health endpoint dependency-light and return 200 when the app can serve, fix the shared dependency, and add a circuit breaker so one endpoint failure does not remove all nodes. Verify nodes return to healthy."
+  },
+  {
+    "instruction": "Incident: an expiring TLS certificate caused a global API outage. Diagnose.",
+    "output": "**Diagnose:**\necho | openssl s_client -connect api.example.com:443 2>/dev/null | openssl x509 -noout -dates -issuer\ncertbot certificates\nsystemctl list-timers | grep -i cert\ncurl -v https://api.example.com/\n**Interpretation:** openssl shows notAfter in the past; clients reject the handshake. The renewal automation (certbot timer/cron) failed, often due to a challenge or DNS issue.\n**Fix:** Renew immediately (`certbot renew --force-renewal`) and reload the server. Fix the automation and add an expiry alert at 30/14/7 days. Verify notAfter is future and clients connect."
+  },
+  {
+    "instruction": "Incident: a data-center uplink flapped, dropping packets intermittently. Diagnose.",
+    "output": "**Diagnose:**\nmtr -rwzbc 100 <remote-dc>\nping -c 1000 -i 0.01 <remote-dc> | tail\nethtool -S eth0 | grep -i -E 'err|drop|link'\ndmesg | grep -i -E 'link|carrier'\n**Interpretation:** Intermittent loss and link-down events in dmesg/ethtool point to a flapping physical link (bad optic, cable, or port). mtr shows loss at the peering hop.\n**Fix:** Replace the optic/cable, move to a spare port, or engage the carrier. Monitor link state and loss rate. Verify mtr loss drops to zero after the fix."
+  },
+  {
+    "instruction": "Incident: a misconfigured MTU caused random connection hangs after a VPN change. Diagnose.",
+    "output": "**Diagnose:**\nping -M do -s 1472 <peer>\nping -M do -s 1400 <peer>\nip link show tun0\ntcpdump -ni tun0 'tcp port 443' -c 30\n**Interpretation:** After a VPN/firewall change, PMTUD broke (ICMP blocked or MTU too high), so TCP handshakes work but large data stalls. The MTU probe pinpoints the limit.\n**Fix:** Lower the tunnel MTU, clamp MSS, and allow ICMP type 3 code 4. Verify large transfers complete and connections no longer hang."
+  },
+  {
+    "instruction": "Incident: a DDoS saturated the network, causing legitimate traffic loss. Diagnose.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -c 200 | awk '{print $3}' | sort | uniq -c | sort -rn | head\nss -s\nsar -n DEV 1 5\nsudo iptables -L -n -v | grep DROP | head\n**Interpretation:** A flood from many source IPs raises device packet rates and fills conntrack, dropping legitimate flows. Top source/distribution and interface counters reveal the attack profile.\n**Fix:** Apply rate limiting/scrubbing at the edge, use SYN cookies, enable a DDoS protection service, and blackhole/rate-limit offending ranges. Verify legitimate traffic and latency recover."
+  },
+  {
+    "instruction": "Incident: a stale /etc/hosts entry sent internal traffic to a wrong server. Diagnose.",
+    "output": "**Diagnose:**\ngetent hosts <internal-name>\ndig <internal-name>\ncat /etc/hosts\ncurl -v http://<internal-name>/\n**Interpretation:** getent returns an IP different from DNS, matching a stale /etc/hosts line, so clients route to the wrong (old) server. Connections fail or hit test data.\n**Fix:** Remove/correct the /etc/hosts entry (or the config that injected it) and flush caches. Verify `getent hosts` matches the authoritative DNS answer across affected hosts."
+  },
+  {
+    "instruction": "Incident: a NAT gateway port exhaustion blocked new outbound connections. Diagnose.",
+    "output": "**Diagnose:**\nsudo conntrack -C\ncat /proc/sys/net/netfilter/nf_conntrack_max\ndmesg | grep -i conntrack\nsudo conntrack -L | wc -l\n**Interpretation:** conntrack count near max plus dmesg 'table full' means SNAT ports/conntrack entries are exhausted; new outbound connections fail or hang. Common with many clients behind one public IP.\n**Fix:** Add public IPs to the NAT pool, shorten conntrack timeouts, raise nf_conntrack_max, and reduce connection churn with pooling. Verify outbound connections succeed."
+  },
+  {
+    "instruction": "Incident: a proxy cached a 500 error and served it to all users. Diagnose.",
+    "output": "**Diagnose:**\ncurl -sI https://app.example.com/page | grep -i -E 'age|x-cache|cache-control'\ncurl -sI https://app.example.com/page | grep -i -E 'HTTP|age'\ngrep -r -i -E 'proxy_cache_valid|proxy_cache' /etc/nginx/ 2>/dev/null\n**Interpretation:** The response shows X-Cache: HIT with a stale 500 body, meaning the proxy cached an error response (often via proxy_cache_valid covering 500). Users see the error even though the app recovered.\n**Fix:** Restrict caching to 200/301 (not 5xx), set `proxy_cache_valid` appropriately, and purge the cache. Verify a fresh request reaches the app and returns 200."
+  },
+  {
+    "instruction": "Incident: a broadcast storm from a loop took down an office network. Diagnose.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 -c 100 -e | head\ntop -b -n1 | head\nsar -n DEV 1 5\nshow spanning-tree 2>/dev/null || echo 'access switch needed'\n**Interpretation:** Rising broadcast/multicast rates and high interface packet counts point to an L2 loop. The CPU/interface load spikes without application traffic. A redundant uplink without STP causes the storm.\n**Fix:** Enable STP/BPDU guard, disable the redundant path, and add loop protection on access ports. Verify broadcast rates return to normal and connectivity is restored."
+  },
+  {
+    "instruction": "Incident: after a cloud region failover, some users hit the dead region. Diagnose.",
+    "output": "**Diagnose:**\ndig +short app.example.com @8.8.8.8\nfor i in 1 2 3; do dig +short app.example.com @1.1.1.1; done\nmtr -rwzbc 20 app.example.com\ncurl -v --connect-timeout 5 https://app.example.com/\n**Interpretation:** Resolvers cache the old regional IPs for the record TTL, so clients keep hitting the failed region. Low TTLs and fast health-check withdrawal limit this.\n**Fix:** Lower the GSLB record TTL before failover, ensure health checks withdraw the region quickly, and consider client-side retry/failover. Verify public resolvers return the healthy region."
+  },
+  {
+    "instruction": "Incident: a service deployment caused connection resets because of a mismatch in HTTP/2 settings. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v --http2 https://app.example.com/\ncurl -v --http1.1 https://app.example.com/\ntail -f /var/log/nginx/error.log\nopenssl s_client -alpn h2 -connect app.example.com:443\n**Interpretation:** After a deploy, one tier negotiates HTTP/2 with conflicting flow-control or header limits, causing PROTOCOL_ERROR resets. HTTP/1.1 works, isolating it to h2.\n**Fix:** Align HTTP/2 settings across tiers or disable h2 on the affected link, and update the component with the bug. Verify h2 requests succeed and the reset count drops."
+  },
+  {
+    "instruction": "Incident: a disk full on the logging server caused network log loss and false alerts. Diagnose.",
+    "output": "**Diagnose:**\ndf -h\nsudo lsof +L1 | head\njournalctl -u rsyslog -n 30\nsudo ss -lunp | grep 514\n**Interpretation:** A full disk stops the log daemon writing, creating gaps that trigger false network alerts. `lsof +L1` may show a deleted logfile held open preventing space reclaim.\n**Fix:** Free space (rotate/compress logs, restart the holder of deleted files), fix rotation policies, and add disk-space alerting. Verify logs resume and no gaps remain."
+  },
+  {
+    "instruction": "Incident: a routing change at the ISP blackholed a subnet. Diagnose.",
+    "output": "**Diagnose:**\ntraceroute -n <affected-ip>\nmtr -rwzbc 50 <affected-ip>\nping -c5 <affected-ip>\nwhois <affected-ip> | grep -i route\n**Interpretation:** Traceroute ending at a specific ISP hop with no further progress (or an ICMP unreachable) indicates a blackhole. The subnet is advertised but the path drops, often after a route change.\n**Fix:** Engage the ISP with traceroute evidence, or advertise the prefix via an alternate path/BGP policy. As a mitigation, shift traffic to a different region/anycast. Verify reachability returns."
+  },
+  {
+    "instruction": "Incident: all pods lost network after a CNI upgrade. Diagnose.",
+    "output": "**Diagnose:**\nkubectl get pods -A -o wide\nkubectl logs -n kube-system <cni-pod> --tail=50\nip link show\nsudo tcpdump -ni any host <pod-ip> -c 20\nip route show\n**Interpretation:** If pods are Running but unreachable, the CNI failed to program routes/overlays. CNI logs show errors, and the host may lack routes to pod CIDRs.\n**Fix:** Roll back the CNI to the previous version, restart the CNI daemonset, and verify pod-to-pod connectivity. Check the overlay MTU too. Confirm with a test pod connection."
+  },
+  {
+    "instruction": "Incident: a time change (NTP) broke TLS with certificate-not-yet-valid errors. Diagnose.",
+    "output": "**Diagnose:**\ndate -u\nsudo timedatectl\nchronyc tracking 2>/dev/null || ntpq -p\nopenssl x509 -noout -dates -in cert.pem\n**Interpretation:** If the host clock jumped ahead/behind, TLS validation fails with not-yet-valid or expired errors even though the cert is fine. timedatectl shows 'synchronized: no'.\n**Fix:** Enable/repoint NTP (`timedatectl set-ntp true`), force a sync (`chronyc makestep`), and correct the timezone only for display. Verify time is accurate and TLS works."
+  },
+  {
+    "instruction": "Incident: an autoscaling stampede caused connection storms and backend overload after a traffic spike. Diagnose.",
+    "output": "**Diagnose:**\nsudo ss -s\nkubectl get hpa -A 2>/dev/null\ncurl -w 'conn:%{time_connect} ttfb:%{time_starttransfer}\\n' -o /dev/null -s https://app/\nkubectl get pods -w 2>/dev/null | head\n**Interpretation:** Rapid scale-out/failover made many clients reconnect at once, flooding the backend and DNS, which slows everything and can cause flapping. High TIME_WAIT and connection counts confirm.\n**Fix:** Add connection pooling/jittered retries, tune autoscaling cooldowns and health checks, and pre-warm capacity. Verify connection storm subsides and latency stabilizes."
+  },
+  {
+    "instruction": "Incident: a cable/optic failure caused BER errors and silent data corruption suspected. Diagnose.",
+    "output": "**Diagnose:**\nethtool -S eth0 | grep -i -E 'crc|error|ber|discard'\nethtool eth0\nip -s link show eth0\ndmesg | grep -i eth0\n**Interpretation:** Rising CRC/FCS/error counters and a link that stays up but corrupts frames indicate a marginal optic/cable. TCP retransmissions mask it as slowness, not full failure.\n**Fix:** Replace the optic/cable and test the replacement, monitoring error counters. Verify CRC errors stop and throughput/retransmits normalize."
+  }
+]

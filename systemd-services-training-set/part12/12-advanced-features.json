@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Create a service template instantiated multiple times.",
+    "output": "# worker@.service\n[Unit]\nDescription=Worker instance %i\n\n[Service]\nExecStart=/usr/local/bin/worker --id %i\n# Start instances:\nsystemctl enable --now worker@1.service worker@2.service"
+  },
+  {
+    "instruction": "Use specifiers in a unit file.",
+    "output": "[Service]\n# %n = unit name, %i = instance, %h = home, %t = runtime dir\nExecStart=/usr/local/bin/app --name %n --dir %t/%n\nRuntimeDirectory=%n"
+  },
+  {
+    "instruction": "Add a health check using a watchdog.",
+    "output": "[Service]\nType=notify\nWatchdogSec=30\nExecStart=/usr/local/bin/app\n# The app must send WATCHDOG=1 via sd_notify regularly."
+  },
+  {
+    "instruction": "Use systemd-run to run an ad-hoc transient service.",
+    "output": "systemd-run --unit=oneshot-task --collect /usr/local/bin/backup.sh\nsystemctl status oneshot-task.service"
+  },
+  {
+    "instruction": "Run a one-off command with resource limits via systemd-run.",
+    "output": "systemd-run --scope -p MemoryMax=256M -p CPUQuota=50% /usr/local/bin/heavy-task"
+  },
+  {
+    "instruction": "Schedule a transient timer at a specific time.",
+    "output": "systemd-run --on-calendar='2026-01-01 00:00' --unit=newyear /usr/local/bin/celebrate.sh"
+  },
+  {
+    "instruction": "Blueprint a service with sandboxing and resource controls.",
+    "output": "[Service]\nDynamicUser=yes\nProtectSystem=strict\nProtectHome=yes\nPrivateTmp=yes\nStateDirectory=svc\nMemoryMax=512M\nCPUQuota=80%\nIOWeight=50\nExecStart=/usr/local/bin/svc"
+  },
+  {
+    "instruction": "Apply cgroup resource limits with slices.",
+    "output": "# app.slice\n[Slice]\nMemoryMax=2G\nCPUQuota=200%\n\n# service drop-in adds Slice=app.slice\n[Service]\nSlice=app.slice\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Use StateDirectory and CacheDirectory for automatic paths.",
+    "output": "[Service]\nStateDirectory=myapp\nCacheDirectory=myapp\nLogsDirectory=myapp\nExecStart=/usr/local/bin/myapp --state /var/lib/myapp --cache /var/cache/myapp"
+  },
+  {
+    "instruction": "Import credentials securely with LoadCredentialEncrypted.",
+    "output": "[Service]\nLoadCredentialEncrypted=api_key:/etc/credstore.encrypted/api_key\nExecStart=/usr/local/bin/app --key ${CREDENTIALS_DIRECTORY}/api_key"
+  },
+  {
+    "instruction": "Reload a service atomically via sd_notify with Type=notify-reload.",
+    "output": "[Service]\nType=notify-reload\nExecReload=kill -HUP $MAINPID\nExecStart=/usr/local/bin/app"
+  },
+  {
+    "instruction": "Chain services with an OnSuccess/OnFailure handler.",
+    "output": "[Unit]\nOnSuccess=notify-success.service\nOnFailure=notify-failure.service\n\n[Service]\nExecStart=/usr/local/bin/task"
+  },
+  {
+    "instruction": "Use Requires + BindsTo for a tightly coupled sidecar.",
+    "output": "[Unit]\nDescription=Sidecar\nBindsTo=primary.service\nAfter=primary.service\n\n[Service]\nExecStart=/usr/local/bin/sidecar"
+  },
+  {
+    "instruction": "Apply a drop-in override without editing the packaged unit.",
+    "output": "# /etc/systemd/system/app.service.d/override.conf\n[Service]\nEnvironment=EXTRA=1\nLimitNOFILE=65535\n# then: systemctl daemon-reload && systemctl restart app.service"
+  },
+  {
+    "instruction": "Set a high file descriptor limit for a network service.",
+    "output": "[Service]\nLimitNOFILE=65535\nLimitNPROC=8192\nExecStart=/usr/local/bin/netsvc"
+  },
+  {
+    "instruction": "Run a service in its own network namespace with a tun device.",
+    "output": "[Service]\nPrivateNetwork=yes\nExecStart=/usr/lib/systemd/systemd-networkd"
+  },
+  {
+    "instruction": "Use OOMScoreAdjust and allow killing the service under pressure.",
+    "output": "[Service]\nOOMScoreAdjust=-500\nExecStart=/usr/local/bin/critical\n# Negative values make it LESS likely to be OOM-killed."
+  },
+  {
+    "instruction": "Delay activation until a specific device exists.",
+    "output": "[Unit]\nAfter=dev-sdb.device\nRequires=dev-sdb.device\n\n[Service]\nExecStart=/usr/local/bin/disk-tool"
+  },
+  {
+    "instruction": "Define a service with multiple ExecStart lines (only valid for Type=oneshot).",
+    "output": "[Service]\nType=oneshot\nExecStart=/usr/local/bin/step1\nExecStart=/usr/local/bin/step2\nExecStartPost=/usr/local/bin/notify-done"
+  },
+  {
+    "instruction": "Audit and harden a unit using systemd tooling.",
+    "output": "systemd-analyze security app.service\nsystemd-analyze verify /etc/systemd/system/app.service\n# Use the score report to add missing hardening directives."
+  }
+]

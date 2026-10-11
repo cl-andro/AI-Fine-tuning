@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Run a backup service every day at 02:30 using a timer.",
+    "output": "# backup.service\n[Unit]\nDescription=Daily backup\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/backup.sh\n\n# backup.timer\n[Unit]\nDescription=Run backup daily\n\n[Timer]\nOnCalendar=*-*-* 02:30:00\nPersistent=true\n\n[Install]\nWantedBy=timers.target"
+  },
+  {
+    "instruction": "Run a task every 15 minutes.",
+    "output": "[Timer]\nOnCalendar=*:0/15\nPersistent=true\n\n[Install]\nWantedBy=timers.target"
+  },
+  {
+    "instruction": "Run a job 5 minutes after boot.",
+    "output": "[Timer]\nOnBootSec=5min\n\n[Install]\nWantedBy=timers.target"
+  },
+  {
+    "instruction": "Run a task every hour on the hour.",
+    "output": "[Timer]\nOnCalendar=hourly\nPersistent=true"
+  },
+  {
+    "instruction": "Run a weekly job on Monday at 09:00.",
+    "output": "[Timer]\nOnCalendar=Mon 09:00\nPersistent=true"
+  },
+  {
+    "instruction": "Run a job 30 minutes after the last activation, repeating.",
+    "output": "[Timer]\nOnUnitActiveSec=30min\nOnBootSec=10min"
+  },
+  {
+    "instruction": "Pair a oneshot service with a timer that starts at a fixed time.",
+    "output": "# cleanup.service\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/cleanup.sh\n\n# cleanup.timer\n[Timer]\nOnCalendar=*-*-* 03:00:00\nPersistent=true\n\n[Install]\nWantedBy=timers.target"
+  },
+  {
+    "instruction": "Run monthly on the first day at midnight.",
+    "output": "[Timer]\nOnCalendar=monthly\nPersistent=true"
+  },
+  {
+    "instruction": "Use a monotonic timer that fires 1 hour after boot then every 2 hours.",
+    "output": "[Timer]\nOnBootSec=1h\nOnUnitActiveSec=2h"
+  },
+  {
+    "instruction": "List and inspect all active timers.",
+    "output": "systemctl list-timers --all\nsystemctl status mytask.timer"
+  },
+  {
+    "instruction": "Explain why a timer's service should be Type=oneshot.",
+    "output": "[Service]\nType=oneshot\nExecStart=/usr/local/bin/job\n# With Type=oneshot the timer knows when the job finished, so\n# OnUnitActiveSec/OnUnitInactiveSec schedule correctly."
+  },
+  {
+    "instruction": "Set a randomized delay so many hosts don't fire at once.",
+    "output": "[Timer]\nOnCalendar=daily\nRandomizedDelaySec=1h\nPersistent=true"
+  },
+  {
+    "instruction": "Run a job every weekday at 18:00.",
+    "output": "[Timer]\nOnCalendar=Mon..Fri 18:00\nPersistent=true"
+  },
+  {
+    "instruction": "Create a timer with an accuracy window to batch wakeups.",
+    "output": "[Timer]\nOnCalendar=*:0/10\nAccuracySec=1min"
+  },
+  {
+    "instruction": "Persist missed runs across downtime.",
+    "output": "[Timer]\nOnCalendar=*-*-* 04:00:00\nPersistent=true"
+  },
+  {
+    "instruction": "Run a job every 30 seconds using a sequence of OnCalendar specs.",
+    "output": "[Timer]\nOnCalendar=*-*-* *:*:00/30\nAccuracySec=1s"
+  },
+  {
+    "instruction": "Enable and start a timer with systemctl.",
+    "output": "systemctl daemon-reload\nsystemctl enable --now mytask.timer\nsystemctl list-timers mytask.timer"
+  },
+  {
+    "instruction": "Show the last run time and next run of a timer.",
+    "output": "systemctl list-timers --all mytask.timer"
+  },
+  {
+    "instruction": "Combine a boot-relative and calendar timer in one unit.",
+    "output": "[Timer]\nOnBootSec=15min\nOnCalendar=*-*-* 06:00:00\nPersistent=true"
+  },
+  {
+    "instruction": "Troubleshoot a timer that is not firing.",
+    "output": "# Check the timer and its service\nsystemctl status mytask.timer\nsystemctl status mytask.service\njournalctl -u mytask.timer -u mytask.service -n 50\n# Verify OnCalendar syntax\nsystemd-analyze calendar 'Mon..Fri 18:00'"
+  }
+]

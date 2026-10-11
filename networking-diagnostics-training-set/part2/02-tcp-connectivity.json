@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "curl to port 443 on api.example.com hangs and then times out. How do you diagnose the TCP path?",
+    "output": "**Diagnose:**\ncurl -v --connect-timeout 5 https://api.example.com\nnc -vz -w 3 api.example.com 443\ntraceroute -T -p 443 -n api.example.com\nss -tnp | grep 443\n**Interpretation:** curl stopping at 'Trying <ip>...' means SYN sent but no SYN-ACK. nc reports 'Connection timed out' for a silent drop or 'Connection refused' for a reset. RST means the port is closed; timeout means filtered/dropped.\n**Fix:** If refused, start the service or fix the bind address. If filtered, open the port in the firewall/security group along the path. Confirm with `ss -tlnp | grep 443` on the server that it is listening on 0.0.0.0 or the right interface."
+  },
+  {
+    "instruction": "A service is reachable from localhost but not from another host on the same subnet. Diagnose.",
+    "output": "**Diagnose:**\nss -tlnp | grep :8080\nip addr\nip route\niptables -L -n -v | grep 8080\nnc -vz 192.168.1.50 8080\n**Interpretation:** If ss shows the process bound to 127.0.0.1:8080, it only accepts loopback connections. Binding to 0.0.0.0 or the specific LAN IP fixes external reachability. A DROP rule on INPUT also blocks it.\n**Fix:** Reconfigure the service to bind 0.0.0.0 (or the LAN address) and restart it. Add an iptables/nft accept rule for the port if the firewall is blocking, e.g `iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`."
+  },
+  {
+    "instruction": "Many connections to a server fail with 'Cannot assign requested address'. Diagnose.",
+    "output": "**Diagnose:**\nss -s\nsysctl net.ipv4.ip_local_port_range\nss -tan | awk '{print $1}' | sort | uniq -c\ncat /proc/sys/net/ipv4/tcp_tw_reuse\n**Interpretation:** The client exhausted ephemeral ports: thousands of TIME_WAIT sockets fill the local port range. This happens with high connection churn and short TIME_WAIT reuse. `ss -s` shows a huge TIME_WAIT count.\n**Fix:** Widen the range (`sysctl -w net.ipv4.ip_local_port_range=\"1024 65535\"`), enable reuse (`sysctl -w net.ipv4.tcp_tw_reuse=1`), and reuse connections with keep-alive/pooling in the client. Persist settings in /etc/sysctl.d/."
+  },
+  {
+    "instruction": "Connections to a host succeed then immediately reset after sending data. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v http://host/\ntcpdump -ni eth0 'tcp port 80 and (tcp[tcpflags] & tcp-rst != 0)'\ndmesg | tail\nss -tn state established\n**Interpretation:** An ACK followed by RST right after the request often means the server closed due to an application error, a proxy rejecting the payload, or conntrack/NAT dropping the flow. Check the server logs and whether a load balancer resets on HTTP/2 or TLS mismatch.\n**Fix:** Fix the application exception or the proxy rule. If conntrack is dropping, raise `net.netfilter.nf_conntrack_max` and check `dmesg | grep conntrack`. If a middlebox resets, align protocol/heartbeat settings."
+  },
+  {
+    "instruction": "Half of the connections to a clustered service fail while the rest succeed. Diagnose.",
+    "output": "**Diagnose:**\nfor i in 1 2 3 4 5 6; do nc -vz -w2 10.0.0.20 443; done\nipvsadm -Ln 2>/dev/null\nss -tlnp\n**Interpretation:** Alternate success/failure points to one bad backend in a round-robin pool (a virtual IP / LVS / LB). Some nodes are healthy, one is down, so every other connection times out. `ipvsadm -Ln` marks the dead real server.\n**Fix:** Remove or repair the failing backend: `ipvsadm -d -t 10.0.0.20:443 -r 10.0.0.21:443`, then fix that node's service. Add health checks so the LB stops sending traffic to it."
+  },
+  {
+    "instruction": "A TCP connection establishes but the application sees no data. Diagnose a silent path.",
+    "output": "**Diagnose:**\nss -tni dst 10.0.0.30\nsudo tcpdump -ni any host 10.0.0.30 and tcp\ncat /proc/net/netstat | grep -i retrans\n**Interpretation:** If the handshake completes but no payload arrives, check retransmit counters and the window. A zero receive window or a large retransmit count indicates packet loss or a receiver that is not reading. If tcpdump sees SYNs leaving but not returning payload, a firewall may allow handshake but drop data.\n**Fix:** Fix the receiving application (it may be blocked/not accepting). If loss is confirmed, correct the MTU (see fragmentation) or the congested link. Ensure no stateful firewall is allowing SYN but dropping the data flow."
+  },
+  {
+    "instruction": "'Connection refused' appears only for IPv6 clients but IPv4 works. Diagnose.",
+    "output": "**Diagnose:**\ncurl -4 http://host:8080\ncurl -6 http://host:8080\nss -tlnp | grep 8080\ncat /proc/sys/net/ipv6/bindv6only\n**Interpretation:** 'Connection refused' over IPv6 means nothing is listening on the IPv6 socket. The service bound only to 0.0.0.0 (IPv4). With `bindv6only=0` a `::` bind would cover both, but the app used an IPv4-only socket.\n**Fix:** Configure the service to listen on both families (bind `::` with dual-stack, or add a separate IPv6 listener). Verify with `ss -tlnp` showing `[::]:8080` and re-test `curl -6`."
+  },
+  {
+    "instruction": "SSH connects to a host but drops after ~60 seconds of inactivity. Diagnose.",
+    "output": "**Diagnose:**\nssh -vvv user@host\nsudo tcpdump -ni any port 22\nsysctl net.netfilter.nf_conntrack_tcp_timeout_established\nsudo iptables -t nat -L -n -v\n**Interpretation:** Idle SSH dropping at a fixed interval points to a NAT/firewall idle timeout shorter than keep-alives. Conntrack or a cloud NAT expires the flow and silently drops it; the client then hangs.\n**Fix:** Enable SSH keep-alives: add `ServerAliveInterval 30` and `ServerAliveCountMax 3` to ~/.ssh/config (and `ClientAliveInterval 30` in sshd_config). Raise the NAT timeout if you control it: `sysctl -w net.netfilter.nf_conntrack_tcp_timeout_established=86400`."
+  },
+  {
+    "instruction": "A server stops accepting new connections until rebooted. Diagnose the accept queue / backlog.",
+    "output": "**Diagnose:**\nss -lnt\nnstat -az | grep -i -E 'listen|drop|overflow'\nsysctl net.core.somaxconn\nss -s\n**Interpretation:** `ss -lnt` shows Send-Q (backlog) and Recv-Q (pending accepts). If overflow/drop counters rise, the accept queue is full because the app accepts connections too slowly. SYN floods or a blocked accept loop make it worse.\n**Fix:** Raise `net.core.somaxconn` and the app's listen backlog, then restart the service. Optimize the accept loop so it drains the queue. If under attack, enable SYN cookies (`net.ipv4.tcp_syncookies=1`) and rate-limit."
+  },
+  {
+    "instruction": "Traceroute over TCP shows the last hop but curl still fails. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v telnet://10.0.0.40:443\nnc -vz -w3 10.0.0.40 443\nsudo tcpdump -ni eth0 host 10.0.0.40 and port 443\niptables -L -n -v\n**Interpretation:** Traceroute can reach the host's network stack (ICMP TTL exceeded from the host) even when TCP/443 is filtered by a host firewall or security group. The path is fine; the port is blocked.\n**Fix:** Open the port at the host firewall and any cloud security group/NACL. On the server: `iptables -A INPUT -p tcp --dport 443 -j ACCEPT` (or nft equivalent). Confirm the service is listening with `ss -tlnp`."
+  },
+  {
+    "instruction": "A client cannot connect to a port that `ss` shows as LISTEN. Diagnose with tcpdump.",
+    "output": "**Diagnose:**\nss -tlnp | grep :9000\nsudo tcpdump -ni any 'tcp port 9000'\nnc -vz 10.0.0.50 9000\nip route get 10.0.0.50\n**Interpretation:** tcpdump shows whether the SYN even reaches the host. If the SYN arrives but no SYN-ACK returns, a local/upstream firewall drops the reply. If no SYN arrives, routing or an upstream device drops it.\n**Fix:** If SYN arrives and no reply, add an OUTPUT/INPUT accept rule or fix reverse-path filtering (`net.ipv4.conf.all.rp_filter`). If no SYN arrives, fix the route or the remote firewall. Verify with a second tcpdump on the client."
+  },
+  {
+    "instruction": "Connections to localhost work by IP but not by hostname. Diagnose.",
+    "output": "**Diagnose:**\ngetent hosts myservice\ncat /etc/hosts\ncurl http://127.0.0.1:8080\ncurl http://myservice:8080\ndig myservice\n**Interpretation:** If the IP works but the name fails, it is name resolution, not TCP. The name may resolve to an external/parked IP or not at all. /etc/hosts may be missing the entry.\n**Fix:** Add the correct mapping to /etc/hosts (`127.0.0.1 myservice`) or fix the DNS record. Verify `getent hosts myservice` returns 127.0.0.1, then retest the connection."
+  },
+  {
+    "instruction": "Establishing a TCP connection takes 3 seconds (SYN retransmission). Diagnose.",
+    "output": "**Diagnose:**\ntcpdump -ni eth0 'tcp[tcpflags] & tcp-syn != 0'\nss -tni | grep -i retrans\ncurl -w '%{time_connect}\\n' -o /dev/null -s http://host/\n**Interpretation:** A ~1s then ~2s delay before the handshake completes is the initial SYN retransmit (RTO). The first SYN or SYN-ACK was lost. This suggests packet loss, an asymmetric path, or a flapping interface.\n**Fix:** Investigate loss with `mtr`/tcpdump and fix the lossy link/duplex mismatch (`ethtool`). If a middlebox drops the first SYN, correct its policy. Tune `net.ipv4.tcp_syn_retries` only as a band-aid."
+  },
+  {
+    "instruction": "A process can reach the internet but not a service on an internal VPC IP. Diagnose.",
+    "output": "**Diagnose:**\nip route get 172.16.5.10\ntraceroute -n 172.16.5.10\nnc -vz 172.16.5.10 5432\nip rule list\nsudo iptables -t nat -L -n -v\n**Interpretation:** If `ip route get` picks the default gateway instead of a VPC route, the internal route is missing or shadowed by policy routing. Traffic leaves via NAT and never reaches the peer.\n**Fix:** Add a route for the VPC subnet (`ip route add 172.16.0.0/16 via <gw> dev eth0`) or fix the cloud route table. Persist it in netplan/network config. Verify `ip route get` now selects the internal path."
+  },
+  {
+    "instruction": "TIME_WAIT sockets accumulate and a service cannot rebind port 80 after restart. Diagnose.",
+    "output": "**Diagnose:**\nss -tan state time-wait | wc -l\nss -tlnp | grep :80\nsysctl net.ipv4.tcp_tw_reuse\n**Interpretation:** On restart the listener fails with 'Address already in use' because old connections sit in TIME_WAIT on that local port and SO_REUSEADDR is not set. `ss state time-wait` shows many.\n**Fix:** Set SO_REUSEADDR in the application, or wait out the 2*MSL. For clients enable `net.ipv4.tcp_tw_reuse=1`. Do not use tcp_tw_recycle (removed and unsafe behind NAT). Persist with sysctl.d."
+  },
+  {
+    "instruction": "A firewall allows the port but the connection still resets. Diagnose stateful inspection.",
+    "output": "**Diagnose:**\nsudo tcpdump -ni eth0 'tcp port 8443'\nsudo conntrack -L | grep 8443\nsudo iptables -L -n -v\nsudo nft list ruleset | grep -A5 8443\n**Interpretation:** If the handshake is seen but the connection resets, a stateful firewall may be dropping the return packets because the flow was never tracked (asymmetric routing or NOTRACK). `conntrack -L` lacking the flow confirms it.\n**Fix:** Ensure both directions of the flow pass through the same stateful device. Remove stale NOTRACK rules for that port, or add an explicit ESTABLISHED,RELATED accept rule. Reload the ruleset and re-test."
+  },
+  {
+    "instruction": "A service on a non-standard port is blocked from one office but works everywhere else. Diagnose.",
+    "output": "**Diagnose:**\ntraceroute -T -p 9443 -n <server>\nnmap -Pn -p 9443 <server>\ncurl -v telnet://<server>:9443\n**Interpretation:** Success from other sites but not one office usually means a corporate egress proxy/firewall blocks non-standard ports. The server itself is fine.\n**Fix:** Permit the port on the office egress firewall, or move the service to 443 so it traverses the standard HTTPS port. Configure the egress proxy to allow the destination. Verify with `nmap -Pn -p 9443` from the affected network."
+  },
+  {
+    "instruction": "New TCP connections get 'No route to host'. Diagnose.",
+    "output": "**Diagnose:**\nip route get <dest>\nping -c2 <gateway>\nip neigh show <gateway>\narping -c2 <gateway> 2>/dev/null\nip link show\n**Interpretation:** 'No route to host' means either no route exists, the gateway is unreachable (ARP fails), or the interface is down. `ip neigh` showing FAILED/INCOMPLETE confirms an L2 adjacency problem.\n**Fix:** Bring the interface up (`ip link set eth0 up`), fix the default route (`ip route add default via <gw>`), and correct any VLAN/switch misconfiguration. Verify ARP resolves and the gateway pings."
+  },
+  {
+    "instruction": "A server accepts connections from its own subnet but drops those from remote subnets. Diagnose.",
+    "output": "**Diagnose:**\nss -tlnp\nsudo iptables -S INPUT\ntcpdump -ni eth0 'tcp port 3306' &\nnc -vz <server> 3306\nip route\n**Interpretation:** If the local subnet works but remote does not, the host firewall likely has a source-restricted rule or reverse-path filtering drops off-subnet return traffic.\n**Fix:** Broaden the allowed source in iptables/nft or add a rule for the remote CIDR. Check `net.ipv4.conf.all.rp_filter=0` if the path is asymmetric. Reload and verify from the remote subnet."
+  },
+  {
+    "instruction": "HTTP keep-alive connections are reset after exactly 5 minutes. Diagnose.",
+    "output": "**Diagnose:**\ncurl -v http://host/ ; sleep 310; curl -v http://host/\nss -o state established '( dport = :80 )'\nsysctl net.ipv4.tcp_keepalive_time\nsudo conntrack -L | grep :80\n**Interpretation:** A fixed 5-minute reset matches a default conntrack idle timeout (300s) or a proxy idle timeout. Once the flow expires, the next reuse gets an RST for the stale connection.\n**Fix:** Enable TCP keep-alive in the client and shorten the interval below the NAT timeout (`net.ipv4.tcp_keepalive_time=120`), and/or raise the firewall/NAT idle timeout. Confirm the flow stays in `conntrack -L` between requests."
+  }
+]

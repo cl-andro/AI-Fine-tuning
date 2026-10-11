@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this Node.js error.\nContext: Express handler rendering a customer summary fetched by id.\n\nTypeError: Cannot read properties of undefined (reading 'length')\n    at getSummary (/app/services/summary.js:23:18)\n    at async handler (/app/server.js:88:5)",
+    "output": "**Root cause:** the upstream lookup returned `undefined` for a missing id, and the code reads `.length` without checking.\n**Fix:** Use `customer?.length ?? 0` or return a 404 when the customer is not found."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: dashboard mapping over order rows returned by the orders endpoint.\n\nTypeError: Cannot read properties of undefined (reading 'map')\n    at buildTable (/app/views/table.js:14:22)\n    at Object.render (/app/views/index.js:9:31)",
+    "output": "**Root cause:** `data.orders` is undefined - the API answered with `{error: ...}` or `{items: [...]}` instead of `{orders: [...]}`, so `.map` is called on undefined.\n**Fix:** Default the field (`(data.orders ?? []).map(...)`) and validate the response shape at the boundary."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: CommonJS build on Node 16 calling fetch.\n\nReferenceError: fetch is not defined\n    at loadRemote (/app/lib/remote.js:7:15)\n    at main (/app/index.js:22:3)",
+    "output": "**Root cause:** global `fetch` only exists from Node 18 onward; on this runtime it is not defined at all.\n**Fix:** Upgrade to Node >= 18 or import an explicit client (`const axios = require(\"axios\")` / `node-fetch`)."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: cache reader parsing a file that a crashed writer left half-written.\n\nSyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at readCache (/app/cache/store.js:31:19)",
+    "output": "**Root cause:** the file was truncated mid-write, so `JSON.parse` reaches EOF before the value is complete.\n**Fix:** Write to a temp file and `fs.renameSync` atomically, and catch parse errors to rebuild the cache."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: service booting with a config path passed through an environment variable.\n\nError: ENOENT: no such file or directory, open '/app/config/production.json'\n    at Object.openSync (node:fs:582:3)\n    at Object.readFileSync (node:fs:450:35)\n    at loadConfig (/app/config/loader.js:11:16)",
+    "output": "**Root cause:** the config file was never mounted into the container image/deployment, so the path does not exist at runtime.\n**Fix:** Ship the file with the deployment (or use a ConfigMap/secret volume) and verify its presence at startup with a clear message."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: freshly deployed service started with npm ci on a different machine.\n\nError: Cannot find module 'express'\n    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:902:15)\n    at Module.require (node:internal/modules/cjs/loader:1124:19)\n    at require (/app/node_modules/module-alias/index.js:53:16)\n    at Object.<anonymous> (/app/src/server.js:1:1)",
+    "output": "**Root cause:** `node_modules` does not contain `express` - dependencies were never installed (or `npm ci` was run in another directory).\n**Fix:** Run `npm ci` in the app directory as part of the build, and check `package.json` actually lists `express`."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: recursive folder walker hitting a symlink that points to its own parent.\n\nRangeError: Maximum call stack size exceeded\n    at visit (/app/tools/walk.js:9:17)\n    at visit (/app/tools/walk.js:14:11)\n    at visit (/app/tools/walk.js:14:11)",
+    "output": "**Root cause:** `visit()` recurses without a base case for symlinked/cyclic directories, so it descends until the JS stack overflows.\n**Fix:** Skip symlinks (`fs.lstatSync(...).isSymbolicLink()`), track visited real paths, and convert to a stack-based loop."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: async route handler; the promise returned is not awaited and the worker replies once per request.\n\n(node:4471) UnhandledPromiseRejectionWarning: TypeError: Cannot read properties of undefined (reading 'id')\n    at processOrder (/app/jobs/order.js:19:30)\n    at run (/app/jobs/queue.js:42:7)",
+    "output": "**Root cause:** `processOrder` rejects and nobody awaits or `.catch`es the promise, so Node reports an unhandled rejection instead of reaching the error middleware.\n**Fix:** `await` inside the handler (or attach `.catch(next)`), and add `process.on(\"unhandledRejection\", ...)` logging as a safety net."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: file download stream piped to a response that a client aborted and the code then resumed writing.\n\nError [ERR_STREAM_WRITE_AFTER_END]: write after end\n    at Writable.write (node:internal/streams/writable:497:11)\n    at Response.send (/app/lib/send.js:58:14)",
+    "output": "**Root cause:** the stream was already ended (response finished), yet `write()` was called again by a late chunk.\n**Fix:** Check `res.writableEnded` before writing and stop the producer (`stream.destroy()`) when the destination closes."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: assert in a ticketing handler guaranteeing a positive total.\n\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsey value\n    at assert.ok (/app/node_modules/strict-assert/assert.js:12:8)\n    at confirm (/app/api/tickets.js:66:5)",
+    "output": "**Root cause:** `assert.ok(order.total > 0)` failed because the total arrived as 0 (or NaN) after a discount rounded it away.\n**Fix:** Validate totals before confirming and return 422 instead of relying on an assertion that crashes the process."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: buffering chunks read from a socket where the expected size came as NaN.\n\nRangeError: Invalid array length\n    at new BufferList (/app/net/buffer.js:18:21)\n    at Socket.<anonymous> (/app/net/reader.js:34:32)",
+    "output": "**Root cause:** `Buffer.alloc`/array construction received `NaN` (parsed from a malformed length header), and array length must be an integer in range.\n**Fix:** Validate the parsed length with `Number.isInteger(len) && len >= 0` before allocating."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: bootstrap code building a config path from arguments.\n\nTypeError [ERR_INVALID_ARG_TYPE]: The \"path\" argument must be of type string. Received undefined\n    at new NodeError (node:internal/errors:387:5)\n    at Object.openSync (node:fs:582:13)\n    at Object.readFileSync (node:fs:450:35)\n    at boot (/app/boot.js:26:19)",
+    "output": "**Root cause:** `process.env.CONFIG_PATH` was not set, so `undefined` was passed to `fs.readFileSync`.\n**Fix:** Fail fast with a usage message when the env var is missing (`if (!p) throw new Error(\"CONFIG_PATH is required\")`)."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: logging a job payload with circular references between parent and child tasks.\n\nTypeError: Converting circular structure to JSON\n    at JSON.stringify (<anonymous>)\n    at logPayload (/app/lib/logger.js:44:35)\n    at run (/app/jobs/worker.js:88:11)",
+    "output": "**Root cause:** the object graph loops (child.parent === child), and `JSON.stringify` cannot serialise circular structures.\n**Fix:** Use a replacer/`util.inspect` for logs, or strip parent references before storing the payload."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: request-scoped config object frozen to prevent mutation, updated in strict mode.\n\nTypeError: Cannot assign to read only property 'status' of object '#<Object>'\n    at updateStatus (/app/modules/status.js:12:22)\n    at handler (/app/server.js:140:7)",
+    "output": "**Root cause:** the object came from `Object.freeze` (or a frozen dependency), and assigning to a frozen property throws in strict mode.\n**Fix:** Return a new object (`{...cfg, status}`) instead of mutating frozen state, or freeze only at module boundaries."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: stream endpoint that wrote headers twice after a slow client retry.\n\nError [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at new NodeError (node:internal/errors:387:5)\n    at ServerResponse.setHeader (_http_outgoing.js:603:11)\n    at sendResult (/app/api/stream.js:75:9)",
+    "output": "**Root cause:** a second `res.writeHead`/`setHeader` ran after the response had already been flushed (a retry or double callback fired).\n**Fix:** Guard with `if (res.headersSent) return;`, ensure callbacks run only once, and create a fresh response for retries."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: destructuring a paginated response that came back as null.\n\nTypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))\n    at destructure (/app/utils/page.js:8:20)\n    at main (/app/index.js:30:5)",
+    "output": "**Root cause:** the value being spread (`next`, or the response body) is `undefined`/null, so it has no iterator.\n**Fix:** Default it before destructuring: `const { items = [], next } = body ?? {};`."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: legacy CommonJS file compiled from TypeScript under \"module\": \"ESNext\".\n\nfile:///app/dist/report.js:2\nimport { render } from \"./render.js\";\n        ^\nSyntaxError: Cannot use import statement outside a module\n    at wrapSafe (node:internal/modules/cjs/loader:132:12)",
+    "output": "**Root cause:** the file is being loaded as CommonJS (`.js` without `\"type\": \"module\"`) even though it uses ESM `import` syntax.\n**Fix:** Set `\"type\": \"module\"` in `package.json`, rename to `.mjs`, or compile to `require` with the right module target."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: ESM plugin file calling a helper the bundler marked CommonJS-only.\n\nReferenceError: require is not defined\n    at loadHelper (/app/plugins/helper.cjs:4:11)\n    at Object.<anonymous> (/app/plugins/index.js:6:9)",
+    "output": "**Root cause:** the executing file is an ES module, where `require` does not exist; only CommonJS files get `require`.\n**Fix:** Use `import { createRequire } from \"node:module\"` (or rename the file to `.cjs`, or use `import` for the helper)."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: script run after copying a block of code that declares the same constant twice.\n\nSyntaxError: Identifier 'user' has already been declared\n    at wrapSafe (node:internal/modules/cjs/loader:132:12)\n    at Module._compile (node:internal/modules/cjs/loader:1776:14)\n    at Object..js (node:internal/modules/cjs/loader:1920:10)",
+    "output": "**Root cause:** two `const user = ...` declarations exist in the same top-level scope, which the parser rejects.\n**Fix:** Rename the second declaration (or scope it inside a block/function) so each identifier is unique."
+  },
+  {
+    "instruction": "Root cause this Node.js error.\nContext: HTTP client polling a health endpoint while the server performs a rolling restart.\n\nError: socket hang up\n    at Socket.onStreamRead (node:internal/stream_base_commons:217:20)\n    at TCP.onStreamRead (node:net:2775:22)\n    at pollHealth (/app/health/client.js:29:13)",
+    "output": "**Root cause:** the server closed the TCP connection without sending a response (restart/drain), so the client sees a hang-up.\n**Fix:** Retry with backoff on `ECONNRESET`/hang-up, and treat the socket as closed instead of reusing it."
+  }
+]

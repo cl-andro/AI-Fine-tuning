@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write TypeScript code defining an interface User { id: number; name: string; email: string } and a typed function describeUser(user: User): string.",
+    "output": "interface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\nfunction describeUser(user: User): string {\n  return `#${user.id} ${user.name} <${user.email}>`;\n}\n\nconsole.log(describeUser({ id: 1, name: \"Ada\", email: \"ada@example.com\" }));"
+  },
+  {
+    "instruction": "Write TypeScript code with a string literal union type Direction = \"up\" | \"down\" | \"left\" | \"right\" and a move function that only accepts those values.",
+    "output": "type Direction = \"up\" | \"down\" | \"left\" | \"right\";\n\nfunction move(x: number, y: number, dir: Direction): [number, number] {\n  switch (dir) {\n    case \"up\": return [x, y - 1];\n    case \"down\": return [x, y + 1];\n    case \"left\": return [x - 1, y];\n    case \"right\": return [x + 1, y];\n  }\n}\n\nconsole.log(move(0, 0, \"right\")); // [1, 0]"
+  },
+  {
+    "instruction": "Write TypeScript code declaring a tuple type Point = [number, number] and a function midpoint(a: Point, b: Point): Point.",
+    "output": "type Point = [number, number];\n\nfunction midpoint(a: Point, b: Point): Point {\n  return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];\n}\n\nconst m = midpoint([0, 0], [4, 6]);\nconsole.log(m); // [2, 3]"
+  },
+  {
+    "instruction": "Write TypeScript code typing function values: declare a type Comparator<T> and a function sorted(arr: T[], cmp: Comparator<T>): T[].",
+    "output": "type Comparator<T> = (a: T, b: T) => number;\n\nfunction sorted<T>(arr: T[], cmp: Comparator<T>): T[] {\n  return [...arr].sort(cmp);\n}\n\nconst desc: Comparator<number> = (a, b) => b - a;\nconsole.log(sorted([3, 1, 2], desc)); // [3, 2, 1]"
+  },
+  {
+    "instruction": "Write TypeScript code with an interface that has optional and readonly properties, and show which mutations the compiler rejects.",
+    "output": "interface Session {\n  readonly id: string;\n  user: string;\n  expiresAt?: number;\n}\n\nconst session: Session = { id: \"s1\", user: \"ada\" };\nsession.user = \"grace\"; // ok\nsession.id = \"s2\"; // Error: Cannot assign to 'id' because it is a read-only property"
+  },
+  {
+    "instruction": "Write TypeScript code using typeof narrowing on a value typed string | number to implement a format(value: string | number): string function.",
+    "output": "function format(value: string | number): string {\n  if (typeof value === \"string\") {\n    return value.trim().toUpperCase();\n  }\n  return value.toFixed(2);\n}\n\nconsole.log(format(\" hi \")); // \"HI\"\nconsole.log(format(3.14159)); // \"3.14\""
+  },
+  {
+    "instruction": "Write TypeScript code with a discriminated union Shape = Circle | Square | Rectangle and an area(shape: Shape): number function using the kind field.",
+    "output": "type Shape =\n  | { kind: \"circle\"; radius: number }\n  | { kind: \"square\"; side: number }\n  | { kind: \"rectangle\"; width: number; height: number };\n\nfunction area(shape: Shape): number {\n  switch (shape.kind) {\n    case \"circle\":\n      return Math.PI * shape.radius ** 2;\n    case \"square\":\n      return shape.side ** 2;\n    case \"rectangle\":\n      return shape.width * shape.height;\n  }\n}\n\nconsole.log(area({ kind: \"square\", side: 3 })); // 9"
+  },
+  {
+    "instruction": "Write TypeScript code using keyof typeof to derive a union of an object literal's keys and a typed getter.",
+    "output": "const config = {\n  host: \"localhost\",\n  port: 8080,\n  debug: false,\n};\n\ntype ConfigKey = keyof typeof config;\n\nfunction getConfig(key: ConfigKey): string | number | boolean {\n  return config[key];\n}\n\nconsole.log(getConfig(\"port\")); // 8080"
+  },
+  {
+    "instruction": "Write TypeScript code with an index signature: type Scores = { [student: string]: number } and a function average(scores: Scores): number.",
+    "output": "type Scores = { [student: string]: number };\n\nfunction average(scores: Scores): number {\n  const values = Object.values(scores);\n  if (values.length === 0) return 0;\n  return values.reduce((sum, n) => sum + n, 0) / values.length;\n}\n\nconsole.log(average({ lin: 90, sam: 80 })); // 85"
+  },
+  {
+    "instruction": "Write TypeScript code showing the difference between a type alias and an interface for the same shape, and where the alias is required (union types).",
+    "output": "interface UserI {\n  id: number;\n  name: string;\n}\n\ntype UserT = {\n  id: number;\n  name: string;\n};\n\n// Only a type alias can express a union:\ntype Id = string | number;\n\nconst u1: UserI = { id: 1, name: \"Ada\" };\nconst u2: UserT = { id: 2, name: \"Grace\" };\nconst id: Id = \"abc\";"
+  },
+  {
+    "instruction": "Write TypeScript code using unknown safely: a function parseJson(input: unknown) that type-checks before use, instead of any.",
+    "output": "function parseJson(input: unknown): { ok: true; value: object } | { ok: false; error: string } {\n  if (typeof input !== \"string\") {\n    return { ok: false, error: \"input must be a string\" };\n  }\n  try {\n    return { ok: true, value: JSON.parse(input) };\n  } catch (err) {\n    return { ok: false, error: (err as Error).message };\n  }\n}\n\nconsole.log(parseJson(\"{\\\"a\\\":1}\"));"
+  },
+  {
+    "instruction": "Write TypeScript code where a function returns void and callers must not use the result, plus a callback typed to return void that intentionally ignores its argument.",
+    "output": "function logAndReturn(message: string): void {\n  console.log(message);\n}\n\nlogAndReturn(\"hello\");\n\n// Callbacks returning values are assignable to void-returning types:\nconst handler: (value: number) => void = (value) => value * 2;\n[1, 2, 3].forEach(handler);"
+  },
+  {
+    "instruction": "Write TypeScript function overload signatures for a flexible join() that accepts either (parts: string[], sep?: string) or (a: string, b: string).",
+    "output": "function join(parts: string[], sep?: string): string;\nfunction join(a: string, b: string): string;\nfunction join(a: string[] | string, b?: string): string {\n  return Array.isArray(a) ? a.join(b ?? \",\") : `${a}${b ?? \"\"}`;\n}\n\nconsole.log(join([\"a\", \"b\", \"c\"], \"-\")); // \"a-b-c\"\nconsole.log(join(\"x\", \"y\")); // \"xy\""
+  },
+  {
+    "instruction": "Write TypeScript code typing a DOM event handler: add a click handler for HTMLButtonElement and show event.currentTarget typing.",
+    "output": "const button = document.querySelector<HTMLButtonElement>(\"#submit\");\n\nbutton?.addEventListener(\"click\", (event) => {\n  // event.currentTarget is HTMLButtonElement\n  console.log(event.currentTarget.textContent);\n});"
+  },
+  {
+    "instruction": "Write TypeScript code implementing a type predicate function isNonNullable<T>(value: T | null | undefined): value is T and using it to filter an array.",
+    "output": "function isNonNullable<T>(value: T | null | undefined): value is T {\n  return value !== null && value !== undefined;\n}\n\nconst values: (string | null)[] = [\"a\", null, \"b\", null];\nconst filtered = values.filter(isNonNullable);\nconsole.log(filtered); // [\"a\", \"b\"]"
+  },
+  {
+    "instruction": "Write TypeScript code using a class that implements an interface, with the compiler enforcing all members.",
+    "output": "interface Serializable {\n  serialize(): string;\n}\n\ninterface Loggable {\n  log(): void;\n}\n\nclass Record implements Serializable, Loggable {\n  constructor(public id: number, public label: string) {}\n\n  serialize(): string {\n    return JSON.stringify({ id: this.id, label: this.label });\n  }\n\n  log(): void {\n    console.log(this.serialize());\n  }\n}"
+  },
+  {
+    "instruction": "Write TypeScript code using an explicit this parameter to keep methods bound in an interface.",
+    "output": "interface Counter {\n  count: number;\n  increment(this: Counter): number;\n}\n\nconst counter: Counter = {\n  count: 0,\n  increment() {\n    return ++this.count;\n  },\n};\n\nconsole.log(counter.increment()); // 1\nconst fn = counter.increment;\nfn(); // Error: 'this' is of type 'undefined'"
+  },
+  {
+    "instruction": "Write TypeScript code casting via unknown instead of any for a double assertion scenario, e.g. treating a serialized enum value safely.",
+    "output": "enum Color {\n  Red = \"RED\",\n  Blue = \"BLUE\",\n}\n\nfunction toColor(value: string): Color {\n  const candidate: unknown = value;\n  if (candidate === Color.Red || candidate === Color.Blue) {\n    return candidate;\n  }\n  throw new Error(`unknown color: ${value}`);\n}\n\nconsole.log(toColor(\"RED\"));"
+  },
+  {
+    "instruction": "Write TypeScript code defining a Result<T, E> union type and a safeDivide function returning it, plus a caller handling both branches.",
+    "output": "type Result<T, E = Error> =\n  | { ok: true; value: T }\n  | { ok: false; error: E };\n\nfunction safeDivide(a: number, b: number): Result<number> {\n  if (b === 0) return { ok: false, error: new Error(\"division by zero\") };\n  return { ok: true, value: a / b };\n}\n\nconst result = safeDivide(10, 2);\nif (result.ok) {\n  console.log(result.value); // 5\n} else {\n  console.log(result.error.message);\n}"
+  },
+  {
+    "instruction": "Write TypeScript code with const enum alternatives: use a plain object with as const and a derived union type instead of enum, explaining the trade-off in a comment.",
+    "output": "const Direction = {\n  Up: \"UP\",\n  Down: \"DOWN\",\n} as const;\n\ntype Direction = (typeof Direction)[keyof typeof Direction];\n\nfunction go(dir: Direction): string {\n  return `moving ${dir}`;\n}\n\nconsole.log(go(Direction.Up)); // \"moving UP\"\n// as const objects are erased at runtime (no extra emitted code),\n// work better with isolatedModules, and stay JSON-serializable —\n// unlike TypeScript enums which emit a runtime object."
+  }
+]

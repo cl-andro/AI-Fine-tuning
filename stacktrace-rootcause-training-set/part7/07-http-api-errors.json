@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Root cause this HTTP error.\nContext: browser client calling GET /api/v1/profile with an Authorization header.\n\nHTTP/1.1 401 Unauthorized\nWWW-Authenticate: Bearer realm=\"api\", error=\"invalid_token\", error_description=\"The token expired at 2026-04-01T09:14:02Z\"\nContent-Type: application/json\n\n{\"error\":\"invalid_token\",\"message\":\"Access token has expired\"}",
+    "output": "**Root cause:** the JWT's `exp` claim is in the past, so the auth middleware rejects it even though the signature is valid.\n**Fix:** Refresh the token before expiry (client-side proactive refresh) and return the new access token in the login/refresh response."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: partner integration POSTing to /api/v1/payments/capture with a valid API key.\n\nHTTP/1.1 403 Forbidden\nContent-Type: application/json\n\n{\"error\":\"forbidden\",\"message\":\"API key does not have scope payments:write\",\"required_scopes\":[\"payments:write\"]}",
+    "output": "**Root cause:** the API key authenticates fine but lacks the `payments:write` scope; the route requires it.\n**Fix:** Issue the key with the required scope in the admin console (or use a key that already has it) and redeploy the integration config."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: mobile app fetching a user profile by id.\n\nHTTP/1.1 404 Not Found\nContent-Type: application/json\n\n{\"error\":\"not_found\",\"path\":\"/api/v1/user/12345\"}\n\nImplemented route: GET /api/v1/users/{id}",
+    "output": "**Root cause:** the client calls the singular path `/user/12345` while the server only registers `/users/{id}`, so no route matches and the framework returns 404.\n**Fix:** Correct the client path (or add a redirect/route alias) and keep the OpenAPI spec as the source of truth."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: webhook receiver validating a POST from a payment provider.\n\nHTTP/1.1 405 Method Not Allowed\nAllow: GET\nContent-Type: application/json\n\n{\"error\":\"method_not_allowed\",\"message\":\"Use GET on this resource\"}",
+    "output": "**Root cause:** the endpoint only implements `GET`, and the provider sent `POST`; the router rejects the method with the `Allow` header.\n**Fix:** Implement `POST` on that path (or point the provider at the correct webhook URL) and keep `Allow` accurate."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: legacy client requesting the account export endpoint.\n\nHTTP/1.1 406 Not Acceptable\nContent-Type: application/json\n\n{\"error\":\"not_acceptable\",\"message\":\"Supported media type: application/json\"}\n\nRequest header: Accept: application/xml",
+    "output": "**Root cause:** the client advertises only `application/xml`, but the API serialises JSON only, so no representation satisfies the `Accept` header.\n**Fix:** Send `Accept: application/json`, or add XML content negotiation on the server."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: signup API receiving a registration with an email that already exists.\n\nHTTP/1.1 409 Conflict\nContent-Type: application/json\n\n{\"error\":\"conflict\",\"code\":\"EMAIL_TAKEN\",\"message\":\"An account with this email already exists\"}",
+    "output": "**Root cause:** the unique index on `email` (and the pre-check) blocks a second account with the same address.\n**Fix:** Return 409 as designed and tell the user to sign in or reset the password; offer `PUT`-style upsert only where idempotency is intended."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: video upload from a mobile connection through nginx.\n\nHTTP/1.1 413 Payload Too Large\nContent-Length: 153\nServer: nginx/1.24.0\n\n<html><head><title>413 Request Entity Too Large</title></head><body><center><h1>413 Request Entity Too Large</h1></center></body></html>",
+    "output": "**Root cause:** the body exceeds nginx's `client_max_body_size` (default 1 MB) so the proxy rejects it before the app sees the request.\n**Fix:** Raise `client_max_body_size 20m;` (reload nginx) or chunk/stream uploads, and enforce a matching limit in the application."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: form client posting plain text to a JSON-only endpoint.\n\nHTTP/1.1 415 Unsupported Media Type\nContent-Type: application/json\n\n{\"error\":\"unsupported_media_type\",\"message\":\"Content-Type must be application/json\"}\n\nRequest header: Content-Type: text/plain",
+    "output": "**Root cause:** the request declares `text/plain`, but the handler only binds JSON bodies.\n**Fix:** Send `Content-Type: application/json` from the client (or add a text/plain consumer on the server)."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: checkout form submitting an order with a negative quantity.\n\nHTTP/1.1 422 Unprocessable Entity\nContent-Type: application/json\n\n{\"error\":\"validation_failed\",\"details\":[{\"field\":\"quantity\",\"message\":\"must be at least 1\"},{\"field\":\"email\",\"message\":\"must be a valid email address\"}]}",
+    "output": "**Root cause:** two fields violate the schema rules (`quantity < 1`, malformed `email`), and validation runs before persistence.\n**Fix:** Correct the submitted values (clamp quantity, fix the email) or loosen the client-side validation that let them through."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: scraping client polling the public feed too aggressively.\n\nHTTP/1.1 429 Too Many Requests\nRetry-After: 60\nX-RateLimit-Limit: 100\nX-RateLimit-Remaining: 0\n\n{\"error\":\"rate_limited\",\"message\":\"Limit: 100 requests per 60 seconds\"}",
+    "output": "**Root cause:** the client exceeded the 100 requests/60 s bucket, so the gateway throttles it and advertises the retry delay.\n**Fix:** Honour `Retry-After`, back off exponentially, and cache feed responses instead of re-fetching."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: gateway returning a bare 500 while the app serves other routes.\n\nHTTP/1.1 500 Internal Server Error\nContent-Type: application/json\nX-Trace-Id: 4bf92f3577b34da6a3ce929d0e0e4736\n\n{\"error\":\"internal\",\"message\":\"unexpected null reference while building order summary\"}",
+    "output": "**Root cause:** an unhandled `NullPointerException`/`NullReferenceException` in the summary builder bubbles up as 500 (the order had no line items).\n**Fix:** Handle the null/empty case explicitly, return 422/404 for missing data, and add error middleware that logs the trace id."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: browser polling a slow backend container during deployment.\n\nHTTP/1.1 502 Bad Gateway\nServer: nginx/1.24.0\nContent-Type: text/html\n\n<html><head><title>502 Bad Gateway</title></head><body><center><h1>502 Bad Gateway</h1></center><hr><center>nginx/1.24.0</center></body></html>\n\nnginx error log: upstream prematurely closed connection while reading response header from upstream",
+    "output": "**Root cause:** the upstream container was recycled mid-request, so nginx's connection closed before any response arrived.\n**Fix:** Graceful shutdown (drain connections, readiness probes), retries on idempotent requests, and a short proxy connect timeout."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: service returning 503 right after a rollout began.\n\nHTTP/1.1 503 Service Unavailable\nRetry-After: 15\nContent-Type: application/json\n\n{\"error\":\"unavailable\",\"message\":\"shutting down, retry later\"}",
+    "output": "**Root cause:** the pod is terminating/drain-mode during the rollout, so it refuses new work while existing requests finish.\n**Fix:** Retry after `Retry-After` (client backoff), and front the service with a load balancer that only routes to ready replicas."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: gateway proxying to an analytics service with a slow aggregation query.\n\nHTTP/1.1 504 Gateway Timeout\nServer: nginx/1.24.0\nContent-Type: text/html\n\n<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center><hr><center>nginx</center></body></html>\n\nnginx error log: upstream timed out (110: Connection timed out) while reading response header from upstream",
+    "output": "**Root cause:** the upstream took longer than `proxy_read_timeout` (60 s) because of a full-table aggregation, and the gateway cut the request.\n**Fix:** Optimise/index the query (or run it asynchronously), and raise `proxy_read_timeout` only for endpoints that legitimately run long."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: browser console on a site deployed over HTTPS calling its API subdomain.\n\nFetch API cannot load https://api.example.com/v1/items.\nAccess to fetch at 'https://api.example.com/v1/items' from origin 'https://www.example.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested response.\n\nResponse headers: content-type: application/json; server: nginx",
+    "output": "**Root cause:** the response lacks `Access-Control-Allow-Origin` (the browser origin `https://www.example.com` is not in the allowed list), so the browser blocks reading it.\n**Fix:** Return `Access-Control-Allow-Origin: https://www.example.com` (exact origin, not `*` with credentials) and handle the `OPTIONS` preflight."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: developer running a local frontend that calls a Dockerised API.\n\nFetch failed for http://localhost:3000/api/health (TypeError: Failed to fetch)\nServer log (container): listening on 0.0.0.0:3000 - no request logged\n\nDirect check: curl http://localhost:3000/api/health -> Connection refused",
+    "output": "**Root cause:** port 3000 is published on the host as 8080 (or not published), so nothing is listening on the host's localhost:3000 - `localhost` inside the container is not the host.\n**Fix:** Point the client at the published host port (`http://localhost:8080`) or add `ports: - \"3000:3000\"` to the compose file."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: CI job curling a production endpoint over TLS.\n\ncurl: (60) SSL: certificate subject name 'api.example.com' does not match target host name 'api2.example.com'\n\nMore details available here: https://curl.se/docs/sslcerts.html\n",
+    "output": "**Root cause:** the certificate presented is valid for `api.example.com`, but the request targets `api2.example.com`, so hostname verification fails.\n**Fix:** Use the correct hostname, or obtain a SAN certificate covering `api2.example.com` and install the full chain (including intermediates)."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: curl following redirects on a site behind a load balancer.\n\ncurl: (47) Maximum (10) redirects followed\n\nRedirect chain observed:\n  http://example.com/app -> https://example.com/app\n  https://example.com/app -> http://example.com/app",
+    "output": "**Root cause:** the app always redirects to HTTP because it cannot see the `X-Forwarded-Proto: https` header set by the proxy, so HTTP and HTTPS bounce forever.\n**Fix:** Run the app in trust-proxy mode (e.g. `app.set('trust proxy', 1)` / `--forwarded-allowed-ips`) so the redirect target stays HTTPS."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: Node service restarted and failed to boot behind the load balancer.\n\nError: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandleOnListen [as _listen2] (node:net:1880:16)\n    at listenInCluster (node:net:2033:12)\n    at Server.listen (node:net:2119:7)",
+    "output": "**Root cause:** a previous process still holds port 8080 (the old instance did not exit, or two workers were started with the same port).\n**Fix:** Stop the stale process (`fuser -k 8080/tcp`), add `SO_REUSEADDR`-aware restarts, and let a single leader bind the port."
+  },
+  {
+    "instruction": "Root cause this HTTP error.\nContext: JSON API rejecting an order submission from a partner.\n\nHTTP/1.1 400 Bad Request\nContent-Type: application/json\n\n{\"error\":\"invalid_json\",\"message\":\"Unexpected token } at position 142\",\"body_snippet\":\"{\\\"items\\\":[{\\\"sku\\\":\\\"A1\\\"},]}\"}",
+    "output": "**Root cause:** the partner's body has a trailing comma after the last array element (`{...},]`), which strict JSON forbids.\n**Fix:** Remove the trailing comma on the sender side, and return the parse position (as above) so clients can locate the bug quickly."
+  }
+]

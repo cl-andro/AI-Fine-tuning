@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Refactor this code by adding complete type annotations:\n\ndef add(a, b):\n    return a + b",
+    "output": "def add(a: int, b: int) -> int:\n    return a + b\n\nWhat changed: parameter and return annotations added; mypy can now catch a call like add('x', 1) at check time instead of at runtime."
+  },
+  {
+    "instruction": "Refactor this code by adding type annotations including nested collection types:\n\ndef top_scores(board, n):\n    scores = sorted(board.values(), reverse=True)\n    return scores[:n]",
+    "output": "from typing import Dict, List\n\ndef top_scores(board: Dict[str, int], n: int) -> List[int]:\n    scores = sorted(board.values(), reverse=True)\n    return scores[:n]\n\nWhat changed: board is declared as a name->int mapping and the return as a list of ints; editors now autocomplete board keys and flag wrong slice types."
+  },
+  {
+    "instruction": "Refactor this code by annotating a function that may return None:\n\ndef find_user(users, uid):\n    for u in users:\n        if u['id'] == uid:\n            return u\n    return None",
+    "output": "from typing import List, Optional, TypedDict\n\nclass User(TypedDict):\n    id: int\n    name: str\n\ndef find_user(users: List[User], uid: int) -> Optional[User]:\n    for u in users:\n        if u['id'] == uid:\n            return u\n    return None\n\nWhat changed: Optional[User] forces callers to handle the not-found case, and the TypedDict documents the record shape so u['name'] is checked too."
+  },
+  {
+    "instruction": "Refactor this code by annotating the class methods and instance attributes:\n\nclass Counter:\n    def __init__(self, start):\n        self.value = start\n    def bump(self, amount):\n        self.value += amount\n        return self.value\n    def reset(self):\n        self.value = 0",
+    "output": "class Counter:\n    def __init__(self, start: int) -> None:\n        self.value: int = start\n    def bump(self, amount: int) -> int:\n        self.value += amount\n        return self.value\n    def reset(self) -> None:\n        self.value = 0\n\nWhat changed: __init__ annotated -> None, attributes declared on first assignment and every method got a return type, so a stray return value in reset() is caught."
+  },
+  {
+    "instruction": "Refactor this code by annotating the generator function properly:\n\ndef paginate(rows, size):\n    chunk = []\n    for r in rows:\n        chunk.append(r)\n        if len(chunk) == size:\n            yield chunk\n            chunk = []\n    if chunk:\n        yield chunk",
+    "output": "from typing import Iterator, List, TypeVar\n\nT = TypeVar('T')\n\ndef paginate(rows: Iterator[T], size: int) -> Iterator[List[T]]:\n    chunk: List[T] = []\n    for r in rows:\n        chunk.append(r)\n        if len(chunk) == size:\n            yield chunk\n            chunk = []\n    if chunk:\n        yield chunk\n\nWhat changed: Iterator[List[T]] with a TypeVar keeps the element type generic while telling type checkers this is a lazy generator, not a list."
+  },
+  {
+    "instruction": "Refactor this code by annotating the callback-taking function:\n\ndef retry(fn, attempts):\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception:\n            pass\n    raise RuntimeError('exhausted')",
+    "output": "from typing import Callable, TypeVar\n\nT = TypeVar('T')\n\ndef retry(fn: Callable[[], T], attempts: int) -> T:\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception:\n            pass\n    raise RuntimeError('exhausted')\n\nWhat changed: Callable[[], T] + T documents that retry passes through whatever fn returns, so callers get the right type instead of Any."
+  },
+  {
+    "instruction": "Refactor this code by annotating the recursive tree function:\n\ndef depth(node):\n    if node is None:\n        return 0\n    return 1 + max(depth(node.left), depth(node.right))",
+    "output": "from typing import Optional\n\nclass Node:\n    def __init__(self, value: int, left: 'Optional[Node]' = None, right: 'Optional[Node]' = None) -> None:\n        self.value = value\n        self.left = left\n        self.right = right\n\ndef depth(node: Optional[Node]) -> int:\n    if node is None:\n        return 0\n    return 1 + max(depth(node.left), depth(node.right))\n\nWhat changed: Optional[Node] marks the base case and the self-referential Node type is declared, so None-returning children are checked at the call site."
+  },
+  {
+    "instruction": "Refactor this code by annotating the async function and its awaited types:\n\nasync def fetch(urls, session):\n    results = []\n    for u in urls:\n        r = await session.get(u)\n        results.append(r.text())\n    return results",
+    "output": "from typing import List\nimport aiohttp\n\nasync def fetch(urls: List[str], session: aiohttp.ClientSession) -> List[str]:\n    results = []\n    for u in urls:\n        r = await session.get(u)\n        results.append(await r.text())\n    return results\n\nWhat changed: parameter and return types added (and the missing await on r.text() surfaced); the coroutine contract is now explicit."
+  },
+  {
+    "instruction": "Refactor this code by annotating the *args/**kwargs function:\n\ndef log(level, *args, **kwargs):\n    print(level, args, kwargs)",
+    "output": "from typing import Any\n\ndef log(level: str, *args: Any, **kwargs: Any) -> None:\n    print(level, args, kwargs)\n\nWhat changed: level and -> None are precise, and *args/**kwargs are typed Any (their honest type) rather than left implicit, which some checkers treat differently."
+  },
+  {
+    "instruction": "Refactor this code by annotating the tuple-returning function:\n\ndef min_max(values):\n    return min(values), max(values)",
+    "output": "from typing import Sequence, Tuple\n\ndef min_max(values: Sequence[float]) -> Tuple[float, float]:\n    return min(values), max(values)\n\nWhat changed: Sequence[float] accepts lists and tuples alike, and Tuple[float, float] documents the two-element unpacking so callers destructure correctly."
+  },
+  {
+    "instruction": "Refactor this code by adding annotations to the data-mangling function:\n\ndef normalize(record):\n    record['name'] = record['name'].strip().title()\n    record['age'] = int(record['age'])\n    return record",
+    "output": "from typing import Dict, Union\n\ndef normalize(record: Dict[str, Union[str, int]]) -> Dict[str, Union[str, int]]:\n    record['name'] = record['name'].strip().title()\n    record['age'] = int(record['age'])\n    return record\n\nWhat changed: the mixed record type is spelled out with Union; a stricter refactor would replace the dict with a TypedDict or dataclass for precise field types."
+  },
+  {
+    "instruction": "Refactor this code by annotating the keyword-only API:\n\ndef render(template, *, escape, compact):\n    out = template.format(**ctx)\n    if escape:\n        out = html_escape(out)\n    if compact:\n        out = ' '.join(out.split())\n    return out",
+    "output": "from typing import Any, Dict\n\ndef render(template: str, *, escape: bool, compact: bool, **ctx: Any) -> str:\n    out = template.format(**ctx)\n    if escape:\n        out = html_escape(out)\n    if compact:\n        out = ' '.join(out.split())\n    return out\n\nWhat changed: keyword-only flags typed as bool and the variadic context as **ctx: Any; the missing **ctx parameter also became visible in the signature."
+  },
+  {
+    "instruction": "Refactor this code by annotating the method that mutates and returns None:\n\nclass Window:\n    def resize(self, w, h):\n        self.w = w\n        self.h = h\n    def area(self):\n        return self.w * self.h",
+    "output": "class Window:\n    w: int\n    h: int\n    def resize(self, w: int, h: int) -> None:\n        self.w = w\n        self.h = h\n    def area(self) -> int:\n        return self.w * self.h\n\nWhat changed: class-level attribute declarations plus -> None on the mutator make it obvious resize returns nothing, preventing `window.resize(1,2) + x` style bugs."
+  },
+  {
+    "instruction": "Refactor this code by annotating the union-handling parser:\n\ndef parse_id(raw):\n    if isinstance(raw, int):\n        return raw\n    return int(raw)",
+    "output": "from typing import Union\n\ndef parse_id(raw: Union[int, str]) -> int:\n    if isinstance(raw, int):\n        return raw\n    return int(raw)\n\nWhat changed: Union[int, str] documents both accepted inputs; mypy narrows the isinstance branch so the return is verified as int on both paths."
+  },
+  {
+    "instruction": "Refactor this code by annotating the decorator-wrapped function:\n\ndef memo(fn):\n    cache = {}\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = fn(*args)\n        return cache[args]\n    return wrapper",
+    "output": "from typing import Callable, Dict, Tuple, Any, TypeVar\n\nF = TypeVar('F', bound=Callable)\n\ndef memo(fn: F) -> F:\n    cache: Dict[Tuple[Any, ...], Any] = {}\n    def wrapper(*args: Any) -> Any:\n        if args not in cache:\n            cache[args] = fn(*args)\n        return cache[args]\n    return wrapper  # type: ignore[return-value]\n\nWhat changed: the cache dict and arguments tuple are typed, and the decorator's type-preserving intent is expressed (with the standard cast escape hatch for wrappers)."
+  },
+  {
+    "instruction": "Refactor this code by annotating the Enum-taking function:\n\ndef apply(action, amount):\n    if action == 'credit':\n        balance += amount\n    elif action == 'debit':\n        balance -= amount",
+    "output": "from enum import Enum\n\nclass Action(Enum):\n    CREDIT = 'credit'\n    DEBIT = 'debit'\n\ndef apply(action: Action, amount: float) -> None:\n    if action is Action.CREDIT:\n        balance += amount\n    elif action is Action.DEBIT:\n        balance -= amount\n\nWhat changed: the magic strings became an Enum with a typed parameter; a typo'd action is now a type error instead of a silent no-op."
+  },
+  {
+    "instruction": "Refactor this code by annotating the context-manager helper:\n\nclass opened:\n    def __init__(self, path, mode):\n        self.path = path\n        self.mode = mode\n    def __enter__(self):\n        self.f = open(self.path, self.mode)\n        return self.f\n    def __exit__(self, *exc):\n        self.f.close()",
+    "output": "from typing import IO, Any\n\nclass opened:\n    def __init__(self, path: str, mode: str = 'r') -> None:\n        self.path = path\n        self.mode = mode\n        self.f: IO[Any] = None  # set in __enter__\n    def __enter__(self) -> IO[Any]:\n        self.f = open(self.path, self.mode)\n        return self.f\n    def __exit__(self, *exc: Any) -> None:\n        self.f.close()\n\nWhat changed: __enter__ declares the yielded IO type (so with open(...) as f: f.read() type-checks) and __exit__ is annotated -> None."
+  },
+  {
+    "instruction": "Refactor this code by annotating the overloaded-style helper with a default sentinel:\n\ndef get(items, index, default):\n    try:\n        return items[index]\n    except IndexError:\n        return default",
+    "output": "from typing import TypeVar, Sequence, Optional\n\nT = TypeVar('T')\n\ndef get(items: Sequence[T], index: int, default: Optional[T] = None) -> Optional[T]:\n    try:\n        return items[index]\n    except IndexError:\n        return default\n\nWhat changed: the generic T ties input element type to the return type, and default becomes optional with a None default, matching how the function is actually called."
+  },
+  {
+    "instruction": "Refactor this code by annotating the module-level pipeline API:\n\ndef read(path):\n    with open(path) as f:\n        return [line.strip() for line in f]\n\ndef transform(lines):\n    return [l for l in lines if l]\n\ndef write(path, lines):\n    with open(path, 'w') as f:\n        f.write('\\n'.join(lines))",
+    "output": "from typing import List\n\ndef read(path: str) -> List[str]:\n    with open(path) as f:\n        return [line.strip() for line in f]\n\ndef transform(lines: List[str]) -> List[str]:\n    return [l for l in lines if l]\n\ndef write(path: str, lines: List[str]) -> None:\n    with open(path, 'w') as f:\n        f.write('\\n'.join(lines))\n\nWhat changed: the str -> List[str] pipeline is now visible end to end; passing a single string to transform() fails a type check instead of iterating characters."
+  },
+  {
+    "instruction": "Refactor this code by annotating the function returning a dict of lists:\n\ndef group_by_city(rows):\n    out = {}\n    for r in rows:\n        out.setdefault(r['city'], []).append(r['name'])\n    return out",
+    "output": "from typing import Dict, List\n\ndef group_by_city(rows: List[Dict[str, str]]) -> Dict[str, List[str]]:\n    out: Dict[str, List[str]] = {}\n    for r in rows:\n        out.setdefault(r['city'], []).append(r['name'])\n    return out\n\nWhat changed: the nested return type Dict[str, List[str]] plus the annotated local pin down both levels of the structure for callers and type checkers."
+  }
+]

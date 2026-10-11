@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Write Node.js code that reads a text file asynchronously with fs/promises and logs its contents.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function main() {\n  const content = await fs.readFile(\"notes.txt\", \"utf8\");\n  console.log(content);\n}\n\nmain().catch((err) => {\n  console.error(err.message);\n  process.exit(1);\n});"
+  },
+  {
+    "instruction": "Write Node.js code that writes a JSON object to data.json with 2-space indentation using fs/promises.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function saveConfig(config) {\n  await fs.writeFile(\"data.json\", JSON.stringify(config, null, 2) + \"\\n\", \"utf8\");\n}\n\nsaveConfig({ host: \"localhost\", port: 8080 });"
+  },
+  {
+    "instruction": "Write Node.js code that reads and parses a JSON file, returning a default object when the file does not exist.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function readJsonOr(path, fallback) {\n  try {\n    const text = await fs.readFile(path, \"utf8\");\n    return JSON.parse(text);\n  } catch (err) {\n    if (err.code === \"ENOENT\") return fallback;\n    throw err;\n  }\n}\n\nreadJsonOr(\"settings.json\", { retries: 3 }).then(console.log);"
+  },
+  {
+    "instruction": "Write Node.js code that appends a timestamped line to app.log on each call.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function logLine(message) {\n  const line = `[${new Date().toISOString()}] ${message}\\n`;\n  await fs.appendFile(\"app.log\", line, \"utf8\");\n}\n\nlogLine(\"server started\");"
+  },
+  {
+    "instruction": "Write Node.js code that recursively lists all .js files under a directory using fs/promises readdir with withFileTypes.",
+    "output": "const fs = require(\"fs/promises\");\nconst path = require(\"path\");\n\nasync function listJsFiles(dir) {\n  const out = [];\n  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {\n    const full = path.join(dir, entry.name);\n    if (entry.isDirectory()) out.push(...(await listJsFiles(full)));\n    else if (entry.name.endsWith(\".js\")) out.push(full);\n  }\n  return out;\n}\n\nlistJsFiles(\".\").then((files) => console.log(files));"
+  },
+  {
+    "instruction": "Write Node.js code that copies a file to a backup path and removes the original using fs/promises copyFile and unlink.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function backupAndRemove(source, backup) {\n  await fs.copyFile(source, backup);\n  await fs.unlink(source);\n  console.log(`backed up to ${backup}`);\n}\n\nbackupAndRemove(\"report.csv\", \"report.csv.bak\").catch(console.error);"
+  },
+  {
+    "instruction": "Write Node.js code that checks whether a path exists, is a file or a directory, using fs/promises stat and access.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function describePath(target) {\n  try {\n    await fs.access(target);\n  } catch {\n    return { exists: false };\n  }\n  const stats = await fs.stat(target);\n  return {\n    exists: true,\n    isFile: stats.isFile(),\n    isDirectory: stats.isDirectory(),\n    size: stats.size,\n  };\n}\n\ndescribePath(\"package.json\").then(console.log);"
+  },
+  {
+    "instruction": "Write a Node.js http server that responds with plain text \"Hello, World!\" on any path, listening on port 3000.",
+    "output": "const http = require(\"http\");\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { \"Content-Type\": \"text/plain\" });\n  res.end(\"Hello, World!\");\n});\n\nserver.listen(3000, () => console.log(\"listening on http://localhost:3000\"));"
+  },
+  {
+    "instruction": "Write a Node.js http server implementing a tiny JSON API: GET /items returns an array, POST /items adds {id, name} to it.",
+    "output": "const http = require(\"http\");\n\nconst items = [];\nlet nextId = 1;\n\nconst server = http.createServer((req, res) => {\n  res.setHeader(\"Content-Type\", \"application/json\");\n\n  if (req.method === \"GET\" && req.url === \"/items\") {\n    res.end(JSON.stringify(items));\n    return;\n  }\n\n  if (req.method === \"POST\" && req.url === \"/items\") {\n    let body = \"\";\n    req.on(\"data\", (chunk) => (body += chunk));\n    req.on(\"end\", () => {\n      try {\n        const { name } = JSON.parse(body || \"{}\");\n        const item = { id: nextId++, name };\n        items.push(item);\n        res.writeHead(201);\n        res.end(JSON.stringify(item));\n      } catch {\n        res.writeHead(400);\n        res.end(JSON.stringify({ error: \"invalid JSON\" }));\n      }\n    });\n    return;\n  }\n\n  res.writeHead(404);\n  res.end(JSON.stringify({ error: \"not found\" }));\n});\n\nserver.listen(3000);"
+  },
+  {
+    "instruction": "Write Node.js code that performs an HTTP GET with the built-in https module and resolves the body as a string.",
+    "output": "const https = require(\"https\");\n\nfunction get(url) {\n  return new Promise((resolve, reject) => {\n    https\n      .get(url, (res) => {\n        let body = \"\";\n        res.setEncoding(\"utf8\");\n        res.on(\"data\", (chunk) => (body += chunk));\n        res.on(\"end\", () => resolve({ status: res.statusCode, body }));\n      })\n      .on(\"error\", reject);\n  });\n}\n\nget(\"https://api.github.com\").then(({ status, body }) =>\n  console.log(status, body.length)\n);"
+  },
+  {
+    "instruction": "Write Node.js code that streams a large file to an HTTP response using createReadStream and pipe, with a Content-Type header.",
+    "output": "const http = require(\"http\");\nconst fs = require(\"fs\");\n\nconst server = http.createServer((req, res) => {\n  if (req.url !== \"/file\") {\n    res.writeHead(404);\n    res.end();\n    return;\n  }\n  res.writeHead(200, { \"Content-Type\": \"text/csv\" });\n  fs.createReadStream(\"big.csv\").pipe(res);\n});\n\nserver.listen(3000);"
+  },
+  {
+    "instruction": "Write Node.js code that reads a large file line by line using readline over a stream, counting lines without loading the file into memory.",
+    "output": "const fs = require(\"fs\");\nconst readline = require(\"readline\");\n\nasync function countLines(path) {\n  const rl = readline.createInterface({\n    input: fs.createReadStream(path, \"utf8\"),\n    crlfDelay: Infinity,\n  });\n  let count = 0;\n  for await (const _line of rl) count++;\n  return count;\n}\n\ncountLines(\"access.log\").then((n) => console.log(n, \"lines\"));"
+  },
+  {
+    "instruction": "Write Node.js code that deletes a file, tolerating the ENOENT case when the file is already missing.",
+    "output": "const fs = require(\"fs/promises\");\n\nasync function safeUnlink(path) {\n  try {\n    await fs.unlink(path);\n    return true;\n  } catch (err) {\n    if (err.code === \"ENOENT\") return false;\n    throw err;\n  }\n}\n\nsafeUnlink(\"/tmp/lock\").then((removed) => console.log(\"removed:\", removed));"
+  },
+  {
+    "instruction": "Write Node.js code that creates a directory (and parents) then writes a file into it with fs/promises.",
+    "output": "const fs = require(\"fs/promises\");\nconst path = require(\"path\");\n\nasync function writeIn(dir, name, content) {\n  await fs.mkdir(dir, { recursive: true });\n  const target = path.join(dir, name);\n  await fs.writeFile(target, content, \"utf8\");\n  return target;\n}\n\nwriteIn(\"var/logs\", \"boot.log\", \"started\\n\").then(console.log);"
+  },
+  {
+    "instruction": "Write a Node.js http server that serves a static file safely, rejecting path traversal attempts outside the public directory.",
+    "output": "const http = require(\"http\");\nconst fs = require(\"fs\");\nconst path = require(\"path\");\n\nconst PUBLIC = path.resolve(\"public\");\n\nconst server = http.createServer((req, res) => {\n  const urlPath = decodeURIComponent(req.url.split(\"?\")[0]);\n  const target = path.resolve(PUBLIC, \".\" + urlPath);\n  if (!target.startsWith(PUBLIC)) {\n    res.writeHead(403);\n    res.end(\"forbidden\");\n    return;\n  }\n  fs.readFile(target, (err, data) => {\n    if (err) {\n      res.writeHead(404);\n      res.end(\"not found\");\n      return;\n    }\n    res.writeHead(200, { \"Content-Type\": \"text/html\" });\n    res.end(data);\n  });\n});\n\nserver.listen(3000);"
+  },
+  {
+    "instruction": "Write Node.js code that buffers an incoming POST body, parses it as JSON and replies with 400 on invalid payloads.",
+    "output": "const http = require(\"http\");\n\nfunction readBody(req) {\n  return new Promise((resolve, reject) => {\n    let body = \"\";\n    req.on(\"data\", (chunk) => (body += chunk));\n    req.on(\"end\", () => resolve(body));\n    req.on(\"error\", reject);\n  });\n}\n\nconst server = http.createServer(async (req, res) => {\n  if (req.method !== \"POST\") {\n    res.writeHead(405);\n    res.end();\n    return;\n  }\n  try {\n    const payload = JSON.parse((await readBody(req)) || \"{}\");\n    res.writeHead(200, { \"Content-Type\": \"application/json\" });\n    res.end(JSON.stringify({ received: payload }));\n  } catch {\n    res.writeHead(400, { \"Content-Type\": \"application/json\" });\n    res.end(JSON.stringify({ error: \"invalid JSON\" }));\n  }\n});\n\nserver.listen(3000);"
+  },
+  {
+    "instruction": "Write Node.js code that watches a config file with fs.watch and reloads settings on change, tolerating the editor rename case.",
+    "output": "const fs = require(\"fs\");\n\nlet settings = {};\n\nfunction loadSettings() {\n  try {\n    settings = JSON.parse(fs.readFileSync(\"config.json\", \"utf8\"));\n    console.log(\"settings loaded\", settings);\n  } catch (err) {\n    console.error(\"reload failed:\", err.message);\n  }\n}\n\nloadSettings();\nfs.watch(\"config.json\", (eventType) => {\n  console.log(\"event:\", eventType);\n  loadSettings();\n});"
+  },
+  {
+    "instruction": "Write a Node.js HTTP server with graceful shutdown: SIGTERM handler closes the server and finishes in-flight requests.",
+    "output": "const http = require(\"http\");\n\nconst server = http.createServer((req, res) => {\n  setTimeout(() => {\n    res.end(\"done\");\n  }, 500);\n});\n\nserver.listen(3000, () => console.log(\"listening\"));\n\nfunction shutdown(signal) {\n  console.log(`${signal} received, closing server`);\n  server.close(() => {\n    console.log(\"server closed\");\n    process.exit(0);\n  });\n  setTimeout(() => process.exit(1), 10_000).unref();\n}\n\nprocess.on(\"SIGTERM\", () => shutdown(\"SIGTERM\"));\nprocess.on(\"SIGINT\", () => shutdown(\"SIGINT\"));"
+  },
+  {
+    "instruction": "Write Node.js code that reads environment variables into a typed config object with validation, exiting on missing required variables.",
+    "output": "function loadConfig() {\n  const required = [\"PORT\", \"DATABASE_URL\"];\n  for (const key of required) {\n    if (!process.env[key]) {\n      console.error(`missing required env var: ${key}`);\n      process.exit(1);\n    }\n  }\n  const port = Number(process.env.PORT);\n  if (!Number.isInteger(port) || port <= 0) {\n    console.error(\"PORT must be a positive integer\");\n    process.exit(1);\n  }\n  return {\n    port,\n    databaseUrl: process.env.DATABASE_URL,\n    logLevel: process.env.LOG_LEVEL || \"info\",\n  };\n}\n\nmodule.exports = { loadConfig };"
+  },
+  {
+    "instruction": "Write Node.js code that pipes an HTTP request response directly to a file, downloading a URL with https and fs.",
+    "output": "const https = require(\"https\");\nconst fs = require(\"fs\");\nconst { pipeline } = require(\"stream\");\n\nfunction download(url, destination) {\n  return new Promise((resolve, reject) => {\n    https\n      .get(url, (res) => {\n        if (res.statusCode !== 200) {\n          reject(new Error(`HTTP ${res.statusCode}`));\n          res.resume();\n          return;\n        }\n        pipeline(res, fs.createWriteStream(destination), (err) =>\n          err ? reject(err) : resolve(destination)\n        );\n      })\n      .on(\"error\", reject);\n  });\n}\n\ndownload(\"https://example.com/data.json\", \"data.json\").then(console.log);"
+  }
+]

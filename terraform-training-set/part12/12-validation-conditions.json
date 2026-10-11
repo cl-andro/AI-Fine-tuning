@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Validate that a bucket name matches a naming convention with a custom error message.",
+    "output": "variable \"bucket_name\" {\n  type = string\n\n  validation {\n    condition     = can(regex(\"^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$\", var.bucket_name))\n    error_message = \"The bucket name must be 3-63 characters of lowercase letters, digits, and hyphens.\"\n  }\n}\n\nresource \"aws_s3_bucket\" \"this\" {\n  bucket = var.bucket_name\n}"
+  },
+  {
+    "instruction": "Restrict an environment variable to a fixed set of allowed values.",
+    "output": "variable \"environment\" {\n  type = string\n\n  validation {\n    condition     = contains([\"dev\", \"staging\", \"prod\"], var.environment)\n    error_message = \"environment must be one of: dev, staging, prod.\"\n  }\n}\n\nresource \"aws_sqs_queue\" \"events\" {\n  name = \"events-${var.environment}\"\n}"
+  },
+  {
+    "instruction": "Validate that a numeric instance count stays within a minimum and maximum range.",
+    "output": "variable \"instance_count\" {\n  type    = number\n  default = 2\n\n  validation {\n    condition     = var.instance_count >= 1 && var.instance_count <= 10\n    error_message = \"instance_count must be between 1 and 10.\"\n  }\n}\n\nresource \"aws_instance\" \"worker\" {\n  count         = var.instance_count\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  tags = {\n    Name = \"worker-${count.index}\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Validate that an AWS region string looks like a region identifier.",
+    "output": "variable \"region\" {\n  type = string\n\n  validation {\n    condition     = can(regex(\"^(us|eu|ap|sa|ca|me|af)-[a-z]+-[0-9]$\", var.region))\n    error_message = \"region must look like us-east-1 or eu-west-1.\"\n  }\n}\n\nprovider \"aws\" {\n  region = var.region\n}"
+  },
+  {
+    "instruction": "Validate an object variable's attribute against an allowed list.",
+    "output": "variable \"deploy_config\" {\n  type = object({\n    environment = string\n    replicas    = number\n  })\n\n  validation {\n    condition     = contains([\"dev\", \"prod\"], var.deploy_config.environment)\n    error_message = \"deploy_config.environment must be dev or prod.\"\n  }\n\n  validation {\n    condition     = var.deploy_config.replicas >= 1\n    error_message = \"deploy_config.replicas must be at least 1.\"\n  }\n}\n\nresource \"aws_instance\" \"app\" {\n  count         = var.deploy_config.replicas\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  tags = {\n    Name = \"app-${var.deploy_config.environment}-${count.index}\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Add a resource precondition that forbids burstable instances in production.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nvariable \"instance_type\" {\n  type = string\n}\n\nresource \"aws_instance\" \"app\" {\n  ami           = var.ami_id\n  instance_type = var.instance_type\n\n  precondition {\n    condition     = !(var.environment == \"prod\" && startswith(var.instance_type, \"t2.micro\"))\n    error_message = \"Production instances must not use t2.micro.\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Add a postcondition that verifies the database is not created without backups.",
+    "output": "resource \"aws_db_instance\" \"app\" {\n  identifier              = \"app-db\"\n  engine                  = \"postgres\"\n  instance_class          = \"db.t4g.medium\"\n  allocated_storage       = 50\n  username                = \"app\"\n  manage_master_user_password = true\n  skip_final_snapshot     = false\n  backup_retention_period = var.backup_days\n\n  postcondition {\n    condition     = self.backup_retention_period > 0\n    error_message = \"The database must retain backups for at least one day.\"\n  }\n}\n\nvariable \"backup_days\" {\n  type    = number\n  default = 7\n}"
+  },
+  {
+    "instruction": "Write a check block that asserts at least three availability zones are available.",
+    "output": "data \"aws_availability_zones\" \"available\" {\n  state = \"available\"\n}\n\ncheck \"az_capacity\" {\n  assert {\n    condition     = length(data.aws_availability_zones.available.names) >= 3\n    error_message = \"At least three availability zones must be available in this region.\"\n  }\n}"
+  },
+  {
+    "instruction": "Add a precondition on an output so it is only published for production.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nresource \"aws_sqs_queue\" \"events\" {\n  name = \"events-${var.environment}\"\n}\n\noutput \"events_queue_url\" {\n  value = aws_sqs_queue.events.url\n\n  precondition {\n    condition     = var.environment == \"prod\"\n    error_message = \"events_queue_url is only defined for production workspaces.\"\n  }\n}"
+  },
+  {
+    "instruction": "Ignore changes to instance_type after creation with a lifecycle ignore_changes block.",
+    "output": "resource \"aws_instance\" \"flexible\" {\n  ami           = var.ami_id\n  instance_type = var.instance_type\n\n  lifecycle {\n    ignore_changes = [instance_type]\n  }\n\n  tags = {\n    Name = \"flexible\"\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"instance_type\" {\n  type    = string\n  default = \"t3.small\"\n}"
+  },
+  {
+    "instruction": "Replace security groups safely with create_before_destroy and a name prefix.",
+    "output": "resource \"aws_security_group\" \"web\" {\n  name_prefix = \"web-sg-\"\n  vpc_id      = var.vpc_id\n\n  lifecycle {\n    create_before_destroy = true\n  }\n\n  ingress {\n    from_port   = 443\n    to_port     = 443\n    protocol    = \"tcp\"\n    cidr_blocks = [\"0.0.0.0/0\"]\n  }\n}\n\nvariable \"vpc_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Protect a production database from destruction with prevent_destroy.",
+    "output": "resource \"aws_db_instance\" \"prod\" {\n  identifier     = \"prod-database\"\n  engine         = \"postgres\"\n  instance_class = \"db.r6g.large\"\n  allocated_storage = 200\n  username       = \"prod_admin\"\n  manage_master_user_password = true\n  skip_final_snapshot = false\n  final_snapshot_identifier = \"prod-database-final\"\n\n  lifecycle {\n    prevent_destroy = true\n  }\n}"
+  },
+  {
+    "instruction": "Force replacement of an instance when a trigger resource changes with replace_triggered_by.",
+    "output": "resource \"terraform_data\" \"config_hash\" {\n  input = var.config_hash\n}\n\nresource \"aws_instance\" \"app\" {\n  ami           = var.ami_id\n  instance_type = \"t3.small\"\n\n  lifecycle {\n    replace_triggered_by = [terraform_data.config_hash]\n  }\n}\n\nvariable \"ami_id\" {\n  type = string\n}\n\nvariable \"config_hash\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Require multi_az in production using a resource precondition.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nvariable \"multi_az\" {\n  type    = bool\n  default = false\n}\n\nresource \"aws_db_instance\" \"app\" {\n  identifier     = \"app-db\"\n  engine         = \"postgres\"\n  instance_class = \"db.t4g.medium\"\n  allocated_storage = 50\n  username       = \"app\"\n  manage_master_user_password = true\n  multi_az       = var.multi_az\n  skip_final_snapshot = true\n\n  precondition {\n    condition     = !(var.environment == \"prod\") || var.multi_az\n    error_message = \"Production databases must have multi_az enabled.\"\n  }\n}"
+  },
+  {
+    "instruction": "Make a required variable non-nullable so null is rejected at plan time.",
+    "output": "variable \"vpc_cidr\" {\n  type        = string\n  nullable    = false\n  description = \"CIDR block for the VPC\"\n\n  validation {\n    condition     = can(cidrhost(var.vpc_cidr, 0))\n    error_message = \"vpc_cidr must be a valid CIDR block such as 10.0.0.0/16.\"\n  }\n}\n\nresource \"aws_vpc\" \"this\" {\n  cidr_block = var.vpc_cidr\n}"
+  },
+  {
+    "instruction": "Enforce an S3 bucket name length limit with a precondition.",
+    "output": "variable \"bucket_name\" {\n  type = string\n}\n\nresource \"aws_s3_bucket\" \"this\" {\n  bucket = var.bucket_name\n\n  precondition {\n    condition     = length(var.bucket_name) <= 63\n    error_message = \"S3 bucket names cannot exceed 63 characters.\"\n  }\n}"
+  },
+  {
+    "instruction": "Combine validation, precondition, and lifecycle protections on one database resource.",
+    "output": "variable \"environment\" {\n  type = string\n\n  validation {\n    condition     = contains([\"dev\", \"staging\", \"prod\"], var.environment)\n    error_message = \"environment must be dev, staging, or prod.\"\n  }\n}\n\nvariable \"instance_class\" {\n  type = string\n}\n\nresource \"aws_db_instance\" \"app\" {\n  identifier     = \"app-${var.environment}\"\n  engine         = \"postgres\"\n  instance_class = var.instance_class\n  allocated_storage = 100\n  username       = \"app\"\n  manage_master_user_password = true\n  multi_az       = var.environment == \"prod\"\n  skip_final_snapshot = var.environment != \"prod\"\n\n  precondition {\n    condition     = !(var.environment == \"prod\") || var.instance_class != \"db.t4g.micro\"\n    error_message = \"Production databases cannot use db.t4g.micro.\"\n  }\n\n  lifecycle {\n    prevent_destroy = true\n    ignore_changes  = [allocated_storage]\n  }\n}"
+  },
+  {
+    "instruction": "Add a precondition that denies public S3 buckets in production stacks.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nvariable \"block_public_access\" {\n  type    = bool\n  default = true\n}\n\nresource \"aws_s3_bucket\" \"this\" {\n  bucket = \"acme-${var.environment}-data\"\n\n  precondition {\n    condition     = var.environment != \"prod\" || var.block_public_access\n    error_message = \"Production buckets must block all public access.\"\n  }\n}\n\nresource \"aws_s3_bucket_public_access_block\" \"this\" {\n  bucket = aws_s3_bucket.this.id\n\n  block_public_acls       = var.block_public_access\n  block_public_policy     = var.block_public_access\n  ignore_public_acls      = var.block_public_access\n  restrict_public_buckets = var.block_public_access\n}"
+  },
+  {
+    "instruction": "Validate a list variable so every CIDR entry is parseable.",
+    "output": "variable \"allowed_cidrs\" {\n  type = list(string)\n\n  validation {\n    condition = alltrue([\n      for c in var.allowed_cidrs : can(cidrhost(c, 0))\n    ])\n    error_message = \"Every entry in allowed_cidrs must be a valid CIDR block.\"\n  }\n}\n\nresource \"aws_security_group\" \"restricted\" {\n  name   = \"restricted-sg\"\n  vpc_id = var.vpc_id\n\n  dynamic \"ingress\" {\n    for_each = var.allowed_cidrs\n\n    content {\n      from_port   = 443\n      to_port     = 443\n      protocol    = \"tcp\"\n      cidr_blocks = [ingress.value]\n    }\n  }\n}\n\nvariable \"vpc_id\" {\n  type = string\n}"
+  },
+  {
+    "instruction": "Write a production readiness check block covering several resources at once.",
+    "output": "variable \"environment\" {\n  type = string\n}\n\nresource \"aws_db_instance\" \"app\" {\n  identifier              = \"app-db\"\n  engine                  = \"postgres\"\n  instance_class          = \"db.t4g.large\"\n  allocated_storage       = 100\n  username                = \"app\"\n  manage_master_user_password = true\n  backup_retention_period = 14\n  multi_az                = var.environment == \"prod\"\n  skip_final_snapshot     = false\n}\n\ncheck \"production_readiness\" {\n  assert {\n    condition     = aws_db_instance.app.backup_retention_period >= 7\n    error_message = \"Backups must be retained for at least 7 days.\"\n  }\n\n  assert {\n    condition     = !startswith(aws_db_instance.app.identifier, \"t2\")\n    error_message = \"Database identifiers must not use legacy prefixes.\"\n  }\n}"
+  }
+]
