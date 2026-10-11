@@ -54,6 +54,7 @@ training sets they consume.
 | [`networking-diagnostics-training-set/`](./networking-diagnostics-training-set) | Networking diagnostics (DNS, TLS, routing, tcpdump), 12 parts · 240 entries. |
 | [`technical-docs-training-set/`](./technical-docs-training-set) | Technical documentation (README, docstrings, ADRs), 12 parts · 240 entries. |
 | [`text-classification-training-set/`](./text-classification-training-set) | Text classification labels and rules, 12 parts · 240 entries. |
+| [`agentic-training-set/`](./agentic-training-set) | Agentic tasks: planning, tool selection, ReAct traces, reflection, error recovery, code-agent loops, research, memory, clarification, safety guardrails, autonomy/replanning, 12 parts · 240 entries. |
 
 ## Quick start
 
