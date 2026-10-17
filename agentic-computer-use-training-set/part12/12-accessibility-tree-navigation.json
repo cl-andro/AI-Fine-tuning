@@ -1,0 +1,82 @@
+[
+  {
+    "instruction": "Find the Save button in the editor without using the mouse.",
+    "output": "**Plan:**\n1. Inspect the accessibility tree.\n2. Locate the button node.\n3. Invoke it.\n\n**Step 1 — Thought:** Dump the tree for the app.\n**Step 1 — Action:** `get_a11y_tree(app=\"gedit\", depth=4)`\n**Step 1 — Observation:** Root `frame \"notes.txt - gedit\"` with children `menu bar`, `text view`, `tool bar`, `status bar`.\n\n**Step 2 — Thought:** Search the toolbar for the Save control.\n**Step 2 — Action:** `get_a11y_tree(app=\"gedit\", depth=5, role=\"push button\")`\n**Step 2 — Observation:** `push button \"Save\"` enabled=true bounds=(640,58,672,90).\n\n**Step 3 — Thought:** Invoke the node by its accessible name.\n**Step 3 — Action:** `key_press(\"Return\")`\n**Step 3 — Observation:** Save action fired; the title bar removed its modified marker.\n\n**Final answer:** Found and invoked the Save button via the accessibility tree."
+  },
+  {
+    "instruction": "List every tab in the browser by reading the tab list node.",
+    "output": "**Plan:**\n1. Focus the browser.\n2. Read the tab list.\n3. Report the tab names.\n\n**Step 1 — Thought:** Query the tree for the tab container.\n**Step 1 — Action:** `get_a11y_tree(app=\"firefox\", depth=5, role=\"page tab list\")`\n**Step 1 — Observation:** `page tab list` with 5 `page tab` children.\n\n**Step 2 — Thought:** Read the names and selection state.\n**Step 2 — Action:** `get_a11y_tree(app=\"firefox\", depth=6, role=\"page tab\")`\n**Step 2 — Observation:** Tabs: `Inbox (12)`, `Pull requests`, `Issues - acme/web` (selected=true), `Docs`, `Status`.\n\n**Final answer:** The browser has 5 tabs; 'Issues - acme/web' is selected."
+  },
+  {
+    "instruction": "Read the checked state of every checkbox on the preferences page.",
+    "output": "**Plan:**\n1. Focus the settings window.\n2. Query checkbox nodes.\n3. Report their states.\n\n**Step 1 — Thought:** Dump the preferences tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=5)`\n**Step 1 — Observation:** `frame \"Settings\"` with several `check box` children under `Preferences`.\n\n**Step 2 — Thought:** Read each checkbox's checked value.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=6, role=\"check box\")`\n**Step 2 — Observation:** `check box \"Remember recent files\"` checked=false; `check box \"Show hidden files\"` checked=true; `check box \"Ask before emptying Trash\"` checked=true.\n\n**Final answer:** Show hidden files and Ask before emptying Trash are checked; Remember recent files is not."
+  },
+  {
+    "instruction": "Find the focused control so I know where my next keystroke goes.",
+    "output": "**Plan:**\n1. Query the tree for focus.\n2. Identify the node.\n3. Report its role and label.\n\n**Step 1 — Thought:** Dump the active window's tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"chrome-gnome-shell\", depth=4) `\n**Step 1 — Observation:** Root `frame \"Extensions\"` with search, list, and a details pane.\n\n**Step 2 — Thought:** Find the node with focused=true.\n**Step 2 — Action:** `get_a11y_tree(app=\"chrome-gnome-shell\", depth=6, focused=true)`\n**Step 2 — Observation:** `entry \"Search Extensions\"` focused=true bounds=(600,180,1320,216).\n\n**Final answer:** Focus is in the 'Search Extensions' text entry, so typing will filter the extension list."
+  },
+  {
+    "instruction": "Read the menu structure of the application to learn the available actions.",
+    "output": "**Plan:**\n1. Query the menu bar.\n2. Expand each menu's items.\n3. Summarize the actions.\n\n**Step 1 — Thought:** Read the menu bar node.\n**Step 1 — Action:** `get_a11y_tree(app=\"soffice\", depth=3, role=\"menu bar\")`\n**Step 1 — Observation:** `menu bar` children: File, Edit, View, Insert, Format, Tools, Window, Help.\n\n**Step 2 — Thought:** Expand the File menu items.\n**Step 2 — Action:** `get_a11y_tree(app=\"soffice\", depth=5, role=\"menu item\")`\n**Step 2 — Observation:** File items: New, Open, Save, Save As, Export as PDF, Print, Close, Quit.\n\n**Final answer:** The menu bar has 8 menus; the File menu exposes New, Open, Save, Save As, Export as PDF, Print, Close, and Quit."
+  },
+  {
+    "instruction": "Locate the search field in the file manager via the accessibility tree.",
+    "output": "**Plan:**\n1. Focus Files.\n2. Find the search entry.\n3. Report its bounds.\n\n**Step 1 — Thought:** Dump the Nautilus tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"nautilus\", depth=4)`\n**Step 1 — Observation:** Root `frame \"Home\"` with `tool bar`, `list view`, and `status bar`.\n\n**Step 2 — Thought:** Find the search control.\n**Step 2 — Action:** `get_a11y_tree(app=\"nautilus\", depth=5, role=\"text\")`\n**Step 2 — Observation:** `text \"Search\"` bounds=(560,96,1360,132) with the placeholder `Search`.\n\n**Final answer:** The search field is at (560,96)-(1360,132) in the Nautilus header."
+  },
+  {
+    "instruction": "Determine whether the OK button is enabled before clicking it.",
+    "output": "**Plan:**\n1. Read the dialog tree.\n2. Find the button node.\n3. Check its enabled state.\n\n**Step 1 — Thought:** Dump the dialog tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"zenity\", depth=4)`\n**Step 1 — Observation:** Root `dialog \"Rename Device\"` with `entry` and two `push button` children.\n\n**Step 2 — Thought:** Check the OK button's state.\n**Step 2 — Action:** `get_a11y_tree(app=\"zenity\", depth=5, role=\"push button\")`\n**Step 2 — Observation:** `push button \"OK\"` enabled=false (the entry is empty); `push button \"Cancel\"` enabled=true.\n\n**Final answer:** The OK button is disabled because the entry is empty, so Cancel or a value is needed."
+  },
+  {
+    "instruction": "Read the value in the progress bar so I can report completion.",
+    "output": "**Plan:**\n1. Find the progress bar node.\n2. Read its value.\n3. Report the percentage.\n\n**Step 1 — Thought:** Dump the transfer dialog tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"nautilus\", depth=5)`\n**Step 1 — Observation:** Root `dialog \"Copying files\"` with a `progress bar` child.\n\n**Step 2 — Thought:** Read the progress bar's value.\n**Step 2 — Action:** `get_a11y_tree(app=\"nautilus\", depth=6, role=\"progress bar\")`\n**Step 2 — Observation:** `progress bar \"Copying 312 files\"` value=64 percent, text `201 of 312`.\n\n**Final answer:** The copy operation is 64% complete (201 of 312 files)."
+  },
+  {
+    "instruction": "List the rows of a table by walking the accessibility tree.",
+    "output": "**Plan:**\n1. Focus the spreadsheet or app.\n2. Find the table node.\n3. Enumerate the rows.\n\n**Step 1 — Thought:** Dump the tree for the task app.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-todo\", depth=4)`\n**Step 1 — Observation:** Root `frame \"Tasks\"` with a `table` child.\n\n**Step 2 — Thought:** Enumerate the row children.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-todo\", depth=6, role=\"table row\")`\n**Step 2 — Observation:** Rows: `Fix login timeout` (Due 2026-10-18), `Write release notes` (Due 2026-10-20), `Review PR 418` (no due date).\n\n**Final answer:** The task list has 3 rows: Fix login timeout, Write release notes, and Review PR 418."
+  },
+  {
+    "instruction": "Find a control by its accessible name when OCR fails on a canvas-drawn UI.",
+    "output": "**Plan:**\n1. Dump the tree instead of OCR.\n2. Search by name.\n3. Read the control's bounds.\n\n**Step 1 — Thought:** The UI renders its own pixels, so pixels are unreliable.\n**Step 1 — Action:** `get_a11y_tree(app=\"acme-client\", depth=5)`\n**Step 1 — Observation:** Tree exposes real nodes: `push button \"Sign In\"`, `entry \"Email\"`, `entry \"Password\"`.\n\n**Step 2 — Thought:** Read the Sign In button's bounds.\n**Step 2 — Action:** `get_a11y_tree(app=\"acme-client\", depth=6, role=\"push button\")`\n**Step 2 — Observation:** `push button \"Sign In\"` bounds=(840,520,1080,562).\n\n**Final answer:** The Sign In button is an accessible node at (840,520)-(1080,562), reachable without pixel guessing."
+  },
+  {
+    "instruction": "Check which window is currently active according to the accessibility tree.",
+    "output": "**Plan:**\n1. Query the desktop tree.\n2. Find the active window.\n3. Report its title.\n\n**Step 1 — Thought:** Dump the top-level tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-shell\", depth=3)`\n**Step 1 — Observation:** Top level lists `frame \"Mozilla Firefox\"`, `frame \"budget.ods\"`, `frame \"Terminal\"`.\n\n**Step 2 — Thought:** Find the active frame.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-shell\", depth=4, active=true)`\n**Step 2 — Observation:** `frame \"budget.ods - LibreOffice Calc\"` active=true; the others are active=false.\n\n**Final answer:** The active window is 'budget.ods - LibreOffice Calc'."
+  },
+  {
+    "instruction": "Read the text of a status notification from the tree rather than the pixels.",
+    "output": "**Plan:**\n1. Find the notification list.\n2. Read the newest item.\n3. Report its text.\n\n**Step 1 — Thought:** Query the notification area.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-shell\", depth=4, role=\"notification\")`\n**Step 1 — Observation:** `notification \"Slack\"` with a text child.\n\n**Step 2 — Thought:** Read the notification text.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-shell\", depth=6, role=\"label\")`\n**Step 2 — Observation:** Text: `Priya: the staging deploy is green, merging now`.\n\n**Final answer:** The newest notification reads: 'Priya: the staging deploy is green, merging now'."
+  },
+  {
+    "instruction": "Enumerate the sidebar items in the settings window.",
+    "output": "**Plan:**\n1. Focus Settings.\n2. Find the navigation list.\n3. List the items.\n\n**Step 1 — Thought:** Dump the Settings tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=4)`\n**Step 1 — Observation:** Root `frame \"Settings\"` with a `list` navigation child.\n\n**Step 2 — Thought:** Enumerate the list items.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=6, role=\"list item\")`\n**Step 2 — Observation:** Items: Wi-Fi, Network, Bluetooth, Displays, Sound, Power, Keyboard, Printers, Users.\n\n**Final answer:** The Settings sidebar has 9 items, from Wi-Fi through Users."
+  },
+  {
+    "instruction": "Find the close button of the dialog and read its label.",
+    "output": "**Plan:**\n1. Dump the dialog tree.\n2. Find the close control.\n3. Report its name and bounds.\n\n**Step 1 — Thought:** Query the modal dialog.\n**Step 1 — Action:** `get_a11y_tree(app=\"firefox\", depth=5)`\n**Step 1 — Observation:** Root `dialog \"Add Security Exception\"`.\n\n**Step 2 — Thought:** Find the close button.\n**Step 2 — Action:** `get_a11y_tree(app=\"firefox\", depth=6, role=\"push button\")`\n**Step 2 — Observation:** `push button \"Cancel\"` bounds=(980,600,1200,640); no icon-only close node.\n\n**Final answer:** The dialog's dismiss control is the `Cancel` button at (980,600)-(1200,640)."
+  },
+  {
+    "instruction": "Verify a toggle switch's state before changing it.",
+    "output": "**Plan:**\n1. Find the switch node.\n2. Read its state.\n3. Confirm it is the right control.\n\n**Step 1 — Thought:** Dump the panel tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=5)`\n**Step 1 — Observation:** Sound panel with a `switch` node under Output.\n\n**Step 2 — Thought:** Read the switch state and name.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-control-center\", depth=6, role=\"switch\")`\n**Step 2 — Observation:** `switch \"Over-Amplification\"` on=false bounds=(1180,360,1240,400).\n\n**Final answer:** The Over-Amplification switch is currently off at (1180,360)-(1240,400)."
+  },
+  {
+    "instruction": "Navigate a tree view purely with the keyboard using accessibility roles.",
+    "output": "**Plan:**\n1. Read the tree view node.\n2. Move selection with the keyboard.\n3. Confirm the new selection.\n\n**Step 1 — Thought:** Dump the archive manager tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"file-roller\", depth=5)`\n**Step 1 — Observation:** Root `frame \"releases.zip\"` with a `tree` child listing folders.\n\n**Step 2 — Thought:** Read the root children.\n**Step 2 — Action:** `get_a11y_tree(app=\"file-roller\", depth=6, role=\"tree item\")`\n**Step 2 — Observation:** `tree item \"releases/\"` selected=true; siblings `docs/`, `src/`, `README.md`.\n\n**Step 3 — Thought:** Move down one item with the keyboard.\n**Step 3 — Action:** `key_press(\"Down\")`\n**Step 3 — Observation:** Selection moved to `tree item \"docs/\"`.\n\n**Final answer:** Selected the docs/ entry inside releases.zip using the keyboard."
+  },
+  {
+    "instruction": "Read a web form's field labels from the accessibility tree.",
+    "output": "**Plan:**\n1. Focus the browser page.\n2. Find the form node.\n3. List the fields.\n\n**Step 1 — Thought:** Dump the page tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"firefox\", depth=6)`\n**Step 1 — Observation:** Root `document \"Checkout\"` with a `form` child.\n\n**Step 2 — Thought:** Enumerate the entry fields.\n**Step 2 — Action:** `get_a11y_tree(app=\"firefox\", depth=8, role=\"entry\")`\n**Step 2 — Observation:** Fields: `Full name`, `Email`, `Card number`, `Expiry`, `CVC`.\n\n**Final answer:** The checkout form has fields: Full name, Email, Card number, Expiry, and CVC."
+  },
+  {
+    "instruction": "Locate a toolbar button that has no visible text.",
+    "output": "**Plan:**\n1. Find the toolbar node.\n2. List its buttons.\n3. Read the icon button's name.\n\n**Step 1 — Thought:** Dump the editor toolbar.\n**Step 1 — Action:** `get_a11y_tree(app=\"gedit\", depth=5)`\n**Step 1 — Observation:** `tool bar` with 14 `push button` children, some with only icons.\n\n**Step 2 — Thought:** Read the icon-only button's accessible name.\n**Step 2 — Action:** `get_a11y_tree(app=\"gedit\", depth=6, role=\"push button\")`\n**Step 2 — Observation:** `push button \"Find and Replace\"` bounds=(1120,58,1152,90); no text label rendered.\n\n**Final answer:** The icon-only button at (1120,58)-(1152,90) is 'Find and Replace'."
+  },
+  {
+    "instruction": "Determine the row count of a long list without scrolling.",
+    "output": "**Plan:**\n1. Find the list node.\n2. Read its child count.\n3. Report the total.\n\n**Step 1 — Thought:** Dump the app tree.\n**Step 1 — Action:** `get_a11y_tree(app=\"geary\", depth=4)`\n**Step 1 — Observation:** Root `frame \"Inbox\"` with a virtualised `list` of message rows.\n\n**Step 2 — Thought:** Read the list's accessible attributes.\n**Step 2 — Action:** `get_a11y_tree(app=\"geary\", depth=5, role=\"list\")`\n**Step 2 — Observation:** `list \"Messages\"` child_count=248, visible children=14 (virtualised).\n\n**Final answer:** The Inbox list holds 248 messages; 14 are realised in the tree at once."
+  },
+  {
+    "instruction": "Read the title and value of a spin button control.",
+    "output": "**Plan:**\n1. Find the spin button.\n2. Read its value and range.\n3. Report the setting.\n\n**Step 1 — Thought:** Dump the preferences window.\n**Step 1 — Action:** `get_a11y_tree(app=\"gnome-text-editor\", depth=5)`\n**Step 1 — Observation:** `spin button \"Tab width\"` under the Editor section.\n\n**Step 2 — Thought:** Read the spin button's attributes.\n**Step 2 — Action:** `get_a11y_tree(app=\"gnome-text-editor\", depth=6, role=\"spin button\")`\n**Step 2 — Observation:** `spin button \"Tab width\"` value=4, min=1, max=16.\n\n**Final answer:** The Tab width spin button is set to 4 (allowed range 1 to 16)."
+  }
+]

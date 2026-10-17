@@ -55,6 +55,16 @@ training sets they consume.
 | [`technical-docs-training-set/`](./technical-docs-training-set) | Technical documentation (README, docstrings, ADRs), 12 parts · 240 entries. |
 | [`text-classification-training-set/`](./text-classification-training-set) | Text classification labels and rules, 12 parts · 240 entries. |
 | [`agentic-training-set/`](./agentic-training-set) | Agentic tasks: planning, tool selection, ReAct traces, reflection, error recovery, code-agent loops, research, memory, clarification, safety guardrails, autonomy/replanning, 12 parts · 240 entries. |
+| [`agentic-browser-automation-training-set/`](./agentic-browser-automation-training-set) | Browser-automation agents (navigation, element location, forms, scraping, waits, auth sessions, downloads, Playwright), 12 parts · 240 entries. |
+| [`agentic-computer-use-training-set/`](./agentic-computer-use-training-set) | Desktop computer-use agents (screen perception, mouse, keyboard, windows, dialogs, clipboard, multi-monitor, accessibility tree), 12 parts · 240 entries. |
+| [`agentic-data-analysis-training-set/`](./agentic-data-analysis-training-set) | Agentic data analysis (loading/inspection, cleaning, groupby, joins, time series, outliers, stats, SQL analytics, cohorts, reporting), 12 parts · 240 entries. |
+| [`agentic-evaluation-observability-training-set/`](./agentic-evaluation-observability-training-set) | Evaluation & observability agents (SLIs/SLOs, traces, latency percentiles, error budgets, alerts, dashboards, LLM evals, cost), 12 parts · 240 entries. |
+| [`agentic-human-in-the-loop-training-set/`](./agentic-human-in-the-loop-training-set) | Human-in-the-loop patterns (clarifying questions, approvals, confirmation, escalation, feedback, consent, dry-runs, audit trails), 12 parts · 240 entries. |
+| [`agentic-multi-agent-collaboration-training-set/`](./agentic-multi-agent-collaboration-training-set) | Multi-agent collaboration (role decomposition, handoffs, blackboard, messaging, critic/verifier, consensus, deadlock & budget handling), 12 parts · 240 entries. |
+| [`agentic-planning-search-training-set/`](./agentic-planning-search-training-set) | Agent planning & search (goal decomposition, plan-and-execute, tree-of-thoughts, DFS/BFS, A*, backtracking, HTN, CSP, plan repair), 12 parts · 240 entries. |
+| [`agentic-rag-retrieval-training-set/`](./agentic-rag-retrieval-training-set) | RAG retrieval agents (chunking, embeddings, vector/hybrid search, reranking, query rewriting, grounding, index maintenance, evals), 12 parts · 240 entries. |
+| [`agentic-tool-calling-schemas-training-set/`](./agentic-tool-calling-schemas-training-set) | Tool-calling & JSON schemas (tool definitions, argument extraction/validation, single/parallel calls, OpenAPI, permission scopes), 12 parts · 240 entries. |
+| [`agentic-workflow-orchestration-training-set/`](./agentic-workflow-orchestration-training-set) | Workflow orchestration (DAGs, dependencies, scheduling, retries/backoff, idempotency, sagas, DLQs, concurrency, observability), 12 parts · 240 entries. |
 
 ## Quick start
 
